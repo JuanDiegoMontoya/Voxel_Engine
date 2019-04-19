@@ -181,8 +181,10 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClCompile Include="load_image.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pipeline.cpp" />
+    <ClCompile Include="render.cpp" />
     <ClCompile Include="serialize.cpp" />
     <ClCompile Include="settings.cpp" />
+    <ClCompile Include="shader.cpp" />
     <ClCompile Include="sys_window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -191,8 +193,10 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClInclude Include="input.h" />
     <ClInclude Include="load_image.h" />
     <ClInclude Include="pipeline.h" />
+    <ClInclude Include="render.h" />
     <ClInclude Include="serialize.h" />
     <ClInclude Include="settings.h" />
+    <ClInclude Include="shader.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="sys_window.h" />
   </ItemGroup>

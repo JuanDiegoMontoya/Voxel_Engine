@@ -47,6 +47,12 @@
     <ClInclude Include="god_ptr.h">
       <Filter>Experimental</Filter>
     </ClInclude>
+    <ClInclude Include="render.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -72,6 +78,12 @@
     </ClCompile>
     <ClCompile Include="input.cpp">
       <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="render.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>Graphics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
