@@ -45,6 +45,23 @@ void cursor_enter_callback(GLFWwindow* window, int entered)
 void set_glfw_callbacks(GLFWwindow* window)
 {
 	Input::init_glfw_input_cbs(window);
+
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetWindowIconifyCallback(window, iconify_callback);
+	glfwSetCursorEnterCallback(window, cursor_enter_callback);
+}
+
+static void gen_app_icon(GLFWwindow* window)
+{
+	GLFWimage icon;
+	icon.pixels = loadImage("./resources/logo.png");
+	icon.width = 128;
+	icon.height = 128;
+	if (icon.pixels)
+	{
+		glfwSetWindowIcon(window, 1, &icon);
+		deleteImage(icon.pixels);
+	}
 }
 
 GLFWwindow* init_glfw_context()
@@ -61,6 +78,8 @@ GLFWwindow* init_glfw_context()
 	// MSAA
 	//glfwWindowHint(GLFW_SAMPLES, Settings::Get().Graphics.multisamples);
 	//glEnable(GL_MULTISAMPLE);
+
+	// vertical sync
 	//if (Settings::Get().Graphics.vsync)
 	//	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
 	//else
@@ -68,30 +87,24 @@ GLFWwindow* init_glfw_context()
 
 	const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-	// disable these two lines once(if) we can load settings from a file
-	if (!Settings::Graphics.reinit) // first time
-	{
-		Settings::Graphics.screenX = mode->width;
-		Settings::Graphics.screenY = mode->height;
-	}
-
 	int window_width = Settings::Graphics.screenX; //mode->width;
 	int window_height = Settings::Graphics.screenY; //mode->height;
 
-	if (window_width == 0 || window_height == 0)
-	{
-		window_width = 1920;
-		window_height = 1080;
-		Settings::Graphics.screenX;
-		Settings::Graphics.screenY;
-	}
+	// for reinitializing glfw
+	//if (window_width == 0 || window_height == 0)
+	//{
+	//	window_width = 1920;
+	//	window_height = 1080;
+	//	Settings::Graphics.screenX;
+	//	Settings::Graphics.screenY;
+	//}
 
 	GLFWwindow* window;
 	if (Settings::Graphics.fullscreen)
-		window = glfwCreateWindow(window_width, window_height, "Surge", glfwGetPrimaryMonitor(), NULL);
+		window = glfwCreateWindow(window_width, window_height, "Sicko Engine", glfwGetPrimaryMonitor(), NULL);
 	else
 	{
-		window = glfwCreateWindow(window_width, window_height - 63, "Surge", NULL, NULL);
+		window = glfwCreateWindow(window_width, window_height - 63, "Sicko Engine", NULL, NULL);
 		Settings::Graphics.screenY = window_height;
 	}
 	if (window == NULL)
@@ -101,24 +114,12 @@ GLFWwindow* init_glfw_context()
 		return nullptr;
 	}
 
-	//Render::window = window;
-	//Render::Dimension(window_width, Settings::Graphics.screenY);
-	//glfwMaximizeWindow(window);
-
-	GLFWimage icons[1];
-	icons[0].pixels = loadImage("./resources/logo.png");
-	icons[0].width = 128;
-	icons[0].height = 128;
-	glfwSetWindowIcon(window, 1, icons);
-	deleteImage(icons[0].pixels);
+	gen_app_icon(window);
 
 	glfwSetWindowPos(window, 0, 25);
 	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetWindowIconifyCallback(window, iconify_callback);
-	glfwSetCursorEnterCallback(window, cursor_enter_callback);
+	set_glfw_callbacks(window);
 
-	//glfwMaximizeWindow(window);
 	glewExperimental = GL_FALSE;
 	if (glewInit() != GLEW_OK)
 	{
@@ -134,7 +135,6 @@ GLFWwindow* init_glfw_context()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND_COLOR);
 
-	// OpenGL calls to prepare for drawing.
 	glClearColor(0.3f, 0.3f, 0.5f, 1.0f);
 
 	return window;
