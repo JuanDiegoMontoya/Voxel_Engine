@@ -1,18 +1,26 @@
 #pragma once
 #include "stdafx.h"
+#include <algorithm>
 
 // encapsulates shaders by storing uniforms and its GPU memory location
+// also stores the program's name and both shader paths for recompiling
 typedef class Shader
 {
 public:
 	GLuint programID;		// the program's address in GPU memory
 	const int shaderID;	// index into shader array
-	std::string name;
-	std::string vsPath;
-	std::string fsPath;
+	std::string name;		// probably actual index into shader array
+	std::string vsPath;	// vertex shader location
+	std::string fsPath;	// fragment shader location
+	std::string cmpPath;// compute shader location
+
+	// maps strings to GPU memory addresses (in GLints)
+	std::unordered_map<GLchar*, GLint> Uniforms;
+
+	// (static) list of all shader programs
 	static std::unordered_map<std::string, ShaderPtr> shaders;
 
-	// Shader constructor for simple frag/vertex shader program.
+	// standard vertex + fragment program constructor
 	Shader(const char* vertexPath, const char* fragmentPath);
 	inline Shader() : shaderID(_shader_count)
 	{
@@ -31,9 +39,6 @@ public:
 	{
 		glUseProgram(programID);
 	}
-
-	// maps strings to GPU memory addresses (in GLints)
-	std::unordered_map<GLchar*, GLint> Uniforms;
 
 	inline void setBool(GLint uniformLoc, bool value)
 	{
@@ -130,5 +135,15 @@ public:
 	}
 
 private:
+	typedef enum _shadertype : GLint
+	{
+		TY_VERTEX,
+		TY_FRAGMENT,
+		TY_COMPUTE
+	};
+
 	static int _shader_count;
+	static const char* _shader_dir;
+	void loadShader(const char* path);
+	GLint compileShader(_shadertype type, const GLchar* src);
 }Shader, *ShaderPtr;
