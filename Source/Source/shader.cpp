@@ -3,22 +3,24 @@
 #include <sstream>
 #include <fstream>
 
+// static class variable definitions
 int Shader::_shader_count = 0;
 const char* Shader::_shader_dir = "./resources/Shaders/";
+std::unordered_map<std::string, Shader*> Shader::shaders = std::unordered_map<std::string, Shader*>();
 
 // the provided path does not need to included the shader directory
 Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_shader_count++)
 {
-	const GLchar* vertSrc = loadShader(vertexPath);
-	const GLchar* fragSrc = loadShader(fragmentPath);
+	const std::string vertSrc = loadShader(vertexPath).c_str();
+	const std::string fragSrc = loadShader(fragmentPath).c_str();
 
 	GLint success;
 	GLchar infoLog[512];
 
 	// compile individual shaders
 	programID = glCreateProgram();
-	GLint vShader = compileShader(TY_VERTEX, vertSrc);
-	GLint fShader = compileShader(TY_VERTEX, fragSrc);
+	GLint vShader = compileShader(TY_VERTEX, vertSrc.c_str());
+	GLint fShader = compileShader(TY_FRAGMENT, fragSrc.c_str());
 	glAttachShader(programID, vShader);
 	glAttachShader(programID, fShader);
 	glLinkProgram(programID);
@@ -28,8 +30,8 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_sha
 	if (!success)
 	{
 		glGetProgramInfoLog(programID, 512, NULL, infoLog);
+		std::cout << "Files: " << vertexPath << ", " << fragmentPath << '\n';
 		std::cout << "Failed to link shader program\n" << infoLog << std::endl;
-		std::cout << "Files: " << vertexPath << ", " << fragmentPath << std::endl;
 		//traceMessage(std::string(infoLog));
 	}
 	else
@@ -68,7 +70,8 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_sha
 	}
 }
 
-const char* Shader::loadShader(const char* path)
+// loads a shader source into a string
+std::string Shader::loadShader(const char* path)
 {
 	std::string shaderpath = std::string(_shader_dir) + path;
 	std::string content;
@@ -85,9 +88,10 @@ const char* Shader::loadShader(const char* path)
 		std::cout << "Message: " << e.what() << std::endl;
 		//traceMessage(std::string(e.what()));
 	}
-	return content.c_str();
+	return std::string(content);
 }
 
+// compiles a shader source and returns its ID
 GLint Shader::compileShader(_shadertype type, const GLchar* src)
 {
 	GLuint shader;

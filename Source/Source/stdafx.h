@@ -27,8 +27,9 @@
 #include <unordered_map>
 #include <algorithm>
 
+// debugging
+#include "engine_assert.h"
+
 // other common includes
 #include <iostream>
 #include <cstdlib>
-
-#include "engine_assert.h"

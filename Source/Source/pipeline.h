@@ -2,5 +2,6 @@
 
 namespace Render
 {
-
+	void Init();
+	void Draw();
 }

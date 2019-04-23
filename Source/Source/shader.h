@@ -145,6 +145,6 @@ private:
 
 	static int _shader_count;
 	static const char* _shader_dir;
-	const char* loadShader(const char* path);
+	std::string loadShader(const char* path);
 	GLint compileShader(_shadertype type, const GLchar* src);
 }Shader, *ShaderPtr;
