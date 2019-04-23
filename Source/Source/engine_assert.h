@@ -10,7 +10,7 @@ namespace Assert
 		if(!(x))\
 		{\
 			Assert::HandleAssert(msg, #x, __FILE__, __LINE__);\
-			__debugbreak();\
+			std::terminate();\
 		}\
   } while(0)
 
@@ -18,7 +18,7 @@ namespace Assert
     if(!(x))\
 		{\
       Assert::HandleAssert("Assertion Failed!", #x, __FILE__, __LINE__);\
-      __debugbreak();\
+      std::terminate();\
     }\
   } while(0)
 #else

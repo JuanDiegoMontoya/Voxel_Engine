@@ -4,30 +4,32 @@
 #include <fstream>
 
 int Shader::_shader_count = 0;
-const char* Shader::_shader_dir = "./resources";
+const char* Shader::_shader_dir = "./resources/Shaders/";
 
+// the provided path does not need to included the shader directory
 Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_shader_count++)
 {
-	const GLchar* vShaderCode = vertexCode.c_str();
-	const GLchar* fShaderCode = fragmentCode.c_str();
+	const GLchar* vertSrc = loadShader(vertexPath);
+	const GLchar* fragSrc = loadShader(fragmentPath);
 
 	GLint success;
 	GLchar infoLog[512];
 
-	// Link shaders
+	// compile individual shaders
 	programID = glCreateProgram();
-
-	glAttachShader(programID, compileShader(TY_VERTEX, vShaderCode));
-	glAttachShader(programID, compileShader(TY_FRAGMENT, fShaderCode));
+	GLint vShader = compileShader(TY_VERTEX, vertSrc);
+	GLint fShader = compileShader(TY_VERTEX, fragSrc);
+	glAttachShader(programID, vShader);
+	glAttachShader(programID, fShader);
 	glLinkProgram(programID);
 
-	// Check for linking errors
+	// link program
 	glGetProgramiv(programID, GL_LINK_STATUS, &success);
 	if (!success)
 	{
 		glGetProgramInfoLog(programID, 512, NULL, infoLog);
+		std::cout << "Failed to link shader program\n" << infoLog << std::endl;
 		std::cout << "Files: " << vertexPath << ", " << fragmentPath << std::endl;
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
 		//traceMessage(std::string(infoLog));
 	}
 	else
@@ -38,14 +40,13 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_sha
 	glDeleteShader(vShader);
 	glDeleteShader(fShader);
 
-	// Setup Uniform Map
+	// init uniform map used in that shader
 	{
 		GLint max_length;
-		glGetProgramiv(programID, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
 		GLint num_uniforms;
-
+		
+		glGetProgramiv(programID, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
 		GLchar* pname = new GLchar[max_length];
-
 		glGetProgramiv(programID, GL_ACTIVE_UNIFORMS, &num_uniforms);
 
 		for (GLint i = 0; i < num_uniforms; ++i)
@@ -55,18 +56,11 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_sha
 			GLenum type;
 
 			glGetActiveUniform(programID, i, max_length, &written, &size, &type, pname);
-
 			GLchar* pname1 = new GLchar[max_length];
-
 			std::strcpy(pname1, pname);
-
 			if (size > 1)
-			{
 				pname1[written - 3] = '\0';
-			}
-
 			GLint loc = glGetUniformLocation(programID, pname1);
-
 			Uniforms.insert(std::pair<GLchar*, GLint>(pname1, loc));
 		}
 
@@ -74,50 +68,24 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_sha
 	}
 }
 
-void Shader::loadShader(const char* path)
+const char* Shader::loadShader(const char* path)
 {
-	std::string vpath = (std::string)_shader_dir + vertexPath;
-	std::string fpath = (std::string)_shader_dir + fragmentPath;
-
-	std::string vertexCode;
-	std::string fragmentCode;
-
-	std::ifstream vertexFile;
-	std::ifstream fragmentFile;
-
-	std::stringstream vertexStream;
-	std::stringstream fragmentStream;
-
-	vertexFile.exceptions(std::ifstream::badbit);
-	fragmentFile.exceptions(std::ifstream::badbit);
-
-	//std::ifstream ifs(script.name.c_str());
-	//std::string content((std::istreambuf_iterator<char>(ifs)),
-	//	(std::istreambuf_iterator<char>()));
-
+	std::string shaderpath = std::string(_shader_dir) + path;
+	std::string content;
 	try
 	{
-		vertexFile.open(vertexPath);
-		fragmentFile.open(fragmentPath);
-
-		vertexStream << vertexFile.rdbuf();
-		fragmentStream << fragmentFile.rdbuf();
-
-		vertexFile.close();
-		fragmentFile.close();
-
-		vertexCode = vertexStream.str();
-		fragmentCode = fragmentStream.str();
-
+		std::ifstream ifs(shaderpath);
+		content = std::string((std::istreambuf_iterator<char>(ifs)),
+			(std::istreambuf_iterator<char>()));
 		//traceMessage("\nShader: " + vertexPath + ", " + fragmentPath + " successfully opened for reading");
-
 	}
 	catch (std::ifstream::failure e)
 	{
-		std::cout << "Files: " << vertexPath << ", " << fragmentPath << std::endl;
-		std::cout << "ERROR: FAILED TO READ SHADER" << e.what() << std::endl;
+		std::cout << "Error reading shader: " << path << '\n';
+		std::cout << "Message: " << e.what() << std::endl;
 		//traceMessage(std::string(e.what()));
 	}
+	return content.c_str();
 }
 
 GLint Shader::compileShader(_shadertype type, const GLchar* src)
@@ -143,6 +111,7 @@ GLint Shader::compileShader(_shadertype type, const GLchar* src)
 		break;
 	default:
 		//traceMessage("Unknown shader type");
+		path = nullptr;
 		break;
 	}
 
@@ -154,7 +123,7 @@ GLint Shader::compileShader(_shadertype type, const GLchar* src)
 	{
 		glGetShaderInfoLog(shader, 512, NULL, infoLog);
 		std::cout << "File: " << *path << std::endl;
-		std::cout << "ERROR: VERTEX SHADER COMPILATION FAILURE\n" << infoLog << std::endl;
+		std::cout << "Error compiling shader of type " << type << '\n' << infoLog << std::endl;
 		//traceMessage(std::string(infoLog));
 	}
 	else

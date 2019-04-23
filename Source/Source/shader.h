@@ -10,18 +10,17 @@ public:
 	GLuint programID;		// the program's address in GPU memory
 	const int shaderID;	// index into shader array
 	std::string name;		// probably actual index into shader array
-	std::string vsPath;	// vertex shader location
-	std::string fsPath;	// fragment shader location
-	std::string cmpPath;// compute shader location
+	std::string vsPath;	// vertex shader path
+	std::string fsPath;	// fragment shader path
+	std::string cmpPath;// compute shader path
 
 	// maps strings to GPU memory addresses (in GLints)
 	std::unordered_map<GLchar*, GLint> Uniforms;
 
-	// (static) list of all shader programs
-	static std::unordered_map<std::string, ShaderPtr> shaders;
-
 	// standard vertex + fragment program constructor
 	Shader(const char* vertexPath, const char* fragmentPath);
+
+	// default constructor (currently no uses)
 	inline Shader() : shaderID(_shader_count)
 	{
 		//type = sDefault;
@@ -34,7 +33,7 @@ public:
 		glDeleteProgram(programID);
 	}
 
-	// Tell OpenGL to use 'this' program.
+	// set the active shader to this one
 	inline void Use()
 	{
 		glUseProgram(programID);
@@ -134,16 +133,18 @@ public:
 		glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, &mat[0][0]);
 	}
 
+	// (static) list of all shader programs
+	static std::unordered_map<std::string, Shader*> shaders;
 private:
 	typedef enum _shadertype : GLint
 	{
-		TY_VERTEX,
-		TY_FRAGMENT,
-		TY_COMPUTE
+		TY_VERTEX = GL_VERTEX_SHADER,
+		TY_FRAGMENT = GL_FRAGMENT_SHADER,
+		TY_COMPUTE = GL_COMPUTE_SHADER
 	};
 
 	static int _shader_count;
 	static const char* _shader_dir;
-	void loadShader(const char* path);
+	const char* loadShader(const char* path);
 	GLint compileShader(_shadertype type, const GLchar* src);
 }Shader, *ShaderPtr;
