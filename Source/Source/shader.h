@@ -1,6 +1,26 @@
 #pragma once
 #include "stdafx.h"
 #include <algorithm>
+#include <functional>
+
+struct djb2hash
+{
+	static size_t djb_hash(const char* cp)
+	{
+		size_t hash = 5381;
+		while (*cp)
+			hash = 33 * hash ^ (unsigned char)*cp++;
+		return hash;
+	}
+};
+
+static size_t djb_hash(const char* cp)
+{
+	size_t hash = 5381;
+	while (*cp)
+		hash = 33 * hash ^ (unsigned char)*cp++;
+	return hash;
+}
 
 // encapsulates shaders by storing uniforms and its GPU memory location
 // also stores the program's name and both shader paths for recompiling
@@ -14,8 +34,8 @@ public:
 	std::string fsPath;	// fragment shader path
 	std::string cmpPath;// compute shader path
 
-	// maps strings to GPU memory addresses (in GLints)
-	std::unordered_map<GLchar*, GLint> Uniforms;
+	// maps strings to GPU memory addresses (as GLints)
+	std::unordered_map<const char*, GLint, decltype(&djb_hash)> Uniforms;
 
 	// standard vertex + fragment program constructor
 	Shader(const char* vertexPath, const char* fragmentPath);

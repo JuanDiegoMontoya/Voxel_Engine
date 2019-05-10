@@ -8,8 +8,6 @@ int main()
 	GLFWwindow* window = init_glfw_context();
 
 	glfwMakeContextCurrent(window);
-	//glViewport(0, 0, 800, 600);
-	//glfwSetFramebufferSizeCallback(window, );
 	set_glfw_callbacks(window);
 
 	// basically vsync
@@ -30,7 +28,6 @@ int main()
 		if (Input::Keyboard().down[GLFW_KEY_3])
 			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
-		//glfwPollEvents();
 		glfwSwapBuffers(window);
 		Input::update();
 	}

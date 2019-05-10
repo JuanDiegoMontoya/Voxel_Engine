@@ -66,6 +66,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_sha
 			Uniforms.insert(std::pair<GLchar*, GLint>(pname1, loc));
 		}
 
+		// unfortunately we must have this in the same scope as where it's constructed
 		delete[] pname;
 	}
 }
