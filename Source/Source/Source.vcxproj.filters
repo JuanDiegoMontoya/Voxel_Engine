@@ -20,6 +20,9 @@
     <Filter Include="Experimental">
       <UniqueIdentifier>{4ec02b92-e561-4375-9a75-40b1e869a76d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{41a105f9-0ab4-45fc-abbb-9c60c2cb2ecd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sys_window.h">
@@ -53,6 +56,18 @@
     <ClInclude Include="shader.h">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="utilities.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics_utils.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="misc_utils.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="math_utils.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -84,6 +99,15 @@
     </ClCompile>
     <ClCompile Include="shader.cpp">
       <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="misc_utils.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics_utils.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="math_utils.cpp">
+      <Filter>Utilities</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
