@@ -42,8 +42,16 @@ namespace Input
 		cout << "Key pressed: " << (key) << " Action: " << (action) << endl;
 	}
 
+	static bool firstMouse = true;
 	static void mouse_pos_cb(GLFWwindow* window, double xpos, double ypos)
 	{
+		if (firstMouse)
+		{
+			mouse.screenOffset.x = xpos;
+			mouse.screenOffset.y = ypos;
+			firstMouse = false;
+		}
+
 		mouse.screenPos.x = (float)xpos;
 		mouse.screenPos.y = (float)ypos;
 
@@ -51,7 +59,11 @@ namespace Input
 		mouse.worldPos.x = (float)xpos;
 		mouse.worldPos.y = (float)ypos;
 
-		cout << "Mouse pos: " << "(" << xpos << ", " << ypos << ")" << endl;
+		mouse.screenOffset.x = xpos - mouse.prevScreenPos.x;
+		mouse.screenOffset.y = mouse.prevScreenPos.y - ypos;
+		mouse.prevScreenPos = glm::vec2(xpos, ypos);
+		mouse.screenOffset *= mouse.sensitivity;
+		//cout << "Mouse pos: " << "(" << xpos << ", " << ypos << ")" << endl;
 	}
 
 	static void mouse_scroll_cb(GLFWwindow* window, double xoffset, double yoffset)
@@ -111,6 +123,7 @@ namespace Input
 		}
 
 		mouse.scrollOffset = glm::vec2(0);
+		mouse.screenOffset = glm::vec2(0);
 		glfwPollEvents();
 	}
 }

@@ -1,10 +1,18 @@
 #pragma once
-#include "stdafx.h"
+//#include "stdafx.h"
 
-struct VAOData
+class VAO;
+class IBO;
+class Shader;
+
+class Renderer
 {
-	GLuint vao;
-	GLuint count;
-	VAOData(GLuint vao_, GLuint count_) : vao(vao_), count(count_) {}
-	VAOData() : vao(0), count(0) {}
+public:
+	void Draw(const VAO& va, const IBO& ib, const Shader& shader);
+	void DrawArrays(const VAO & va, GLuint count, const Shader & shader);
+	void Clear();
+	//void SetClearColor() const;
+
+private:
+
 };

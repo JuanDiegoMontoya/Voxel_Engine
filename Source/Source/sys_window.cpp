@@ -1,9 +1,9 @@
 #include "stdafx.h"
 
-#include "Settings.h"
+#include "settings.h"
 #include "input.h"
-#include "load_image.h"
 #include "sys_window.h"
+#include "load_image.h"
 
 static void error_cb(int error, char const* description)
 {
@@ -66,7 +66,8 @@ static void gen_app_icon(GLFWwindow* window)
 
 GLFWwindow* init_glfw_context()
 {
-	glfwInit();
+	if (!glfwInit())
+		return nullptr;
 	glfwSetErrorCallback(error_cb);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);

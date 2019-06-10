@@ -8,7 +8,7 @@ int Shader::_shader_count = 0;
 const char* Shader::_shader_dir = "./resources/Shaders/";
 std::unordered_map<std::string, Shader*> Shader::shaders = std::unordered_map<std::string, Shader*>();
 
-// the provided path does not need to included the shader directory
+// the provided path does not need to include the shader directory
 Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_shader_count++)
 {
 	const std::string vertSrc = loadShader(vertexPath).c_str();
@@ -48,6 +48,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_sha
 		GLint num_uniforms;
 		
 		glGetProgramiv(programID, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
+		//GLchar* pname = (GLchar*)alloca(max_length * sizeof(GLchar));
 		GLchar* pname = new GLchar[max_length];
 		glGetProgramiv(programID, GL_ACTIVE_UNIFORMS, &num_uniforms);
 
@@ -67,6 +68,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_sha
 		}
 
 		// unfortunately we must have this in the same scope as where it's constructed
+		// alloca prevents the use of delete, but its implementation is compiler dependent
 		delete[] pname;
 	}
 }

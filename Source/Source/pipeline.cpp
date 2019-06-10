@@ -1,126 +1,139 @@
 #include "stdafx.h"
 #include "shader.h"
+#include "vbo.h"
+#include "ibo.h"
+#include "vao.h"
+#include "render.h"
+#include "texture.h"
+#include "lit_mesh.h"
 
 // graphics pipeline: the order in which various "things" will be rendered
 
+static void GLAPIENTRY
+GLerrorCB(GLenum source,
+	GLenum type,
+	GLuint id,
+	GLenum severity,
+	GLsizei length,
+	const GLchar* message,
+	const void* userParam)
+{
+	std::cout << "GL CALLBACK: "
+		<< (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "")
+		<< " type = 0x" << type
+		<< ", severity = 0x" << severity
+		<< ", message = " << message << std::endl;
+	//fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+	//	(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+	//	type, severity, message);
+}
+
 namespace Render
 {
-	unsigned int VBO, VAO, EBO;
-	unsigned int VBO1, VAO1, EBO1;
+	ShaderPtr currShader;
+	
+	VBO* vbo;
+	IBO* ibo;
+	VAO* vao;
+	Texture* texture;
+	
+	// x, y, z (mins and maxes)
+	glm::mat4 proj;
+	glm::mat4 view;
+	glm::mat4 model;
+	glm::mat4 mvp;
 
-	float vertices[] =
-	{
-		0.5f,  0.5f, 0.0f,  // top right
-		0.5f, -0.5f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f   // top left 
-	};
-
-	float vertices1[] =
-	{
-		1.0f, 1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		0.5f, -1.0f, 0.0f
-	};
-
-	unsigned int indices1[] =
-	{
-		0, 1, 2
-	};
-
-	unsigned int indices[] =
-	{  // note that we start from 0!
-		0, 1, 3,  // first Triangle
-		1, 2, 3   // second Triangle
-	};
+	glm::vec3 translationA = glm::vec3(200, 200, 0);
+	glm::vec3 translationB = glm::vec3(400, 200, 0);
+	glm::vec3 camerapos = glm::vec3(0, 0, 0);
+	
+	Renderer renderer;
 
 	void Init()
 	{
-		Shader::shaders["test"] = new Shader("test.vs", "test.fs");
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(GLerrorCB, NULL);
+		glEnable(GL_DEPTH_TEST);
 
-		// set up vertex data (and buffer(s)) and configure vertex attributes
-		// ------------------------------------------------------------------
-		glGenVertexArrays(1, &VAO);
-		glGenBuffers(1, &VBO);
-		glGenBuffers(1, &EBO);
-		// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-		glBindVertexArray(VAO);
+		float positions[] =
+		{
+			-50.f, -50.f, 0.0f, 0.0f,
+			 50.f, -50.f, 1.0f, 0.0f,
+			 50.f,  50.f, 1.0f, 1.0f,
+			-50.f,  50.f, 0.0f, 1.0f
+		};
 
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		GLuint indices[] =
+		{
+			0, 1, 2,
+			2, 3, 0
+		};
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0);
+		Shader::shaders["test"] = new Shader("texture.vs", "texture.fs");
 
-		// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		// vertex array + buffer
+		vao = new VAO();
+		vbo = new VBO(positions, sizeof(positions));
+		VBOlayout layout;
+		layout.Push<GLfloat>(2);
+		layout.Push<GLfloat>(2);
+		vao->AddBuffer(*vbo, layout);
+		vbo->Unbind();
 
-		// remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		// index buffer
+		ibo = new IBO(indices, 6);
 
-		// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-		// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-		glBindVertexArray(0);
+		currShader = Shader::shaders["test"];
+		currShader->setInt("u_texture", 0);
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		texture = new Texture("deet.png");
+		texture->Bind();
 
-		// round 2
-		glGenVertexArrays(1, &VAO1);
-		glGenBuffers(1, &VBO1);
-		glGenBuffers(1, &EBO1);
-		glBindVertexArray(VAO1);
+		vao->Unbind();
 
-		glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices1), indices1, GL_STATIC_DRAW);
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0);
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-
-
+		proj = glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f);
 	}
 
-	void Update()
-	{
-		
-	}
-	
 	// currently being used to draw everything
 	void Draw()
 	{
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		
-		// draw our first triangle
-		ShaderPtr currShader = Shader::shaders["test"];
-		glUseProgram(currShader->programID);
-		glm::vec4 colorBoi = { 1.f, 1.f, 1.f, 1.f };
-		colorBoi.b = cos(glfwGetTime());
-		currShader->setVec4(currShader->Uniforms["colorBoi"], colorBoi);
-		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		renderer.Clear();
+		currShader->Use();
 
-		glBindVertexArray(VAO1);
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		view = glm::translate(glm::mat4(1.0f), camerapos);
+
+		{ // obj A
+			model = glm::translate(glm::mat4(1.0f), translationA);
+			model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0, 0, 1.f));
+			mvp = proj * view * model;
+			currShader->setMat4("u_mvp", mvp);
+			renderer.Draw(*vao, *ibo, *currShader);
+		}
+
+		{ // obj B
+			model = glm::translate(glm::mat4(1.0f), translationB);
+			mvp = proj * view * model;
+			currShader->setMat4("u_mvp", mvp);
+			renderer.Draw(*vao, *ibo, *currShader);
+		}
+	}
+
+	void drawImGui()
+	{
+		ImGui::Begin("Giraffix");
+
+		ImGui::SliderFloat3("TranslationA", &translationA.x, 0, 1000);
+		ImGui::SliderFloat3("TranslationB", &translationB.x, 0, 1000);
+		ImGui::SliderFloat3("Camera Pos", &camerapos.x, -500, 500);
+
+		ImGui::End();
 	}
 
 	void Terminate()
 	{
-		glDeleteVertexArrays(1, &VAO);
-		glDeleteBuffers(1, &VBO);
-		glDeleteBuffers(1, &EBO);
 
-		glDeleteVertexArrays(1, &VAO1);
-		glDeleteBuffers(1, &VBO1);
-		glDeleteBuffers(1, &EBO1);
 	}
 }

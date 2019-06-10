@@ -10,7 +10,9 @@ namespace Input
 		bool released[GLFW_MOUSE_BUTTON_LAST];
 
 		glm::vec2 screenPos, worldPos;
+		glm::vec2 screenOffset, prevScreenPos; // movement since last frame
 		glm::vec2 scrollOffset;
+		float sensitivity = 0.05f;
 	};
 
 	struct kb_input

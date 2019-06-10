@@ -176,12 +176,22 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="lit_mesh.cpp" />
+    <ClCompile Include="transform.cpp" />
+    <ClCompile Include="unlit_mesh.cpp" />
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="engine_assert.cpp" />
+    <ClCompile Include="game.cpp" />
+    <ClCompile Include="game_object.cpp" />
     <ClCompile Include="graphics_utils.cpp" />
+    <ClCompile Include="ibo.cpp" />
+    <ClCompile Include="imgui_impl.cpp" />
     <ClCompile Include="input.cpp" />
+    <ClCompile Include="level.cpp" />
     <ClCompile Include="load_image.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="math_utils.cpp" />
+    <ClCompile Include="mesh.cpp" />
     <ClCompile Include="misc_utils.cpp" />
     <ClCompile Include="pipeline.cpp" />
     <ClCompile Include="render.cpp" />
@@ -189,23 +199,71 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="sys_window.cpp" />
+    <ClCompile Include="texture.cpp" />
+    <ClCompile Include="vao.cpp" />
+    <ClCompile Include="vbo.cpp" />
+    <ClCompile Include="vendor\imgui\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_demo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_impl_glfw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_impl_opengl3.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_widgets.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.h" />
+    <ClInclude Include="component.h" />
+    <ClInclude Include="lit_mesh.h" />
+    <ClInclude Include="transform.h" />
+    <ClInclude Include="unlit_mesh.h" />
     <ClInclude Include="engine_assert.h" />
+    <ClInclude Include="game.h" />
+    <ClInclude Include="game_object.h" />
     <ClInclude Include="god_ptr.h" />
     <ClInclude Include="graphics_utils.h" />
+    <ClInclude Include="ibo.h" />
+    <ClInclude Include="imgui_impl.h" />
     <ClInclude Include="input.h" />
+    <ClInclude Include="level.h" />
     <ClInclude Include="load_image.h" />
     <ClInclude Include="math_utils.h" />
+    <ClInclude Include="mesh.h" />
     <ClInclude Include="misc_utils.h" />
     <ClInclude Include="pipeline.h" />
     <ClInclude Include="render.h" />
     <ClInclude Include="serialize.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="sphere.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="sys_window.h" />
+    <ClInclude Include="texture.h" />
     <ClInclude Include="utilities.h" />
+    <ClInclude Include="vao.h" />
+    <ClInclude Include="vbo.h" />
+    <ClInclude Include="vbo_layout.h" />
+    <ClInclude Include="vendor\imgui\imconfig.h" />
+    <ClInclude Include="vendor\imgui\imgui.h" />
+    <ClInclude Include="vendor\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="vendor\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="vendor\imgui\imgui_internal.h" />
+    <ClInclude Include="vendor\imgui\imstb_rectpack.h" />
+    <ClInclude Include="vendor\imgui\imstb_textedit.h" />
+    <ClInclude Include="vendor\imgui\imstb_truetype.h" />
+    <ClInclude Include="vendor\imgui\stb_rect_pack.h" />
+    <ClInclude Include="vendor\imgui\stb_textedit.h" />
+    <ClInclude Include="vendor\imgui\stb_truetype.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
