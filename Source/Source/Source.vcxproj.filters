@@ -164,6 +164,9 @@
     <ClInclude Include="transform.h">
       <Filter>Game\ECS\Components</Filter>
     </ClInclude>
+    <ClInclude Include="mesh_comp.h">
+      <Filter>Game\ECS\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -260,6 +263,9 @@
       <Filter>Graphics\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="transform.cpp">
+      <Filter>Game\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh_comp.cpp">
       <Filter>Game\ECS\Components</Filter>
     </ClCompile>
   </ItemGroup>

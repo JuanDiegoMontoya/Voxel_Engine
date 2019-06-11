@@ -17,9 +17,6 @@ Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture
 
 void Mesh::setupMesh()
 {
-	//glGenVertexArrays(1, &vAO);
-	//glGenBuffers(1, &vBO);
-	//glGenBuffers(1, &eBO);
 	vao = new VAO();
 	vbo = new VBO(&vertices[0], vertices.size() * sizeof(Vertex));
 
@@ -31,6 +28,9 @@ void Mesh::setupMesh()
 	vbo->Unbind();
 	ibo = new IBO(&indices[0], vertices.size());
 	vao->Unbind();
+	//glGenVertexArrays(1, &vAO);
+	//glGenBuffers(1, &vBO);
+	//glGenBuffers(1, &eBO);
 
 	//glBindVertexArray(vAO);
 	//glBindBuffer(GL_ARRAY_BUFFER, vBO);
