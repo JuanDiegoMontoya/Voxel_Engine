@@ -6,6 +6,12 @@
 #include "render.h"
 #include "texture.h"
 #include "lit_mesh.h"
+#include "camera.h"
+#include "utilities.h"
+#include "level.h"
+#include "render_data.h"
+#include "pipeline.h"
+#include "transform.h"
 
 // graphics pipeline: the order in which various "things" will be rendered
 
@@ -30,8 +36,11 @@ GLerrorCB(GLenum source,
 
 namespace Render
 {
+	std::unordered_map<const char*, Texture*, Utils::djb2hash, Utils::charPtrKeyEq> textures;
+	Camera* currCamera;
 	ShaderPtr currShader;
-	
+	Renderer renderer;
+
 	VBO* vbo;
 	IBO* ibo;
 	VAO* vao;
@@ -46,8 +55,6 @@ namespace Render
 	glm::vec3 translationA = glm::vec3(200, 200, 0);
 	glm::vec3 translationB = glm::vec3(400, 200, 0);
 	glm::vec3 camerapos = glm::vec3(0, 0, 0);
-	
-	Renderer renderer;
 
 	void Init()
 	{
@@ -55,6 +62,12 @@ namespace Render
 		glDebugMessageCallback(GLerrorCB, NULL);
 		glEnable(GL_DEPTH_TEST);
 
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		currShader = Shader::shaders["flat"] = new Shader("flat_color.vs", "flat_color.fs");
+
+		/*
 		float positions[] =
 		{
 			-50.f, -50.f, 0.0f, 0.0f,
@@ -69,10 +82,6 @@ namespace Render
 			2, 3, 0
 		};
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		Shader::shaders["test"] = new Shader("texture.vs", "texture.fs");
 
 		// vertex array + buffer
 		vao = new VAO();
@@ -95,11 +104,32 @@ namespace Render
 		vao->Unbind();
 
 		proj = glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f);
+		*/
 	}
 
 	// currently being used to draw everything
-	void Draw()
+	void Draw(LevelPtr level)
 	{
+		for (auto& obj : level->GetObjects())
+		{
+			if (obj->GetEnabled())
+			{
+				RenderDataPtr rend = obj->GetComponent<RenderData>();
+				if (rend && rend->GetEnabled())
+				{
+					currShader = rend->GetShader();
+					currShader->Use();
+					currShader->setVec4("u_color", glm::vec4(1.f));
+					currShader->setMat4("u_model", obj->GetComponent<Transform>()->GetModel());
+					currShader->setMat4("u_view", currCamera->GetView());
+					currShader->setMat4("u_proj", currCamera->GetProj());
+
+					renderer.DrawArrays(rend->GetVao(), 36, *currShader);
+				}
+			}
+		}
+
+		/*
 		renderer.Clear();
 		currShader->Use();
 
@@ -119,6 +149,12 @@ namespace Render
 			currShader->setMat4("u_mvp", mvp);
 			renderer.Draw(*vao, *ibo, *currShader);
 		}
+		*/
+	}
+
+	void SetCamera(Camera* cam)
+	{
+		currCamera = cam;
 	}
 
 	void drawImGui()

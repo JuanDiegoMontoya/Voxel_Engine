@@ -32,11 +32,14 @@
     <Filter Include="Game\ECS">
       <UniqueIdentifier>{a23f756c-5421-4cfd-98ea-2892879faab1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Graphics\Mesh">
-      <UniqueIdentifier>{7f6f16ea-4562-4608-8caa-0f7db3051a4c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Game\ECS\Components">
       <UniqueIdentifier>{ab4660b1-84b7-48a4-9281-daa0ba32ff13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Low Level">
+      <UniqueIdentifier>{f15c4eb7-c236-4099-872d-394e1a0f13ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Meshes">
+      <UniqueIdentifier>{7f6f16ea-4562-4608-8caa-0f7db3051a4c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -65,9 +68,6 @@
     <ClInclude Include="render.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="shader.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="utilities.h">
       <Filter>Utilities</Filter>
     </ClInclude>
@@ -80,25 +80,7 @@
     <ClInclude Include="math_utils.h">
       <Filter>Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="ibo.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="sphere.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="texture.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="vao.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="vbo.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="vbo_layout.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="load_image.h">
       <Filter>Graphics</Filter>
     </ClInclude>
     <ClInclude Include="vendor\imgui\imconfig.h">
@@ -149,22 +131,46 @@
     <ClInclude Include="camera.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="imgui_impl.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="mesh.h">
-      <Filter>Graphics\Mesh</Filter>
+      <Filter>Graphics\Meshes</Filter>
     </ClInclude>
     <ClInclude Include="unlit_mesh.h">
-      <Filter>Graphics\Mesh</Filter>
+      <Filter>Graphics\Meshes</Filter>
     </ClInclude>
     <ClInclude Include="lit_mesh.h">
-      <Filter>Graphics\Mesh</Filter>
+      <Filter>Graphics\Meshes</Filter>
     </ClInclude>
     <ClInclude Include="transform.h">
       <Filter>Game\ECS\Components</Filter>
     </ClInclude>
     <ClInclude Include="mesh_comp.h">
+      <Filter>Game\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ibo.h">
+      <Filter>Graphics\Low Level</Filter>
+    </ClInclude>
+    <ClInclude Include="vbo.h">
+      <Filter>Graphics\Low Level</Filter>
+    </ClInclude>
+    <ClInclude Include="vbo_layout.h">
+      <Filter>Graphics\Low Level</Filter>
+    </ClInclude>
+    <ClInclude Include="vao.h">
+      <Filter>Graphics\Low Level</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>Graphics\Low Level</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.h">
+      <Filter>Graphics\Low Level</Filter>
+    </ClInclude>
+    <ClInclude Include="load_image.h">
+      <Filter>Graphics\Low Level</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_impl.h">
+      <Filter>Graphics\Low Level</Filter>
+    </ClInclude>
+    <ClInclude Include="render_data.h">
       <Filter>Game\ECS\Components</Filter>
     </ClInclude>
   </ItemGroup>
@@ -193,9 +199,6 @@
     <ClCompile Include="render.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="shader.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="misc_utils.cpp">
       <Filter>Utilities</Filter>
     </ClCompile>
@@ -204,21 +207,6 @@
     </ClCompile>
     <ClCompile Include="math_utils.cpp">
       <Filter>Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="ibo.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="texture.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="vao.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="vbo.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="load_image.cpp">
-      <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="vendor\imgui\imgui.cpp">
       <Filter>vendor</Filter>
@@ -250,22 +238,43 @@
     <ClCompile Include="camera.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="imgui_impl.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="mesh.cpp">
-      <Filter>Graphics\Mesh</Filter>
+      <Filter>Graphics\Meshes</Filter>
     </ClCompile>
     <ClCompile Include="unlit_mesh.cpp">
-      <Filter>Graphics\Mesh</Filter>
+      <Filter>Graphics\Meshes</Filter>
     </ClCompile>
     <ClCompile Include="lit_mesh.cpp">
-      <Filter>Graphics\Mesh</Filter>
+      <Filter>Graphics\Meshes</Filter>
     </ClCompile>
     <ClCompile Include="transform.cpp">
       <Filter>Game\ECS\Components</Filter>
     </ClCompile>
     <ClCompile Include="mesh_comp.cpp">
+      <Filter>Game\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ibo.cpp">
+      <Filter>Graphics\Low Level</Filter>
+    </ClCompile>
+    <ClCompile Include="vbo.cpp">
+      <Filter>Graphics\Low Level</Filter>
+    </ClCompile>
+    <ClCompile Include="vao.cpp">
+      <Filter>Graphics\Low Level</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>Graphics\Low Level</Filter>
+    </ClCompile>
+    <ClCompile Include="texture.cpp">
+      <Filter>Graphics\Low Level</Filter>
+    </ClCompile>
+    <ClCompile Include="load_image.cpp">
+      <Filter>Graphics\Low Level</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_impl.cpp">
+      <Filter>Graphics\Low Level</Filter>
+    </ClCompile>
+    <ClCompile Include="render_data.cpp">
       <Filter>Game\ECS\Components</Filter>
     </ClCompile>
   </ItemGroup>

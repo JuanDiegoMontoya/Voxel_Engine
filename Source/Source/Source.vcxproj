@@ -178,6 +178,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
   <ItemGroup>
     <ClCompile Include="lit_mesh.cpp" />
     <ClCompile Include="mesh_comp.cpp" />
+    <ClCompile Include="render_data.cpp" />
     <ClCompile Include="transform.cpp" />
     <ClCompile Include="unlit_mesh.cpp" />
     <ClCompile Include="camera.cpp" />
@@ -227,6 +228,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClInclude Include="component.h" />
     <ClInclude Include="lit_mesh.h" />
     <ClInclude Include="mesh_comp.h" />
+    <ClInclude Include="render_data.h" />
     <ClInclude Include="transform.h" />
     <ClInclude Include="unlit_mesh.h" />
     <ClInclude Include="engine_assert.h" />
