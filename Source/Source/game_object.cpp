@@ -23,6 +23,25 @@ GameObject::~GameObject()
 	}
 }
 
+GameObjectPtr GameObject::Clone() const
+{
+	GameObjectPtr newobj = new GameObject();
+	for (size_t i = 0; i < cCount; i++)
+	{
+		if (_components[i])
+			newobj->AddComponent(_components[i]->Clone());
+	}
+
+	// set all necessary member vars
+	newobj->_life = _life;
+	newobj->_temporary = _temporary;
+	newobj->_toDestroy = _toDestroy;
+	newobj->_enabled = _enabled;
+	newobj->_name = _name;
+
+	return newobj;
+}
+
 void GameObject::AddComponent(Component* component)
 {
 	if (component)

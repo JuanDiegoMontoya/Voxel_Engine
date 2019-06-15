@@ -41,6 +41,9 @@
     <Filter Include="Graphics\Meshes">
       <UniqueIdentifier>{7f6f16ea-4562-4608-8caa-0f7db3051a4c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\Voxel Engine">
+      <UniqueIdentifier>{e7fc491d-c7a6-4f8b-8aa9-1011aa517004}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sys_window.h">
@@ -173,6 +176,15 @@
     <ClInclude Include="render_data.h">
       <Filter>Game\ECS\Components</Filter>
     </ClInclude>
+    <ClInclude Include="pick.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="block.h">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="chunk.h">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -276,6 +288,15 @@
     </ClCompile>
     <ClCompile Include="render_data.cpp">
       <Filter>Game\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="pick.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="block.cpp">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="chunk.cpp">
+      <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

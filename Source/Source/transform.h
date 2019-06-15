@@ -17,7 +17,7 @@ public:
 	inline const glm::mat4& GetRotation() const { return _rotation; };
 	inline const glm::vec3& GetScale() const { return _scale; };
 	const glm::mat4& GetModel() const;
-	Component* Clone() const;
+	Component* Clone() const override;
 
 	static const ComponentType ctype = cTransform;
 

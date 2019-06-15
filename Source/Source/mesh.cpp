@@ -22,7 +22,7 @@ void Mesh::setupMesh()
 
 	VBOlayout layout;
 	layout.Push<GLfloat>(3);
-	layout.Push<GLfloat>(3);
+	//layout.Push<GLfloat>(3);
 	layout.Push<GLfloat>(2);
 	vao->AddBuffer(*vbo, layout);
 	vbo->Unbind();

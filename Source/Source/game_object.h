@@ -18,11 +18,12 @@ public:
 
 	GameObject();
 	~GameObject();
+	GameObjectPtr Clone() const;
 
 	void AddComponent(Component* component);
 	inline void SetName(std::string name) { _name = name; }
 	inline void SetEnabled(bool b) { _enabled = b; }
-	void SetChildren();
+	void SetChildren(); // sets all components' parent to this object
 
 	inline bool GetEnabled() const { return _enabled; }
 	inline Component* GetComponent(unsigned t) { return _components[t]; }
@@ -30,7 +31,7 @@ public:
 	inline const std::string& GetName() { return _name; }
 
 private:
-	float _life; // time in ms before setting this object for deletion
+	float _life; // time (in ms) before setting this object for deletion
 	bool _temporary = false;
 	Component* _components[cCount];
 	bool _toDestroy = false; // destroy this object at the end of the game loop

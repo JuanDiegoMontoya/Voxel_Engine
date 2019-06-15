@@ -39,7 +39,7 @@ namespace Input
 			}
 		}
 
-		cout << "Key pressed: " << (key) << " Action: " << (action) << endl;
+		//cout << "Key pressed: " << (key) << " Action: " << (action) << endl;
 	}
 
 	static bool firstMouse = true;
@@ -71,13 +71,12 @@ namespace Input
 		mouse.scrollOffset.x = (float)xoffset;
 		mouse.scrollOffset.y = (float)yoffset;
 
-		cout << "Mouse scroll: " << "(" << xoffset << ", " << yoffset << ")" << endl;
+		//cout << "Mouse scroll: " << "(" << xoffset << ", " << yoffset << ")" << endl;
 	}
 
 	static void mouse_button_cb(GLFWwindow* window, int button, int action, int mods)
 	{
-		// causes linker error for some reason- investigate later
-		//ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
+		ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 
 		switch (action)
 		{
@@ -95,7 +94,7 @@ namespace Input
 			break;
 		}
 
-		cout << "Mouse clicked: " << (button) << " Action: " << (action) << endl;
+		//cout << "Mouse clicked: " << (button) << " Action: " << (action) << endl;
 	}
 
 	// sets GLFW input callbacks

@@ -5,6 +5,8 @@ typedef class RenderData : public Component
 public:
 	RenderData() { SetType(cRenderData); }
 	~RenderData() {}
+	Component* Clone() const override;
+
 	void UseUntexturedBlockData(); // draw as unreflective, colored block
 
 	inline void SetIsTextured(bool b) { _isTextured = b; }

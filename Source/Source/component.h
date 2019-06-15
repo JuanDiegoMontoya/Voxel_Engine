@@ -34,7 +34,7 @@ public:
 
 	virtual void Update(float dt) {}
 	virtual ~Component() {}
-	virtual Component* Clone() = delete;
+	virtual Component* Clone() const { return nullptr; };
 
 private:
 	GameObjectPtr _parent;	// what object it's attached to

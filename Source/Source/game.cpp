@@ -6,6 +6,8 @@
 #include "input.h"
 #include "imgui_impl.h"
 
+#define IMGUI_ENABLED 0
+
 // initialize
 Game::Game(GLFWwindow* window)
 {
@@ -31,9 +33,13 @@ void Game::Run()
 		_dt = currFrame - oldFrame;
 		oldFrame = currFrame;
 
-		glClearColor(0, 0, 0, 1.f);
+		const float* clr = &level->GetBgColor()[0];
+		glClearColor(clr[0], clr[1], clr[2], 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+#if IMGUI_ENABLED
 		ImGui_Impl::StartFrame();
+#endif
 
 		Render::Draw(level);
 		//Render::drawImGui();
@@ -50,7 +56,9 @@ void Game::Run()
 		if (Input::Keyboard().down[GLFW_KEY_3])
 			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
+#if IMGUI_ENABLED
 		ImGui_Impl::EndFrame();
+#endif
 		glfwSwapBuffers(_window);
 		Input::update();
 	}

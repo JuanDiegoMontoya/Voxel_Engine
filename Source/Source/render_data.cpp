@@ -9,6 +9,13 @@
 
 #include "render_data.h"
 
+Component * RenderData::Clone() const
+{
+	RenderDataPtr rend = new RenderData(*this);
+	rend->SetType(cRenderData);
+	return rend;
+}
+
 // generate a new set of stuff to use
 // this method sucks (should instead be using a list of presets defined in render)
 void RenderData::UseUntexturedBlockData()
@@ -20,11 +27,11 @@ void RenderData::UseUntexturedBlockData()
 	if (_ibo)
 		delete _ibo;
 
-	_vbo = new VBO(Render::cube_vertices, sizeof(Render::cube_vertices));
+	_vbo = new VBO(Render::cube_tex_vertices, sizeof(Render::cube_tex_vertices));
 	_vao = new VAO();
 	VBOlayout layout;
 	layout.Push<GLfloat>(3);
-	layout.Push<GLfloat>(3);
+	//layout.Push<GLfloat>(3);
 	layout.Push<GLfloat>(2);
 	_vao->AddBuffer(*_vbo, layout);
 

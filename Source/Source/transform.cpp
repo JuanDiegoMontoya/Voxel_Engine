@@ -19,7 +19,9 @@ Transform::Transform(const Transform& other)
 
 Component* Transform::Clone() const
 {
-	return (Component*)new Transform(*this);
+	Transform* tran = new Transform(*this);
+	tran->SetType(cTransform);
+	return tran;
 }
 
 void Transform::SetTranslation(const glm::vec3& translation)

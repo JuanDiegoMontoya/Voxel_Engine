@@ -6,17 +6,20 @@
 // might add more to this constructor later
 Camera::Camera(CameraType type) : _type(type) 
 {
-	_proj = glm::perspective(glm::radians(_fov), 1920.f / 1080.f, 0.1f, 500.f);
+	_proj = glm::perspective(glm::radians(_fov), 1920.f / 1080.f, 0.1f, 800.f);
 }
 
 // update movement and generate view matrix
 void Camera::Update(float dt)
 {
-	_view = glm::translate(glm::mat4(1.0f), _worldpos);
+	//_view = glm::translate(glm::mat4(1.0f), _worldpos);
+	_view = glm::lookAt(_worldpos, _worldpos + front, up);
 	float currSpeed = _speed * dt;
 	switch (_type)
 	{
 	case kControlCam:
+		if (Input::Keyboard().down[GLFW_KEY_LEFT_SHIFT])
+			currSpeed *= 5;
 		if (Input::Keyboard().down[GLFW_KEY_W])
 			_worldpos += currSpeed * front;
 		if (Input::Keyboard().down[GLFW_KEY_S])

@@ -2,11 +2,11 @@
 
 #include "vbo.h"
 
-VBO::VBO(const void * data, unsigned int size)
+VBO::VBO(const void * data, unsigned int size, GLenum drawmode)
 {
 		glGenBuffers(1, &_rendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, _rendererID);
-		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, size, data, drawmode);
 	//Create(data, size);
 }
 

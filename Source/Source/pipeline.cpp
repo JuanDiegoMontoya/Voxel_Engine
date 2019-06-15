@@ -12,6 +12,10 @@
 #include "render_data.h"
 #include "pipeline.h"
 #include "transform.h"
+#include "block.h"
+#include <thread>
+
+#define ID2D(x, y, w) width * row + col
 
 // graphics pipeline: the order in which various "things" will be rendered
 
@@ -41,20 +45,26 @@ namespace Render
 	ShaderPtr currShader;
 	Renderer renderer;
 
-	VBO* vbo;
-	IBO* ibo;
-	VAO* vao;
-	Texture* texture;
-	
-	// x, y, z (mins and maxes)
-	glm::mat4 proj;
-	glm::mat4 view;
-	glm::mat4 model;
-	glm::mat4 mvp;
+	constexpr int MAX_BLOCKS = 1000000;
+	constexpr int MAX_THREADS = 6;
+	glm::vec4 colorsVEC[MAX_BLOCKS];
+	glm::mat4 modelsMAT[MAX_BLOCKS];
+	std::vector<unsigned> updatedBlocks;
+	VAO* blockVao;
+	VBO* blockMeshBuffer;
+	VBO* blockModelBuffer;
+	VBO* blockColorBuffer;
+	LevelPtr currLevel = nullptr;
+	std::vector<std::thread> threads;
 
-	glm::vec3 translationA = glm::vec3(200, 200, 0);
-	glm::vec3 translationB = glm::vec3(400, 200, 0);
-	glm::vec3 camerapos = glm::vec3(0, 0, 0);
+	void CalcModels(int low, int high)
+	{
+		for (int i = low; i < high; i++)
+		{
+			modelsMAT[updatedBlocks[i]] = currLevel->GetBlocks()[updatedBlocks[i]]->GetModel();
+			colorsVEC[updatedBlocks[i]] = currLevel->GetBlocks()[updatedBlocks[i]]->clr;
+		}
+	}
 
 	void Init()
 	{
@@ -65,91 +75,110 @@ namespace Render
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		currShader = Shader::shaders["flat"] = new Shader("flat_color.vs", "flat_color.fs");
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glFrontFace(GL_CCW);
 
-		/*
-		float positions[] =
-		{
-			-50.f, -50.f, 0.0f, 0.0f,
-			 50.f, -50.f, 1.0f, 0.0f,
-			 50.f,  50.f, 1.0f, 1.0f,
-			-50.f,  50.f, 0.0f, 1.0f
-		};
+		currShader = Shader::shaders["flat"] = new Shader("flat_color_instanced.vs", "flat_color_instanced.fs");
 
-		GLuint indices[] =
-		{
-			0, 1, 2,
-			2, 3, 0
-		};
-
-
-		// vertex array + buffer
-		vao = new VAO();
-		vbo = new VBO(positions, sizeof(positions));
-		VBOlayout layout;
-		layout.Push<GLfloat>(2);
-		layout.Push<GLfloat>(2);
-		vao->AddBuffer(*vbo, layout);
-		vbo->Unbind();
-
-		// index buffer
-		ibo = new IBO(indices, 6);
-
-		currShader = Shader::shaders["test"];
-		currShader->setInt("u_texture", 0);
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		texture = new Texture("deet.png");
-		texture->Bind();
-
-		vao->Unbind();
-
-		proj = glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f);
-		*/
+		blockVao = new VAO();
+		blockVao->Bind();
+		blockMeshBuffer = new VBO(Render::cube_tex_vertices, sizeof(Render::cube_tex_vertices));
+		//VBOlayout meshLayout;
+		//meshLayout.Push<float>(3);
+		//meshLayout.Push<float>(2);
+		//blockVao->AddBuffer(*blockMeshBuffer, meshLayout);
+		blockColorBuffer = new VBO(nullptr, MAX_BLOCKS * sizeof(glm::vec4), GL_STREAM_DRAW);
+		blockModelBuffer = new VBO(nullptr, MAX_BLOCKS * sizeof(glm::mat4), GL_STREAM_DRAW);
 	}
 
 	// currently being used to draw everything
 	void Draw(LevelPtr level)
 	{
-		for (auto& obj : level->GetObjects())
-		{
-			if (obj->GetEnabled())
-			{
-				RenderDataPtr rend = obj->GetComponent<RenderData>();
-				if (rend && rend->GetEnabled())
-				{
-					currShader = rend->GetShader();
-					currShader->Use();
-					currShader->setVec4("u_color", glm::vec4(1.f));
-					currShader->setMat4("u_model", obj->GetComponent<Transform>()->GetModel());
-					currShader->setMat4("u_view", currCamera->GetView());
-					currShader->setMat4("u_proj", currCamera->GetProj());
-
-					renderer.DrawArrays(rend->GetVao(), 36, *currShader);
-				}
-			}
-		}
-
-		/*
-		renderer.Clear();
 		currShader->Use();
+		currLevel = level;
 
-		view = glm::translate(glm::mat4(1.0f), camerapos);
+		// new draw method (mash every object's data into one vbo/vao and draw that)
+		glm::mat4 view = currCamera->GetView();
+		glm::mat4 proj = currCamera->GetProj();
+		glm::mat4 viewProjection = proj * view;
 
-		{ // obj A
-			model = glm::translate(glm::mat4(1.0f), translationA);
-			model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0, 0, 1.f));
-			mvp = proj * view * model;
-			currShader->setMat4("u_mvp", mvp);
-			renderer.Draw(*vao, *ibo, *currShader);
+		//VBO* vbo = new VBO(Render::cube_tex_vertices, sizeof(Render::cube_tex_vertices));
+		div_t work = div(updatedBlocks.size(), MAX_THREADS);
+
+		// construct an array of model matrices for OpenGL
+		for (int i = 0; i < MAX_THREADS; i++)
+		{
+			int realWork = work.quot + (i < MAX_THREADS - 1 ? 0 : work.rem);
+			threads.push_back(std::thread(CalcModels, i * work.quot, i * work.quot + realWork));
 		}
 
-		{ // obj B
-			model = glm::translate(glm::mat4(1.0f), translationB);
-			mvp = proj * view * model;
-			currShader->setMat4("u_mvp", mvp);
-			renderer.Draw(*vao, *ibo, *currShader);
-		}
-		*/
+		for (auto& thread : threads)
+			thread.join();
+		threads.clear();
+
+		blockModelBuffer->Bind();
+		glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::mat4), NULL, GL_STREAM_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, level->GetBlocks().size() * sizeof(glm::mat4), modelsMAT);
+		
+		blockMeshBuffer->Bind();
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0); // screenpos
+
+		blockModelBuffer->Bind();
+		glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 0));
+		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 4));
+		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 8));
+		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 12));
+
+		blockColorBuffer->Bind();
+		glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::vec4), NULL, GL_STREAM_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, level->GetBlocks().size() * sizeof(glm::vec4), colorsVEC);
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(3);
+		glEnableVertexAttribArray(4);
+		glEnableVertexAttribArray(5);
+		glVertexAttribDivisor(0, 0);
+		glVertexAttribDivisor(1, 1);
+		glVertexAttribDivisor(2, 1);
+		glVertexAttribDivisor(3, 1);
+		glVertexAttribDivisor(4, 1);
+		glVertexAttribDivisor(5, 1);
+
+		currShader->setMat4("u_viewProj", viewProjection);
+
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, level->GetBlocks().size());
+		//// old draw method (draw call for each object = inefficient)
+		//static bool first = true;
+		//for (auto& obj : level->GetObjects())
+		//{
+		//	if (obj->GetEnabled())
+		//	{
+		//		RenderDataPtr rend = obj->GetComponent<RenderData>();
+		//		if (rend && rend->GetEnabled())
+		//		{
+		//			if (currShader != rend->GetShader() || first)
+		//			{
+		//				currShader = rend->GetShader();
+		//				currShader->Use();
+		//				currShader->setMat4("u_proj", currCamera->GetProj());
+		//				first = false;
+		//			}
+
+		//			currShader->setMat4("u_view", currCamera->GetView());
+		//			currShader->setVec4("u_color", rend->GetColor());
+		//			currShader->setMat4("u_model", obj->GetComponent<Transform>()->GetModel());
+
+		//			renderer.DrawArrays(rend->GetVao(), 36, *currShader);
+		//			
+		//		}
+		//	}
+		//}
+		//delete models;
+		updatedBlocks.clear();
 	}
 
 	void SetCamera(Camera* cam)
@@ -161,9 +190,9 @@ namespace Render
 	{
 		ImGui::Begin("Giraffix");
 
-		ImGui::SliderFloat3("TranslationA", &translationA.x, 0, 1000);
-		ImGui::SliderFloat3("TranslationB", &translationB.x, 0, 1000);
-		ImGui::SliderFloat3("Camera Pos", &camerapos.x, -500, 500);
+		//ImGui::SliderFloat3("TranslationA", &translationA.x, 0, 1000);
+		//ImGui::SliderFloat3("TranslationB", &translationB.x, 0, 1000);
+		//ImGui::SliderFloat3("Camera Pos", &camerapos.x, -500, 500);
 
 		ImGui::End();
 	}
