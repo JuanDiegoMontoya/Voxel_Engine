@@ -2,6 +2,7 @@
 
 // debug flag for advanced debugging
 #define DE_BUG 1
+#define ID3D(x, y, z, h, w) (x + h * (y + w * z))
 
 // OpenGL API stuff
 #include <GL/glew.h>

@@ -9,6 +9,8 @@ typedef class Block* BlockPtr;
 typedef class Level
 {
 public:
+	friend class Block;
+
 	Level(std::string name); // will load from file in the future (maybe)
 	~Level();
 
@@ -22,6 +24,7 @@ public:
 	inline GamePtr Game() { return _game; }
 	inline const std::vector<GameObjectPtr>& GetObjects() const { return _objects; }
 	inline const std::vector<BlockPtr>& GetBlocks() const { return _blocks; }
+	inline const BlockPtr* GetBlocksArray() { return _blocksarr; }
 	inline const glm::vec3& GetBgColor() const { return _bgColor; }
 private:
 	std::string _name; // name of file
@@ -35,4 +38,6 @@ private:
 	//std::unordered_map<glm::ivec3, ChunkPtr> _activechunks;
 
 	std::vector<BlockPtr> _blocks; // TEMPORARY SOLUTION
+	BlockPtr _blocksarr[100 * 100 * 100]; // one million positions
+	BlockPtr THE_CHOSEN_ONE;
 }Level, *LevelPtr;

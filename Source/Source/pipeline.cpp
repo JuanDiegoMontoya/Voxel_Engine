@@ -15,7 +15,7 @@
 #include "block.h"
 #include <thread>
 
-#define ID2D(x, y, w) width * row + col
+#define ID2D(x, y, w) (width * row + col)
 
 // graphics pipeline: the order in which various "things" will be rendered
 
@@ -46,9 +46,10 @@ namespace Render
 	Renderer renderer;
 
 	constexpr int MAX_BLOCKS = 1000000;
-	constexpr int MAX_THREADS = 6;
+	constexpr int MAX_THREADS = 1;
 	glm::vec4 colorsVEC[MAX_BLOCKS];
 	glm::mat4 modelsMAT[MAX_BLOCKS];
+	float meshesFLOAT[MAX_BLOCKS * _countof(Render::cube_tex_vertices)];
 	std::vector<unsigned> updatedBlocks;
 	VAO* blockVao;
 	VBO* blockMeshBuffer;
@@ -57,12 +58,24 @@ namespace Render
 	LevelPtr currLevel = nullptr;
 	std::vector<std::thread> threads;
 
+	glm::ivec3 stretch(int index, int w, int h)
+	{
+		int z = index / (w * h);
+		index -= (z * w * h);
+		int y = index / w;
+		int x = index % w;
+		return glm::vec3(x, y, z);
+	}
+
 	void CalcModels(int low, int high)
 	{
 		for (int i = low; i < high; i++)
 		{
-			modelsMAT[updatedBlocks[i]] = currLevel->GetBlocks()[updatedBlocks[i]]->GetModel();
-			colorsVEC[updatedBlocks[i]] = currLevel->GetBlocks()[updatedBlocks[i]]->clr;
+			//glm::ivec3 loc = stretch(updatedBlocks[i], 100, 100);
+			//modelsMAT[updatedBlocks[i]] = currLevel->GetBlocks()[updatedBlocks[i]]->GetModel();
+			//colorsVEC[updatedBlocks[i]] = currLevel->GetBlocks()[updatedBlocks[i]]->clr;
+			modelsMAT[updatedBlocks[i]] = currLevel->GetBlocksArray()[updatedBlocks[i]]->GetModel();
+			colorsVEC[updatedBlocks[i]] = currLevel->GetBlocksArray()[updatedBlocks[i]]->clr;
 		}
 	}
 
@@ -88,8 +101,8 @@ namespace Render
 		//meshLayout.Push<float>(3);
 		//meshLayout.Push<float>(2);
 		//blockVao->AddBuffer(*blockMeshBuffer, meshLayout);
-		blockColorBuffer = new VBO(nullptr, MAX_BLOCKS * sizeof(glm::vec4), GL_STREAM_DRAW);
-		blockModelBuffer = new VBO(nullptr, MAX_BLOCKS * sizeof(glm::mat4), GL_STREAM_DRAW);
+		blockColorBuffer = new VBO(nullptr, MAX_BLOCKS * sizeof(glm::vec4), GL_DYNAMIC_DRAW);
+		blockModelBuffer = new VBO(nullptr, MAX_BLOCKS * sizeof(glm::mat4), GL_DYNAMIC_DRAW);
 	}
 
 	// currently being used to draw everything
@@ -110,17 +123,22 @@ namespace Render
 		for (int i = 0; i < MAX_THREADS; i++)
 		{
 			int realWork = work.quot + (i < MAX_THREADS - 1 ? 0 : work.rem);
-			threads.push_back(std::thread(CalcModels, i * work.quot, i * work.quot + realWork));
+			//threads.push_back(std::thread(CalcModels, i * work.quot, i * work.quot + realWork));
+			CalcModels(i * work.quot, i * work.quot + realWork);
 		}
 
 		for (auto& thread : threads)
 			thread.join();
 		threads.clear();
 
+		// update model matrix buffer
 		blockModelBuffer->Bind();
 		glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::mat4), NULL, GL_STREAM_DRAW);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, level->GetBlocks().size() * sizeof(glm::mat4), modelsMAT);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_BLOCKS * sizeof(glm::mat4), modelsMAT);
+		//for (int i = 0; i < updatedBlocks.size(); i++)
+		//	glBufferSubData(GL_ARRAY_BUFFER, updatedBlocks[i] * sizeof(glm::mat4), sizeof(glm::mat4), &modelsMAT[updatedBlocks[i]]);
 		
+		// block mesh buffer (constant)
 		blockMeshBuffer->Bind();
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0); // screenpos
 
@@ -130,9 +148,12 @@ namespace Render
 		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 8));
 		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 12));
 
+		// update color buffer
 		blockColorBuffer->Bind();
 		glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::vec4), NULL, GL_STREAM_DRAW);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, level->GetBlocks().size() * sizeof(glm::vec4), colorsVEC);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_BLOCKS * sizeof(glm::vec4), colorsVEC);
+		//for (int i = 0; i < updatedBlocks.size(); i++)
+		//	glBufferSubData(GL_ARRAY_BUFFER, updatedBlocks[i] * sizeof(glm::vec4), sizeof(glm::vec4), &colorsVEC[updatedBlocks[i]]);
 		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 		glEnableVertexAttribArray(0);
@@ -151,33 +172,6 @@ namespace Render
 		currShader->setMat4("u_viewProj", viewProjection);
 
 		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, level->GetBlocks().size());
-		//// old draw method (draw call for each object = inefficient)
-		//static bool first = true;
-		//for (auto& obj : level->GetObjects())
-		//{
-		//	if (obj->GetEnabled())
-		//	{
-		//		RenderDataPtr rend = obj->GetComponent<RenderData>();
-		//		if (rend && rend->GetEnabled())
-		//		{
-		//			if (currShader != rend->GetShader() || first)
-		//			{
-		//				currShader = rend->GetShader();
-		//				currShader->Use();
-		//				currShader->setMat4("u_proj", currCamera->GetProj());
-		//				first = false;
-		//			}
-
-		//			currShader->setMat4("u_view", currCamera->GetView());
-		//			currShader->setVec4("u_color", rend->GetColor());
-		//			currShader->setMat4("u_model", obj->GetComponent<Transform>()->GetModel());
-
-		//			renderer.DrawArrays(rend->GetVao(), 36, *currShader);
-		//			
-		//		}
-		//	}
-		//}
-		//delete models;
 		updatedBlocks.clear();
 	}
 
@@ -189,10 +183,6 @@ namespace Render
 	void drawImGui()
 	{
 		ImGui::Begin("Giraffix");
-
-		//ImGui::SliderFloat3("TranslationA", &translationA.x, 0, 1000);
-		//ImGui::SliderFloat3("TranslationB", &translationB.x, 0, 1000);
-		//ImGui::SliderFloat3("Camera Pos", &camerapos.x, -500, 500);
 
 		ImGui::End();
 	}

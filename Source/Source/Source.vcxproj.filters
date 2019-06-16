@@ -185,6 +185,9 @@
     <ClInclude Include="chunk.h">
       <Filter>Game\Voxel Engine</Filter>
     </ClInclude>
+    <ClInclude Include="frustum.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -297,6 +300,9 @@
     </ClCompile>
     <ClCompile Include="chunk.cpp">
       <Filter>Game\Voxel Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="frustum.cpp">
+      <Filter>Graphics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

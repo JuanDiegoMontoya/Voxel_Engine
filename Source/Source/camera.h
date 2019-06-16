@@ -12,8 +12,9 @@ class Camera
 public:
 	Camera(CameraType type);
 	void Update(float dt);
-	const glm::mat4& GetView() { return _view; }
-	const glm::mat4& GetProj() { return _proj; }
+	inline const glm::mat4& GetView() { return _view; }
+	inline const glm::mat4& GetProj() { return _proj; }
+	inline const glm::vec3& GetPos() { return _worldpos; }
 
 	glm::vec3 up = glm::vec3(0, 1.f, 0);
 	glm::vec3 front = glm::vec3(0, 0, -1.f);
