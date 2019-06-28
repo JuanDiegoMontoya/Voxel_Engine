@@ -40,4 +40,5 @@ private:
 	std::vector<BlockPtr> _blocks; // TEMPORARY SOLUTION
 	BlockPtr _blocksarr[100 * 100 * 100]; // one million positions
 	BlockPtr THE_CHOSEN_ONE;
+	int CHOSEN_POS;
 }Level, *LevelPtr;

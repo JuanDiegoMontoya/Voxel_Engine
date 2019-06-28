@@ -45,28 +45,19 @@ namespace Render
 	ShaderPtr currShader;
 	Renderer renderer;
 
-	constexpr int MAX_BLOCKS = 1000000;
+	constexpr int MAX_BLOCKS = 4000000;
 	constexpr int MAX_THREADS = 1;
 	glm::vec4 colorsVEC[MAX_BLOCKS];
 	glm::mat4 modelsMAT[MAX_BLOCKS];
-	float meshesFLOAT[MAX_BLOCKS * _countof(Render::cube_tex_vertices)];
-	std::vector<unsigned> updatedBlocks;
+	float* meshesFLOAT;
+	std::vector<unsigned> updatedBlocks(MAX_BLOCKS);
 	VAO* blockVao;
 	VBO* blockMeshBuffer;
 	VBO* blockModelBuffer;
 	VBO* blockColorBuffer;
 	LevelPtr currLevel = nullptr;
 	std::vector<std::thread> threads;
-
-	glm::ivec3 stretch(int index, int w, int h)
-	{
-		int z = index / (w * h);
-		index -= (z * w * h);
-		int y = index / w;
-		int x = index % w;
-		return glm::vec3(x, y, z);
-	}
-
+	
 	void CalcModels(int low, int high)
 	{
 		for (int i = low; i < high; i++)
@@ -81,6 +72,7 @@ namespace Render
 
 	void Init()
 	{
+		meshesFLOAT = new float[MAX_BLOCKS * _countof(Render::cube_tex_vertices)];
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(GLerrorCB, NULL);
 		glEnable(GL_DEPTH_TEST);
@@ -117,7 +109,7 @@ namespace Render
 		glm::mat4 viewProjection = proj * view;
 
 		//VBO* vbo = new VBO(Render::cube_tex_vertices, sizeof(Render::cube_tex_vertices));
-		div_t work = div(updatedBlocks.size(), MAX_THREADS);
+		div_t work = div(Block::_count , MAX_THREADS);
 
 		// construct an array of model matrices for OpenGL
 		for (int i = 0; i < MAX_THREADS; i++)

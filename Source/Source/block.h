@@ -2,12 +2,21 @@
 #include "level.h"
 #include "pipeline.h"
 
-//typedef class Level* LevelPtr;
-
 // a 1x1x1 cube
 typedef class Block
 {
 public:
+
+	// defines various block properties and behaviors
+	enum BlockType : int
+	{
+		bAir = 0, // default type
+		bStone,
+		bDirt,
+
+		bCount
+	};
+
 	Block(unsigned d) : _id(_count) { _count++; }
 
 	// positions, texcoords
@@ -63,13 +72,15 @@ public:
 		return true; // is culled
 	}
 
+	static unsigned _count;
 private:
-	glm::ivec3 _pos; // position on grid
+	glm::ivec3 _pos; // position on grid (not necessary with a grid)
 	glm::mat4 _model = glm::mat4(1.f); // a translation matrix
 	bool _dirtyModel = true;
 	bool _isCulled = false;
 	const unsigned _id; // global unique identifier
 
-	static unsigned _count;
 	static std::vector<unsigned>* _updated; // const screws it up
 }Block, *BlockPtr;
+
+glm::ivec3 stretch(int index, int w, int h);

@@ -78,8 +78,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)lib\FMOD\studio\inc;$(SolutionDir)lib\rapidjson;$(SolutionDir)lib\FMOD\lowlevel\inc;$(SolutionDir)lib\lua-5.3.5\include;$(SolutionDir)lib\freetype\include;$(SolutionDir)lib\freetype\include\freetype;$(SolutionDir)lib\freetype\include\freetype\config;$(SolutionDir)lib\glew-2.0.0\include;$(SolutionDir)lib\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\SOIL\SOIL2;$(SolutionDir)lib\stb;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib\FMOD\studio\lib;$(SolutionDir)lib\FMOD\lowlevel\lib;$(SolutionDir)\lib\rapidjson;$(SolutionDir)lib\lua-5.3.5\lib;$(SolutionDir)lib\freetype\lib\win32;$(SolutionDir)lib\glew-2.0.0\lib\Release\Win32;$(SolutionDir)lib\glfw-3.2.1.bin.WIN32\lib-vc2015;$(SolutionDir)lib\SOIL;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)lib\rapidjson;$(SolutionDir)lib\lua-5.3.5\include;$(SolutionDir)lib\freetype\include;$(SolutionDir)lib\freetype\include\freetype;$(SolutionDir)lib\freetype\include\freetype\config;$(SolutionDir)lib\glew-2.0.0\include;$(SolutionDir)lib\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\stb;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\lib\rapidjson;$(SolutionDir)lib\lua-5.3.5\lib;$(SolutionDir)lib\freetype\lib\win64;$(SolutionDir)lib\glew-2.0.0\lib\Release\x64;$(SolutionDir)lib\glfw-3.3.bin.WIN64\lib-vc2015;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -137,21 +137,13 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fmodL_vc.lib;fmodstudioL_vc.lib;opengl32.lib;glew32.lib;glfw3dll.lib;soil2-debug.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;lua5.3.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3dll.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;lua5.3x64.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)lib\zlib1.dll" "$(TargetDir)zlib1.dll" /Y
-copy "$(SolutionDir)lib\FMOD\lowlevel\lib\fmod.dll" "$(TargetDir)fmod.dll" /Y
-
-copy "$(SolutionDir)lib\FMOD\studio\lib\fmodstudio.dll" "$(TargetDir)fmodstudio.dll" /Y
-
-copy "$(SolutionDir)lib\FMOD\lowlevel\lib\fmodL.dll" "$(TargetDir)fmodL.dll" /Y
-
-copy "$(SolutionDir)lib\FMOD\studio\lib\fmodstudioL.dll" "$(TargetDir)fmodstudioL.dll" /Y
-
 copy "$(SolutionDir)lib\glew-2.0.0\bin\Release\Win32\glew32.dll" "$(TargetDir)glew32.dll" /Y
 copy "$(SolutionDir)lib\glfw-3.2.1.bin.WIN32\lib-vc2015\glfw3.dll" "$(TargetDir)glfw3.dll" /Y
-copy "$(SolutionDir)lib\lua-5.3.5\lua5.3.dll" "$(TargetDir)lua5.3.dll" /Y
+copy "$(SolutionDir)lib\lua-5.3.5\lua5.3x64.dll" "$(TargetDir)lua5.3x64.dll" /Y
 copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.dll" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
