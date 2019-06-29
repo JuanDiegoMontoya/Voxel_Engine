@@ -8,17 +8,17 @@ public:
 	Game(GLFWwindow *window);
 	~Game();
 
-	inline void SetDimensions(glm::ivec2 dim) { _dimensions = dim; }
-	inline glm::ivec2 GetDimensions() { return _dimensions; }
+	inline void SetDimensions(glm::ivec2 dim) { dimensions_ = dim; }
+	inline glm::ivec2 GetDimensions() { return dimensions_; }
 
-	inline float GetDT() { return _dt; };
-	inline float GetTimescale() { return _timescale; }
-	inline float SetTimescale(float sc) { _timescale = sc; }
+	inline float GetDT() { return dt_; };
+	inline float GetTimescale() { return timescale_; }
+	inline float SetTimescale(float sc) { timescale_ = sc; }
 
-	inline void PauseGame() { _running = false; }
-	inline void UnpauseGame() { _running = true; }
+	inline void PauseGame() { running_ = false; }
+	inline void UnpauseGame() { running_ = true; }
 
-	inline GLFWwindow*& GetWindow() { return _window; };
+	inline GLFWwindow*& GetWindow() { return window_; };
 
 	void Run();
 	void Update(float dt);
@@ -32,14 +32,14 @@ private:
 	Game() = delete;
 
 	// window context
-	GLFWwindow* _window;
-	glm::ivec2 _dimensions;
+	GLFWwindow* window_;
+	glm::ivec2 dimensions_;
 
 	// temporal
-	float _dt = 0.0f;
-	float _timescale = 1;
+	float dt_ = 0.0f;
+	float timescale_ = 1;
 
 	// pause
-	bool _running = true;
+	bool running_ = true;
 
 }Game, *GamePtr;

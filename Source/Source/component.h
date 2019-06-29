@@ -24,21 +24,21 @@ enum ComponentType : unsigned
 typedef class Component
 {
 public:
-	inline void SetType(ComponentType t) { _type = t; }
-	inline void SetParent(GameObjectPtr p) { _parent = p; }
-	inline void SetEnabled(bool e) { _enabled = e; }
+	inline void SetType(ComponentType t) { type_ = t; }
+	inline void SetParent(GameObjectPtr p) { parent_ = p; }
+	inline void SetEnabled(bool e) { enabled_ = e; }
 
-	inline ComponentType GetType() const { return _type; }
-	inline GameObjectPtr GetParent() const { return _parent; }
-	inline bool GetEnabled() const { return _enabled; }
+	inline ComponentType GetType() const { return type_; }
+	inline GameObjectPtr GetParent() const { return parent_; }
+	inline bool GetEnabled() const { return enabled_; }
 
 	virtual void Update(float dt) {}
 	virtual ~Component() {}
 	virtual Component* Clone() const { return nullptr; };
 
 private:
-	GameObjectPtr _parent;	// what object it's attached to
-	ComponentType _type;		// what type of component
-	bool _enabled = true;		// user var
+	GameObjectPtr parent_;	// what object it's attached to
+	ComponentType type_;		// what type of component
+	bool enabled_ = true;		// user var
 
 }Component;

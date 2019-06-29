@@ -11,7 +11,7 @@
 // initialize
 Game::Game(GLFWwindow* window)
 {
-	_window = window;
+	window_ = window;
 }
 
 // cleans up objects generated during the creation of the game
@@ -25,12 +25,12 @@ void Game::Run()
 	LevelPtr level = new Level("testery");
 	level->Init();
 
-	glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	while (!glfwWindowShouldClose(_window))
+	glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	while (!glfwWindowShouldClose(window_))
 	{
 		float currFrame = (float)glfwGetTime();
 		static float oldFrame = 0;
-		_dt = currFrame - oldFrame;
+		dt_ = currFrame - oldFrame;
 		oldFrame = currFrame;
 
 		const float* clr = &level->GetBgColor()[0];
@@ -44,10 +44,10 @@ void Game::Run()
 		Render::Draw(level);
 		//Render::drawImGui();
 
-		level->Update(_dt);
+		level->Update(dt_);
 
 		if (Input::Keyboard().down[GLFW_KEY_ESCAPE])
-			glfwSetWindowShouldClose(_window, GL_TRUE);
+			glfwSetWindowShouldClose(window_, GL_TRUE);
 
 		if (Input::Keyboard().down[GLFW_KEY_1])
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -59,7 +59,7 @@ void Game::Run()
 #if IMGUI_ENABLED
 		ImGui_Impl::EndFrame();
 #endif
-		glfwSwapBuffers(_window);
+		glfwSwapBuffers(window_);
 		Input::update();
 	}
 }

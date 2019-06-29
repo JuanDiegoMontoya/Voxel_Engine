@@ -2,24 +2,24 @@
 #include "texture.h"
 #include <stb_image.h>
 
-const char* Texture::_texture_dir = "./resources/Textures/";
+const char* Texture::texture_dir_ = "./resources/Textures/";
 
 Texture::Texture(const std::string & path)
-	: _rendererID(0), _filepath(path), _localbuffer(nullptr), _width(0), _height(0), _BPP(0)
+	: rendererID_(0), filepath_(path), localbuffer_(nullptr), width_(0), height_(0), BPP_(0)
 {
-	std::string realpath = _texture_dir + path;
+	std::string realpath = texture_dir_ + path;
 
 	// top = 0
 	stbi_set_flip_vertically_on_load(1);
 
 	// 4 = rgba
-	_localbuffer = stbi_load(realpath.c_str(), &_width, &_height, &_BPP, 4);
+	localbuffer_ = stbi_load(realpath.c_str(), &width_, &height_, &BPP_, 4);
 
-	if (!_localbuffer)
+	if (!localbuffer_)
 		std::cout << "Failed to load texture: " << path << std::endl;
 
-	glGenTextures(1, &_rendererID);
-	glBindTexture(GL_TEXTURE_2D, _rendererID);
+	glGenTextures(1, &rendererID_);
+	glBindTexture(GL_TEXTURE_2D, rendererID_);
 	
 	// these four parameters must be specified by us
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -27,22 +27,22 @@ Texture::Texture(const std::string & path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // x
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // y
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, _width, _height, 0, GL_RGBA, GL_UNSIGNED_BYTE, _localbuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, localbuffer_);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	if (_localbuffer)
-		stbi_image_free(_localbuffer);
+	if (localbuffer_)
+		stbi_image_free(localbuffer_);
 }
 
 Texture::~Texture()
 {
-	glDeleteTextures(1, &_rendererID);
+	glDeleteTextures(1, &rendererID_);
 }
 
 void Texture::Bind(GLuint slot) const
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
-	glBindTexture(GL_TEXTURE_2D, _rendererID);
+	glBindTexture(GL_TEXTURE_2D, rendererID_);
 }
 
 void Texture::Unbind() const

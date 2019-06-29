@@ -3,11 +3,11 @@
 
 Transform::Transform(const glm::vec3& pos, const glm::vec3& scale)
 {
-	_translation = pos;
-	_rotation = glm::mat4(1.f);
-	_scale = scale;
-	_model = glm::mat4(1.0f);
-	_dirty = true;
+	translation_ = pos;
+	rotation_ = glm::mat4(1.f);
+	scale_ = scale;
+	model_ = glm::mat4(1.0f);
+	dirty_ = true;
 	SetType(cTransform);
 }
 
@@ -26,34 +26,34 @@ Component* Transform::Clone() const
 
 void Transform::SetTranslation(const glm::vec3& translation)
 {
-	_translation = translation;
-	_dirty = true;
+	translation_ = translation;
+	dirty_ = true;
 }
 
 void Transform::SetRotation(const glm::mat4& rotation)
 {
-	_rotation = rotation;
-	_dirty = true;
+	rotation_ = rotation;
+	dirty_ = true;
 }
 
 void Transform::SetScale(const glm::vec3& scale)
 {
-	_scale = scale;
-	_dirty = true;
+	scale_ = scale;
+	dirty_ = true;
 }
 
 // computes the model matrix if necessary, then returns it
 const glm::mat4& Transform::GetModel() const
 {
-	if (_dirty)
+	if (dirty_)
 	{
-		_model = glm::mat4(1.0f);
-		_model = glm::translate(_model, _translation);
-		_model *= _rotation;
-		_model = glm::scale(_model, _scale);
+		model_ = glm::mat4(1.0f);
+		model_ = glm::translate(model_, translation_);
+		model_ *= rotation_;
+		model_ = glm::scale(model_, scale_);
 
-		_dirty = false;
+		dirty_ = false;
 	}
 
-	return _model;
+	return model_;
 }

@@ -13,15 +13,15 @@
 
 Level::Level(std::string name)
 {
-	_name = name;
+	name_ = name;
 }
 
 Level::~Level()
 {
-	for (auto& obj : _objects)
+	for (auto& obj : objects_)
 		delete obj;
 
-	for (auto& cam : _cameras)
+	for (auto& cam : cameras_)
 		delete cam;
 }
 
@@ -33,11 +33,11 @@ void Level::Init()
 	f = sizeof(Shader);
 	f = sizeof(std::string);
 	
-	//std::fill(_blocksarr[0], _blocksarr[100 * 100 * 100], 0);
-	std::memset(_blocksarr, 0, sizeof(float) * 150 * 150 * 150);
+	//std::fill(blocksarr_[0], blocksarr_[100 * 100 * 100], 0);
+	std::memset(Block::blocksarr_, 0, sizeof(float) * 100 * 100 * 100);
 
-	_cameras.push_back(new Camera(kControlCam));
-	Render::SetCamera(_cameras[0]);
+	cameras_.push_back(new Camera(kControlCam));
+	Render::SetCamera(cameras_[0]);
 
 	GameObjectPtr block = new GameObject();
 	block->AddComponent(new Transform());
@@ -45,15 +45,15 @@ void Level::Init()
 	rend->UseUntexturedBlockData();
 	block->AddComponent(rend);
 	block->SetChildren();
-	_objects.push_back(block);
+	objects_.push_back(block);
 	
 	// build with /openmp to use this
 //#pragma omp parallel for
-	for (int i = 0; i < 150; i++)
+	for (int i = 0; i < 100; i++)
 	{
-		for (int j = 0; j < 150; j++)
+		for (int j = 0; j < 100; j++)
 		{
-			for (int k = 0; k < 150; k++)
+			for (int k = 0; k < 100; k++)
 			{
 				//GameObjectPtr two = block->Clone();
 				//two->GetComponent<Transform>()->SetTranslation(glm::vec3(i, 1, j));
@@ -65,26 +65,23 @@ void Level::Init()
 				//float y = Utils::get_random(-500, 500);
 				//float z = Utils::get_random(-500, 500);
 				//two->GetComponent<RenderData>()->SetColor(glm::vec4(r, g, b, 1.f));
-				//_objects.push_back(two);
+				//objects_.push_back(two);
 
-				BlockPtr block = new Block(_blocks.size());
-				block->SetPos(glm::vec3(i, j, k));
-				block->clr = glm::vec4(r, g, b, 1);
-				_blocks.push_back(block);
-				_blocksarr[ID3D(i, j, k, 150, 150)] = block;
+				
+				Block::blocksarr_[ID3D(i, j, k, 100, 100)] = Block(glm::vec3(i, j, k), glm::vec4(r, g, b, 1));
 			}
 		}
 	}
-	//std::cout << _blocks.size();
+	//std::cout << blocks_.size();
 
 	//CHOSEN_POS = ID3D(0, 0, 0, 100, 100);
-	//THE_CHOSEN_ONE = _blocksarr[CHOSEN_POS];
+	//THE_CHOSEN_ONE = blocksarr_[CHOSEN_POS];
 }
 
 // update every object in the level
 void Level::Update(float dt)
 {
-	for (auto& obj : _objects)
+	for (auto& obj : objects_)
 	{
 		if (obj && obj->GetEnabled())
 		{
@@ -97,16 +94,16 @@ void Level::Update(float dt)
 		}
 	}
 
-	//for (auto& block : _blocks)
+	//for (auto& block : blocks_)
 	//{
 	//	glm::ivec3 pos = block->GetPos();
 	//	if (pos.y > -500)
 	//		block->SetPos(glm::ivec3(pos.x, pos.y - 100, pos.z));
 	//}
-	//THE_CHOSEN_ONE->SetPos(glm::ivec3(_cameras[0]->GetPos() - 1.f));
+	//THE_CHOSEN_ONE->SetPos(glm::ivec3(cameras_[0]->GetPos() - 1.f));
 	//if ()
 
-	for (auto& cam : _cameras)
+	for (auto& cam : cameras_)
 	{
 		cam->Update(dt);
 	}

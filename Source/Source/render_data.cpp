@@ -20,20 +20,20 @@ Component * RenderData::Clone() const
 // this method sucks (should instead be using a list of presets defined in render)
 void RenderData::UseUntexturedBlockData()
 {
-	if (_vao)
-		delete _vao;
-	if (_vbo)
-		delete _vbo;
-	if (_ibo)
-		delete _ibo;
+	if (vao_)
+		delete vao_;
+	if (vbo_)
+		delete vbo_;
+	if (ibo_)
+		delete ibo_;
 
-	_vbo = new VBO(Render::cube_tex_vertices, sizeof(Render::cube_tex_vertices));
-	_vao = new VAO();
+	vbo_ = new VBO(Render::cube_tex_vertices, sizeof(Render::cube_tex_vertices));
+	vao_ = new VAO();
 	VBOlayout layout;
 	layout.Push<GLfloat>(3);
 	//layout.Push<GLfloat>(3);
 	layout.Push<GLfloat>(2);
-	_vao->AddBuffer(*_vbo, layout);
+	vao_->AddBuffer(*vbo_, layout);
 
-	_shader = Shader::shaders["flat"];
+	shader_ = Shader::shaders["flat"];
 }

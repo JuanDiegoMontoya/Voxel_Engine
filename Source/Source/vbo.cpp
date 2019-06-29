@@ -4,27 +4,27 @@
 
 VBO::VBO(const void * data, unsigned int size, GLenum drawmode)
 {
-		glGenBuffers(1, &_rendererID);
-		glBindBuffer(GL_ARRAY_BUFFER, _rendererID);
+		glGenBuffers(1, &rendererID_);
+		glBindBuffer(GL_ARRAY_BUFFER, rendererID_);
 		glBufferData(GL_ARRAY_BUFFER, size, data, drawmode);
 	//Create(data, size);
 }
 
 VBO::~VBO()
 {
-	glDeleteBuffers(1, &_rendererID);
+	glDeleteBuffers(1, &rendererID_);
 }
 
 //void VBO::Create(const void* data, unsigned int size)
 //{
-//	glGenBuffers(1, &_rendererID);
-//	glBindBuffer(GL_ARRAY_BUFFER, _rendererID);
+//	glGenBuffers(1, &rendererID_);
+//	glBindBuffer(GL_ARRAY_BUFFER, rendererID_);
 //	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
 //}
 
 void VBO::Bind() const
 {
-	glBindBuffer(GL_ARRAY_BUFFER, _rendererID);
+	glBindBuffer(GL_ARRAY_BUFFER, rendererID_);
 }
 
 void VBO::Unbind() const

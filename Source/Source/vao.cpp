@@ -5,13 +5,13 @@
 
 VAO::VAO()
 {
-	glGenVertexArrays(1, &_rendererID);
-	glBindVertexArray(_rendererID);
+	glGenVertexArrays(1, &rendererID_);
+	glBindVertexArray(rendererID_);
 }
 
 VAO::~VAO()
 {
-	glDeleteVertexArrays(1, &_rendererID);
+	glDeleteVertexArrays(1, &rendererID_);
 }
 
 void VAO::AddBuffer(const VBO & vb, const VBOlayout & layout)
@@ -32,7 +32,7 @@ void VAO::AddBuffer(const VBO & vb, const VBOlayout & layout)
 
 void VAO::Bind() const
 {
-	glBindVertexArray(_rendererID);
+	glBindVertexArray(rendererID_);
 }
 
 void VAO::Unbind() const

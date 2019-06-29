@@ -32,11 +32,11 @@ namespace root
 
 		inline glm::vec4 GetPlane(Plane plane) const
 		{
-			return glm::vec4(_data[plane][A], _data[plane][B], _data[plane][C], _data[plane][D]);
+			return glm::vec4(data_[plane][A], data_[plane][B], data_[plane][C], data_[plane][D]);
 		}
 
 	private:
-		float _data[6][4];
+		float data_[6][4];
 	};
 
 	/*----------------------------------------------------------------------------*/

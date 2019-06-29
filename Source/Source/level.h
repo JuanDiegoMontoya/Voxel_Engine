@@ -19,26 +19,20 @@ public:
 	void CheckCollision();
 	void CheckInteraction();
 
-	inline void SetBgColor(glm::vec3 c) { _bgColor = c; }
+	inline void SetBgColor(glm::vec3 c) { bgColor_ = c; }
 
-	inline GamePtr Game() { return _game; }
-	inline const std::vector<GameObjectPtr>& GetObjects() const { return _objects; }
-	inline const std::vector<BlockPtr>& GetBlocks() const { return _blocks; }
-	inline const BlockPtr* GetBlocksArray() { return _blocksarr; }
-	inline const glm::vec3& GetBgColor() const { return _bgColor; }
+	inline GamePtr Game() { return game_; }
+	inline const std::vector<GameObjectPtr>& GetObjects() const { return objects_; }
+	inline const glm::vec3& GetBgColor() const { return bgColor_; }
 private:
-	std::string _name; // name of file
-	GamePtr _game;
-	std::vector<Camera*> _cameras;			 // all cameras in the scene
-	std::vector<GameObjectPtr> _objects; // all game objects in the scene
-	glm::vec3 _bgColor = glm::vec3(53.f / 255.f, 81.f / 255.f, 98.f / 255.f);
+	std::string name_; // name of file
+	GamePtr game_;
+	std::vector<Camera*> cameras_;			 // all cameras in the scene
+	std::vector<GameObjectPtr> objects_; // all game objects in the scene
+	glm::vec3 bgColor_ = glm::vec3(53.f / 255.f, 81.f / 255.f, 98.f / 255.f);
 	
 	//https://www.reddit.com/r/VoxelGameDev/comments/2t1kkh/best_method_of_chunk_management_in_3d/
 	//https://www.reddit.com/r/VoxelGameDev/comments/b6bgu8/voxel_chunk_management_c_opengl/
-	//std::unordered_map<glm::ivec3, ChunkPtr> _activechunks;
+	//std::unordered_map<glm::ivec3, ChunkPtr> activechunks_;
 
-	std::vector<BlockPtr> _blocks; // TEMPORARY SOLUTION
-	BlockPtr _blocksarr[100 * 100 * 100]; // one million positions
-	BlockPtr THE_CHOSEN_ONE;
-	int CHOSEN_POS;
 }Level, *LevelPtr;

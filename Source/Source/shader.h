@@ -23,11 +23,11 @@ public:
 	Shader(const char* vertexPath, const char* fragmentPath);
 
 	// default constructor (currently no uses)
-	inline Shader() : shaderID(_shader_count)
+	inline Shader() : shaderID(shader_count_)
 	{
 		//type = sDefault;
 		programID = NULL;
-		_shader_count++;
+		shader_count_++;
 	}
 
 	inline ~Shader()
@@ -122,15 +122,15 @@ public:
 	// (static) list of all shader programs
 	static std::unordered_map<std::string, Shader*> shaders;
 private:
-	enum _shadertype : GLint
+	enum shadertype : GLint
 	{
 		TY_VERTEX = GL_VERTEX_SHADER,
 		TY_FRAGMENT = GL_FRAGMENT_SHADER,
 		TY_COMPUTE = GL_COMPUTE_SHADER
 	};
 
-	static int _shader_count;
-	static const char* _shader_dir;
+	static int shader_count_;
+	static const char* shader_dir_;
 	std::string loadShader(const char* path);
-	GLint compileShader(_shadertype type, const GLchar* src);
+	GLint compileShader(shadertype type, const GLchar* src);
 }Shader, *ShaderPtr;

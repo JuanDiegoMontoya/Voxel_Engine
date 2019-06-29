@@ -25,10 +25,10 @@ struct VBOElement
 class VBOlayout
 {
 public:
-	VBOlayout() : _stride(0) {}
+	VBOlayout() : stride_(0) {}
 
-	inline GLuint GetStride() const { return _stride; }
-	inline const std::vector<VBOElement>& GetElements() const { return _elements; }
+	inline GLuint GetStride() const { return stride_; }
+	inline const std::vector<VBOElement>& GetElements() const { return elements_; }
 
 	template<typename T>
 	void Push(unsigned int count)
@@ -40,25 +40,25 @@ public:
 	template<>
 	void Push<float>(unsigned int count)
 	{
-		_elements.push_back({ GL_FLOAT, count, GL_FALSE });
-		_stride += count * VBOElement::TypeSize(GL_FLOAT);
+		elements_.push_back({ GL_FLOAT, count, GL_FALSE });
+		stride_ += count * VBOElement::TypeSize(GL_FLOAT);
 	}
 
 	template<>
 	void Push<GLuint>(unsigned int count)
 	{
-		_elements.push_back({ GL_UNSIGNED_INT, count, GL_FALSE });
-		_stride += count * VBOElement::TypeSize(GL_UNSIGNED_INT);
+		elements_.push_back({ GL_UNSIGNED_INT, count, GL_FALSE });
+		stride_ += count * VBOElement::TypeSize(GL_UNSIGNED_INT);
 	}
 
 	template<>
 	void Push<GLubyte>(unsigned int count)
 	{
-		_elements.push_back({ GL_UNSIGNED_BYTE, count, GL_TRUE });
-		_stride += count * VBOElement::TypeSize(GL_UNSIGNED_BYTE);
+		elements_.push_back({ GL_UNSIGNED_BYTE, count, GL_TRUE });
+		stride_ += count * VBOElement::TypeSize(GL_UNSIGNED_BYTE);
 	}
 
 private:
-	std::vector<VBOElement> _elements;
-	GLuint _stride;
+	std::vector<VBOElement> elements_;
+	GLuint stride_;
 };

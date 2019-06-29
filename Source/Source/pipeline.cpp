@@ -45,10 +45,12 @@ namespace Render
 	ShaderPtr currShader;
 	Renderer renderer;
 
-	constexpr int MAX_BLOCKS = 4000000;
+	constexpr int MAX_BLOCKS = 1000000;
 	constexpr int MAX_THREADS = 1;
+	constexpr int BUF_OVERWRITE_THRESHOLD = 10000;
 	glm::vec4 colorsVEC[MAX_BLOCKS];
 	glm::mat4 modelsMAT[MAX_BLOCKS];
+	//bool cullList[MAX_BLOCKS];
 	float* meshesFLOAT;
 	std::vector<unsigned> updatedBlocks(MAX_BLOCKS);
 	VAO* blockVao;
@@ -62,11 +64,11 @@ namespace Render
 	{
 		for (int i = low; i < high; i++)
 		{
-			//glm::ivec3 loc = stretch(updatedBlocks[i], 100, 100);
-			//modelsMAT[updatedBlocks[i]] = currLevel->GetBlocks()[updatedBlocks[i]]->GetModel();
-			//colorsVEC[updatedBlocks[i]] = currLevel->GetBlocks()[updatedBlocks[i]]->clr;
-			modelsMAT[updatedBlocks[i]] = currLevel->GetBlocksArray()[updatedBlocks[i]]->GetModel();
-			colorsVEC[updatedBlocks[i]] = currLevel->GetBlocksArray()[updatedBlocks[i]]->clr;
+			modelsMAT[updatedBlocks[i]] = Block::blocksarr_[updatedBlocks[i]].GetModel();
+			if (!Block::blocksarr_[updatedBlocks[i]].IsCulled())
+				colorsVEC[updatedBlocks[i]] = Block::blocksarr_[updatedBlocks[i]].clr;
+			else // block is invisible
+				colorsVEC[updatedBlocks[i]] = glm::vec4(0);
 		}
 	}
 
@@ -89,10 +91,7 @@ namespace Render
 		blockVao = new VAO();
 		blockVao->Bind();
 		blockMeshBuffer = new VBO(Render::cube_tex_vertices, sizeof(Render::cube_tex_vertices));
-		//VBOlayout meshLayout;
-		//meshLayout.Push<float>(3);
-		//meshLayout.Push<float>(2);
-		//blockVao->AddBuffer(*blockMeshBuffer, meshLayout);
+
 		blockColorBuffer = new VBO(nullptr, MAX_BLOCKS * sizeof(glm::vec4), GL_DYNAMIC_DRAW);
 		blockModelBuffer = new VBO(nullptr, MAX_BLOCKS * sizeof(glm::mat4), GL_DYNAMIC_DRAW);
 	}
@@ -109,7 +108,7 @@ namespace Render
 		glm::mat4 viewProjection = proj * view;
 
 		//VBO* vbo = new VBO(Render::cube_tex_vertices, sizeof(Render::cube_tex_vertices));
-		div_t work = div(Block::_count , MAX_THREADS);
+		div_t work = div(updatedBlocks.size() , MAX_THREADS);
 
 		// construct an array of model matrices for OpenGL
 		for (int i = 0; i < MAX_THREADS; i++)
@@ -125,10 +124,16 @@ namespace Render
 
 		// update model matrix buffer
 		blockModelBuffer->Bind();
-		glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::mat4), NULL, GL_STREAM_DRAW);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_BLOCKS * sizeof(glm::mat4), modelsMAT);
-		//for (int i = 0; i < updatedBlocks.size(); i++)
-		//	glBufferSubData(GL_ARRAY_BUFFER, updatedBlocks[i] * sizeof(glm::mat4), sizeof(glm::mat4), &modelsMAT[updatedBlocks[i]]);
+		if (updatedBlocks.size() < BUF_OVERWRITE_THRESHOLD)
+		{
+			for (int i = 0; i < updatedBlocks.size(); i++)
+				glBufferSubData(GL_ARRAY_BUFFER, updatedBlocks[i] * sizeof(glm::mat4), sizeof(glm::mat4), &modelsMAT[updatedBlocks[i]]);
+		}
+		else
+		{
+			glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::mat4), NULL, GL_STREAM_DRAW);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_BLOCKS * sizeof(glm::mat4), modelsMAT);
+		}
 		
 		// block mesh buffer (constant)
 		blockMeshBuffer->Bind();
@@ -142,10 +147,17 @@ namespace Render
 
 		// update color buffer
 		blockColorBuffer->Bind();
-		glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::vec4), NULL, GL_STREAM_DRAW);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_BLOCKS * sizeof(glm::vec4), colorsVEC);
-		//for (int i = 0; i < updatedBlocks.size(); i++)
-		//	glBufferSubData(GL_ARRAY_BUFFER, updatedBlocks[i] * sizeof(glm::vec4), sizeof(glm::vec4), &colorsVEC[updatedBlocks[i]]);
+
+		if (updatedBlocks.size() < BUF_OVERWRITE_THRESHOLD)
+		{
+			for (int i = 0; i < updatedBlocks.size(); i++)
+				glBufferSubData(GL_ARRAY_BUFFER, updatedBlocks[i] * sizeof(glm::vec4), sizeof(glm::vec4), &colorsVEC[updatedBlocks[i]]);
+		}
+		else
+		{
+			glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::vec4), NULL, GL_STREAM_DRAW);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_BLOCKS * sizeof(glm::vec4), colorsVEC);
+		}
 		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 		glEnableVertexAttribArray(0);
@@ -163,7 +175,7 @@ namespace Render
 
 		currShader->setMat4("u_viewProj", viewProjection);
 
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, level->GetBlocks().size());
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, Block::count_);
 		updatedBlocks.clear();
 	}
 

@@ -26,64 +26,64 @@ void root::Frustum::Transform(const glm::mat4& proj, const glm::mat4& view)
 	clip[3][2] = view[3][0] * proj[0][2] + view[3][1] * proj[1][2] + view[3][2] * proj[2][2] + view[3][3] * proj[3][2];
 	clip[3][3] = view[3][0] * proj[0][3] + view[3][1] * proj[1][3] + view[3][2] * proj[2][3] + view[3][3] * proj[3][3];
 
-	_data[Right][A] = clip[0][3] - clip[0][0];
-	_data[Right][B] = clip[1][3] - clip[1][0];
-	_data[Right][C] = clip[2][3] - clip[2][0];
-	_data[Right][D] = clip[3][3] - clip[3][0];
+	data_[Right][A] = clip[0][3] - clip[0][0];
+	data_[Right][B] = clip[1][3] - clip[1][0];
+	data_[Right][C] = clip[2][3] - clip[2][0];
+	data_[Right][D] = clip[3][3] - clip[3][0];
 	Normalize(Right);
 
-	_data[Left][A] = clip[0][3] + clip[0][0];
-	_data[Left][B] = clip[1][3] + clip[1][0];
-	_data[Left][C] = clip[2][3] + clip[2][0];
-	_data[Left][D] = clip[3][3] + clip[3][0];
+	data_[Left][A] = clip[0][3] + clip[0][0];
+	data_[Left][B] = clip[1][3] + clip[1][0];
+	data_[Left][C] = clip[2][3] + clip[2][0];
+	data_[Left][D] = clip[3][3] + clip[3][0];
 	Normalize(Left);
 
-	_data[Bottom][A] = clip[0][3] + clip[0][1];
-	_data[Bottom][B] = clip[1][3] + clip[1][1];
-	_data[Bottom][C] = clip[2][3] + clip[2][1];
-	_data[Bottom][D] = clip[3][3] + clip[3][1];
+	data_[Bottom][A] = clip[0][3] + clip[0][1];
+	data_[Bottom][B] = clip[1][3] + clip[1][1];
+	data_[Bottom][C] = clip[2][3] + clip[2][1];
+	data_[Bottom][D] = clip[3][3] + clip[3][1];
 	Normalize(Bottom);
 
-	_data[Top][A] = clip[0][3] - clip[0][1];
-	_data[Top][B] = clip[1][3] - clip[1][1];
-	_data[Top][C] = clip[2][3] - clip[2][1];
-	_data[Top][D] = clip[3][3] - clip[3][1];
+	data_[Top][A] = clip[0][3] - clip[0][1];
+	data_[Top][B] = clip[1][3] - clip[1][1];
+	data_[Top][C] = clip[2][3] - clip[2][1];
+	data_[Top][D] = clip[3][3] - clip[3][1];
 	Normalize(Top);
 
-	_data[Front][A] = clip[0][3] - clip[0][2];
-	_data[Front][B] = clip[1][3] - clip[1][2];
-	_data[Front][C] = clip[2][3] - clip[2][2];
-	_data[Front][D] = clip[3][3] - clip[3][2];
+	data_[Front][A] = clip[0][3] - clip[0][2];
+	data_[Front][B] = clip[1][3] - clip[1][2];
+	data_[Front][C] = clip[2][3] - clip[2][2];
+	data_[Front][D] = clip[3][3] - clip[3][2];
 	Normalize(Front);
 
-	_data[Back][A] = clip[0][3] + clip[0][2];
-	_data[Back][B] = clip[1][3] + clip[1][2];
-	_data[Back][C] = clip[2][3] + clip[2][2];
-	_data[Back][D] = clip[3][3] + clip[3][2];
+	data_[Back][A] = clip[0][3] + clip[0][2];
+	data_[Back][B] = clip[1][3] + clip[1][2];
+	data_[Back][C] = clip[2][3] + clip[2][2];
+	data_[Back][D] = clip[3][3] + clip[3][2];
 	Normalize(Back);
 }
 
 void root::Frustum::Normalize(Plane plane)
 {
 	float magnitude = glm::sqrt(
-		_data[plane][A] * _data[plane][A] +
-		_data[plane][B] * _data[plane][B] +
-		_data[plane][C] * _data[plane][C]
+		data_[plane][A] * data_[plane][A] +
+		data_[plane][B] * data_[plane][B] +
+		data_[plane][C] * data_[plane][C]
 	);
 
-	_data[plane][A] /= magnitude;
-	_data[plane][B] /= magnitude;
-	_data[plane][C] /= magnitude;
-	_data[plane][D] /= magnitude;
+	data_[plane][A] /= magnitude;
+	data_[plane][B] /= magnitude;
+	data_[plane][C] /= magnitude;
+	data_[plane][D] /= magnitude;
 }
 
 root::Frustum::Visibility root::Frustum::IsInside(const glm::vec3& point) const
 {
 	for (unsigned int i = 0; i < 6; i++) {
-		if (_data[i][A] * point.x +
-			_data[i][B] * point.y +
-			_data[i][C] * point.z +
-			_data[i][D] <= 0) {
+		if (data_[i][A] * point.x +
+			data_[i][B] * point.y +
+			data_[i][C] * point.z +
+			data_[i][D] <= 0) {
 			return Invisible;
 		}
 	}

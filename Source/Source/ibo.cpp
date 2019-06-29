@@ -2,21 +2,21 @@
 
 #include "ibo.h"
 
-IBO::IBO(const unsigned int* data, unsigned int count) : _count(count)
+IBO::IBO(const unsigned int* data, unsigned int count) : count_(count)
 {
-	glGenBuffers(1, &_rendererID);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _rendererID);
+	glGenBuffers(1, &rendererID_);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rendererID_);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), data, GL_STATIC_DRAW);
 }
 
 IBO::~IBO()
 {
-	glDeleteBuffers(1, &_rendererID);
+	glDeleteBuffers(1, &rendererID_);
 }
 
 void IBO::Bind() const
 {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _rendererID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rendererID_);
 }
 
 void IBO::Unbind() const

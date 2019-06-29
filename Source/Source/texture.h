@@ -11,18 +11,18 @@ public:
 	void Bind(GLuint slot = 0) const;
 	void Unbind() const;
 
-	inline GLint GetWidth() const { return _width; }
-	inline GLint GetHeight() const { return _height; }
-	inline GLint GetID() const { return _rendererID; }
+	inline GLint GetWidth() const { return width_; }
+	inline GLint GetHeight() const { return height_; }
+	inline GLint GetID() const { return rendererID_; }
 
-	inline void SetType(std::string ty) { _type = ty; }
-	inline const std::string& GetType() const { return _type; }
+	inline void SetType(std::string ty) { type_ = ty; }
+	inline const std::string& GetType() const { return type_; }
 
 private:
-	GLuint _rendererID;
-	std::string _filepath;
-	std::string _type;
-	GLubyte* _localbuffer;
-	GLint _width, _height, _BPP;
-	static const char* _texture_dir;
+	GLuint rendererID_;
+	std::string filepath_;
+	std::string type_;
+	GLubyte* localbuffer_;
+	GLint width_, height_, BPP_;
+	static const char* texture_dir_;
 };

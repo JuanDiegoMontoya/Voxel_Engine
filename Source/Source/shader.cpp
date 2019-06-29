@@ -4,12 +4,12 @@
 #include <fstream>
 
 // static class variable definitions
-int Shader::_shader_count = 0;
-const char* Shader::_shader_dir = "./resources/Shaders/";
+int Shader::shader_count_ = 0;
+const char* Shader::shader_dir_ = "./resources/Shaders/";
 std::unordered_map<std::string, Shader*> Shader::shaders = std::unordered_map<std::string, Shader*>();
 
 // the provided path does not need to include the shader directory
-Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_shader_count++)
+Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(shader_count_++)
 {
 	const std::string vertSrc = loadShader(vertexPath).c_str();
 	const std::string fragSrc = loadShader(fragmentPath).c_str();
@@ -75,7 +75,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(_sha
 // loads a shader source into a string
 std::string Shader::loadShader(const char* path)
 {
-	std::string shaderpath = std::string(_shader_dir) + path;
+	std::string shaderpath = std::string(shader_dir_) + path;
 	std::string content;
 	try
 	{
@@ -94,7 +94,7 @@ std::string Shader::loadShader(const char* path)
 }
 
 // compiles a shader source and returns its ID
-GLint Shader::compileShader(_shadertype type, const GLchar* src)
+GLint Shader::compileShader(shadertype type, const GLchar* src)
 {
 	GLuint shader;
 	GLchar infoLog[512];

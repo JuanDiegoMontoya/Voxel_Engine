@@ -11,9 +11,9 @@ public:
 	void Bind() const;
 	void Unbind() const;
 
-	inline GLuint GetCount() const { return _count; }
+	inline GLuint GetCount() const { return count_; }
 
 private:
-	GLuint _rendererID;
-	GLuint _count;
+	GLuint rendererID_;
+	GLuint count_;
 };

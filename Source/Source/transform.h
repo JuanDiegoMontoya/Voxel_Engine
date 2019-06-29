@@ -13,20 +13,20 @@ public:
 	void SetRotation(const glm::mat4& rotation);
 	void SetScale(const glm::vec3& scale);
 
-	inline const glm::vec3& GetTranslation() const { return _translation; };
-	inline const glm::mat4& GetRotation() const { return _rotation; };
-	inline const glm::vec3& GetScale() const { return _scale; };
+	inline const glm::vec3& GetTranslation() const { return translation_; };
+	inline const glm::mat4& GetRotation() const { return rotation_; };
+	inline const glm::vec3& GetScale() const { return scale_; };
 	const glm::mat4& GetModel() const;
 	Component* Clone() const override;
 
 	static const ComponentType ctype = cTransform;
 
 private:
-	glm::vec3	_translation;
-	glm::mat4 _rotation;
-	glm::vec3	_scale;
+	glm::vec3	translation_;
+	glm::mat4 rotation_;
+	glm::vec3	scale_;
 
-	mutable glm::mat4	_model;
-	mutable bool			_dirty;
+	mutable glm::mat4	model_;
+	mutable bool			dirty_;
 
 }Transform, TransformPtr;

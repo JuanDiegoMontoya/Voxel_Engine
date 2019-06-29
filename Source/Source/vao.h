@@ -15,5 +15,5 @@ public:
 	void Unbind() const;
 
 private:
-	GLuint _rendererID;
+	GLuint rendererID_;
 };

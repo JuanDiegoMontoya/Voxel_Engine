@@ -7,13 +7,13 @@ public:
 	template<typename T>
 	inline T* GetComponent(ComponentType typeId)
 	{
-		return static_cast<T*>(_components[typeId]);
+		return static_cast<T*>(components_[typeId]);
 	}
 
 	template<typename T>
 	inline T* GetComponent()
 	{
-		return static_cast<T*>(_components[T::ctype]);
+		return static_cast<T*>(components_[T::ctype]);
 	}
 
 	GameObject();
@@ -21,21 +21,21 @@ public:
 	GameObjectPtr Clone() const;
 
 	void AddComponent(Component* component);
-	inline void SetName(std::string name) { _name = name; }
-	inline void SetEnabled(bool b) { _enabled = b; }
+	inline void SetName(std::string name) { name_ = name; }
+	inline void SetEnabled(bool b) { enabled_ = b; }
 	void SetChildren(); // sets all components' parent to this object
 
-	inline bool GetEnabled() const { return _enabled; }
-	inline Component* GetComponent(unsigned t) { return _components[t]; }
-	inline Component* const * GetComponentList() { return _components; }
-	inline const std::string& GetName() { return _name; }
+	inline bool GetEnabled() const { return enabled_; }
+	inline Component* GetComponent(unsigned t) { return components_[t]; }
+	inline Component* const * GetComponentList() { return components_; }
+	inline const std::string& GetName() { return name_; }
 
 private:
-	float _life; // time (in ms) before setting this object for deletion
-	bool _temporary = false;
-	Component* _components[cCount];
-	bool _toDestroy = false; // destroy this object at the end of the game loop
-	bool _enabled; // user var
-	std::string _name;
+	float life_; // time (in ms) before setting this object for deletion
+	bool temporary_ = false;
+	Component* components_[cCount];
+	bool toDestroy_ = false; // destroy this object at the end of the game loop
+	bool enabled_; // user var
+	std::string name_;
 
 }GameObject, *GameObjectPtr;
