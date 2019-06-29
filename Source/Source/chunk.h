@@ -3,7 +3,9 @@
 // cubic dimensions of a single chunk
 //#define CHUNK_SIZE 16
 
-typedef class Block* BlockPtr;
+typedef class Block;
+typedef class VBO;
+typedef class VAO;
 
 typedef struct Chunk
 {
@@ -14,11 +16,14 @@ public:
 	void Update(float dt);
 	void Render();
 
-	static constexpr int CHUNK_SIZE = 16;
+	static constexpr int CHUNK_SIZE = 32;
 
-	BlockPtr blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+	// frequently accessed data
+	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 
 private:
+	void GenerateMesh();
+
 	VAO* _vao;
 	VBO* _vbo;
 }Chunk, *ChunkPtr;

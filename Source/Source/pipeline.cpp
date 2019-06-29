@@ -45,34 +45,11 @@ namespace Render
 	ShaderPtr currShader;
 	Renderer renderer;
 
-	constexpr int MAX_BLOCKS = 4000000;
 	constexpr int MAX_THREADS = 1;
-	glm::vec4 colorsVEC[MAX_BLOCKS];
-	glm::mat4 modelsMAT[MAX_BLOCKS];
-	float* meshesFLOAT;
-	std::vector<unsigned> updatedBlocks(MAX_BLOCKS);
-	VAO* blockVao;
-	VBO* blockMeshBuffer;
-	VBO* blockModelBuffer;
-	VBO* blockColorBuffer;
 	LevelPtr currLevel = nullptr;
-	std::vector<std::thread> threads;
-	
-	void CalcModels(int low, int high)
-	{
-		for (int i = low; i < high; i++)
-		{
-			//glm::ivec3 loc = stretch(updatedBlocks[i], 100, 100);
-			//modelsMAT[updatedBlocks[i]] = currLevel->GetBlocks()[updatedBlocks[i]]->GetModel();
-			//colorsVEC[updatedBlocks[i]] = currLevel->GetBlocks()[updatedBlocks[i]]->clr;
-			modelsMAT[updatedBlocks[i]] = currLevel->GetBlocksArray()[updatedBlocks[i]]->GetModel();
-			colorsVEC[updatedBlocks[i]] = currLevel->GetBlocksArray()[updatedBlocks[i]]->clr;
-		}
-	}
 
 	void Init()
 	{
-		meshesFLOAT = new float[MAX_BLOCKS * _countof(Render::cube_tex_vertices)];
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(GLerrorCB, NULL);
 		glEnable(GL_DEPTH_TEST);
@@ -85,16 +62,6 @@ namespace Render
 		glFrontFace(GL_CCW);
 
 		currShader = Shader::shaders["flat"] = new Shader("flat_color_instanced.vs", "flat_color_instanced.fs");
-
-		blockVao = new VAO();
-		blockVao->Bind();
-		blockMeshBuffer = new VBO(Render::cube_tex_vertices, sizeof(Render::cube_tex_vertices));
-		//VBOlayout meshLayout;
-		//meshLayout.Push<float>(3);
-		//meshLayout.Push<float>(2);
-		//blockVao->AddBuffer(*blockMeshBuffer, meshLayout);
-		blockColorBuffer = new VBO(nullptr, MAX_BLOCKS * sizeof(glm::vec4), GL_DYNAMIC_DRAW);
-		blockModelBuffer = new VBO(nullptr, MAX_BLOCKS * sizeof(glm::mat4), GL_DYNAMIC_DRAW);
 	}
 
 	// currently being used to draw everything
@@ -108,42 +75,27 @@ namespace Render
 		glm::mat4 proj = currCamera->GetProj();
 		glm::mat4 viewProjection = proj * view;
 
-		//VBO* vbo = new VBO(Render::cube_tex_vertices, sizeof(Render::cube_tex_vertices));
-		div_t work = div(Block::_count , MAX_THREADS);
-
-		// construct an array of model matrices for OpenGL
-		for (int i = 0; i < MAX_THREADS; i++)
-		{
-			int realWork = work.quot + (i < MAX_THREADS - 1 ? 0 : work.rem);
-			//threads.push_back(std::thread(CalcModels, i * work.quot, i * work.quot + realWork));
-			CalcModels(i * work.quot, i * work.quot + realWork);
-		}
-
-		for (auto& thread : threads)
-			thread.join();
-		threads.clear();
-
 		// update model matrix buffer
-		blockModelBuffer->Bind();
-		glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::mat4), NULL, GL_STREAM_DRAW);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_BLOCKS * sizeof(glm::mat4), modelsMAT);
+		//blockModelBuffer->Bind();
+		//glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::mat4), NULL, GL_STREAM_DRAW);
+		//glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_BLOCKS * sizeof(glm::mat4), modelsMAT);
 		//for (int i = 0; i < updatedBlocks.size(); i++)
 		//	glBufferSubData(GL_ARRAY_BUFFER, updatedBlocks[i] * sizeof(glm::mat4), sizeof(glm::mat4), &modelsMAT[updatedBlocks[i]]);
 		
 		// block mesh buffer (constant)
-		blockMeshBuffer->Bind();
+		//blockMeshBuffer->Bind();
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0); // screenpos
 
-		blockModelBuffer->Bind();
+		//blockModelBuffer->Bind();
 		glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 0));
 		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 4));
 		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 8));
 		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 12));
 
 		// update color buffer
-		blockColorBuffer->Bind();
-		glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::vec4), NULL, GL_STREAM_DRAW);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_BLOCKS * sizeof(glm::vec4), colorsVEC);
+		//blockColorBuffer->Bind();
+		//glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::vec4), NULL, GL_STREAM_DRAW);
+		//glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_BLOCKS * sizeof(glm::vec4), colorsVEC);
 		//for (int i = 0; i < updatedBlocks.size(); i++)
 		//	glBufferSubData(GL_ARRAY_BUFFER, updatedBlocks[i] * sizeof(glm::vec4), sizeof(glm::vec4), &colorsVEC[updatedBlocks[i]]);
 		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
@@ -163,7 +115,7 @@ namespace Render
 
 		currShader->setMat4("u_viewProj", viewProjection);
 
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, level->GetBlocks().size());
+		//glDrawArraysInstanced(GL_TRIANGLES, 0, 36, level->GetBlocks().size());
 		updatedBlocks.clear();
 	}
 

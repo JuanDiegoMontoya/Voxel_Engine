@@ -102,10 +102,10 @@ GLFWwindow* init_glfw_context()
 
 	GLFWwindow* window;
 	if (Settings::Graphics.fullscreen)
-		window = glfwCreateWindow(window_width, window_height, "Sicko Engine", glfwGetPrimaryMonitor(), NULL);
+		window = glfwCreateWindow(window_width, window_height, "Engine", glfwGetPrimaryMonitor(), NULL);
 	else
 	{
-		window = glfwCreateWindow(window_width, window_height - 63, "Sicko Engine", NULL, NULL);
+		window = glfwCreateWindow(window_width, window_height - 63, "Engine", NULL, NULL);
 		Settings::Graphics.screenY = window_height;
 	}
 	if (window == NULL)
