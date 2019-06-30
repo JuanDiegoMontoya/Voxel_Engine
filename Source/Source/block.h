@@ -21,7 +21,7 @@ public:
 		: clr(c), pos_(p), type_(t)
 	{
 		count_++;
-		update();
+		//update();
 	}
 
 	// positions, texcoords
@@ -35,7 +35,7 @@ public:
 	inline void SetPos(glm::ivec3 p) 
 	{ 
 		pos_ = p;
-		update();
+		//update();
 	}
 
 	inline const glm::ivec3& GetPos() const { return pos_; }
@@ -48,8 +48,6 @@ public:
 		return glm::vec3(pos_) - .5f;
 	}
 
-	void Update(float dt);
-
 	// cull block if all sides are invisible
 	inline bool CheckCulled()
 	{
@@ -58,17 +56,18 @@ public:
 			  pos_.x == 99 || pos_.y == 99 || pos_.z == 99)
 			return false;
 
-		if (!blocksarr_[ID3D(pos_.x, pos_.y, pos_.z + 1, 100, 100)].GetType() == bAir)
+		// if any neighboring blocks are transparent, block isn't culled
+		if (blocksarr_[ID3D(pos_.x, pos_.y, pos_.z + 1, 100, 100)].GetType() == bAir)
 			return false;
-		if (!blocksarr_[ID3D(pos_.x, pos_.y, pos_.z - 1, 100, 100)].GetType() == bAir)
+		if (blocksarr_[ID3D(pos_.x, pos_.y, pos_.z - 1, 100, 100)].GetType() == bAir)
 			return false;
-		if (!blocksarr_[ID3D(pos_.x, pos_.y + 1, pos_.z, 100, 100)].GetType() == bAir)
+		if (blocksarr_[ID3D(pos_.x, pos_.y + 1, pos_.z, 100, 100)].GetType() == bAir)
 			return false;
-		if (!blocksarr_[ID3D(pos_.x, pos_.y - 1, pos_.z, 100, 100)].GetType() == bAir)
+		if (blocksarr_[ID3D(pos_.x, pos_.y - 1, pos_.z, 100, 100)].GetType() == bAir)
 			return false;
-		if (!blocksarr_[ID3D(pos_.x + 1, pos_.y, pos_.z, 100, 100)].GetType() == bAir)
+		if (blocksarr_[ID3D(pos_.x + 1, pos_.y, pos_.z, 100, 100)].GetType() == bAir)
 			return false;
-		if (!blocksarr_[ID3D(pos_.x - 1, pos_.y, pos_.z, 100, 100)].GetType() == bAir)
+		if (blocksarr_[ID3D(pos_.x - 1, pos_.y, pos_.z, 100, 100)].GetType() == bAir)
 			return false;
 		return true; // is culled
 	}
@@ -79,6 +78,17 @@ public:
 
 	static unsigned count_;
 	static Block blocksarr_[100 * 100 * 100]; // one million positions
+
+	inline void Update()
+	{
+		//if (updated_)
+		{
+			isCulled_ = CheckCulled();
+			updateList_->push_back(ID3D(pos_.x, pos_.y, pos_.z, 100, 100)); // notify renderer that a model has changed
+			updated_ = false;
+		}
+	}
+
 private:
 	glm::ivec3 pos_; // position on grid (not necessary with a grid)
 	bool isCulled_ = false;
@@ -86,15 +96,6 @@ private:
 	BlockType type_ = bAir;
 
 	// adds this block to update list if it hasn't been added this frame
-	inline void update()
-	{
-		if (updated_)
-		{
-			isCulled_ = CheckCulled();
-			updateList_->push_back(ID3D(pos_.x, pos_.y, pos_.z, 100, 100)); // notify renderer that a model has changed
-			updated_ = false;
-		}
-	}
 
 	static std::vector<unsigned>* updateList_; // const screws it up
 }Block, *BlockPtr;

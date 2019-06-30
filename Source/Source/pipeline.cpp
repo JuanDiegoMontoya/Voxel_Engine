@@ -126,12 +126,12 @@ namespace Render
 		blockModelBuffer->Bind();
 		if (updatedBlocks.size() < BUF_OVERWRITE_THRESHOLD)
 		{
-			for (int i = 0; i < updatedBlocks.size(); i++)
+			for (size_t i = 0; i < updatedBlocks.size(); i++)
 				glBufferSubData(GL_ARRAY_BUFFER, updatedBlocks[i] * sizeof(glm::mat4), sizeof(glm::mat4), &modelsMAT[updatedBlocks[i]]);
 		}
 		else
 		{
-			glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::mat4), NULL, GL_STREAM_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::mat4), NULL, GL_DYNAMIC_DRAW);
 			glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_BLOCKS * sizeof(glm::mat4), modelsMAT);
 		}
 		
@@ -150,12 +150,12 @@ namespace Render
 
 		if (updatedBlocks.size() < BUF_OVERWRITE_THRESHOLD)
 		{
-			for (int i = 0; i < updatedBlocks.size(); i++)
+			for (size_t i = 0; i < updatedBlocks.size(); i++)
 				glBufferSubData(GL_ARRAY_BUFFER, updatedBlocks[i] * sizeof(glm::vec4), sizeof(glm::vec4), &colorsVEC[updatedBlocks[i]]);
 		}
 		else
 		{
-			glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::vec4), NULL, GL_STREAM_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, MAX_BLOCKS * sizeof(glm::vec4), NULL, GL_DYNAMIC_DRAW);
 			glBufferSubData(GL_ARRAY_BUFFER, 0, MAX_BLOCKS * sizeof(glm::vec4), colorsVEC);
 		}
 		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);

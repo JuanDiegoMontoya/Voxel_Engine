@@ -9,7 +9,6 @@
 #include "unlit_mesh.h"
 #include "render_data.h"
 #include "block.h"
-#include "chunk.h"
 
 Level::Level(std::string name)
 {
@@ -49,12 +48,14 @@ void Level::Init()
 	
 	// build with /openmp to use this
 //#pragma omp parallel for
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 50; i++)
 	{
-		for (int j = 0; j < 100; j++)
+		for (int j = 0; j < 50; j++)
 		{
-			for (int k = 0; k < 100; k++)
+			for (int k = 0; k < 50; k++)
 			{
+				if (Utils::get_random(0, 1) > .9f) 
+					continue;
 				//GameObjectPtr two = block->Clone();
 				//two->GetComponent<Transform>()->SetTranslation(glm::vec3(i, 1, j));
 				float r = Utils::get_random(0, 1);
@@ -68,7 +69,19 @@ void Level::Init()
 				//objects_.push_back(two);
 
 				
-				Block::blocksarr_[ID3D(i, j, k, 100, 100)] = Block(glm::vec3(i, j, k), glm::vec4(r, g, b, 1));
+				Block::blocksarr_[ID3D(i, j, k, 100, 100)] = Block(glm::vec3(i, j, k), glm::vec4(r, g, b, 1), Block::bStone);
+			}
+		}
+	}
+
+	// update all blocks AFTER generating them all (instead of during, which leads to no culling)
+	for (int i = 0; i < 100; i++)
+	{
+		for (int j = 0; j < 100; j++)
+		{
+			for (int k = 0; k < 100; k++)
+			{
+				Block::blocksarr_[ID3D(i, j, k, 100, 100)].Update();
 			}
 		}
 	}

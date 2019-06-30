@@ -7,11 +7,6 @@ std::vector<unsigned>* Block::updateList_ = &Render::updatedBlocks;
 unsigned Block::count_ = 0;
 Block Block::blocksarr_[100 * 100 * 100]; // one million positions
 
-void Block::Update(float dt)
-{
-	// check if model needs to be computed
-}
-
 glm::ivec3 stretch(int index, int w, int h)
 {
 	int z = index / (w * h);

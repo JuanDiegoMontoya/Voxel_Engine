@@ -14,5 +14,8 @@ void main()
   if (aColor != vec4(0))
     gl_Position = u_viewProj * aModel * vec4(aScreenPos.xyz, 1.0f);
   else
+  {
     gl_Position.w = 0;
+    color = vec4(1);
+  }
 }
