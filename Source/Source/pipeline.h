@@ -10,6 +10,7 @@ namespace Render
 	void Draw(LevelPtr level);
 	void drawImGui();
 	void SetCamera(class Camera* cam);
+	class Camera* GetCamera();
 
 	// positions, normals, texture coords
 	static float cube_norm_tex_vertices[] =
@@ -107,6 +108,57 @@ namespace Render
 		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // bottom-right
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left
 		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f  // bottom-left        
+	};
+
+	static const float cube_vertices[] =
+	{
+		// Back face (-Z)
+		-0.5f, -0.5f, -0.5f, // Bottom-left
+		 0.5f,  0.5f, -0.5f, // top-right
+		 0.5f, -0.5f, -0.5f, // bottom-right         
+		 0.5f,  0.5f, -0.5f, // top-right
+		-0.5f, -0.5f, -0.5f, // bottom-left
+		-0.5f,  0.5f, -0.5f, // top-left
+
+		// Front face (+Z)
+		-0.5f, -0.5f,  0.5f, // bottom-left
+		 0.5f, -0.5f,  0.5f, // bottom-right
+		 0.5f,  0.5f,  0.5f, // top-right
+		 0.5f,  0.5f,  0.5f, // top-right
+		-0.5f,  0.5f,  0.5f, // top-left
+		-0.5f, -0.5f,  0.5f, // bottom-left
+
+		// Left face (-X)
+		-0.5f,  0.5f,  0.5f, // top-right
+		-0.5f,  0.5f, -0.5f, // top-left
+		-0.5f, -0.5f, -0.5f, // bottom-left
+		-0.5f, -0.5f, -0.5f, // bottom-left
+		-0.5f, -0.5f,  0.5f, // bottom-right
+		-0.5f,  0.5f,  0.5f, // top-right
+
+		// Right face (+X)
+		 0.5f,  0.5f,  0.5f, // top-left
+		 0.5f, -0.5f, -0.5f, // bottom-right
+		 0.5f,  0.5f, -0.5f, // top-right         
+		 0.5f, -0.5f, -0.5f, // bottom-right
+		 0.5f,  0.5f,  0.5f, // top-left
+		 0.5f, -0.5f,  0.5f, // bottom-left     
+
+		// Bottom face (-Y)
+		-0.5f, -0.5f, -0.5f, // top-right
+		 0.5f, -0.5f, -0.5f, // top-left
+		 0.5f, -0.5f,  0.5f, // bottom-left
+		 0.5f, -0.5f,  0.5f, // bottom-left
+		-0.5f, -0.5f,  0.5f, // bottom-right
+		-0.5f, -0.5f, -0.5f, // top-right
+
+		// Top face (+Y)
+		-0.5f,  0.5f, -0.5f, // top-left
+		 0.5f,  0.5f,  0.5f, // bottom-right
+		 0.5f,  0.5f, -0.5f, // top-right     
+		 0.5f,  0.5f,  0.5f, // bottom-right
+		-0.5f,  0.5f, -0.5f, // top-left
+		-0.5f,  0.5f,  0.5f  // bottom-left    
 	};
 
 	// positions

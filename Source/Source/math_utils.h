@@ -22,6 +22,12 @@ namespace Utils
 
 	float get_random(float low, float high);
 
+	template<typename T, typename Q>
+	T mapToRange(T val, Q r1s, Q r1e, Q r2s, Q r2e)
+	{
+		return (val - r1s) / (r1e - r1s) * (r2e - r2s) + r2s;
+	}
+
 	template<typename T>
 	T max3(T first, T second, T third)
 	{

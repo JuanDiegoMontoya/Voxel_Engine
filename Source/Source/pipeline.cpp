@@ -65,10 +65,7 @@ namespace Render
 		for (int i = low; i < high; i++)
 		{
 			modelsMAT[updatedBlocks[i]] = Block::blocksarr_[updatedBlocks[i]].GetModel();
-			if (!Block::blocksarr_[updatedBlocks[i]].IsCulled())
-				colorsVEC[updatedBlocks[i]] = Block::blocksarr_[updatedBlocks[i]].clr;
-			else // block is invisible
-				colorsVEC[updatedBlocks[i]] = glm::vec4(0);
+			colorsVEC[updatedBlocks[i]] = Block::blocksarr_[updatedBlocks[i]].clr;
 		}
 	}
 
@@ -182,6 +179,11 @@ namespace Render
 	void SetCamera(Camera* cam)
 	{
 		currCamera = cam;
+	}
+
+	Camera* GetCamera()
+	{
+		return currCamera;
 	}
 
 	void drawImGui()
