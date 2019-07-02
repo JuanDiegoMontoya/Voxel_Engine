@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <concurrent_unordered_map.h>
 #include <algorithm>
 
 // debugging

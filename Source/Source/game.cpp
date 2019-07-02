@@ -5,6 +5,8 @@
 #include "pipeline.h"
 #include "input.h"
 #include "imgui_impl.h"
+#include <algorithm>
+#include "chunk.h"
 
 #define IMGUI_ENABLED 0
 
@@ -41,7 +43,7 @@ void Game::Run()
 		ImGui_Impl::StartFrame();
 #endif
 
-		Render::Draw(level);
+		//Render::Draw(level);
 		//Render::drawImGui();
 
 		level->Update(dt_);

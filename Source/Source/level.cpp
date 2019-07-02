@@ -9,6 +9,15 @@
 #include "unlit_mesh.h"
 #include "render_data.h"
 #include "block.h"
+#include "chunk.h"
+#include <omp.h>
+#include <chrono>
+#include <mutex>
+
+static std::mutex mtx;
+
+using namespace std::chrono;
+//#define OMP_NUM_THREADS = 8;
 
 Level::Level(std::string name)
 {
@@ -27,94 +36,85 @@ Level::~Level()
 // for now this function is where we declare objects
 void Level::Init()
 {
-	int f = sizeof(GameObject);
-	f = sizeof(RenderData);
-	f = sizeof(Shader);
-	f = sizeof(std::string);
-	
-	//std::fill(blocksarr_[0], blocksarr_[100 * 100 * 100], 0);
+
 	std::memset(Block::blocksarr_, 0, sizeof(float) * 100 * 100 * 100);
 
 	cameras_.push_back(new Camera(kControlCam));
 	Render::SetCamera(cameras_[0]);
 
-	GameObjectPtr block = new GameObject();
-	block->AddComponent(new Transform());
-	RenderDataPtr rend = new RenderData();
-	rend->UseUntexturedBlockData();
-	block->AddComponent(rend);
-	block->SetChildren();
-	objects_.push_back(block);
-	
-	// build with /openmp to use this
-//#pragma omp parallel for
-	for (int i = 0; i < 50; i++)
+	int cc = 13; // chunk count
+	sizeof(Block);
+	// initialize a single chunk
+
+	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
+
+	omp_set_num_threads(8);
+	// this loop is not parallelizable (unless VAO constructor is moved)
+	for (int xc = 0; xc < cc; xc++)
 	{
-		for (int j = 0; j < 50; j++)
+		for (int yc = 0; yc < cc; yc++)
 		{
-			for (int k = 0; k < 50; k++)
+			for (int zc = 0; zc < cc; zc++)
 			{
-				if (Utils::get_random(0, 1) > .9f) 
-					continue;
-				//GameObjectPtr two = block->Clone();
-				//two->GetComponent<Transform>()->SetTranslation(glm::vec3(i, 1, j));
-				float r = Utils::get_random(0, 1);
-				float g = Utils::get_random(0, 1);
-				float b = Utils::get_random(0, 1);
+				Chunk* init = Chunk::chunks[glm::ivec3(xc, yc, zc)] = new Chunk(true);
+				init->SetPos(glm::ivec3(xc, yc, zc));
 
-				//float x = Utils::get_random(-500, 500);
-				//float y = Utils::get_random(-500, 500);
-				//float z = Utils::get_random(-500, 500);
-				//two->GetComponent<RenderData>()->SetColor(glm::vec4(r, g, b, 1.f));
-				//objects_.push_back(two);
-
-				
-				Block::blocksarr_[ID3D(i, j, k, 100, 100)] = Block(glm::vec3(i, j, k), glm::vec4(r, g, b, 1), Block::bStone);
+				for (int x = 0; x < Chunk::CHUNK_SIZE; x++)
+				{
+					for (int y = 0; y < Chunk::CHUNK_SIZE; y++)
+					{
+						for (int z = 0; z < Chunk::CHUNK_SIZE; z++)
+						{
+							if (Utils::get_random_r(0, 1) > .9f)
+								continue;
+							init->At(x, y, z).SetType(Block::bStone);
+						}
+					}
+				}
 			}
 		}
 	}
 
-	// update all blocks AFTER generating them all (instead of during, which leads to no culling)
-	for (int i = 0; i < 100; i++)
+	// TODO: chunk loading into memory-managable bites
+	// TODO: 64 bit compiling (max blocks WHILE GENERATING ~9 million in 32 bit
+	//			 unless broken into smaller chunks at a time)
+#pragma omp parallel for
+	for (int xc = 0; xc < cc; xc++)
 	{
-		for (int j = 0; j < 100; j++)
+		for (int yc = 0; yc < cc; yc++)
 		{
-			for (int k = 0; k < 100; k++)
+			for (int zc = 0; zc < cc; zc++)
 			{
-				Block::blocksarr_[ID3D(i, j, k, 100, 100)].Update();
+				Chunk::chunks[glm::ivec3(xc, yc, zc)]->Update();
 			}
 		}
 	}
-	//std::cout << blocks_.size();
 
-	//CHOSEN_POS = ID3D(0, 0, 0, 100, 100);
-	//THE_CHOSEN_ONE = blocksarr_[CHOSEN_POS];
+	// this loop cannot be parallelized
+	for (int xc = 0; xc < cc; xc++)
+	{
+		for (int yc = 0; yc < cc; yc++)
+		{
+			for (int zc = 0; zc < cc; zc++)
+			{
+				Chunk::chunks[glm::ivec3(xc, yc, zc)]->BuildBuffers();
+			}
+		}
+	}
+
+	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
+	std::cout << benchmark_duration_.count() * 1000 << std::endl;
 }
 
 // update every object in the level
 void Level::Update(float dt)
 {
-	for (auto& obj : objects_)
+	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
+		[](std::pair<glm::ivec3, Chunk*> chunk)
 	{
-		if (obj && obj->GetEnabled())
-		{
-			for (size_t i = 0; i < cCount; i++)
-			{
-				Component* comp = obj->GetComponent(i);
-				if (comp && comp->GetEnabled())
-					comp->Update(dt);
-			}
-		}
-	}
-
-	//for (auto& block : blocks_)
-	//{
-	//	glm::ivec3 pos = block->GetPos();
-	//	if (pos.y > -500)
-	//		block->SetPos(glm::ivec3(pos.x, pos.y - 100, pos.z));
-	//}
-	//THE_CHOSEN_ONE->SetPos(glm::ivec3(cameras_[0]->GetPos() - 1.f));
-	//if ()
+		if (chunk.second)
+			chunk.second->Render();
+	});
 
 	for (auto& cam : cameras_)
 	{

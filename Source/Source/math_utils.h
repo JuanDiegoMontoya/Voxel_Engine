@@ -22,6 +22,9 @@ namespace Utils
 
 	float get_random(float low, float high);
 
+	// thread-safe
+	float get_random_r(float low, float high);
+
 	template<typename T, typename Q>
 	T mapToRange(T val, Q r1s, Q r1e, Q r2s, Q r2e)
 	{

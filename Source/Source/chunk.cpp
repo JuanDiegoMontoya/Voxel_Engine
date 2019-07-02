@@ -4,13 +4,32 @@
 #include "chunk.h"
 #include "block.h"
 #include "camera.h"
+#include "shader.h"
+#include <mutex>
 
-std::unordered_map<glm::ivec3, ChunkPtr, Chunk::ivec3Hash> Chunk::chunks;
+Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Chunk::ivec3Hash> Chunk::chunks;
+
+static std::mutex mtx;
+
+Chunk::Chunk(bool active) : active_(active)
+{
+	std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
+	lck.lock();
+	vao_ = new VAO();
+	lck.unlock();
+
+	float r = Utils::get_random(0, 1);
+	float g = Utils::get_random(0, 1);
+	float b = Utils::get_random(0, 1);
+	color = glm::vec4(r, g, b, 1.f);
+}
 
 Chunk::~Chunk()
 {
-	delete vao_;
-	delete vbo_;
+	if (vao_)
+		delete vao_;
+	if (vbo_)
+		delete vbo_;
 }
 
 void Chunk::Update()
@@ -33,14 +52,45 @@ void Chunk::Update()
 
 void Chunk::Render()
 {
+	if (vbo_ && vao_)
+	{
+		glDisable(GL_BLEND);
+		//glDisable(GL_CULL_FACE);
+		vao_->Bind();
+		vbo_->Bind();
+		ShaderPtr currShader = Shader::shaders["chunk"];
+		currShader->Use();
+		currShader->setMat4("u_model", model_);
+		currShader->setMat4("u_view", Render::GetCamera()->GetView());
+		currShader->setMat4("u_proj", Render::GetCamera()->GetProj());
+
+		glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
+	}
+}
+
+void Chunk::BuildBuffers()
+{
+	vao_->Bind();
+	if (vbo_)
+		delete vbo_;
+	vbo_ = new VBO(&vertices[0], sizeof(glm::vec3) * vertices.size(), GL_STATIC_DRAW);
+	vbo_->Bind();
+	vertexCount_ = vertices.size();
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)0); // screenpos
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3)); // color
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribDivisor(0, 0);
+	glVertexAttribDivisor(1, 0);
+	vao_->Unbind();
+	vbo_->Unbind();
+	vertices.clear();
 }
 
 void Chunk::buildMesh()
 {
 	Camera* cam = Render::GetCamera();
-	vao_->Bind();
-	delete vbo_;
-	std::vector<glm::vec3> vertices;
+
 	vertices.reserve(CHUNK_SIZE * CHUNK_SIZE * 6 * 3); // one entire side of a chunk (assumed flat)
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
@@ -58,53 +108,71 @@ void Chunk::buildMesh()
 				std::vector<glm::vec3> temp;
 
 				// back
-				temp = buildSingleBlockFaceBologna(glm::vec3(x, y, z - 1), 0, 18, x, y, z);
+				temp = buildSingleBlockFace(glm::vec3(x, y, z - 1), 0, 18, x, y, z);
 				vertices.insert(vertices.end(), temp.begin(), temp.end());
 
 				// front
-				temp = buildSingleBlockFaceBologna(glm::vec3(x, y, z + 1), 18, 36, x, y, z);
+				temp = buildSingleBlockFace(glm::vec3(x, y, z + 1), 18, 36, x, y, z);
 				vertices.insert(vertices.end(), temp.begin(), temp.end());
 
 				// left
-				temp = buildSingleBlockFaceBologna(glm::vec3(x - 1, y, z), 36, 54, x, y, z);
+				temp = buildSingleBlockFace(glm::vec3(x - 1, y, z), 36, 54, x, y, z);
 				vertices.insert(vertices.end(), temp.begin(), temp.end());
 
 				// right
-				temp = buildSingleBlockFaceBologna(glm::vec3(x + 1, y, z), 54, 72, x, y, z);
+				temp = buildSingleBlockFace(glm::vec3(x + 1, y, z), 54, 72, x, y, z);
 				vertices.insert(vertices.end(), temp.begin(), temp.end());
 
 				// bottom
-				temp = buildSingleBlockFaceBologna(glm::vec3(x, y - 1, z), 72, 90, x, y, z);
+				temp = buildSingleBlockFace(glm::vec3(x, y - 1, z), 72, 90, x, y, z);
 				vertices.insert(vertices.end(), temp.begin(), temp.end());
 
 				// top
-				temp = buildSingleBlockFaceBologna(glm::vec3(x, y + 1, z), 90, 108, x, y, z);
+				temp = buildSingleBlockFace(glm::vec3(x, y + 1, z), 90, 108, x, y, z);
 				vertices.insert(vertices.end(), temp.begin(), temp.end());
 			}
 		}
 	}
-	vbo_ = new VBO(&vertices[0], sizeof(glm::vec3) * vertices.size(), GL_STATIC_DRAW);
+	// "buildbuffers" would normally happen here
+	// 'vertices' is stored until "buildbuffers" is called
 }
 
-std::vector<glm::vec3> Chunk::buildSingleBlockFaceBologna(glm::ivec3 near, int low, int high, int x, int y, int z)
+std::vector<glm::vec3> Chunk::buildSingleBlockFace(glm::ivec3 near, int low, int high, int x, int y, int z)
 {
-	std::vector<glm::vec3> quad(6);
+	std::vector<glm::vec3> quad;
+	//quad.reserve(6);
+	
+	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(near));
 
-	localpos zNeg = worldBlockToLocalPos(chunkBlockToWorldPos(near));
-	if (chunks[zNeg.chunk_pos]->active_ &&
-		chunks[zNeg.chunk_pos]->blocks[ID3D(
-			zNeg.block_pos.x, zNeg.block_pos.y, zNeg.block_pos.z, CHUNK_SIZE, CHUNK_SIZE)].GetType()
-		!= Block::bAir) // back (-Z)
+	// critical section (probably)
+	//std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
+	//lck.lock();
+	if (!chunks[nearblock.chunk_pos])
+		goto GenQuad;
+	if (!chunks[nearblock.chunk_pos]->active_)
+		goto GenQuad;
+	if (chunks[nearblock.chunk_pos]->At(nearblock.block_pos).GetType() != Block::bAir)
+		return quad;
+	//lck.unlock();
+
+	GenQuad:
+	// transform the vertices relative to the chunk
+	// (the full world transformation will be completed in a shader)
+	glm::mat4 localTransform = glm::translate(glm::mat4(1.f),
+		Utils::mapToRange(glm::vec3(x, y, z), 0.f, (float)CHUNK_SIZE, -(float)CHUNK_SIZE / 2.0f, (float)CHUNK_SIZE/ 2.0f)); // scaled
+
+	//glm::mat4 localTransform = glm::translate(glm::mat4(1.f), glm::vec3(x, y, z)); // non-scaled
+	// add a random color to each quad
+	float r = Utils::get_random_r(0, 1);
+	float g = Utils::get_random_r(0, 1);
+	float b = Utils::get_random_r(0, 1);
+	glm::vec3 colory(r, g, b);
+
+	for (int i = low; i < high; i += 3)
 	{
-		// transform the vertices relative to the chunk
-		// (the full world transformation will be completed in a shader)
-		glm::mat4 localTransform = glm::translate(glm::mat4(1.f),
-			Utils::mapToRange(glm::vec3(x, y, z), 0.f, (float)CHUNK_SIZE, -1.f, 1.f));
-		for (int i = low; i < high; i += 3)
-		{
-			glm::vec4 tri(Render::cube_vertices[i], Render::cube_vertices[i + 1], Render::cube_vertices[i + 2], 1.f);
-			quad.push_back(localTransform * tri);
-		}
+		glm::vec4 tri(Render::cube_vertices[i], Render::cube_vertices[i + 1], Render::cube_vertices[i + 2], 1.f);
+		quad.push_back(localTransform * tri);
+		quad.push_back(colory);
 	}
 
 	return quad;

@@ -64,8 +64,8 @@ namespace Render
 	{
 		for (int i = low; i < high; i++)
 		{
-			modelsMAT[updatedBlocks[i]] = Block::blocksarr_[updatedBlocks[i]].GetModel();
-			colorsVEC[updatedBlocks[i]] = Block::blocksarr_[updatedBlocks[i]].clr;
+			//modelsMAT[updatedBlocks[i]] = Block::blocksarr_[updatedBlocks[i]].GetModel();
+			//colorsVEC[updatedBlocks[i]] = Block::blocksarr_[updatedBlocks[i]].clr;
 		}
 	}
 
@@ -84,6 +84,7 @@ namespace Render
 		glFrontFace(GL_CCW);
 
 		currShader = Shader::shaders["flat"] = new Shader("flat_color_instanced.vs", "flat_color_instanced.fs");
+		currShader = Shader::shaders["chunk"] = new Shader("chunk_flat.vs", "chunk_flat.fs");
 
 		blockVao = new VAO();
 		blockVao->Bind();

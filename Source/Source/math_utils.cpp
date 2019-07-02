@@ -62,16 +62,18 @@ namespace Utils
 
 	float get_random(float low, float high)
 	{
-		if (low > high)
-		{
-			std::swap(low, high);
-		}
-
 		// super fast and super random
 		static std::random_device rd;
 		static std::mt19937 rng(rd());
-		std::uniform_real_distribution<> dist(low, high);
+		std::uniform_real_distribution<float> dist(low, high);
 		return (float)dist(rng);
+	}
+
+	float get_random_r(float low, float high)
+	{
+		static thread_local std::mt19937 generator;
+		std::uniform_real_distribution<float> distribution(low, high);
+		return distribution(generator);
 	}
 
 

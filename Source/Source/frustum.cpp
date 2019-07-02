@@ -95,27 +95,27 @@ root::Frustum::Visibility root::Frustum::IsInside(const Block& box) const
 {
 	auto GetVisibility = [](const glm::vec4& clip, const Block& box)
 	{
-		float x0 = box.GetMin().x * clip.x;
-		float x1 = box.GetMax().x * clip.x;
-		float y0 = box.GetMin().y * clip.y;
-		float y1 = box.GetMax().y * clip.y;
-		float z0 = box.GetMin().z * clip.z + clip.w;
-		float z1 = box.GetMax().z * clip.z + clip.w;
-		float p1 = x0 + y0 + z0;
-		float p2 = x1 + y0 + z0;
-		float p3 = x1 + y1 + z0;
-		float p4 = x0 + y1 + z0;
-		float p5 = x0 + y0 + z1;
-		float p6 = x1 + y0 + z1;
-		float p7 = x1 + y1 + z1;
-		float p8 = x0 + y1 + z1;
+		//float x0 = box.GetMin().x * clip.x;
+		//float x1 = box.GetMax().x * clip.x;
+		//float y0 = box.GetMin().y * clip.y;
+		//float y1 = box.GetMax().y * clip.y;
+		//float z0 = box.GetMin().z * clip.z + clip.w;
+		//float z1 = box.GetMax().z * clip.z + clip.w;
+		//float p1 = x0 + y0 + z0;
+		//float p2 = x1 + y0 + z0;
+		//float p3 = x1 + y1 + z0;
+		//float p4 = x0 + y1 + z0;
+		//float p5 = x0 + y0 + z1;
+		//float p6 = x1 + y0 + z1;
+		//float p7 = x1 + y1 + z1;
+		//float p8 = x0 + y1 + z1;
 
-		if (p1 <= 0 && p2 <= 0 && p3 <= 0 && p4 <= 0 && p5 <= 0 && p6 <= 0 && p7 <= 0 && p8 <= 0) {
-			return Invisible;
-		}
-		if (p1 > 0 && p2 > 0 && p3 > 0 && p4 > 0 && p5 > 0 && p6 > 0 && p7 > 0 && p8 > 0) {
-			return Completely;
-		}
+		//if (p1 <= 0 && p2 <= 0 && p3 <= 0 && p4 <= 0 && p5 <= 0 && p6 <= 0 && p7 <= 0 && p8 <= 0) {
+		//	return Invisible;
+		//}
+		//if (p1 > 0 && p2 > 0 && p3 > 0 && p4 > 0 && p5 > 0 && p6 > 0 && p7 > 0 && p8 > 0) {
+		//	return Completely;
+		//}
 
 		return Partially;
 	};
