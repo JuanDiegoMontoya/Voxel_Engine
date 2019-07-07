@@ -54,7 +54,7 @@ void Chunk::Render()
 {
 	if (vbo_ && vao_)
 	{
-		glDisable(GL_BLEND);
+		//glDisable(GL_BLEND);
 		//glDisable(GL_CULL_FACE);
 		vao_->Bind();
 		vbo_->Bind();
@@ -73,9 +73,10 @@ void Chunk::BuildBuffers()
 	vao_->Bind();
 	if (vbo_)
 		delete vbo_;
-	vbo_ = new VBO(&vertices[0], sizeof(glm::vec3) * vertices.size(), GL_STATIC_DRAW);
+	vbo_ = new VBO(&vertices[0], sizeof(float) * vertices.size(), GL_STATIC_DRAW);
 	vbo_->Bind();
-	vertexCount_ = vertices.size();
+	vertexCount_ = vertices.size() / 6;
+	// TODO: fix these AttribPointer calls to use big boy vertex information
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)0); // screenpos
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3)); // color
 	glEnableVertexAttribArray(0);
@@ -105,30 +106,31 @@ void Chunk::buildMesh()
 				// check if each face would be obscured, and adds the ones that aren't to the vbo
 				// obscured IF side is adjacent to opaque block
 				// NOT obscured if side is adjacent to nothing or transparent block
-				std::vector<glm::vec3> temp;
+				std::vector<float> temp;
+				glm::ivec3 pos(x, y, z);
 
 				// back
-				temp = buildSingleBlockFace(glm::vec3(x, y, z - 1), 0, 18, x, y, z);
+				temp = buildSingleBlockFace(glm::vec3(x, y, z - 1), 48, 0, Render::cube_norm_tex_vertices, pos);
 				vertices.insert(vertices.end(), temp.begin(), temp.end());
 
 				// front
-				temp = buildSingleBlockFace(glm::vec3(x, y, z + 1), 18, 36, x, y, z);
+				temp = buildSingleBlockFace(glm::ivec3(x, y, z + 1), 48, 1, Render::cube_norm_tex_vertices, pos);
 				vertices.insert(vertices.end(), temp.begin(), temp.end());
 
 				// left
-				temp = buildSingleBlockFace(glm::vec3(x - 1, y, z), 36, 54, x, y, z);
+				temp = buildSingleBlockFace(glm::ivec3(x - 1, y, z), 48, 2, Render::cube_norm_tex_vertices, pos);
 				vertices.insert(vertices.end(), temp.begin(), temp.end());
 
 				// right
-				temp = buildSingleBlockFace(glm::vec3(x + 1, y, z), 54, 72, x, y, z);
+				temp = buildSingleBlockFace(glm::ivec3(x + 1, y, z), 48, 3, Render::cube_norm_tex_vertices, pos);
 				vertices.insert(vertices.end(), temp.begin(), temp.end());
 
 				// bottom
-				temp = buildSingleBlockFace(glm::vec3(x, y - 1, z), 72, 90, x, y, z);
+				temp = buildSingleBlockFace(glm::ivec3(x, y - 1, z), 48, 4, Render::cube_norm_tex_vertices, pos);
 				vertices.insert(vertices.end(), temp.begin(), temp.end());
 
 				// top
-				temp = buildSingleBlockFace(glm::vec3(x, y + 1, z), 90, 108, x, y, z);
+				temp = buildSingleBlockFace(glm::ivec3(x, y + 1, z), 48, 5, Render::cube_norm_tex_vertices, pos);
 				vertices.insert(vertices.end(), temp.begin(), temp.end());
 			}
 		}
@@ -137,12 +139,16 @@ void Chunk::buildMesh()
 	// 'vertices' is stored until "buildbuffers" is called
 }
 
-std::vector<glm::vec3> Chunk::buildSingleBlockFace(glm::ivec3 near, int low, int high, int x, int y, int z)
+//std::vector<float> Chunk::buildSingleBlockFace(glm::ivec3 near, int low, int high, int x, int y, int z)
+std::vector<float> Chunk::buildSingleBlockFace(
+	const glm::ivec3& nearFace,											// position of nearby block to check
+	int quadStride, int curQuad, const float* data, // vertex + quad data
+	const glm::ivec3& blockPos)											// position of current block
 {
-	std::vector<glm::vec3> quad;
-	//quad.reserve(6);
+	std::vector<float> quad;
+	quad.reserve(6 * 6);
 	
-	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(near));
+	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
 
 	// critical section (probably)
 	//std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
@@ -155,24 +161,49 @@ std::vector<glm::vec3> Chunk::buildSingleBlockFace(glm::ivec3 near, int low, int
 		return quad;
 	//lck.unlock();
 
-	GenQuad:
+GenQuad:
 	// transform the vertices relative to the chunk
 	// (the full world transformation will be completed in a shader)
 	glm::mat4 localTransform = glm::translate(glm::mat4(1.f),
-		Utils::mapToRange(glm::vec3(x, y, z), 0.f, (float)CHUNK_SIZE, -(float)CHUNK_SIZE / 2.0f, (float)CHUNK_SIZE/ 2.0f)); // scaled
+		Utils::mapToRange(glm::vec3(blockPos), 0.f, (float)CHUNK_SIZE, -(float)CHUNK_SIZE / 2.0f, (float)CHUNK_SIZE/ 2.0f)); // scaled
 
 	//glm::mat4 localTransform = glm::translate(glm::mat4(1.f), glm::vec3(x, y, z)); // non-scaled
-	// add a random color to each quad
+		// add a random color to each quad
 	float r = Utils::get_random_r(0, 1);
 	float g = Utils::get_random_r(0, 1);
 	float b = Utils::get_random_r(0, 1);
 	glm::vec3 colory(r, g, b);
 
-	for (int i = low; i < high; i += 3)
+	for (int i = quadStride * curQuad; i < quadStride * (curQuad + 1); i += 8) // += floats per vertex
 	{
-		glm::vec4 tri(Render::cube_vertices[i], Render::cube_vertices[i + 1], Render::cube_vertices[i + 2], 1.f);
-		quad.push_back(localTransform * tri);
-		quad.push_back(colory);
+		glm::vec4 tri(
+			data[i + 0], 
+			data[i + 1], 
+			data[i + 2], 
+			1.f);
+		tri = localTransform * tri;
+
+		// pos
+		quad.push_back(tri.x);
+		quad.push_back(tri.y);
+		quad.push_back(tri.z);
+
+		// color
+		quad.push_back(colory.r);
+		quad.push_back(colory.g);
+		quad.push_back(colory.b);
+
+		// normals
+		quad.push_back(data[i + 3]);
+		quad.push_back(data[i + 4]);
+		quad.push_back(data[i + 5]);
+
+		// texture
+		//quad.push_back(data[i + 6]);
+		//quad.push_back(data[i + 7]);
+
+		//quad.push_back(localTransform * tri);
+		//quad.push_back(colory);
 	}
 
 	return quad;

@@ -92,7 +92,10 @@ public:
 	static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, ivec3Hash> chunks;
 private:
 	void buildMesh();
-	std::vector<glm::vec3> buildSingleBlockFace(glm::ivec3 near, int low, int high, int x, int y, int z);
+	std::vector<float> buildSingleBlockFace(
+		const glm::ivec3& nearFace,
+		int quadStride, int curQuad, const float* data,
+		const glm::ivec3& blockPos);
 
 	glm::mat4 model_;
 	glm::ivec3 pos_; // position relative to other chunks (1 chunk = 1 index)
@@ -102,6 +105,14 @@ private:
 	glm::vec4 color; // temp
 	VAO* vao_ = nullptr;
 	VBO* vbo_ = nullptr;
-	std::vector<glm::vec3> vertices;
+
+	// temporary buffer(s)
+	std::vector<float> vertices; // everything buffer
+
+	//std::vector<glm::vec3> vtxPosBuffer; // positions
+	//std::vector<glm::vec2> vtxTexBuffer; // texture UVs
+	//std::vector<glm::vec3> vtxNmlBuffer; // normals
+	//std::vector<glm::vec3> vtxTanBuffer; // tangents
+	//std::vector<glm::vec3> vtxBitBuffer; // bitangents
 	size_t vertexCount_ = 0; // number of vertices composing the mesh of the chunk
 }Chunk, *ChunkPtr;
