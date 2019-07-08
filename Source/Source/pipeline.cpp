@@ -83,8 +83,10 @@ namespace Render
 		glCullFace(GL_BACK);
 		glFrontFace(GL_CCW);
 
-		currShader = Shader::shaders["flat"] = new Shader("flat_color_instanced.vs", "flat_color_instanced.fs");
-		currShader = Shader::shaders["chunk"] = new Shader("chunk_flat.vs", "chunk_flat.fs");
+		Shader::shaders["flat"] = new Shader("flat_color_instanced.vs", "flat_color_instanced.fs");
+		Shader::shaders["chunk"] = new Shader("chunk_flat.vs", "chunk_flat.fs");
+		Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
+		Shader::shaders["sun"] = new Shader("flat_sun.vs", "flat_sun.fs");
 
 		blockVao = new VAO();
 		blockVao->Bind();

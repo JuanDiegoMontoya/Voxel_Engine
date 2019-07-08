@@ -3,6 +3,7 @@
 layout (location = 0) in vec3 aScreenPos;
 layout (location = 1) in vec3 aColor;
 layout (location = 2) in vec3 aNormal;
+layout (location = 3) in float aShininess;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
@@ -11,10 +12,12 @@ uniform mat4 u_proj;
 out vec3 vPos;
 out vec4 vColor;
 out vec3 vNormal;
+out float vShininess;
 
 void main()
 {
-  vPos = vec3(model * vec4(aScreenPos, 1.0));
+  vShininess = aShininess;
+  vPos = vec3(u_model * vec4(aScreenPos, 1.0));
   vColor = vec4(aColor, 1.0);
   vNormal = mat3(transpose(inverse(u_model))) * aNormal;
   

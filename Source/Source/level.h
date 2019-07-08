@@ -2,9 +2,11 @@
 #include "game.h"
 #include "game_object.h"
 #include "camera.h"
+#include "sun.h"
 
 typedef struct Chunk* ChunkPtr;
 typedef class Block* BlockPtr;
+//typedef class Sun;
 
 typedef class Level
 {
@@ -30,6 +32,7 @@ private:
 	std::vector<Camera*> cameras_;			 // all cameras in the scene
 	std::vector<GameObjectPtr> objects_; // all game objects in the scene
 	glm::vec3 bgColor_ = glm::vec3(53.f / 255.f, 81.f / 255.f, 98.f / 255.f);
+	Sun sun;
 	
 	//https://www.reddit.com/r/VoxelGameDev/comments/2t1kkh/best_method_of_chunk_management_in_3d/
 	//https://www.reddit.com/r/VoxelGameDev/comments/b6bgu8/voxel_chunk_management_c_opengl/

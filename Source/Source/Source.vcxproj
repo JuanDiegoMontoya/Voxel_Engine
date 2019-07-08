@@ -327,6 +327,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClInclude Include="mesh_comp.h" />
     <ClInclude Include="pick.h" />
     <ClInclude Include="render_data.h" />
+    <ClInclude Include="sun.h" />
     <ClInclude Include="transform.h" />
     <ClInclude Include="unlit_mesh.h" />
     <ClInclude Include="engine_assert.h" />

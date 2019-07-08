@@ -58,11 +58,22 @@ void Chunk::Render()
 		//glDisable(GL_CULL_FACE);
 		vao_->Bind();
 		vbo_->Bind();
-		ShaderPtr currShader = Shader::shaders["chunk"];
+		ShaderPtr currShader = Shader::shaders["chunk_shaded"];
 		currShader->Use();
 		currShader->setMat4("u_model", model_);
 		currShader->setMat4("u_view", Render::GetCamera()->GetView());
 		currShader->setMat4("u_proj", Render::GetCamera()->GetProj());
+		currShader->setVec3("viewPos", Render::GetCamera()->GetPos());
+
+		glm::vec3 dir;
+		dir.x = cos(glfwGetTime());
+		dir.y = sin(glfwGetTime());
+		dir.z = 0;
+		//currShader->setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+		currShader->setVec3("dirLight.direction", dir);
+		currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
+		currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+		currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
 
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
 	}
@@ -75,14 +86,20 @@ void Chunk::BuildBuffers()
 		delete vbo_;
 	vbo_ = new VBO(&vertices[0], sizeof(float) * vertices.size(), GL_STATIC_DRAW);
 	vbo_->Bind();
-	vertexCount_ = vertices.size() / 6;
-	// TODO: fix these AttribPointer calls to use big boy vertex information
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)0); // screenpos
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3)); // color
+	vertexCount_ = vertices.size() / 10; // divisor = number of floats per vertex
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (void*)0); // screenpos
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (void*)(sizeof(float) * 3)); // color
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (void*)(sizeof(float) * 6)); // normal
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (void*)(sizeof(float) * 9)); // shininess
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
 	glVertexAttribDivisor(0, 0);
 	glVertexAttribDivisor(1, 0);
+	glVertexAttribDivisor(2, 0);
+	glVertexAttribDivisor(3, 0);
 	vao_->Unbind();
 	vbo_->Unbind();
 	vertices.clear();
@@ -174,6 +191,8 @@ GenQuad:
 	float b = Utils::get_random_r(0, 1);
 	glm::vec3 colory(r, g, b);
 
+	float shiny = Utils::get_random_r(2, 64);
+
 	for (int i = quadStride * curQuad; i < quadStride * (curQuad + 1); i += 8) // += floats per vertex
 	{
 		glm::vec4 tri(
@@ -198,12 +217,12 @@ GenQuad:
 		quad.push_back(data[i + 4]);
 		quad.push_back(data[i + 5]);
 
+		// shininess (0-1)
+		quad.push_back(shiny);
+
 		// texture
 		//quad.push_back(data[i + 6]);
 		//quad.push_back(data[i + 7]);
-
-		//quad.push_back(localTransform * tri);
-		//quad.push_back(colory);
 	}
 
 	return quad;

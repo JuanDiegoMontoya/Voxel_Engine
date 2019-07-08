@@ -10,6 +10,7 @@
 #include "render_data.h"
 #include "block.h"
 #include "chunk.h"
+#include "sun.h"
 #include <omp.h>
 #include <chrono>
 #include <mutex>
@@ -42,7 +43,7 @@ void Level::Init()
 	cameras_.push_back(new Camera(kControlCam));
 	Render::SetCamera(cameras_[0]);
 
-	int cc = 6; // chunk count
+	int cc = 2; // chunk count
 	sizeof(Block);
 	// initialize a single chunk
 
@@ -115,6 +116,8 @@ void Level::Update(float dt)
 		if (chunk.second)
 			chunk.second->Render();
 	});
+
+
 
 	for (auto& cam : cameras_)
 	{

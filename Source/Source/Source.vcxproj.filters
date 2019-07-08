@@ -188,6 +188,9 @@
     <ClInclude Include="frustum.h">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="sun.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
