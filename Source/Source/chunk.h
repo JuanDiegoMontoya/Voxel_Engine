@@ -86,7 +86,7 @@ public:
 	}
 
 	static constexpr int GetChunkSize() { return CHUNK_SIZE; }
-	static constexpr int CHUNK_SIZE = 16;
+	static constexpr int CHUNK_SIZE = 64;
 
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 	static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, ivec3Hash> chunks;

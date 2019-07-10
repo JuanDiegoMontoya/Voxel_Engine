@@ -88,8 +88,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)lib\FMOD\studio\inc;$(SolutionDir)lib\rapidjson;$(SolutionDir)lib\FMOD\lowlevel\inc;$(SolutionDir)lib\lua-5.3.5\include;$(SolutionDir)lib\freetype\include;$(SolutionDir)lib\freetype\include\freetype;$(SolutionDir)lib\freetype\include\freetype\config;$(SolutionDir)lib\glew-2.0.0\include;$(SolutionDir)lib\glfw-3.2.1.bin.WIN32\include;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\SOIL\SOIL2;$(SolutionDir)lib\stb;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib\FMOD\studio\lib;$(SolutionDir)lib\FMOD\lowlevel\lib;$(SolutionDir)\lib\rapidjson;$(SolutionDir)lib\lua-5.3.5\lib;$(SolutionDir)lib\freetype\lib\win32;$(SolutionDir)lib\glew-2.0.0\lib\Release\Win32;$(SolutionDir)lib\glfw-3.2.1.bin.WIN32\lib-vc2015;$(SolutionDir)lib\SOIL;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)lib\FMOD\studio\inc;$(SolutionDir)lib\rapidjson;$(SolutionDir)lib\FMOD\lowlevel\inc;$(SolutionDir)lib\lua-5.3.5\include;$(SolutionDir)lib\freetype\include;$(SolutionDir)lib\freetype\include\freetype;$(SolutionDir)lib\freetype\include\freetype\config;$(SolutionDir)lib\glew-2.0.0\include;$(SolutionDir)lib\glfw-3.3.bin.WIN64\include\GLFW;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\stb;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\FMOD\studio\lib;$(SolutionDir)lib\FMOD\lowlevel\lib;$(SolutionDir)\lib\rapidjson;$(SolutionDir)lib\lua-5.3.5\lib;$(SolutionDir)lib\freetype\lib\win64;$(SolutionDir)lib\glew-2.0.0\lib\Release\x64;$(SolutionDir)lib\glfw-3.3.bin.WIN64\lib-vc2015;$(SolutionDir)lib\SOIL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -101,6 +101,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/openmp /Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,7 +134,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/openmp %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/openmp /Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
@@ -162,6 +163,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/openmp /Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -199,13 +201,14 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/openmp /Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fmodL_vc.lib;fmodstudioL_vc.lib;opengl32.lib;glew32.lib;glfw3dll.lib;soil2-debug.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;lua5.3.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmodL_vc.lib;fmodstudioL_vc.lib;opengl32.lib;glew32.lib;glfw3dll.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;lua5.3.lib;freetype.lib;soil2-debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)lib\zlib1.dll" "$(TargetDir)zlib1.dll" /Y
@@ -217,10 +220,10 @@ copy "$(SolutionDir)lib\FMOD\lowlevel\lib\fmodL.dll" "$(TargetDir)fmodL.dll" /Y
 
 copy "$(SolutionDir)lib\FMOD\studio\lib\fmodstudioL.dll" "$(TargetDir)fmodstudioL.dll" /Y
 
-copy "$(SolutionDir)lib\glew-2.0.0\bin\Release\Win32\glew32.dll" "$(TargetDir)glew32.dll" /Y
-copy "$(SolutionDir)lib\glfw-3.2.1.bin.WIN32\lib-vc2015\glfw3.dll" "$(TargetDir)glfw3.dll" /Y
+copy "$(SolutionDir)lib\glew-2.0.0\bin\Release\x64\glew32.dll" "$(TargetDir)glew32.dll" /Y
+copy "$(SolutionDir)lib\glfw-3.3.bin.WIN64\lib-vc2015\glfw3.dll" "$(TargetDir)glfw3.dll" /Y
 copy "$(SolutionDir)lib\lua-5.3.5\lua5.3.dll" "$(TargetDir)lua5.3.dll" /Y
-copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.dll" /Y</Command>
+copy "$(SolutionDir)lib\freetype\lib\win64\freetype.dll" "$(TargetDir)freetype.dll" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -231,6 +234,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClCompile Include="mesh_comp.cpp" />
     <ClCompile Include="pick.cpp" />
     <ClCompile Include="render_data.cpp" />
+    <ClCompile Include="sun.cpp" />
     <ClCompile Include="transform.cpp" />
     <ClCompile Include="unlit_mesh.cpp" />
     <ClCompile Include="camera.cpp" />
@@ -322,6 +326,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClInclude Include="camera.h" />
     <ClInclude Include="chunk.h" />
     <ClInclude Include="component.h" />
+    <ClInclude Include="ctpl_stl.h" />
     <ClInclude Include="frustum.h" />
     <ClInclude Include="lit_mesh.h" />
     <ClInclude Include="mesh_comp.h" />

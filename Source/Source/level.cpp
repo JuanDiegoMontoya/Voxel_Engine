@@ -14,6 +14,8 @@
 #include <omp.h>
 #include <chrono>
 #include <mutex>
+#include <execution>
+#include "ctpl_stl.h"
 
 static std::mutex mtx;
 
@@ -37,13 +39,13 @@ Level::~Level()
 // for now this function is where we declare objects
 void Level::Init()
 {
-
 	std::memset(Block::blocksarr_, 0, sizeof(float) * 100 * 100 * 100);
 
 	cameras_.push_back(new Camera(kControlCam));
 	Render::SetCamera(cameras_[0]);
 
-	int cc = 2; // chunk count
+	int cc = 4; // chunk count
+	updatedChunks_.reserve(cc * cc * cc);
 	sizeof(Block);
 	// initialize a single chunk
 
@@ -59,6 +61,7 @@ void Level::Init()
 			{
 				Chunk* init = Chunk::chunks[glm::ivec3(xc, yc, zc)] = new Chunk(true);
 				init->SetPos(glm::ivec3(xc, yc, zc));
+				updatedChunks_.push_back(init);
 
 				for (int x = 0; x < Chunk::CHUNK_SIZE; x++)
 				{
@@ -66,7 +69,7 @@ void Level::Init()
 					{
 						for (int z = 0; z < Chunk::CHUNK_SIZE; z++)
 						{
-							if (Utils::get_random_r(0, 1) > .9f)
+							if (Utils::get_random_r(0, 1) > 1.9f)
 								continue;
 							init->At(x, y, z).SetType(Block::bStone);
 						}
@@ -76,53 +79,105 @@ void Level::Init()
 		}
 	}
 
+/*
+#define YEET
+
 	// TODO: chunk loading into memory-managable bites
 	// TODO: 64 bit compiling (max blocks WHILE GENERATING ~9 million in 32 bit
 	//			 unless broken into smaller chunks at a time)
-#pragma omp parallel for
-	for (int xc = 0; xc < cc; xc++)
+
+#ifdef YEET
+	int chk = 3;
+	for (int i = 0; i < chk; i++)
 	{
-		for (int yc = 0; yc < cc; yc++)
+#endif
+#pragma omp parallel for num_threads(8)
+#ifdef YEET
+		for (int xc = cc / chk * i; xc < cc; xc++)
 		{
-			for (int zc = 0; zc < cc; zc++)
+			if (xc >= cc / chk * (i + 1))
+				break;
+#else
+for (int xc = 0; xc < cc; xc++)
+{
+#endif
+			for (int yc = 0; yc < cc; yc++)
 			{
-				Chunk::chunks[glm::ivec3(xc, yc, zc)]->Update();
+				for (int zc = 0; zc < cc; zc++)
+				{
+					Chunk::chunks[glm::ivec3(xc, yc, zc)]->Update();
+				}
 			}
 		}
-	}
 
-	// this loop cannot be parallelized
-	for (int xc = 0; xc < cc; xc++)
-	{
-		for (int yc = 0; yc < cc; yc++)
+		// this loop cannot be parallelized
+#ifdef YEET
+		for (int xc = cc / chk * i; xc < cc / chk * (i + 1) && xc < cc; xc++)
+#else
+		for (int xc = 0; xc < cc; xc++)
+#endif
 		{
-			for (int zc = 0; zc < cc; zc++)
+			for (int yc = 0; yc < cc; yc++)
 			{
-				Chunk::chunks[glm::ivec3(xc, yc, zc)]->BuildBuffers();
+				for (int zc = 0; zc < cc; zc++)
+				{
+					Chunk::chunks[glm::ivec3(xc, yc, zc)]->BuildBuffers();
+				}
 			}
 		}
+#ifdef YEET
 	}
+#endif
+*/
 
+		
+	std::for_each(
+		std::execution::par_unseq, 
+		updatedChunks_.begin(), 
+		updatedChunks_.end(),
+		[](ChunkPtr& chunk)
+	{
+		if (chunk)
+			chunk->Update();
+	});
+
+	// this operation cannot be parallelized
+	std::for_each(
+		std::execution::seq,
+		updatedChunks_.begin(),
+		updatedChunks_.end(),
+		[](ChunkPtr& chunk)
+	{
+		if (chunk)
+			chunk->BuildBuffers();
+	});
+
+	updatedChunks_.clear();
+	
 	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
-	std::cout << benchmark_duration_.count() * 1000 << std::endl;
+	std::cout << benchmark_duration_.count() << std::endl;
 }
 
 // update every object in the level
 void Level::Update(float dt)
 {
+	// update each camera
+	for (auto& cam : cameras_)
+	{
+		cam->Update(dt);
+	}
+
+	// render sun first
+	sun_.Update();
+	sun_.Render();
+
+	// render blocks in each active chunk
 	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
 		[](std::pair<glm::ivec3, Chunk*> chunk)
 	{
 		if (chunk.second)
 			chunk.second->Render();
 	});
-
-
-
-	for (auto& cam : cameras_)
-	{
-		cam->Update(dt);
-	}
 }
 
 void Level::CheckCollision()

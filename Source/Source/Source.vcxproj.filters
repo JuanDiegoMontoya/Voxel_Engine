@@ -44,6 +44,9 @@
     <Filter Include="Game\Voxel Engine">
       <UniqueIdentifier>{e7fc491d-c7a6-4f8b-8aa9-1011aa517004}</UniqueIdentifier>
     </Filter>
+    <Filter Include="vendor\ctpl">
+      <UniqueIdentifier>{d94d4b42-3a18-475f-a15a-e49c0985918a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sys_window.h">
@@ -191,6 +194,9 @@
     <ClInclude Include="sun.h">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="ctpl_stl.h">
+      <Filter>vendor\ctpl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -305,6 +311,9 @@
       <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="frustum.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="sun.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
   </ItemGroup>

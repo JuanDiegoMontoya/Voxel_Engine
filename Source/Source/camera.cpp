@@ -13,13 +13,12 @@ Camera::Camera(CameraType type) : type_(type)
 void Camera::Update(float dt)
 {
 	//view_ = glm::translate(glm::mat4(1.0f), worldpos_);
-	view_ = glm::lookAt(worldpos_, worldpos_ + front, up);
 	float currSpeed = speed_ * dt;
 	switch (type_)
 	{
 	case kControlCam:
 		if (Input::Keyboard().down[GLFW_KEY_LEFT_SHIFT])
-			currSpeed *= 5;
+			currSpeed *= 10;
 		if (Input::Keyboard().down[GLFW_KEY_W])
 			worldpos_ += currSpeed * front;
 		if (Input::Keyboard().down[GLFW_KEY_S])
@@ -48,4 +47,6 @@ void Camera::Update(float dt)
 	default:
 		break;
 	}
+
+	view_ = glm::lookAt(worldpos_, worldpos_ + front, up);
 }

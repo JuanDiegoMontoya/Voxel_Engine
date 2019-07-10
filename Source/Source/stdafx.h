@@ -6,7 +6,8 @@
 
 // OpenGL API stuff
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
+//#include <GLFW/glfw3.h>
+#include <glfw3.h>
 
 // GL math libraries
 #include <glm/glm.hpp>

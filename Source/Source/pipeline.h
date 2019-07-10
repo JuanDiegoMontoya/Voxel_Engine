@@ -185,9 +185,18 @@ namespace Render
 		-1.0, -1.0, 1.0,
 	};
 
-	static const float square_vertices[] = {
+	static const float square_vertices[] = 
+	{
 		 0.0f,  0.5f,
 		 0.5f, -0.5f,
 		-0.5f, -0.5f 
+	};
+
+	static const float square_vertices_3d[] = 
+	{
+		-0.5f, -0.5f, 0.0f,
+		 0.5f, -0.5f, 0.0f,
+		-0.5f,  0.5f, 0.0f,
+		 0.5f,  0.5f, 0.0f,
 	};
 }

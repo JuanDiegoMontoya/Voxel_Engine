@@ -68,6 +68,7 @@ void Chunk::Render()
 		glm::vec3 dir;
 		dir.x = cos(glfwGetTime());
 		dir.y = sin(glfwGetTime());
+		//dir.z = sin(glfwGetTime()) * cos(glfwGetTime());
 		dir.z = 0;
 		//currShader->setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
 		currShader->setVec3("dirLight.direction", dir);
