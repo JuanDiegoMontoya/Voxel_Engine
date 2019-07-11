@@ -29,5 +29,5 @@ private:
 	float pitch_ = 0;
 	float yaw_ = -90.0f;
 	float roll_ = 0;
-	float fov_ = 70.f;
+	float fov_ = 80.f;
 };

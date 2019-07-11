@@ -58,23 +58,6 @@ void Chunk::Render()
 		//glDisable(GL_CULL_FACE);
 		vao_->Bind();
 		vbo_->Bind();
-		ShaderPtr currShader = Shader::shaders["chunk_shaded"];
-		currShader->Use();
-		currShader->setMat4("u_model", model_);
-		currShader->setMat4("u_view", Render::GetCamera()->GetView());
-		currShader->setMat4("u_proj", Render::GetCamera()->GetProj());
-		currShader->setVec3("viewPos", Render::GetCamera()->GetPos());
-
-		glm::vec3 dir;
-		dir.x = cos(glfwGetTime());
-		dir.y = sin(glfwGetTime());
-		//dir.z = sin(glfwGetTime()) * cos(glfwGetTime());
-		dir.z = 0;
-		//currShader->setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		currShader->setVec3("dirLight.direction", dir);
-		currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
-		currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-		currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
 
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
 	}
@@ -191,6 +174,7 @@ GenQuad:
 	float g = Utils::get_random_r(0, 1);
 	float b = Utils::get_random_r(0, 1);
 	glm::vec3 colory(r, g, b);
+	//glm::vec3 colory(0, 1, 0);
 
 	float shiny = Utils::get_random_r(2, 64);
 

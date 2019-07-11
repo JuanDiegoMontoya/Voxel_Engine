@@ -194,7 +194,7 @@
     <ClInclude Include="sun.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="ctpl_stl.h">
+    <ClInclude Include="vendor\ctpl_stl.h">
       <Filter>vendor\ctpl</Filter>
     </ClInclude>
   </ItemGroup>

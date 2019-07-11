@@ -11,13 +11,11 @@
 #include "block.h"
 #include "chunk.h"
 #include "sun.h"
-#include <omp.h>
+//#include <omp.h>
 #include <chrono>
-#include <mutex>
 #include <execution>
-#include "ctpl_stl.h"
-
-static std::mutex mtx;
+#include "vendor/ctpl_stl.h"
+#include "input.h"
 
 using namespace std::chrono;
 //#define OMP_NUM_THREADS = 8;
@@ -44,14 +42,13 @@ void Level::Init()
 	cameras_.push_back(new Camera(kControlCam));
 	Render::SetCamera(cameras_[0]);
 
-	int cc = 4; // chunk count
+	int cc = 2; // chunk count
 	updatedChunks_.reserve(cc * cc * cc);
 	sizeof(Block);
 	// initialize a single chunk
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
-	omp_set_num_threads(8);
 	// this loop is not parallelizable (unless VAO constructor is moved)
 	for (int xc = 0; xc < cc; xc++)
 	{
@@ -69,7 +66,7 @@ void Level::Init()
 					{
 						for (int z = 0; z < Chunk::CHUNK_SIZE; z++)
 						{
-							if (Utils::get_random_r(0, 1) > 1.9f)
+							if (Utils::get_random_r(0, 1) > .08f)
 								continue;
 							init->At(x, y, z).SetType(Block::bStone);
 						}
@@ -81,10 +78,6 @@ void Level::Init()
 
 /*
 #define YEET
-
-	// TODO: chunk loading into memory-managable bites
-	// TODO: 64 bit compiling (max blocks WHILE GENERATING ~9 million in 32 bit
-	//			 unless broken into smaller chunks at a time)
 
 #ifdef YEET
 	int chk = 3;
@@ -167,17 +160,101 @@ void Level::Update(float dt)
 		cam->Update(dt);
 	}
 
-	// render sun first
 	sun_.Update();
+
+	DrawShadows();
+
+	// render sun first
 	sun_.Render();
 
+	DrawNormal();
+
+	if (Input::Keyboard().down[GLFW_KEY_4])
+	{
+		Shader::shaders["debug_shadow"]->Use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex());
+		renderQuad();
+	}
+}
+
+void Level::Draw()
+{
+	//glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK); // don't forget to reset original culling face
+	glViewport(0, 0, 1920, 1080);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
 	// render blocks in each active chunk
 	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
-		[](std::pair<glm::ivec3, Chunk*> chunk)
+		[&](std::pair<glm::ivec3, Chunk*> chunk)
 	{
 		if (chunk.second)
 			chunk.second->Render();
 	});
+}
+
+void Level::DrawNormal()
+{
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK); // don't forget to reset original culling face
+
+	// render blocks in each active chunk
+	ShaderPtr currShader = Shader::shaders["chunk_shaded"];
+	currShader->Use();
+	currShader->setMat4("u_view", Render::GetCamera()->GetView());
+	currShader->setMat4("u_proj", Render::GetCamera()->GetProj());
+	currShader->setVec3("viewPos", Render::GetCamera()->GetPos());
+	currShader->setVec3("lightPos", sun_.GetPos());
+	currShader->setMat4("lightSpaceMatrix", sun_.GetViewProj());
+
+	//currShader->setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+	currShader->setVec3("dirLight.direction", sun_.GetDir());
+	currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
+	currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+	currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+	//currShader->setInt("shadowMap", sun_.GetDepthTex());
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex());
+	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
+		[&](std::pair<glm::ivec3, Chunk*> chunk)
+	{
+		if (chunk.second)
+		{
+			currShader->setMat4("u_model", chunk.second->GetModel());
+			chunk.second->Render();
+		}
+	});
+}
+
+void Level::DrawShadows()
+{
+	// 1. render depth of scene to texture (from light's perspective)
+	//glDisable(GL_CULL_FACE);
+	//glCullFace(GL_FRONT);
+
+	ShaderPtr currShader = Shader::shaders["shadow"];
+	currShader->Use();
+	currShader->setMat4("lightSpaceMatrix", sun_.GetViewProj());
+
+	glViewport(0, 0, sun_.GetShadowSize().x, sun_.GetShadowSize().y);
+	glBindFramebuffer(GL_FRAMEBUFFER, sun_.GetDepthFBO());
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	// render blocks in each active chunk
+	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
+		[&](std::pair<glm::ivec3, Chunk*> chunk)
+	{
+		if (chunk.second)
+		{
+			currShader->setMat4("model", chunk.second->GetModel());
+			chunk.second->Render();
+		}
+	});
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, 1920, 1080);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Level::CheckCollision()
@@ -186,4 +263,33 @@ void Level::CheckCollision()
 
 void Level::CheckInteraction()
 {
+}
+
+static unsigned int quadVAO = 0;
+static unsigned int quadVBO;
+void renderQuad()
+{
+	if (quadVAO == 0)
+	{
+		float quadVertices[] = {
+			// positions        // texture Coords
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+		// setup plane VAO
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	}
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
 }

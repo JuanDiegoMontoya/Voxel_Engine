@@ -46,6 +46,8 @@ public:
 	void Render();
 	void BuildBuffers();
 
+	inline const glm::mat4& GetModel() const { return model_; }
+
 	inline void SetPos(glm::ivec3 pos)
 	{
 		pos_ = pos;
@@ -86,7 +88,7 @@ public:
 	}
 
 	static constexpr int GetChunkSize() { return CHUNK_SIZE; }
-	static constexpr int CHUNK_SIZE = 64;
+	static constexpr int CHUNK_SIZE = 32;
 
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 	static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, ivec3Hash> chunks;

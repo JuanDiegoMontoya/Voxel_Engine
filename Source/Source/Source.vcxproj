@@ -88,7 +88,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)lib\FMOD\studio\inc;$(SolutionDir)lib\rapidjson;$(SolutionDir)lib\FMOD\lowlevel\inc;$(SolutionDir)lib\lua-5.3.5\include;$(SolutionDir)lib\freetype\include;$(SolutionDir)lib\freetype\include\freetype;$(SolutionDir)lib\freetype\include\freetype\config;$(SolutionDir)lib\glew-2.0.0\include;$(SolutionDir)lib\glfw-3.3.bin.WIN64\include\GLFW;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\stb;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)lib\FMOD\studio\inc;$(SolutionDir)lib\rapidjson;$(SolutionDir)lib\FMOD\lowlevel\inc;$(SolutionDir)lib\lua-5.3.5\include;$(SolutionDir)lib\freetype\include;$(SolutionDir)lib\freetype\include\freetype;$(SolutionDir)lib\freetype\include\freetype\config;$(SolutionDir)lib\glew-2.0.0\include;$(SolutionDir)lib\glfw-3.3.bin.WIN64\include;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\stb;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)lib\FMOD\studio\lib;$(SolutionDir)lib\FMOD\lowlevel\lib;$(SolutionDir)\lib\rapidjson;$(SolutionDir)lib\lua-5.3.5\lib;$(SolutionDir)lib\freetype\lib\win64;$(SolutionDir)lib\glew-2.0.0\lib\Release\x64;$(SolutionDir)lib\glfw-3.3.bin.WIN64\lib-vc2015;$(SolutionDir)lib\SOIL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -101,7 +101,6 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/openmp /Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -134,7 +133,6 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/openmp /Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
@@ -163,7 +161,6 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <OpenMPSupport>true</OpenMPSupport>
-      <AdditionalOptions>/openmp /Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -201,7 +198,6 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <OpenMPSupport>true</OpenMPSupport>
-      <AdditionalOptions>/openmp /Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -326,7 +322,6 @@ copy "$(SolutionDir)lib\freetype\lib\win64\freetype.dll" "$(TargetDir)freetype.d
     <ClInclude Include="camera.h" />
     <ClInclude Include="chunk.h" />
     <ClInclude Include="component.h" />
-    <ClInclude Include="ctpl_stl.h" />
     <ClInclude Include="frustum.h" />
     <ClInclude Include="lit_mesh.h" />
     <ClInclude Include="mesh_comp.h" />
@@ -361,6 +356,7 @@ copy "$(SolutionDir)lib\freetype\lib\win64\freetype.dll" "$(TargetDir)freetype.d
     <ClInclude Include="vao.h" />
     <ClInclude Include="vbo.h" />
     <ClInclude Include="vbo_layout.h" />
+    <ClInclude Include="vendor\ctpl_stl.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />
     <ClInclude Include="vendor\imgui\imgui.h" />
     <ClInclude Include="vendor\imgui\imgui_impl_glfw.h" />

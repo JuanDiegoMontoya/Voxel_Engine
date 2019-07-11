@@ -14,6 +14,7 @@
 #include "transform.h"
 #include "block.h"
 #include <thread>
+#include "sun.h"
 
 #define ID2D(x, y, w) (width * row + col)
 
@@ -86,7 +87,13 @@ namespace Render
 		Shader::shaders["flat"] = new Shader("flat_color_instanced.vs", "flat_color_instanced.fs");
 		Shader::shaders["chunk"] = new Shader("chunk_flat.vs", "chunk_flat.fs");
 		Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
+		Shader::shaders["chunk_shaded"]->Use();
+		Shader::shaders["chunk_shaded"]->setInt("shadowMap", 0);
 		Shader::shaders["sun"] = new Shader("flat_sun.vs", "flat_sun.fs");
+		Shader::shaders["shadow"] = new Shader("shadow.vs", "shadow.fs");
+		Shader::shaders["debug_shadow"] = new Shader("debug_shadow.vs", "debug_shadow.fs");
+		Shader::shaders["debug_shadow"]->Use();
+		Shader::shaders["debug_shadow"]->setInt("depthMap", 0);
 
 		blockVao = new VAO();
 		blockVao->Bind();

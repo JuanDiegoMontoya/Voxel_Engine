@@ -18,6 +18,9 @@ public:
 
 	void Init();
 	void Update(float dt);
+	void Draw();
+	void DrawNormal();
+	void DrawShadows();
 	void CheckCollision();
 	void CheckInteraction();
 
@@ -26,6 +29,7 @@ public:
 	inline GamePtr Game() { return game_; }
 	inline const std::vector<GameObjectPtr>& GetObjects() const { return objects_; }
 	inline const glm::vec3& GetBgColor() const { return bgColor_; }
+	inline const Sun& GetSun() const { return sun_; }
 private:
 	std::vector<ChunkPtr> updatedChunks_;
 	std::string name_; // name of file
@@ -33,6 +37,7 @@ private:
 	std::vector<Camera*> cameras_;			 // all cameras in the scene
 	std::vector<GameObjectPtr> objects_; // all game objects in the scene
 	glm::vec3 bgColor_ = glm::vec3(53.f / 255.f, 81.f / 255.f, 98.f / 255.f);
+	
 	Sun sun_;
 	
 	//https://www.reddit.com/r/VoxelGameDev/comments/2t1kkh/best_method_of_chunk_management_in_3d/
@@ -40,3 +45,5 @@ private:
 	//std::unordered_map<glm::ivec3, ChunkPtr> activechunks_;
 
 }Level, *LevelPtr;
+
+void renderQuad();
