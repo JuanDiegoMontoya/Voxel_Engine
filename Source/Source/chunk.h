@@ -87,6 +87,16 @@ public:
 		return blocks[ID3D(x, y, z, CHUNK_SIZE, CHUNK_SIZE)];
 	}
 
+	// block at a position in world space
+	inline static BlockPtr AtWorld(glm::ivec3 p)
+	{
+		localpos w = worldBlockToLocalPos(p);
+		ChunkPtr cnk = chunks[w.chunk_pos];
+		if (cnk)
+			return &cnk->At(w.block_pos);
+		return nullptr;
+	}
+
 	static constexpr int GetChunkSize() { return CHUNK_SIZE; }
 	static constexpr int CHUNK_SIZE = 32;
 

@@ -21,8 +21,10 @@ public:
 	void Draw();
 	void DrawNormal();
 	void DrawShadows();
+	void DrawDebug();
 	void CheckCollision();
 	void CheckInteraction();
+	void ProcessUpdatedChunks();
 
 	inline void SetBgColor(glm::vec3 c) { bgColor_ = c; }
 
@@ -30,6 +32,8 @@ public:
 	inline const std::vector<GameObjectPtr>& GetObjects() const { return objects_; }
 	inline const glm::vec3& GetBgColor() const { return bgColor_; }
 	inline const Sun& GetSun() const { return sun_; }
+
+	friend class Game;
 private:
 	std::vector<ChunkPtr> updatedChunks_;
 	std::string name_; // name of file
@@ -40,10 +44,16 @@ private:
 	
 	Sun sun_;
 	
+	bool activeCursor = false;
+
 	//https://www.reddit.com/r/VoxelGameDev/comments/2t1kkh/best_method_of_chunk_management_in_3d/
 	//https://www.reddit.com/r/VoxelGameDev/comments/b6bgu8/voxel_chunk_management_c_opengl/
 	//std::unordered_map<glm::ivec3, ChunkPtr> activechunks_;
 
+	void checkBlockPlacement();
+	void checkBlockDestruction();
+
 }Level, *LevelPtr;
 
+void renderAxisIndicators();
 void renderQuad();

@@ -94,6 +94,7 @@ namespace Render
 		Shader::shaders["debug_shadow"] = new Shader("debug_shadow.vs", "debug_shadow.fs");
 		Shader::shaders["debug_shadow"]->Use();
 		Shader::shaders["debug_shadow"]->setInt("depthMap", 0);
+		Shader::shaders["axis"] = new Shader("axis.vs", "axis.fs");
 
 		blockVao = new VAO();
 		blockVao->Bind();

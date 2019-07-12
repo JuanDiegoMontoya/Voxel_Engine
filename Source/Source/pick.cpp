@@ -1,11 +1,10 @@
 #include "stdafx.h"
-#include "pick.h"
-#include "block.h"
 #include <functional>
+#include "block.h"
+#include "chunk.h"
+#include "pick.h"
 
-static int wx = 1000;
-static int wy = 1000;
-static int wz = 1000;
+static int ww = 10000;
 
 BlockPtr* blocks = nullptr;
 
@@ -14,7 +13,7 @@ int mod(int value, int modulus)
 	return (value % modulus + modulus) % modulus;
 }
 
-int intbound(int s, int ds)
+float intbound(float s, float ds)
 {
 	// Find the smallest positive t such that s+t*ds is an integer.
 	if (ds < 0) {
@@ -27,7 +26,7 @@ int intbound(int s, int ds)
 	}
 }
 
-int signum(int x)
+int signum(float x)
 {
 	return x > 0 ? 1 : x < 0 ? -1 : 0;
 }
@@ -67,18 +66,18 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 	int y = glm::floor(origin[1]);
 	int z = glm::floor(origin[2]);
 	// Break out direction vector.
-	int dx = direction[0];
-	int dy = direction[1];
-	int dz = direction[2];
+	float dx = direction[0];
+	float dy = direction[1];
+	float dz = direction[2];
 	// Direction to increment x,y,z when stepping.
 	int stepX = signum(dx);
 	int stepY = signum(dy);
 	int stepZ = signum(dz);
 	// See description above. The initial values depend on the fractional
 	// part of the origin.
-	int tMaxX = intbound(origin[0], dx);
-	int tMaxY = intbound(origin[1], dy);
-	int tMaxZ = intbound(origin[2], dz);
+	float tMaxX = intbound(origin[0], dx);
+	float tMaxY = intbound(origin[1], dy);
+	float tMaxZ = intbound(origin[2], dz);
 	// The change in t when taking a step (always positive).
 	int tDeltaX = stepX / dx;
 	int tDeltaY = stepY / dy;
@@ -97,15 +96,15 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 	radius /= glm::sqrt(dx * dx + dy * dy + dz * dz);
 
 	while (/* ray has not gone past bounds of world */
-		(stepX > 0 ? x < wx : x >= 0) &&
-		(stepY > 0 ? y < wy : y >= 0) &&
-		(stepZ > 0 ? z < wz : z >= 0))
+		(stepX > 0 ? x < ww : x >= -ww) &&
+		(stepY > 0 ? y < ww : y >= -ww) &&
+		(stepZ > 0 ? z < ww : z >= -ww))
 	{
 
 		// Invoke the callback, unless we are not *yet* within the bounds of the
 		// world.
-		if (!(x < 0 || y < 0 || z < 0 || x >= wx || y >= wy || z >= wz))
-			if (callback(x, y, z, blocks[x * wy * wz + y * wz + z], face))
+		if (!(x < -ww || y < -ww || z < -ww || x >= ww || y >= ww || z >= ww))
+			if (callback(x, y, z, Chunk::AtWorld(glm::ivec3(x, y, z)), face))
 				break;
 
 		// tMaxX stores the t-value at which we cross a cube boundary along the

@@ -39,19 +39,25 @@ Sun::Sun()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	near_ = 0.1f;
-	far_ = 200.f;
+	far_ = 300.f;
+	dir_ = glm::vec3(.3f, -1, -0.5);
+	pos_ = -dir_ * 200.f;
 }
 
 void Sun::Update()
 {
-	dir_.x = cos(glfwGetTime());
-	dir_.y = sin(glfwGetTime());
-	dir_.z = -.2f;
-	//dir_ = glm::vec3(.3f, -1, -0.5);
-	pos_ = Render::GetCamera()->GetPos() - dir_ * 100.f;
-	pos_ = -dir_ * 100.f;
+	if (orbits)
+	{
+		dir_.x = cos(glfwGetTime());
+		dir_.y = sin(glfwGetTime());
+		dir_.z = -.2f;
+		pos_ = -dir_ * followDist + orbitPos;
+	}
+
+	if (followCam)
+		pos_ = Render::GetCamera()->GetPos() - dir_ * followDist;
 	
-	glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, near_, far_);
+	glm::mat4 lightProjection = glm::ortho(-projSize, projSize, -projSize, projSize, near_, far_);
 	glm::mat4 lightView = glm::lookAt(pos_, dir_, glm::vec3(0.0, 1.0, 0.0));
 	sunViewProj_ = lightProjection * lightView;
 }
@@ -81,5 +87,5 @@ void Sun::Render()
 			the sun being at infinity.
 			Note: this means the sun should be rendered first each frame
 			to prevent depth-related artifacts from appearing. */
-	glClear(GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_DEPTH_BUFFER_BIT);
 }

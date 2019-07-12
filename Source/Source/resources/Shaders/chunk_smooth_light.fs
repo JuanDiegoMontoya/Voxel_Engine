@@ -44,8 +44,8 @@ float ShadowCalculation(vec4 fragPosLightSpace)
   // calculate bias (based on depth map resolution and slope)
   vec3 normal = normalize(vNormal);
   vec3 lightDir = normalize(lightPos - vPos);
-  float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.001);
-  //bias = 0.0001;
+  float bias = max(0.0001 * (1.0 - dot(normal, lightDir)), 0.0001);
+  //bias = 0.0;
   
   // check whether current frag pos is in shadow
   // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
@@ -98,8 +98,8 @@ void main()
   vec3 ambient = dirLight.ambient * color;
   
   // diffuse
-  //vec3 lightDir = normalize(lightPos - vPos);
-  vec3 lightDir = -dirLight.direction;
+  vec3 lightDir = normalize(lightPos - vPos);
+  //vec3 lightDir = -dirLight.direction;
   float diff = max(dot(lightDir, normal), 0.0);
   vec3 diffuse = diff * lightColor;
   
@@ -116,7 +116,7 @@ void main()
   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
   
   fragColor = vec4(lighting, 1.0);
-  //fragColor = vec4(vec3(1.0 - shadow), 1.0);
+  //fragColor = vec4(vec3(1.0 - shadow), 1.0); // shadow debugging
 }
 
 /*
