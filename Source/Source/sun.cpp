@@ -58,7 +58,8 @@ void Sun::Update()
 		pos_ = Render::GetCamera()->GetPos() - dir_ * followDist;
 	
 	glm::mat4 lightProjection = glm::ortho(-projSize, projSize, -projSize, projSize, near_, far_);
-	glm::mat4 lightView = glm::lookAt(pos_, dir_, glm::vec3(0.0, 1.0, 0.0));
+	//glm::mat4 lightView = glm::lookAt(pos_, dir_, glm::vec3(0.0, 1.0, 0.0));
+	glm::mat4 lightView = glm::lookAt(pos_, Render::GetCamera()->GetPos(), glm::vec3(0.0, 1.0, 0.0));
 	sunViewProj_ = lightProjection * lightView;
 }
 

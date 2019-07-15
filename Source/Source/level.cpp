@@ -127,8 +127,37 @@ for (int xc = 0; xc < cc; xc++)
 	}
 #endif
 */
+	std::cout << "PRE Processed chunk positions (x, y, z):" << '\n';
+	for (auto& chunk : Chunk::chunks)
+	{
+		if (chunk.second)
+		{
+			const auto& poo = chunk.second->GetPos();
+			std::cout << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
+		}
+		else
+		{
+			const auto& poo = chunk.first;
+			std::cout << "Disabled chunk at: " << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
+		}
+	}
 
 	ProcessUpdatedChunks();
+
+	std::cout << "POST Processed chunk positions (x, y, z):" << '\n';
+	for (auto& chunk : Chunk::chunks)
+	{
+		if (chunk.second)
+		{
+			const auto& poo = chunk.second->GetPos();
+			std::cout << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
+		}
+		else
+		{
+			const auto& poo = chunk.first;
+			std::cout << "Disabled chunk at: " << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
+		}
+	}
 	
 	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
 	std::cout << benchmark_duration_.count() << std::endl;
@@ -246,38 +275,63 @@ void Level::DrawShadows()
 
 void Level::DrawDebug()
 {
-	ImGui::SetNextWindowPos(ImVec2(20, 20));
-	ImGui::SetNextWindowSize(ImVec2(400, 600));
-	ImGui::Begin("Sun");
+	{
+		ImGui::SetNextWindowPos(ImVec2(20, 20));
+		ImGui::SetNextWindowSize(ImVec2(400, 600));
+		ImGui::Begin("Sun");
 
-	glm::vec3 pos = sun_.GetPos();
-	if (ImGui::DragFloat3("Sun Pos", &pos[0], 1, -500, 500, "%.0f"))
-		sun_.SetPos(pos);
+		glm::vec3 pos = sun_.GetPos();
+		if (ImGui::DragFloat3("Sun Pos", &pos[0], 1, -500, 500, "%.0f"))
+			sun_.SetPos(pos);
 
-	glm::vec3 dir = sun_.GetDir();
-	if (ImGui::DragFloat3("Sun Dir", &dir[0], .01f, -1, 1, "%.3f"))
-		sun_.SetDir(dir);
+		glm::vec3 dir = sun_.GetDir();
+		if (ImGui::SliderFloat3("Sun Dir", &dir[0], -1, 1, "%.3f"))
+			sun_.SetDir(dir);
 
-	ImGui::Checkbox("Orbit Pos", &sun_.orbits);
-	ImGui::SameLine();
-	ImGui::DragFloat3("##Orbitee", &sun_.orbitPos[0], 1, -500, 500, "%.0f");
-	ImGui::Checkbox("Follow Cam", &sun_.followCam);
-	ImGui::DragFloat("Follow Distance", &sun_.followDist, .5, 0, 500, "%.0f");
+		ImGui::Checkbox("Orbit Pos", &sun_.orbits);
+		ImGui::SameLine();
+		ImGui::DragFloat3("##Orbitee", &sun_.orbitPos[0], 2.f, -500, 500, "%.0f");
+		ImGui::Checkbox("Follow Cam", &sun_.followCam);
+		ImGui::SliderFloat("Follow Distance", &sun_.followDist, 0, 500, "%.0f");
 
-	float far = sun_.GetFarPlane();
-	if (ImGui::DragFloat("Far Plane", &far, 2, 1, 1000, "%.0f"))
-		sun_.SetFarPlane(far);
+		float far = sun_.GetFarPlane();
+		if (ImGui::SliderFloat("Far Plane", &far, 1, 1000, "%.0f"))
+			sun_.SetFarPlane(far);
 
-	ImGui::SliderFloat("Projection Window", &sun_.projSize, 0, 500, "%.0f");
+		ImGui::SliderFloat("Projection Window", &sun_.projSize, 0, 500, "%.0f");
 
-	//int shadow = sun_.GetShadowSize().x;
-	//if (ImGui::InputInt("Shadow Scale", &shadow, 1024, 1024))
-	//{
-	//	glm::clamp(shadow, 0, 16384);
-	//	sun_.SetShadowSize(glm::ivec2(shadow));
-	//}
+		//int shadow = sun_.GetShadowSize().x;
+		//if (ImGui::InputInt("Shadow Scale", &shadow, 1024, 1024))
+		//{
+		//	glm::clamp(shadow, 0, 16384);
+		//	sun_.SetShadowSize(glm::ivec2(shadow));
+		//}
 
-	ImGui::End();
+		ImGui::End();
+	}
+
+	{
+		ImGui::SetNextWindowPos(ImVec2(1500, 20));
+		ImGui::SetNextWindowSize(ImVec2(400, 600));
+		ImGui::Begin("Info");
+
+		glm::vec3 pos = Render::GetCamera()->GetPos();
+		ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
+		pos = Render::GetCamera()->front;
+		ImGui::Text("Camera Direction: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
+
+		ImGui::NewLine();
+		ImGui::Text("Chunk count: %d", Chunk::chunks.size());
+		int cnt = 0;
+		for (auto& p : Chunk::chunks)
+			if (p.second) cnt++;
+		ImGui::Text("Non-null chunks: %d", cnt);
+
+		ImGui::NewLine();
+		ImGui::Text("Flying: %s", activeCursor ? "False" : "True");
+
+		ImGui::End;
+	}
 
 	//glViewport(1920 / 2, 1080 / 2, 50, 50); // X by Y pixel square at the center
 	//glm::mat4 model = glm::rotate
@@ -344,7 +398,7 @@ void Level::checkBlockDestruction()
 			if (!block || block->GetType() == Block::bAir)
 				return false;
 			//Chunk::AtWorld(glm::ivec3(x, y, z))->SetType(Block::bStone);
-			block->SetType(Block::bStone);
+			block->SetType(Block::bAir);
 			updatedChunks_.push_back(Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos]);
 			return true;
 		}

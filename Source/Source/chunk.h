@@ -10,7 +10,7 @@ class VBO;
 
 struct localpos
 {
-	localpos(glm::ivec3 chunk, glm::ivec3 block)
+	localpos(glm::ivec3& chunk, glm::ivec3& block)
 		: chunk_pos(chunk), block_pos(block) {}
 	glm::ivec3 chunk_pos; // within world
 	glm::ivec3 block_pos; // within chunk
@@ -48,7 +48,7 @@ public:
 
 	inline const glm::mat4& GetModel() const { return model_; }
 
-	inline void SetPos(glm::ivec3 pos)
+	inline void SetPos(const glm::ivec3& pos)
 	{
 		pos_ = pos;
 		model_ = glm::translate(glm::mat4(1.f), glm::vec3(pos_) * (float)CHUNK_SIZE);
@@ -60,7 +60,7 @@ public:
 	// may need to upgrade to glm::i64vec3 if worldgen at far distances is fug'd
 	// "origin" chunk goes from 0-CHUNK_SIZE rather than -CHUNK_SIZE/2-CHUNK_SIZE/2
 	// chunk at (0,0,0) spans 0-CHUNK_SIZE
-	inline static localpos worldBlockToLocalPos(glm::ivec3 worldPos)
+	inline static localpos worldBlockToLocalPos(const glm::ivec3 worldPos)
 	{
 		glm::ivec3 chk = glm::floor(glm::vec3(worldPos) / (float)CHUNK_SIZE);// *(float)CHUNK_SIZE;
 		glm::ivec3 mod(worldPos % CHUNK_SIZE);
@@ -72,12 +72,12 @@ public:
 	}
 
 	// gives the true world position of a block within a chunk
-	inline glm::ivec3 chunkBlockToWorldPos(glm::ivec3 localPos)
+	inline glm::ivec3 chunkBlockToWorldPos(const glm::ivec3 localPos)
 	{
 		return glm::ivec3(localPos + (pos_ * CHUNK_SIZE));
 	}
 
-	inline Block& At(glm::ivec3 p)
+	inline Block& At(const glm::ivec3 p)
 	{
 		return blocks[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
 	}
@@ -88,7 +88,7 @@ public:
 	}
 
 	// block at a position in world space
-	inline static BlockPtr AtWorld(glm::ivec3 p)
+	inline static BlockPtr AtWorld(const glm::ivec3 p)
 	{
 		localpos w = worldBlockToLocalPos(p);
 		ChunkPtr cnk = chunks[w.chunk_pos];

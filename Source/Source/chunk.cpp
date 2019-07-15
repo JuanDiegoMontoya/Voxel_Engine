@@ -71,7 +71,7 @@ void Chunk::BuildBuffers()
 	vbo_ = new VBO(&vertices[0], sizeof(float) * vertices.size(), GL_STATIC_DRAW);
 	vbo_->Bind();
 	vertexCount_ = vertices.size() / 10; // divisor = number of floats per vertex
-	chunks;
+
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (void*)0); // screenpos
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (void*)(sizeof(float) * 3)); // color
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (void*)(sizeof(float) * 6)); // normal

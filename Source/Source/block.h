@@ -26,12 +26,6 @@ public:
 	// positions, texcoords
 	//glm::vec4 clr = glm::vec4(1);
 
-	inline void SetPos(glm::ivec3 p) 
-	{ 
-		//pos_ = p;
-		//update();
-	}
-
 	//inline const glm::ivec3& GetPos() const { return pos_; }
 	//inline glm::vec3 GetMax() const
 	//{
