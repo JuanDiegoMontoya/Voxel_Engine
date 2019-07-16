@@ -78,9 +78,12 @@ void Level::Init()
 		}
 	}
 
-	// TODO: enable compiler optimizations
-	// TODO: figure out why chunk positions are (maybe) screwed up epically
+	// TODO: enable compiler C++ optimizations (currently disabled for debugging purposes)
 
+	/* TODO: understand the discrepancy between world positions and chunk/local positions
+		I feel it has something to do with the function(s) that convert between the two, but
+		VISUALLY things seem to be fine. The block picker is failing though and it's annoying.
+	*/
 /*
 #define YEET
 
@@ -320,8 +323,13 @@ void Level::DrawDebug()
 		pos = Render::GetCamera()->front;
 		ImGui::Text("Camera Direction: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
 
+		localpos local = Chunk::worldBlockToLocalPos(Render::GetCamera()->GetPos());
+		ImGui::Text("In chunk pos: (%d, %d, %d)", local.chunk_pos.x, local.chunk_pos.y, local.chunk_pos.z);
+		ImGui::Text("In block pos: (%d, %d, %d)", local.block_pos.x, local.block_pos.y, local.block_pos.z);
+
 		ImGui::NewLine();
 		ImGui::Text("Chunk count: %d", Chunk::chunks.size());
+		ImGui::Text("Chunk size: %d", Chunk::CHUNK_SIZE);
 		int cnt = 0;
 		for (auto& p : Chunk::chunks)
 			if (p.second) cnt++;
@@ -333,11 +341,8 @@ void Level::DrawDebug()
 		ImGui::End;
 	}
 
-	//glViewport(1920 / 2, 1080 / 2, 50, 50); // X by Y pixel square at the center
-	//glm::mat4 model = glm::rotate
-	Shader::shaders["axis"]->Use();
+
 	renderAxisIndicators();
-	//glViewport(0, 0, 1920, 1080);
 }
 
 void Level::CheckCollision()
@@ -352,6 +357,11 @@ void Level::CheckInteraction()
 
 void Level::ProcessUpdatedChunks()
 {
+	/* TODO: make function to only add chunk to update list if it isn't in it already
+		(everything and everyone dies if the same chunk is updated twice in a row)
+		Alternatively, add an UPDATED flag to each chunk saying if it's already been updated.
+		The first solution seems like it would be cleaner though.
+	*/
 	std::for_each(
 		std::execution::par_unseq,
 		updatedChunks_.begin(),
@@ -391,7 +401,7 @@ void Level::checkBlockDestruction()
 		raycast(
 			Render::GetCamera()->GetPos(),
 			Render::GetCamera()->front,
-			10,
+			2,
 			std::function<bool(float, float, float, BlockPtr, glm::vec3)>
 			([&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
 		{
@@ -400,7 +410,7 @@ void Level::checkBlockDestruction()
 			//Chunk::AtWorld(glm::ivec3(x, y, z))->SetType(Block::bStone);
 			block->SetType(Block::bAir);
 			updatedChunks_.push_back(Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos]);
-			return true;
+			return false;
 		}
 		));
 	}
@@ -408,9 +418,11 @@ void Level::checkBlockDestruction()
 
 static unsigned int axisIndicatorVAO;
 static unsigned int axisIndicatorVBO;
+static VAO* axisVAO;
+static VBO* axisVBO;
 void renderAxisIndicators()
 {
-	if (axisIndicatorVAO == 0)
+	if (axisVAO == nullptr)
 	{
 		float indicatorVertices[] =
 		{
@@ -423,22 +435,29 @@ void renderAxisIndicators()
 			0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
 		};
 
-		glGenVertexArrays(1, &axisIndicatorVAO);
-		glGenBuffers(1, &axisIndicatorVBO);
-		glBindVertexArray(axisIndicatorVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, axisIndicatorVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(indicatorVertices), &indicatorVertices, GL_STATIC_DRAW);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
+		axisVAO = new VAO();
+		axisVBO = new VBO(indicatorVertices, sizeof(indicatorVertices), GL_STATIC_DRAW);
+		VBOlayout layout;
+		layout.Push<float>(3);
+		layout.Push<float>(3);
+		axisVAO->AddBuffer(*axisVBO, layout);
 	}
-	glBindVertexArray(axisIndicatorVAO);
-	//glDrawArrays(GL_LINES, 0, 6);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
+	/* Renders the axis indicator (a screen-space object) as though it were
+		one that exists in the world for simplicity. */
+	ShaderPtr currShader = Shader::shaders["axis"];
+	currShader->Use();
+	Camera* cam = Render::GetCamera();
+	currShader->setMat4("u_model", glm::translate(glm::mat4(1), cam->GetPos() + cam->front * 10.f)); // add scaling factor (larger # = smaller visual)
+	currShader->setMat4("u_view", cam->GetView());
+	currShader->setMat4("u_proj", cam->GetProj());
+	glClear(GL_DEPTH_BUFFER_BIT); // allows indicator to always be rendered
+	axisVAO->Bind();
+	glLineWidth(2.f);
+	glDrawArrays(GL_LINES, 0, 6);
+	axisVAO->Unbind();
 }
 
+// draw the shadow map/view of the world from the sun's perspective
 static unsigned int quadVAO = 0;
 static unsigned int quadVBO;
 void renderQuad()

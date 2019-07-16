@@ -13,15 +13,15 @@ static std::mutex mtx;
 
 Chunk::Chunk(bool active) : active_(active)
 {
-	std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
-	lck.lock();
+	//std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
+	//lck.lock();
 	vao_ = new VAO();
-	lck.unlock();
+	//lck.unlock();
 
 	float r = Utils::get_random(0, 1);
 	float g = Utils::get_random(0, 1);
 	float b = Utils::get_random(0, 1);
-	color = glm::vec4(r, g, b, 1.f);
+	colorTEMP = glm::vec4(r, g, b, 1.f);
 }
 
 Chunk::~Chunk()
@@ -58,7 +58,7 @@ void Chunk::Render()
 		//glDisable(GL_CULL_FACE);
 		vao_->Bind();
 		vbo_->Bind();
-
+		Chunk::chunks;
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
 	}
 }
@@ -170,13 +170,13 @@ GenQuad:
 
 	//glm::mat4 localTransform = glm::translate(glm::mat4(1.f), glm::vec3(x, y, z)); // non-scaled
 		// add a random color to each quad
-	float r = Utils::get_random_r(0, 1);
-	float g = Utils::get_random_r(0, 1);
-	float b = Utils::get_random_r(0, 1);
-	glm::vec3 colory(r, g, b);
+	//float r = Utils::get_random_r(0, 1);
+	//float g = Utils::get_random_r(0, 1);
+	//float b = Utils::get_random_r(0, 1);
+	//glm::vec3 colory(r, g, b);
 	//glm::vec3 colory(0, 1, 0);
 
-	float shiny = Utils::get_random_r(2, 64);
+	float shiny = Utils::get_random_r(0, 128);
 
 	for (int i = quadStride * curQuad; i < quadStride * (curQuad + 1); i += 8) // += floats per vertex
 	{
@@ -193,16 +193,16 @@ GenQuad:
 		quad.push_back(tri.z);
 
 		// color
-		quad.push_back(colory.r);
-		quad.push_back(colory.g);
-		quad.push_back(colory.b);
+		quad.push_back(colorTEMP.r);
+		quad.push_back(colorTEMP.g);
+		quad.push_back(colorTEMP.b);
 
 		// normals
 		quad.push_back(data[i + 3]);
 		quad.push_back(data[i + 4]);
 		quad.push_back(data[i + 5]);
 
-		// shininess (0-1)
+		// shininess (rng)
 		quad.push_back(shiny);
 
 		// texture

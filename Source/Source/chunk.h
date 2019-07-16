@@ -42,6 +42,8 @@ public:
 	Chunk(bool active = false);
 	~Chunk();
 
+	glm::vec3 colorTEMP;
+
 	void Update();
 	void Render();
 	void BuildBuffers();
@@ -69,6 +71,16 @@ public:
 			mod.y >= 0 ? mod.y : CHUNK_SIZE + mod.y,
 			mod.z >= 0 ? mod.z : CHUNK_SIZE + mod.z);
 		return localpos(chk, mod);
+
+		//glm::ivec3 chk;// = worldPos >> glm::sqrt(CHUNK_SIZE);
+		//chk.x = worldPos.x >> glm::log2<int>(CHUNK_SIZE);
+		//chk.y = worldPos.y >> glm::log2<int>(CHUNK_SIZE);
+		//chk.z = worldPos.z >> glm::log2<int>(CHUNK_SIZE);
+		//glm::ivec3 mod;// = worldPos % CHUNK_SIZE;
+		//mod.x = worldPos.x & CHUNK_SIZE;
+		//mod.y = worldPos.y & CHUNK_SIZE;
+		//mod.z = worldPos.z & CHUNK_SIZE;
+		//return localpos(chk, mod);
 	}
 
 	// gives the true world position of a block within a chunk
@@ -98,7 +110,7 @@ public:
 	}
 
 	static constexpr int GetChunkSize() { return CHUNK_SIZE; }
-	static constexpr int CHUNK_SIZE = 32;
+	static constexpr int CHUNK_SIZE = 8;
 
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 	static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, ivec3Hash> chunks;
@@ -114,7 +126,6 @@ private:
 	bool active_;
 
 	// rendering stuff
-	glm::vec4 color; // temp
 	VAO* vao_ = nullptr;
 	VBO* vbo_ = nullptr;
 
