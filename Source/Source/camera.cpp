@@ -19,6 +19,8 @@ void Camera::Update(float dt)
 	case kControlCam:
 		if (Input::Keyboard().down[GLFW_KEY_LEFT_SHIFT])
 			currSpeed *= 10;
+		if (Input::Keyboard().down[GLFW_KEY_LEFT_CONTROL])
+			currSpeed /= 10;
 		if (Input::Keyboard().down[GLFW_KEY_W])
 			worldpos_ += currSpeed * front;
 		if (Input::Keyboard().down[GLFW_KEY_S])

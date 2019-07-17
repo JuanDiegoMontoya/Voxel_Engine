@@ -16,11 +16,13 @@ public:
 	inline const glm::mat4& GetProj() { return proj_; }
 	inline const glm::vec3& GetPos() { return worldpos_; }
 
+	inline void SetPos(const glm::vec3& v) { worldpos_ = v; }
+
 	glm::vec3 up = glm::vec3(0, 1.f, 0);
 	glm::vec3 front = glm::vec3(0, 0, -1.f);
 private:
 	CameraType type_;
-	glm::vec3 worldpos_ = glm::vec3(0, 0, 3.f);
+	glm::vec3 worldpos_ = glm::vec3(0, 0, 0);
 	glm::mat4 view_ = glm::mat4(1);
 	glm::mat4 proj_;
 

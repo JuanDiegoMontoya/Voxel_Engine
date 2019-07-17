@@ -8,9 +8,10 @@ static int ww = 10000;
 
 BlockPtr* blocks = nullptr;
 
-int mod(int value, int modulus)
+float mod(float value, float modulus)
 {
-	return (value % modulus + modulus) % modulus;
+	return fmod((fmod(value, modulus)) + modulus, modulus);
+	//return (value % modulus + modulus) % modulus;
 }
 
 float intbound(float s, float ds)
@@ -70,9 +71,9 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 	float dy = direction[1];
 	float dz = direction[2];
 	// Direction to increment x,y,z when stepping.
-	float stepX = signum(dx);
-	float stepY = signum(dy);
-	float stepZ = signum(dz);
+	int stepX = signum(dx);
+	int stepY = signum(dy);
+	int stepZ = signum(dz);
 	// See description above. The initial values depend on the fractional
 	// part of the origin.
 	float tMaxX = intbound(origin[0], dx);
@@ -95,17 +96,13 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 	// compare with 't'.
 	radius /= glm::sqrt(dx * dx + dy * dy + dz * dz);
 
-	while (/* ray has not gone past bounds of world */
-		(stepX > 0 ? x < ww : x >= -ww) &&
-		(stepY > 0 ? y < ww : y >= -ww) &&
-		(stepZ > 0 ? z < ww : z >= -ww))
+	while (1)
 	{
 
 		// Invoke the callback, unless we are not *yet* within the bounds of the
 		// world.
-		if (!(x < -ww || y < -ww || z < -ww || x >= ww || y >= ww || z >= ww))
-			if (callback(x, y, z, Chunk::AtWorld(glm::ivec3(x, y, z)), face))
-				break;
+		if (callback(x, y, z, Chunk::AtWorld(glm::ivec3(x, y, z)), face))
+			break;
 
 		// tMaxX stores the t-value at which we cross a cube boundary along the
 		// X axis, and similarly for Y and Z. Therefore, choosing the least tMax
@@ -182,11 +179,21 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 // line from (x1, y1, z1) to (x2, y2, z2)
 
 
-//void Bresenham3D(int x1, int y1, int z1, const int x2, const int y2, const int z2, 
+//void raycast(glm::vec3 origin, glm::vec3 direction, float radius, 
 //	std::function<bool(float, float, float, BlockPtr, glm::vec3)> callback)
 //{
 //	int i, dx, dy, dz, l, m, n, x_inc, y_inc, z_inc, err_1, err_2, dx2, dy2, dz2;
-//	int point[3];
+//	//int point[3];
+//	int x1, y1, z1;
+//	int x2, y2, z2;
+//	glm::ivec3 face(0);
+//	glm::ivec3 point;
+//	x1 = origin.x;
+//	y1 = origin.y;
+//	z1 = origin.z;
+//	x2 = x1 + direction.x * radius;
+//	y2 = y1 + direction.y * radius;
+//	z2 = z1 + direction.z * radius;
 //
 //	point[0] = x1;
 //	point[1] = y1;
@@ -211,7 +218,8 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 //		for (i = 0; i < l; i++)
 //		{
 //			//output->getTileAt(point[0], point[1], point[2])->setSymbol(symbol);
-//			callback(x, y, z, Chunk::AtWorld(glm::ivec3(x, y, z)), face);
+//			if (callback(point.x, point.y, point.z, Chunk::AtWorld(point), face))
+//				break;
 //			if (err_1 > 0)
 //			{
 //				point[1] += y_inc;
@@ -233,7 +241,9 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 //		err_2 = dz2 - m;
 //		for (i = 0; i < m; i++)
 //		{
-//			output->getTileAt(point[0], point[1], point[2])->setSymbol(symbol);
+//			//output->getTileAt(point[0], point[1], point[2])->setSymbol(symbol);
+//			if (callback(point.x, point.y, point.z, Chunk::AtWorld(point), face))
+//				return;
 //			if (err_1 > 0) {
 //				point[0] += x_inc;
 //				err_1 -= dy2;
@@ -254,7 +264,9 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 //		err_2 = dx2 - n;
 //		for (i = 0; i < n; i++)
 //		{
-//			output->getTileAt(point[0], point[1], point[2])->setSymbol(symbol);
+//			//output->getTileAt(point[0], point[1], point[2])->setSymbol(symbol);
+//			if (callback(point.x, point.y, point.z, Chunk::AtWorld(point), face))
+//				return;
 //			if (err_1 > 0) {
 //				point[1] += y_inc;
 //				err_1 -= dz2;
@@ -269,5 +281,43 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 //			point[2] += z_inc;
 //		}
 //	}
-//	output->getTileAt(point[0], point[1], point[2])->setSymbol(symbol);
+//	//output->getTileAt(point[0], point[1], point[2])->setSymbol(symbol);
+//	callback(point.x, point.y, point.z, Chunk::AtWorld(point), face);
+//}
+
+//void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<bool(float, float, float, BlockPtr, glm::vec3)> callback)
+//{
+//	// r.dir is unit direction vector of ray
+//	dirfrac.x = 1.0f / direction.x;
+//	dirfrac.y = 1.0f / direction.y;
+//	dirfrac.z = 1.0f / direction.z;
+//
+//	// lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+//	// r.org is origin of ray
+//	float t1 = (lb.x - r.org.x) * dirfrac.x;
+//	float t2 = (rt.x - r.org.x) * dirfrac.x;
+//	float t3 = (lb.y - r.org.y) * dirfrac.y;
+//	float t4 = (rt.y - r.org.y) * dirfrac.y;
+//	float t5 = (lb.z - r.org.z) * dirfrac.z;
+//	float t6 = (rt.z - r.org.z) * dirfrac.z;
+//
+//	float tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
+//	float tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
+//
+//	// if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
+//	if (tmax < 0)
+//	{
+//		t = tmax;
+//		return false;
+//	}
+//
+//	// if tmin > tmax, ray doesn't intersect AABB
+//	if (tmin > tmax)
+//	{
+//		t = tmax;
+//		return false;
+//	}
+//
+//	t = tmin;
+//	return true;
 //}

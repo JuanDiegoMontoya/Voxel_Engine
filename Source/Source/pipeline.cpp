@@ -150,6 +150,7 @@ namespace Render
 		Shader::shaders["debug_shadow"]->Use();
 		Shader::shaders["debug_shadow"]->setInt("depthMap", 0);
 		Shader::shaders["axis"] = new Shader("axis.vs", "axis.fs");
+		Shader::shaders["flat_color"] = new Shader("flat_color.vs", "flat_color.fs");
 
 		blockVao = new VAO();
 		blockVao->Bind();

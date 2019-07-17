@@ -80,87 +80,42 @@ void Level::Init()
 
 	// TODO: enable compiler C++ optimizations (currently disabled for debugging purposes)
 
-	/* TODO: understand the discrepancy between world positions and chunk/local positions
-		I feel it has something to do with the function(s) that convert between the two, but
-		VISUALLY things seem to be fine. The block picker is failing though and it's annoying.
+	/* TODO: write updateBlock() function to handle updating block IDs and updating nearby chunks,
+	updating meshes, etc.
 	*/
-/*
-#define YEET
 
-#ifdef YEET
-	int chk = 3;
-	for (int i = 0; i < chk; i++)
-	{
-#endif
-#pragma omp parallel for num_threads(8)
-#ifdef YEET
-		for (int xc = cc / chk * i; xc < cc; xc++)
-		{
-			if (xc >= cc / chk * (i + 1))
-				break;
-#else
-for (int xc = 0; xc < cc; xc++)
-{
-#endif
-			for (int yc = 0; yc < cc; yc++)
-			{
-				for (int zc = 0; zc < cc; zc++)
-				{
-					Chunk::chunks[glm::ivec3(xc, yc, zc)]->Update();
-				}
-			}
-		}
-
-		// this loop cannot be parallelized
-#ifdef YEET
-		for (int xc = cc / chk * i; xc < cc / chk * (i + 1) && xc < cc; xc++)
-#else
-		for (int xc = 0; xc < cc; xc++)
-#endif
-		{
-			for (int yc = 0; yc < cc; yc++)
-			{
-				for (int zc = 0; zc < cc; zc++)
-				{
-					Chunk::chunks[glm::ivec3(xc, yc, zc)]->BuildBuffers();
-				}
-			}
-		}
-#ifdef YEET
-	}
-#endif
-*/
-	std::cout << "PRE Processed chunk positions (x, y, z):" << '\n';
-	for (auto& chunk : Chunk::chunks)
-	{
-		if (chunk.second)
-		{
-			const auto& poo = chunk.second->GetPos();
-			std::cout << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
-		}
-		else
-		{
-			const auto& poo = chunk.first;
-			std::cout << "Disabled chunk at: " << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
-		}
-	}
+	//std::cout << "PRE Processed chunk positions (x, y, z):" << '\n';
+	//for (auto& chunk : Chunk::chunks)
+	//{
+	//	if (chunk.second)
+	//	{
+	//		const auto& poo = chunk.second->GetPos();
+	//		std::cout << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
+	//	}
+	//	else
+	//	{
+	//		const auto& poo = chunk.first;
+	//		std::cout << "Disabled chunk at: " << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
+	//	}
+	//}
 
 	ProcessUpdatedChunks();
+	TestCoordinateStuff();
 
-	std::cout << "POST Processed chunk positions (x, y, z):" << '\n';
-	for (auto& chunk : Chunk::chunks)
-	{
-		if (chunk.second)
-		{
-			const auto& poo = chunk.second->GetPos();
-			std::cout << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
-		}
-		else
-		{
-			const auto& poo = chunk.first;
-			std::cout << "Disabled chunk at: " << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
-		}
-	}
+	//std::cout << "POST Processed chunk positions (x, y, z):" << '\n';
+	//for (auto& chunk : Chunk::chunks)
+	//{
+	//	if (chunk.second)
+	//	{
+	//		const auto& poo = chunk.second->GetPos();
+	//		std::cout << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
+	//	}
+	//	else
+	//	{
+	//		const auto& poo = chunk.first;
+	//		std::cout << "Disabled chunk at: " << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
+	//	}
+	//}
 	
 	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
 	std::cout << benchmark_duration_.count() << std::endl;
@@ -276,6 +231,8 @@ void Level::DrawShadows()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+static VAO* blockHoverVao = nullptr;
+static VBO* blockHoverVbo = nullptr;
 void Level::DrawDebug()
 {
 	{
@@ -319,7 +276,9 @@ void Level::DrawDebug()
 		ImGui::Begin("Info");
 
 		glm::vec3 pos = Render::GetCamera()->GetPos();
-		ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
+		//ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
+		if (ImGui::InputFloat3("Camera Position", &pos[0], 2))
+			Render::GetCamera()->SetPos(pos);
 		pos = Render::GetCamera()->front;
 		ImGui::Text("Camera Direction: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
 
@@ -337,6 +296,45 @@ void Level::DrawDebug()
 
 		ImGui::NewLine();
 		ImGui::Text("Flying: %s", activeCursor ? "False" : "True");
+
+		int dist = 5;
+		ImGui::Text("Raycast information:");
+		ImGui::Text("Ray length: %d", dist);
+		raycast(
+			Render::GetCamera()->GetPos(),
+			Render::GetCamera()->front,
+			dist,
+			std::function<bool(float, float, float, BlockPtr, glm::vec3)>
+			([&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
+		{
+			if (!block || block->GetType() == Block::bAir)
+				return false;
+
+			ImGui::Text("Block pos:  (%.2f, %.2f, %.2f)", x, y, z);
+			ImGui::Text("Block side: (%.2f, %.2f, %.2f)", side.x, side.y, side.z);
+
+			if (blockHoverVao == nullptr)
+			{
+				blockHoverVao = new VAO();
+				blockHoverVbo = new VBO(Render::cube_vertices, sizeof(Render::cube_vertices));
+				VBOlayout layout;
+				layout.Push<float>(3);
+				blockHoverVao->AddBuffer(*blockHoverVbo, layout);
+			}
+
+			glClear(GL_DEPTH_BUFFER_BIT);
+			blockHoverVao->Bind();
+			ShaderPtr curr = Shader::shaders["flat_color"];
+			curr->Use();
+			curr->setMat4("u_model", glm::translate(glm::mat4(1), glm::vec3(x, y, z) + .5f));
+			curr->setMat4("u_view", Render::GetCamera()->GetView());
+			curr->setMat4("u_proj", Render::GetCamera()->GetProj());
+			curr->setVec4("u_color", glm::vec4(1, 1, 1, .2f));
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+
+			return true;
+		}
+		));
 
 		ImGui::End;
 	}
@@ -390,18 +388,42 @@ void Level::checkBlockPlacement()
 {
 	if (Input::Mouse().pressed[GLFW_MOUSE_BUTTON_2])
 	{
+		raycast(
+			Render::GetCamera()->GetPos(),
+			Render::GetCamera()->front,
+			5,
+			std::function<bool(float, float, float, BlockPtr, glm::vec3)>
+			([&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
+		{
+			if (!block || block->GetType() == Block::bAir)
+				return false;
+			//Chunk::AtWorld(glm::ivec3(x, y, z))->SetType(Block::bStone);
+			//block->SetType(Block::bAir);
+			Chunk::AtWorld(glm::ivec3(x, y, z) + glm::ivec3(side))->SetType(Block::bStone);
 
+			for (auto& chunk : updatedChunks_)
+			{
+				if (chunk == Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos])
+					return false;
+			}
+			updatedChunks_.push_back(Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos]);
+			return true;
+		}
+		));
 	}
 }
 
 void Level::checkBlockDestruction()
 {
-	if (Input::Mouse().pressed[GLFW_MOUSE_BUTTON_1])
+	if (Input::Mouse().pressed[GLFW_MOUSE_BUTTON_1] && 
+		!ImGui::IsAnyItemHovered() && 
+		!ImGui::IsAnyItemActive() && 
+		!ImGui::IsAnyItemFocused())
 	{
 		raycast(
 			Render::GetCamera()->GetPos(),
 			Render::GetCamera()->front,
-			2,
+			5,
 			std::function<bool(float, float, float, BlockPtr, glm::vec3)>
 			([&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
 		{
@@ -409,8 +431,14 @@ void Level::checkBlockDestruction()
 				return false;
 			//Chunk::AtWorld(glm::ivec3(x, y, z))->SetType(Block::bStone);
 			block->SetType(Block::bAir);
+
+			for (auto& chunk : updatedChunks_)
+			{
+				if (chunk == Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos])
+					return false;
+			}
 			updatedChunks_.push_back(Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos]);
-			return false;
+			return true;
 		}
 		));
 	}

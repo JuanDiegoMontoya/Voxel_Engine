@@ -26,7 +26,7 @@ void Mesh::setupMesh()
 	layout.Push<GLfloat>(2);
 	vao->AddBuffer(*vbo, layout);
 	vbo->Unbind();
-	ibo = new IBO(&indices[0], vertices.size());
+	//ibo = new IBO(&indices[0], vertices.size());
 	vao->Unbind();
 	//glGenVertexArrays(1, &vAO);
 	//glGenBuffers(1, &vBO);

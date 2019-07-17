@@ -71,7 +71,7 @@ public:
 			mod.y >= 0 ? mod.y : CHUNK_SIZE + mod.y,
 			mod.z >= 0 ? mod.z : CHUNK_SIZE + mod.z);
 		return localpos(chk, mod);
-
+		
 		//glm::ivec3 chk;// = worldPos >> glm::sqrt(CHUNK_SIZE);
 		//chk.x = worldPos.x >> glm::log2<int>(CHUNK_SIZE);
 		//chk.y = worldPos.y >> glm::log2<int>(CHUNK_SIZE);
@@ -84,9 +84,9 @@ public:
 	}
 
 	// gives the true world position of a block within a chunk
-	inline glm::ivec3 chunkBlockToWorldPos(const glm::ivec3 localPos)
+	inline glm::ivec3 chunkBlockToWorldPos(const glm::ivec3 local)
 	{
-		return glm::ivec3(localPos + (pos_ * CHUNK_SIZE));
+		return glm::ivec3(local + (pos_ * CHUNK_SIZE));
 	}
 
 	inline Block& At(const glm::ivec3 p)
@@ -113,6 +113,7 @@ public:
 	static constexpr int CHUNK_SIZE = 8;
 
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+	friend class Level;
 	static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, ivec3Hash> chunks;
 private:
 	void buildMesh();
@@ -128,10 +129,11 @@ private:
 	// rendering stuff
 	VAO* vao_ = nullptr;
 	VBO* vbo_ = nullptr;
+	//IBO* ibo_ = nullptr;
 
 	// temporary buffer(s)
 	std::vector<float> vertices; // everything buffer
-
+	std::vector<GLubyte> indices;
 	//std::vector<glm::vec3> vtxPosBuffer; // positions
 	//std::vector<glm::vec2> vtxTexBuffer; // texture UVs
 	//std::vector<glm::vec3> vtxNmlBuffer; // normals
@@ -139,3 +141,5 @@ private:
 	//std::vector<glm::vec3> vtxBitBuffer; // bitangents
 	size_t vertexCount_ = 0; // number of vertices composing the mesh of the chunk
 }Chunk, *ChunkPtr;
+
+void TestCoordinateStuff();

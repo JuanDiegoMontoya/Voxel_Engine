@@ -1,11 +1,13 @@
 #include "stdafx.h"
 #include "vbo.h"
 #include "vao.h"
+#include "ibo.h"
 #include "chunk.h"
 #include "block.h"
 #include "camera.h"
 #include "shader.h"
 #include <mutex>
+#include <sstream>
 
 Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Chunk::ivec3Hash> Chunk::chunks;
 
@@ -68,6 +70,9 @@ void Chunk::BuildBuffers()
 	vao_->Bind();
 	if (vbo_)
 		delete vbo_;
+	//if (ibo_)
+	//	delete ibo_;
+	//ibo_ = new IBO(&indices[0], indices.size());
 	vbo_ = new VBO(&vertices[0], sizeof(float) * vertices.size(), GL_STATIC_DRAW);
 	vbo_->Bind();
 	vertexCount_ = vertices.size() / 10; // divisor = number of floats per vertex
@@ -165,10 +170,11 @@ std::vector<float> Chunk::buildSingleBlockFace(
 GenQuad:
 	// transform the vertices relative to the chunk
 	// (the full world transformation will be completed in a shader)
-	glm::mat4 localTransform = glm::translate(glm::mat4(1.f),
-		Utils::mapToRange(glm::vec3(blockPos), 0.f, (float)CHUNK_SIZE, -(float)CHUNK_SIZE / 2.0f, (float)CHUNK_SIZE/ 2.0f)); // scaled
+	//glm::mat4 localTransform = glm::translate(glm::mat4(1.f),
 
-	//glm::mat4 localTransform = glm::translate(glm::mat4(1.f), glm::vec3(x, y, z)); // non-scaled
+
+	//	Utils::mapToRange(glm::vec3(blockPos), 0.f, (float)CHUNK_SIZE, -(float)CHUNK_SIZE / 2.0f, (float)CHUNK_SIZE/ 2.0f)); // scaled
+	glm::mat4 localTransform = glm::translate(glm::mat4(1.f), glm::vec3(blockPos) + .5f); // non-scaled
 		// add a random color to each quad
 	//float r = Utils::get_random_r(0, 1);
 	//float g = Utils::get_random_r(0, 1);
@@ -211,4 +217,50 @@ GenQuad:
 	}
 
 	return quad;
+}
+
+static std::ostream& operator<<(std::ostream& o, glm::ivec3 v)
+{
+	return o << '('
+		<< v.x << ", "
+		<< v.y << ", "
+		<< v.z << ')';
+}
+
+void TestCoordinateStuff()
+{
+	using namespace std;
+	for (auto& p : Chunk::chunks)
+	{
+		using namespace std;
+		//cout << p.first << '\n';
+		if (!p.second)
+			continue;
+		if (p.first != p.second->GetPos())
+			cout << "Hash key " << p.first 
+			<< " does not match chunk internal position" 
+			<< p.second->GetPos() << '\n';
+
+		for (int x = 0; x < Chunk::CHUNK_SIZE; x++)
+		{
+			for (int y = 0; y < Chunk::CHUNK_SIZE; y++)
+			{
+				for (int z = 0; z < Chunk::CHUNK_SIZE; z++)
+				{
+					glm::ivec3 posLocal(x, y, z);
+					glm::ivec3 posActual = p.second->chunkBlockToWorldPos(posLocal);
+					localpos posCalc = Chunk::worldBlockToLocalPos(posActual);
+
+					if (posCalc.chunk_pos != p.first)
+						cout << "Calculated chunk position " << 
+						posCalc.chunk_pos << 
+						" does not match hash key " << p.first;
+					if (posCalc.block_pos != posLocal)
+						cout << "Calculated block position " <<
+						posCalc.block_pos <<
+						" does not match local pos " << posLocal;
+				}
+			}
+		}
+	}
 }

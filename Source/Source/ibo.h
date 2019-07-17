@@ -5,7 +5,7 @@
 class IBO
 {
 public:
-	IBO(const unsigned int* data, unsigned int count);
+	IBO(const GLubyte* data, unsigned int count);
 	~IBO();
 
 	void Bind() const;
