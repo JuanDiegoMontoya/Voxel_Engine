@@ -58,6 +58,7 @@ public:
 	inline const glm::ivec3& GetPos() { return pos_; }
 
 	inline void SetActive(bool e) { active_ = e; }
+	inline bool IsActive() { return active_; }
 
 	// may need to upgrade to glm::i64vec3 if worldgen at far distances is fug'd
 	// "origin" chunk goes from 0-CHUNK_SIZE rather than -CHUNK_SIZE/2-CHUNK_SIZE/2
@@ -110,13 +111,18 @@ public:
 	}
 
 	static constexpr int GetChunkSize() { return CHUNK_SIZE; }
-	static constexpr int CHUNK_SIZE = 8;
+	static constexpr int CHUNK_SIZE = 16;
 
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 	friend class Level;
 	static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, ivec3Hash> chunks;
 private:
 	void buildMesh();
+
+	void buildBlockVertices(
+		const glm::ivec3& pos,
+		const float* data,
+		int quadStride);
 	std::vector<float> buildSingleBlockFace(
 		const glm::ivec3& nearFace,
 		int quadStride, int curQuad, const float* data,

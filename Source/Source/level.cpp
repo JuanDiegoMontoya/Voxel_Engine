@@ -1,4 +1,6 @@
 #include "stdafx.h"
+//#include "block.h"
+#include "camera.h"
 #include "level.h"
 #include "pipeline.h"
 #include "mesh.h"
@@ -8,7 +10,6 @@
 #include "mesh_comp.h"
 #include "unlit_mesh.h"
 #include "render_data.h"
-#include "block.h"
 #include "chunk.h"
 #include "sun.h"
 //#include <omp.h>
@@ -39,12 +40,10 @@ Level::~Level()
 // for now this function is where we declare objects
 void Level::Init()
 {
-	std::memset(Block::blocksarr_, 0, sizeof(float) * 100 * 100 * 100);
-
 	cameras_.push_back(new Camera(kControlCam));
 	Render::SetCamera(cameras_[0]);
 
-	int cc = 1; // chunk count
+	int cc = 8; // chunk count
 	updatedChunks_.reserve(cc * cc * cc);
 	sizeof(Block);
 	// initialize a single chunk
@@ -80,9 +79,7 @@ void Level::Init()
 
 	// TODO: enable compiler C++ optimizations (currently disabled for debugging purposes)
 
-	/* TODO: write updateBlock() function to handle updating block IDs and updating nearby chunks,
-	updating meshes, etc.
-	*/
+	// TODO: call updateBlock() function AND add checking to update nearby chunks if necessary
 
 	//std::cout << "PRE Processed chunk positions (x, y, z):" << '\n';
 	//for (auto& chunk : Chunk::chunks)
@@ -382,6 +379,43 @@ void Level::ProcessUpdatedChunks()
 	});
 
 	updatedChunks_.clear();
+}
+
+void Level::UpdateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
+{
+	localpos p = Chunk::worldBlockToLocalPos(wpos);
+	BlockPtr block = Chunk::AtWorld(wpos);
+	ChunkPtr chunk = Chunk::chunks[p.chunk_pos];
+
+	if (block && block->GetType() == ty) // ignore if same type
+		return;
+	
+	// create empty chunk if it's null
+	if (!chunk)
+	{
+		chunk = new Chunk(true);
+		chunk->SetPos(p.chunk_pos);
+	}
+
+	if (!block) // skip null blocks
+		*block = chunk->At(p.block_pos);
+	block->SetType(ty);
+
+
+	// add to update list if it ain't
+	if (!isChunkInUpdateList(chunk))
+		updatedChunks_.push_back(chunk);
+
+}
+
+bool Level::isChunkInUpdateList(ChunkPtr c)
+{
+	for (auto& chunk : updatedChunks_)
+	{
+		if (chunk == c)
+			return true;
+	}
+	return false;
 }
 
 void Level::checkBlockPlacement()

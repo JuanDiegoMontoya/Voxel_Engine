@@ -2,10 +2,14 @@
 #include "pipeline.h"
 #include "block.h"
 
-extern std::vector<unsigned> Render::updatedBlocks;
-std::vector<unsigned>* Block::updateList_ = &Render::updatedBlocks;
-unsigned Block::count_ = 0;
-Block Block::blocksarr_[100 * 100 * 100]; // one million positions
+const std::unordered_map<Block::BlockType, BlockProperties>
+	Block::PropertiesTable =
+{
+	{Block::bAir,		BlockProperties(0,		glm::vec4(0))},
+	{Block::bStone, BlockProperties(32,		glm::vec4(.4f, .4f, .4f, 1))},
+	{Block::bDirt,	BlockProperties(16,		glm::vec4(.6f, .3f, .1f, 1))},
+	{Block::bMetal,	BlockProperties(128,	glm::vec4(.9f, .9f, 1.f, 1))}
+};
 
 glm::ivec3 stretch(int index, int w, int h)
 {

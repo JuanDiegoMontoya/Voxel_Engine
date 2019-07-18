@@ -239,7 +239,7 @@ namespace Render
 
 		currShader->setMat4("u_viewProj", viewProjection);
 
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, Block::count_);
+		//glDrawArraysInstanced(GL_TRIANGLES, 0, 36, Block::count_);
 		updatedBlocks.clear();
 	}
 

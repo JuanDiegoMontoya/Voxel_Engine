@@ -6,8 +6,15 @@
 #include "block.h"
 #include "camera.h"
 #include "shader.h"
+#include "pipeline.h"
 #include <mutex>
 #include <sstream>
+
+/*
+	TODO: finish making buildBlockVertices() take block color OR do the thing below
+	TODO: additional buffers for colors, normals, and other data that is same between vertices
+	TODO: use IBOs to save GPU memory
+*/
 
 Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Chunk::ivec3Hash> Chunk::chunks;
 
@@ -15,10 +22,7 @@ static std::mutex mtx;
 
 Chunk::Chunk(bool active) : active_(active)
 {
-	//std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
-	//lck.lock();
 	vao_ = new VAO();
-	//lck.unlock();
 
 	float r = Utils::get_random(0, 1);
 	float g = Utils::get_random(0, 1);
@@ -36,18 +40,6 @@ Chunk::~Chunk()
 
 void Chunk::Update()
 {
-	//// update all blocks within the chunk
-	//for (int x = 0; x < CHUNK_SIZE; x++)
-	//{
-	//	for (int y = 0; y < CHUNK_SIZE; y++)
-	//	{
-	//		for (int z = 0; z < CHUNK_SIZE; z++)
-	//		{
-	//			blocks[ID3D(x, y, z, CHUNK_SIZE, CHUNK_SIZE)].Update();
-	//		}
-	//	}
-	//}
-
 	// build mesh after ensuring culled blocks are culled
 	buildMesh();
 }
@@ -56,8 +48,6 @@ void Chunk::Render()
 {
 	if (vbo_ && vao_)
 	{
-		//glDisable(GL_BLEND);
-		//glDisable(GL_CULL_FACE);
 		vao_->Bind();
 		vbo_->Bind();
 		Chunk::chunks;
@@ -96,7 +86,7 @@ void Chunk::BuildBuffers()
 
 void Chunk::buildMesh()
 {
-	Camera* cam = Render::GetCamera();
+	//Camera* cam = Render::GetCamera();
 
 	vertices.reserve(CHUNK_SIZE * CHUNK_SIZE * 6 * 3); // one entire side of a chunk (assumed flat)
 	for (int x = 0; x < CHUNK_SIZE; x++)
@@ -112,37 +102,45 @@ void Chunk::buildMesh()
 				// check if each face would be obscured, and adds the ones that aren't to the vbo
 				// obscured IF side is adjacent to opaque block
 				// NOT obscured if side is adjacent to nothing or transparent block
-				std::vector<float> temp;
 				glm::ivec3 pos(x, y, z);
-
-				// back
-				temp = buildSingleBlockFace(glm::vec3(x, y, z - 1), 48, 0, Render::cube_norm_tex_vertices, pos);
-				vertices.insert(vertices.end(), temp.begin(), temp.end());
-
-				// front
-				temp = buildSingleBlockFace(glm::ivec3(x, y, z + 1), 48, 1, Render::cube_norm_tex_vertices, pos);
-				vertices.insert(vertices.end(), temp.begin(), temp.end());
-
-				// left
-				temp = buildSingleBlockFace(glm::ivec3(x - 1, y, z), 48, 2, Render::cube_norm_tex_vertices, pos);
-				vertices.insert(vertices.end(), temp.begin(), temp.end());
-
-				// right
-				temp = buildSingleBlockFace(glm::ivec3(x + 1, y, z), 48, 3, Render::cube_norm_tex_vertices, pos);
-				vertices.insert(vertices.end(), temp.begin(), temp.end());
-
-				// bottom
-				temp = buildSingleBlockFace(glm::ivec3(x, y - 1, z), 48, 4, Render::cube_norm_tex_vertices, pos);
-				vertices.insert(vertices.end(), temp.begin(), temp.end());
-
-				// top
-				temp = buildSingleBlockFace(glm::ivec3(x, y + 1, z), 48, 5, Render::cube_norm_tex_vertices, pos);
-				vertices.insert(vertices.end(), temp.begin(), temp.end());
+				buildBlockVertices(pos, Render::cube_norm_tex_vertices, 48);
 			}
 		}
 	}
 	// "buildbuffers" would normally happen here
 	// 'vertices' is stored until "buildbuffers" is called
+}
+
+void Chunk::buildBlockVertices(const glm::ivec3 & pos, const float * data, int quadStride)
+{
+	std::vector<float> temp;
+	int x = pos.x;
+	int y = pos.y;
+	int z = pos.z;
+
+	// back
+	temp = buildSingleBlockFace(glm::vec3(x, y, z - 1), quadStride, 0, data, pos);
+	vertices.insert(vertices.end(), temp.begin(), temp.end());
+
+	// front
+	temp = buildSingleBlockFace(glm::ivec3(x, y, z + 1), quadStride, 1, data, pos);
+	vertices.insert(vertices.end(), temp.begin(), temp.end());
+
+	// left
+	temp = buildSingleBlockFace(glm::ivec3(x - 1, y, z), quadStride, 2, data, pos);
+	vertices.insert(vertices.end(), temp.begin(), temp.end());
+
+	// right
+	temp = buildSingleBlockFace(glm::ivec3(x + 1, y, z), quadStride, 3, data, pos);
+	vertices.insert(vertices.end(), temp.begin(), temp.end());
+
+	// bottom
+	temp = buildSingleBlockFace(glm::ivec3(x, y - 1, z), quadStride, 4, data, pos);
+	vertices.insert(vertices.end(), temp.begin(), temp.end());
+
+	// top
+	temp = buildSingleBlockFace(glm::ivec3(x, y + 1, z), quadStride, 5, data, pos);
+	vertices.insert(vertices.end(), temp.begin(), temp.end());
 }
 
 //std::vector<float> Chunk::buildSingleBlockFace(glm::ivec3 near, int low, int high, int x, int y, int z)
@@ -171,7 +169,6 @@ GenQuad:
 	// transform the vertices relative to the chunk
 	// (the full world transformation will be completed in a shader)
 	//glm::mat4 localTransform = glm::translate(glm::mat4(1.f),
-
 
 	//	Utils::mapToRange(glm::vec3(blockPos), 0.f, (float)CHUNK_SIZE, -(float)CHUNK_SIZE / 2.0f, (float)CHUNK_SIZE/ 2.0f)); // scaled
 	glm::mat4 localTransform = glm::translate(glm::mat4(1.f), glm::vec3(blockPos) + .5f); // non-scaled
@@ -227,6 +224,7 @@ static std::ostream& operator<<(std::ostream& o, glm::ivec3 v)
 		<< v.z << ')';
 }
 
+// prints to console if errors are found
 void TestCoordinateStuff()
 {
 	using namespace std;

@@ -1,18 +1,18 @@
 #pragma once
+#include "block.h"
+#include "camera.h"
 #include "game.h"
 #include "game_object.h"
-#include "camera.h"
 #include "sun.h"
 
+//class Camera;
 typedef struct Chunk* ChunkPtr;
-typedef class Block* BlockPtr;
+//typedef class Block* BlockPtr;
 //typedef class Sun;
 
 typedef class Level
 {
 public:
-	friend class Block;
-
 	Level(std::string name); // will load from file in the future (maybe)
 	~Level();
 
@@ -25,6 +25,7 @@ public:
 	void CheckCollision();
 	void CheckInteraction();
 	void ProcessUpdatedChunks();
+	void UpdateBlockAt(glm::ivec3 wpos, Block::BlockType type);
 
 	inline void SetBgColor(glm::vec3 c) { bgColor_ = c; }
 
@@ -34,7 +35,10 @@ public:
 	inline const Sun& GetSun() const { return sun_; }
 
 	friend class Game;
+	friend class Block;
 private:
+	// returns true if chunk is already going to be updated
+	bool isChunkInUpdateList(ChunkPtr chunk);
 	std::vector<ChunkPtr> updatedChunks_;
 	std::string name_; // name of file
 	GamePtr game_;
