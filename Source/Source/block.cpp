@@ -2,13 +2,13 @@
 #include "pipeline.h"
 #include "block.h"
 
-const std::unordered_map<Block::BlockType, BlockProperties>
-	Block::PropertiesTable =
+const std::vector<BlockProperties> Block::PropertiesTable =
 {
-	{Block::bAir,		BlockProperties(0,		glm::vec4(0))},
-	{Block::bStone, BlockProperties(32,		glm::vec4(.4f, .4f, .4f, 1))},
-	{Block::bDirt,	BlockProperties(16,		glm::vec4(.6f, .3f, .1f, 1))},
-	{Block::bMetal,	BlockProperties(128,	glm::vec4(.9f, .9f, 1.f, 1))}
+	{BlockProperties(0,		glm::vec4(0))},
+	{BlockProperties(32,	glm::vec4(.4f, .4f, .4f, 1))},
+	{BlockProperties(16,	glm::vec4(.6f, .3f, .1f, 1))},
+	{BlockProperties(128,	glm::vec4(.9f, .9f, 1.f, 1))},
+	{BlockProperties(8,		glm::vec4(0, 1, 0, 1))}
 };
 
 glm::ivec3 stretch(int index, int w, int h)

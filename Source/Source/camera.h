@@ -1,5 +1,7 @@
 #pragma once
 
+class Frustum;
+
 enum CameraType : int
 {
 	kControlCam, // use movement keys to fly around
@@ -15,6 +17,7 @@ public:
 	inline const glm::mat4& GetView() { return view_; }
 	inline const glm::mat4& GetProj() { return proj_; }
 	inline const glm::vec3& GetPos() { return worldpos_; }
+	inline const Frustum* GetFrustum() { return frustum_; }
 
 	inline void SetPos(const glm::vec3& v) { worldpos_ = v; }
 
@@ -25,6 +28,7 @@ private:
 	glm::vec3 worldpos_ = glm::vec3(0, 0, 0);
 	glm::mat4 view_ = glm::mat4(1);
 	glm::mat4 proj_;
+	Frustum* frustum_;
 
 	float speed_ = 3.5f;
 

@@ -2,6 +2,7 @@
 
 class VAO;
 class VBO;
+class Frustum;
 
 class Sun
 {
@@ -20,6 +21,7 @@ public:
 	inline const GLuint GetDepthTex() const { return depthMapTex_; }
 	inline const float GetNearPlane() const { return near_; }
 	inline const float GetFarPlane() const { return far_; }
+	inline const Frustum* GetFrustum() const { return frustum_; }
 
 	inline void SetPos(const glm::vec3& pos) { pos_ = pos; }
 	inline void SetDir(const glm::vec3& dir) { dir_ = dir; }
@@ -45,6 +47,8 @@ private:
 	GLuint depthMapTex_;
 	float near_;
 	float far_;
+
+	Frustum* frustum_;
 
 	VAO* vao_;
 	VBO* vbo_;

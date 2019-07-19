@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "frustum.h"
 #include "camera.h"
 #include "input.h"
 #include "game_object.h"
@@ -6,6 +7,7 @@
 // might add more to this constructor later
 Camera::Camera(CameraType type) : type_(type) 
 {
+	frustum_ = new Frustum;
 	proj_ = glm::perspective(glm::radians(fov_), 1920.f / 1080.f, 0.1f, 800.f);
 }
 
@@ -51,4 +53,5 @@ void Camera::Update(float dt)
 	}
 
 	view_ = glm::lookAt(worldpos_, worldpos_ + front, up);
+	frustum_->Transform(proj_, view_);
 }

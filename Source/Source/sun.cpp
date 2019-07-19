@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "frustum.h"
 #include "sun.h"
 #include "vao.h"
 #include "vbo.h"
@@ -10,6 +11,7 @@
 
 Sun::Sun()
 {
+	frustum_ = new Frustum();
 	vao_ = new VAO();
 	vbo_ = new VBO(Render::square_vertices_3d, sizeof(Render::square_vertices_3d));
 	VBOlayout layout;
@@ -61,6 +63,7 @@ void Sun::Update()
 	//glm::mat4 lightView = glm::lookAt(pos_, dir_, glm::vec3(0.0, 1.0, 0.0));
 	glm::mat4 lightView = glm::lookAt(pos_, Render::GetCamera()->GetPos(), glm::vec3(0.0, 1.0, 0.0));
 	sunViewProj_ = lightProjection * lightView;
+	//frustum_->Transform(lightProjection, lightView);
 }
 
 void Sun::Render()

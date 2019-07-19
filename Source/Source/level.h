@@ -36,9 +36,11 @@ public:
 
 	friend class Game;
 	friend class Block;
+	friend class WorldGen;
 private:
 	// returns true if chunk is already going to be updated
 	bool isChunkInUpdateList(ChunkPtr chunk);
+	void checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::ivec3& near);
 	std::vector<ChunkPtr> updatedChunks_;
 	std::string name_; // name of file
 	GamePtr game_;

@@ -189,7 +189,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClCompile>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -225,7 +225,9 @@ copy "$(SolutionDir)lib\freetype\lib\win64\freetype.dll" "$(TargetDir)freetype.d
   <ItemGroup>
     <ClCompile Include="block.cpp" />
     <ClCompile Include="chunk.cpp" />
+    <ClCompile Include="debug.cpp" />
     <ClCompile Include="frustum.cpp" />
+    <ClCompile Include="generation.cpp" />
     <ClCompile Include="lit_mesh.cpp" />
     <ClCompile Include="mesh_comp.cpp" />
     <ClCompile Include="pick.cpp" />
@@ -322,7 +324,9 @@ copy "$(SolutionDir)lib\freetype\lib\win64\freetype.dll" "$(TargetDir)freetype.d
     <ClInclude Include="camera.h" />
     <ClInclude Include="chunk.h" />
     <ClInclude Include="component.h" />
+    <ClInclude Include="debug.h" />
     <ClInclude Include="frustum.h" />
+    <ClInclude Include="generation.h" />
     <ClInclude Include="lit_mesh.h" />
     <ClInclude Include="mesh_comp.h" />
     <ClInclude Include="pick.h" />

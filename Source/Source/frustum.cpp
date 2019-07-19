@@ -1,11 +1,11 @@
 #include "stdafx.h"
+#include "block.h"
+#include "chunk.h"
 #include "frustum.h"
 
-#include "Frustum.h"
-
-void root::Frustum::Transform(const glm::mat4& proj, const glm::mat4& view)
+void Frustum::Transform(const glm::mat4& proj, const glm::mat4& view)
 {
-	float clip[4][4];
+	glm::mat4 clip;
 	clip[0][0] = view[0][0] * proj[0][0] + view[0][1] * proj[1][0] + view[0][2] * proj[2][0] + view[0][3] * proj[3][0];
 	clip[0][1] = view[0][0] * proj[0][1] + view[0][1] * proj[1][1] + view[0][2] * proj[2][1] + view[0][3] * proj[3][1];
 	clip[0][2] = view[0][0] * proj[0][2] + view[0][1] * proj[1][2] + view[0][2] * proj[2][2] + view[0][3] * proj[3][2];
@@ -63,7 +63,7 @@ void root::Frustum::Transform(const glm::mat4& proj, const glm::mat4& view)
 	Normalize(Back);
 }
 
-void root::Frustum::Normalize(Plane plane)
+void Frustum::Normalize(Plane plane)
 {
 	float magnitude = glm::sqrt(
 		data_[plane][A] * data_[plane][A] +
@@ -77,80 +77,89 @@ void root::Frustum::Normalize(Plane plane)
 	data_[plane][D] /= magnitude;
 }
 
-root::Frustum::Visibility root::Frustum::IsInside(const glm::vec3& point) const
+Frustum::Visibility Frustum::IsInside(const glm::vec3& point) const
 {
-	for (unsigned int i = 0; i < 6; i++) {
+	for (unsigned int i = 0; i < 6; i++)
+	{
 		if (data_[i][A] * point.x +
 			data_[i][B] * point.y +
 			data_[i][C] * point.z +
-			data_[i][D] <= 0) {
+			data_[i][D] <= 0)
+		{
 			return Invisible;
 		}
 	}
 
-	return Completely;
+	return Full;
 }
 
-root::Frustum::Visibility root::Frustum::IsInside(const Block& box) const
+Frustum::Visibility Frustum::IsInside(const Chunk& box) const
 {
-	auto GetVisibility = [](const glm::vec4& clip, const Block& box)
+	auto GetVisibility = [](const glm::vec4& clip, const Chunk& box)
 	{
-		//float x0 = box.GetMin().x * clip.x;
-		//float x1 = box.GetMax().x * clip.x;
-		//float y0 = box.GetMin().y * clip.y;
-		//float y1 = box.GetMax().y * clip.y;
-		//float z0 = box.GetMin().z * clip.z + clip.w;
-		//float z1 = box.GetMax().z * clip.z + clip.w;
-		//float p1 = x0 + y0 + z0;
-		//float p2 = x1 + y0 + z0;
-		//float p3 = x1 + y1 + z0;
-		//float p4 = x0 + y1 + z0;
-		//float p5 = x0 + y0 + z1;
-		//float p6 = x1 + y0 + z1;
-		//float p7 = x1 + y1 + z1;
-		//float p8 = x0 + y1 + z1;
+		float x0 = box.GetMin().x * clip.x;
+		float x1 = box.GetMax().x * clip.x;
+		float y0 = box.GetMin().y * clip.y;
+		float y1 = box.GetMax().y * clip.y;
+		float z0 = box.GetMin().z * clip.z + clip.w;
+		float z1 = box.GetMax().z * clip.z + clip.w;
+		float p1 = x0 + y0 + z0;
+		float p2 = x1 + y0 + z0;
+		float p3 = x1 + y1 + z0;
+		float p4 = x0 + y1 + z0;
+		float p5 = x0 + y0 + z1;
+		float p6 = x1 + y0 + z1;
+		float p7 = x1 + y1 + z1;
+		float p8 = x0 + y1 + z1;
 
-		//if (p1 <= 0 && p2 <= 0 && p3 <= 0 && p4 <= 0 && p5 <= 0 && p6 <= 0 && p7 <= 0 && p8 <= 0) {
-		//	return Invisible;
-		//}
-		//if (p1 > 0 && p2 > 0 && p3 > 0 && p4 > 0 && p5 > 0 && p6 > 0 && p7 > 0 && p8 > 0) {
-		//	return Completely;
-		//}
+		if (p1 <= 0 && p2 <= 0 && p3 <= 0 && p4 <= 0 && p5 <= 0 && p6 <= 0 && p7 <= 0 && p8 <= 0)
+		{
+			return Invisible;
+		}
+		if (p1 > 0 && p2 > 0 && p3 > 0 && p4 > 0 && p5 > 0 && p6 > 0 && p7 > 0 && p8 > 0)
+		{
+			return Full;
+		}
 
-		return Partially;
+		return Partial;
 	};
 
 	Visibility v0 = GetVisibility(GetPlane(Right), box);
-	if (v0 == Invisible) {
+	if (v0 == Invisible)
+	{
 		return Invisible;
 	}
 
 	Visibility v1 = GetVisibility(GetPlane(Left), box);
-	if (v1 == Invisible) {
+	if (v1 == Invisible)
+	{
 		return Invisible;
 	}
 
 	Visibility v2 = GetVisibility(GetPlane(Bottom), box);
-	if (v2 == Invisible) {
+	if (v2 == Invisible)
+	{
 		return Invisible;
 	}
 
 	Visibility v3 = GetVisibility(GetPlane(Top), box);
-	if (v3 == Invisible) {
+	if (v3 == Invisible)
+	{
 		return Invisible;
 	}
 
 	Visibility v4 = GetVisibility(GetPlane(Front), box);
-	if (v4 == Invisible) {
+	if (v4 == Invisible)
+	{
 		return Invisible;
 	}
 
-	if (v0 == Completely && v1 == Completely &&
-		v2 == Completely && v3 == Completely &&
-		v4 == Completely)
+	if (v0 == Full && v1 == Full &&
+		v2 == Full && v3 == Full &&
+		v4 == Full)
 	{
-		return Completely;
+		return Full;
 	}
 
-	return Partially;
+	return Partial;
 }

@@ -47,6 +47,7 @@ public:
 	void Update();
 	void Render();
 	void BuildBuffers();
+	void BuildMesh();
 
 	inline const glm::mat4& GetModel() const { return model_; }
 
@@ -110,36 +111,57 @@ public:
 		return nullptr;
 	}
 
+	inline glm::vec3 GetMin() const
+	{
+		return glm::vec3(pos_ * CHUNK_SIZE);
+	}
+
+	inline glm::vec3 GetMax() const
+	{
+		return glm::vec3(pos_ * CHUNK_SIZE + CHUNK_SIZE - 1);
+	}
+
+	inline bool IsVisible() const { return visible_; }
+	inline void SetVisible(bool b) { visible_ = b; }
+
 	static constexpr int GetChunkSize() { return CHUNK_SIZE; }
-	static constexpr int CHUNK_SIZE = 16;
+	static constexpr int CHUNK_SIZE = 32;
 
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 	friend class Level;
 	static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, ivec3Hash> chunks;
 private:
-	void buildMesh();
 
 	void buildBlockVertices(
 		const glm::ivec3& pos,
 		const float* data,
-		int quadStride);
-	std::vector<float> buildSingleBlockFace(
+		int quadStride,
+		const Block& block);
+	void buildSingleBlockFace(
 		const glm::ivec3& nearFace,
 		int quadStride, int curQuad, const float* data,
-		const glm::ivec3& blockPos);
+		const glm::ivec3& blockPos,
+		const Block& block);
 
 	glm::mat4 model_;
 	glm::ivec3 pos_; // position relative to other chunks (1 chunk = 1 index)
 	bool active_;
+	bool visible_;
 
 	// rendering stuff
 	VAO* vao_ = nullptr;
-	VBO* vbo_ = nullptr;
+	VBO* positions_ = nullptr;
+	VBO* normals_ = nullptr;
+	VBO* colors_ = nullptr;
+	VBO* speculars_ = nullptr;
 	//IBO* ibo_ = nullptr;
 
 	// temporary buffer(s)
-	std::vector<float> vertices; // everything buffer
-	std::vector<GLubyte> indices;
+	std::vector<glm::vec3> tPositions;
+	std::vector<glm::vec3> tNormals;
+	std::vector<glm::vec3> tColors;
+	std::vector<float> tSpeculars;
+	std::vector<GLubyte> indices; // probably finna be unused
 	//std::vector<glm::vec3> vtxPosBuffer; // positions
 	//std::vector<glm::vec2> vtxTexBuffer; // texture UVs
 	//std::vector<glm::vec3> vtxNmlBuffer; // normals

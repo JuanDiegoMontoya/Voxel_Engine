@@ -24,17 +24,17 @@ public:
 		bStone,
 		bDirt,
 		bMetal,
+		bGrass,
 
 		bCount
 	};
 
 	Block(BlockType t = bAir)	: type_(t) {}
 
-	inline BlockType GetType() { return type_; }
+	inline BlockType GetType() const { return type_; }
 	inline void SetType(BlockType ty) { type_ = ty; }
 
-	static const std::unordered_map<BlockType, BlockProperties>
-		PropertiesTable;
+	static const std::vector<BlockProperties> PropertiesTable;
 
 private:
 	BlockType type_ = bAir;

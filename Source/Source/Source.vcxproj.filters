@@ -197,6 +197,12 @@
     <ClInclude Include="vendor\ctpl_stl.h">
       <Filter>vendor\ctpl</Filter>
     </ClInclude>
+    <ClInclude Include="debug.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="generation.h">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -315,6 +321,12 @@
     </ClCompile>
     <ClCompile Include="sun.cpp">
       <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="debug.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="generation.cpp">
+      <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

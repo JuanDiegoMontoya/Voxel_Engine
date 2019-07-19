@@ -58,6 +58,21 @@ namespace Render
 		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f
 	};
 
+	static const glm::vec3 cube_normals_divisor2[] =
+	{
+		{ 0.0f,  0.0f, -1.0f },
+
+		{ 0.0f,  0.0f,  1.0f },
+
+		{-1.0f,  0.0f,  0.0f },
+
+		{ 1.0f,  0.0f,  0.0f },
+
+		{ 0.0f, -1.0f,  0.0f },
+
+		{ 0.0f,  1.0f,  0.0f }
+	};
+
 	// positions, texture coords
 	static const float cube_tex_vertices[] =
 	{

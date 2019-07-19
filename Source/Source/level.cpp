@@ -1,10 +1,12 @@
 #include "stdafx.h"
 //#include "block.h"
 #include "camera.h"
+#include "generation.h"
 #include "level.h"
 #include "pipeline.h"
 #include "mesh.h"
 #include "texture.h"
+#include "frustum.h"
 
 #include "transform.h"
 #include "mesh_comp.h"
@@ -43,39 +45,14 @@ void Level::Init()
 	cameras_.push_back(new Camera(kControlCam));
 	Render::SetCamera(cameras_[0]);
 
-	int cc = 8; // chunk count
+	int cc = 12; // chunk count
 	updatedChunks_.reserve(cc * cc * cc);
 	sizeof(Block);
 	// initialize a single chunk
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
-	// this loop is not parallelizable (unless VAO constructor is moved)
-	for (int xc = 0; xc < cc * 2; xc++)
-	{
-		for (int yc = 0; yc < cc; yc++)
-		{
-			for (int zc = 0; zc < cc * 2; zc++)
-			{
-				Chunk* init = Chunk::chunks[glm::ivec3(xc, yc, zc)] = new Chunk(true);
-				init->SetPos(glm::ivec3(xc, yc, zc));
-				updatedChunks_.push_back(init);
-
-				for (int x = 0; x < Chunk::CHUNK_SIZE; x++)
-				{
-					for (int y = 0; y < Chunk::CHUNK_SIZE; y++)
-					{
-						for (int z = 0; z < Chunk::CHUNK_SIZE; z++)
-						{
-							if (Utils::get_random_r(0, 1) > 1.99f)
-								continue;
-							init->At(x, y, z).SetType(Block::bStone);
-						}
-					}
-				}
-			}
-		}
-	}
+	WorldGen::GenerateSimpleWorld(cc, cc, cc, .999f, updatedChunks_);
 
 	// TODO: enable compiler C++ optimizations (currently disabled for debugging purposes)
 
@@ -121,6 +98,8 @@ void Level::Init()
 // update every object in the level
 void Level::Update(float dt)
 {
+	PERF_BENCHMARK_START;
+
 	ProcessUpdatedChunks();
 	CheckInteraction();
 
@@ -134,6 +113,18 @@ void Level::Update(float dt)
 	if (!activeCursor)
 		for (auto& cam : cameras_)
 			cam->Update(dt);
+
+	std::for_each(
+		std::execution::par_unseq,
+		Chunk::chunks.begin(),
+		Chunk::chunks.end(),
+		[](auto& p)
+	{
+		if (p.second)
+		{
+			p.second->Update();
+		}
+	});
 
 	sun_.Update();
 	DrawShadows(); // write to shadow map
@@ -149,8 +140,11 @@ void Level::Update(float dt)
 		glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex());
 		renderQuad();
 	}
+
+	PERF_BENCHMARK_END;
 }
 
+// unused
 void Level::Draw()
 {
 	//glEnable(GL_CULL_FACE);
@@ -190,7 +184,7 @@ void Level::DrawNormal()
 	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
 		[&](std::pair<glm::ivec3, Chunk*> chunk)
 	{
-		if (chunk.second)
+		if (chunk.second && chunk.second->IsVisible())
 		{
 			currShader->setMat4("u_model", chunk.second->GetModel());
 			chunk.second->Render();
@@ -216,7 +210,7 @@ void Level::DrawShadows()
 	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
 		[&](std::pair<glm::ivec3, Chunk*> chunk)
 	{
-		if (chunk.second)
+		if (chunk.second && chunk.second->IsVisible())// && sun_.GetFrustum()->IsInside(chunk.second) >= Frustum::Visibility::Partial)
 		{
 			currShader->setMat4("model", chunk.second->GetModel());
 			chunk.second->Render();
@@ -272,6 +266,8 @@ void Level::DrawDebug()
 		ImGui::SetNextWindowSize(ImVec2(400, 600));
 		ImGui::Begin("Info");
 
+		ImGui::Text("FPS: %.0f (%.1f ms)", 1.f / game_->GetDT(), 1000 * game_->GetDT());
+		ImGui::NewLine();
 		glm::vec3 pos = Render::GetCamera()->GetPos();
 		//ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
 		if (ImGui::InputFloat3("Camera Position", &pos[0], 2))
@@ -309,6 +305,8 @@ void Level::DrawDebug()
 
 			ImGui::Text("Block pos:  (%.2f, %.2f, %.2f)", x, y, z);
 			ImGui::Text("Block side: (%.2f, %.2f, %.2f)", side.x, side.y, side.z);
+			//glm::vec3 color = Block::PropertiesTable[block->GetType()].color;
+			//ImGui::ColorPicker3("colorr", )
 
 			if (blockHoverVao == nullptr)
 			{
@@ -336,7 +334,6 @@ void Level::DrawDebug()
 		ImGui::End;
 	}
 
-
 	renderAxisIndicators();
 }
 
@@ -352,11 +349,6 @@ void Level::CheckInteraction()
 
 void Level::ProcessUpdatedChunks()
 {
-	/* TODO: make function to only add chunk to update list if it isn't in it already
-		(everything and everyone dies if the same chunk is updated twice in a row)
-		Alternatively, add an UPDATED flag to each chunk saying if it's already been updated.
-		The first solution seems like it would be cleaner though.
-	*/
 	std::for_each(
 		std::execution::par_unseq,
 		updatedChunks_.begin(),
@@ -364,7 +356,7 @@ void Level::ProcessUpdatedChunks()
 		[](ChunkPtr& chunk)
 	{
 		if (chunk)
-			chunk->Update();
+			chunk->BuildMesh();
 	});
 
 	// this operation cannot be parallelized
@@ -381,6 +373,7 @@ void Level::ProcessUpdatedChunks()
 	updatedChunks_.clear();
 }
 
+// handles everything that needs to be done when a block is changed
 void Level::UpdateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
 {
 	localpos p = Chunk::worldBlockToLocalPos(wpos);
@@ -393,19 +386,32 @@ void Level::UpdateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
 	// create empty chunk if it's null
 	if (!chunk)
 	{
-		chunk = new Chunk(true);
+		Chunk::chunks[p.chunk_pos] = chunk = new Chunk(true);
 		chunk->SetPos(p.chunk_pos);
 	}
 
 	if (!block) // skip null blocks
-		*block = chunk->At(p.block_pos);
+		block = &chunk->At(p.block_pos);
 	block->SetType(ty);
-
 
 	// add to update list if it ain't
 	if (!isChunkInUpdateList(chunk))
 		updatedChunks_.push_back(chunk);
 
+	// check if adjacent to opaque blocks in nearby chunks, then update those chunks if it is
+	glm::ivec3 dirs[] =
+	{
+		{ -1,  0,  0 },
+		{  1,  0,  0 },
+		{  0, -1,  0 },
+		{  0,  1,  0 },
+		{  0,  0, -1 },
+		{  0,  0,  1 }
+	};
+	for (const auto& dir : dirs)
+	{
+		checkUpdateChunkNearBlock(wpos, dir);
+	}
 }
 
 bool Level::isChunkInUpdateList(ChunkPtr c)
@@ -416,6 +422,21 @@ bool Level::isChunkInUpdateList(ChunkPtr c)
 			return true;
 	}
 	return false;
+}
+
+void Level::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::ivec3& near)
+{
+	localpos p1 = Chunk::worldBlockToLocalPos(pos);
+	localpos p2 = Chunk::worldBlockToLocalPos(pos + near);
+	if (p1.chunk_pos == p2.chunk_pos)
+		return;
+
+	// update chunk if near block is NOT air/invisible
+	BlockPtr cb = Chunk::AtWorld(pos);
+	BlockPtr nb = Chunk::AtWorld(pos + near);
+	if (cb && nb && nb->GetType() != Block::bAir)
+		if (!isChunkInUpdateList(Chunk::chunks[p2.chunk_pos]))
+			updatedChunks_.push_back(Chunk::chunks[p2.chunk_pos]);
 }
 
 void Level::checkBlockPlacement()
@@ -431,16 +452,17 @@ void Level::checkBlockPlacement()
 		{
 			if (!block || block->GetType() == Block::bAir)
 				return false;
-			//Chunk::AtWorld(glm::ivec3(x, y, z))->SetType(Block::bStone);
-			//block->SetType(Block::bAir);
-			Chunk::AtWorld(glm::ivec3(x, y, z) + glm::ivec3(side))->SetType(Block::bStone);
 
-			for (auto& chunk : updatedChunks_)
-			{
-				if (chunk == Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos])
-					return false;
-			}
-			updatedChunks_.push_back(Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos]);
+			UpdateBlockAt(glm::ivec3(x, y, z) + glm::ivec3(side), Block::bStone);
+
+			//Chunk::AtWorld(glm::ivec3(x, y, z) + glm::ivec3(side))->SetType(Block::bStone);
+			//for (auto& chunk : updatedChunks_)
+			//{
+			//	if (chunk == Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos])
+			//		return false;
+			//}
+			//updatedChunks_.push_back(Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos]);
+			
 			return true;
 		}
 		));
@@ -463,15 +485,17 @@ void Level::checkBlockDestruction()
 		{
 			if (!block || block->GetType() == Block::bAir)
 				return false;
-			//Chunk::AtWorld(glm::ivec3(x, y, z))->SetType(Block::bStone);
-			block->SetType(Block::bAir);
 
-			for (auto& chunk : updatedChunks_)
-			{
-				if (chunk == Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos])
-					return false;
-			}
-			updatedChunks_.push_back(Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos]);
+			UpdateBlockAt(glm::ivec3(x, y, z), Block::bAir);
+
+			//block->SetType(Block::bAir);
+			//for (auto& chunk : updatedChunks_)
+			//{
+			//	if (chunk == Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos])
+			//		return false;
+			//}
+			//updatedChunks_.push_back(Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos]);
+			
 			return true;
 		}
 		));

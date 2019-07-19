@@ -8,7 +8,6 @@
 #include <algorithm>
 #include "chunk.h"
 
-#define IMGUI_ENABLED 1
 
 // initialize
 Game::Game(GLFWwindow* window)
@@ -28,7 +27,7 @@ void Game::Run()
 	level->game_ = this;
 	level->Init();
 
-	glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	while (!glfwWindowShouldClose(window_))
 	{
 		float currFrame = (float)glfwGetTime();
@@ -40,14 +39,13 @@ void Game::Run()
 		glClearColor(clr[0], clr[1], clr[2], 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-#if IMGUI_ENABLED
 		ImGui_Impl::StartFrame();
-#endif
 
 		//Render::Draw(level);
 		//Render::drawImGui();
 
 		level->Update(dt_);
+		Debug::Update(dt_);
 
 		if (Input::Keyboard().down[GLFW_KEY_ESCAPE])
 			glfwSetWindowShouldClose(window_, GL_TRUE);
@@ -62,9 +60,7 @@ void Game::Run()
 				glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 		}
 
-#if IMGUI_ENABLED
 		ImGui_Impl::EndFrame();
-#endif
 		glfwSwapBuffers(window_);
 		Input::update();
 	}
