@@ -1,6 +1,6 @@
 #pragma once
 
-typedef struct Chunk;
+struct Chunk;
 
 class Frustum
 {

@@ -32,10 +32,10 @@ public:
 	bool orbits = false;
 	glm::vec3 orbitPos = glm::vec3(0);
 
-	bool followCam = false;
-	float followDist = 200.f;
+	bool followCam = true;
+	float followDist = 75.f;
 
-	float projSize = 200.f;
+	float projSize = 100.f;
 private:
 	glm::vec3 dir_;
 	glm::vec3 pos_; // position relative to camera

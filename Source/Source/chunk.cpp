@@ -15,7 +15,7 @@
 	TODO: use IBOs to save GPU memory
 */
 
-Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Chunk::ivec3Hash> Chunk::chunks;
+Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
 
 static std::mutex mtx;
 

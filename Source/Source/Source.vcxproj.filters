@@ -203,6 +203,15 @@
     <ClInclude Include="generation.h">
       <Filter>Game\Voxel Engine</Filter>
     </ClInclude>
+    <ClInclude Include="vendor\noiseutils.h">
+      <Filter>vendor</Filter>
+    </ClInclude>
+    <ClInclude Include="biome.h">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="superchunk.h">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -326,6 +335,15 @@
       <Filter>Debug</Filter>
     </ClCompile>
     <ClCompile Include="generation.cpp">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\noiseutils.cpp">
+      <Filter>vendor</Filter>
+    </ClCompile>
+    <ClCompile Include="biome.cpp">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="superchunk.cpp">
       <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
   </ItemGroup>

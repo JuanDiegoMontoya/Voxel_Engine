@@ -41,7 +41,7 @@ Sun::Sun()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	near_ = 0.1f;
-	far_ = 300.f;
+	far_ = 130.f;
 	dir_ = glm::vec3(.3f, -1, -0.5);
 	pos_ = -dir_ * 200.f;
 }
@@ -50,8 +50,8 @@ void Sun::Update()
 {
 	if (orbits)
 	{
-		dir_.x = cos(glfwGetTime());
-		dir_.y = sin(glfwGetTime());
+		dir_.x = (float)cos(glfwGetTime());
+		dir_.y = (float)sin(glfwGetTime());
 		dir_.z = -.2f;
 		pos_ = -dir_ * followDist + orbitPos;
 	}

@@ -22,6 +22,27 @@ namespace Utils
 		}
 	};
 
+	struct ivec3Hash
+	{
+		// condenses an ivec3 into a singular number that can be used in a hash
+		size_t operator()(const glm::ivec3& vec) const
+		{
+			//return ID3D(vec.x, vec.y, vec.z, Chunk::GetChunkSize(), Chunk::GetChunkSize());
+			using std::size_t;
+			using std::hash;
+
+			return ((vec.x * 5209) ^ (vec.y * 1811)) ^ (vec.z * 7297);
+		}
+	};
+
+	struct ivec3KeyEq
+	{
+		bool operator()(const glm::ivec3& first, const glm::ivec3& second) const
+		{
+			return first == second;
+		}
+	};
+
 	/**
 	 * Converts an RGB color value to HSL. Conversion formula
 	 * adapted from http://en.wikipedia.org/wiki/HSL_color_space.

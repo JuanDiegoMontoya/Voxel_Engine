@@ -1,6 +1,8 @@
 #pragma once
+#include "biome.h"
 
 typedef struct Chunk* ChunkPtr;
+typedef class Level* LevelPtr;
 
 class WorldGen
 {
@@ -14,7 +16,17 @@ public:
 		updateList: located within level calling this function
 	*/
 	static void GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse, std::vector<ChunkPtr>& updateList);
+	
+	static void GenerateHeightMapWorld(int x, int z, LevelPtr level);
 
+	//static void GenerateChunkMap()
+
+	/*
+		Populates a chunk based on its position in the world
+	*/
+	static void GenerateChunk(glm::ivec3 cpos,  ChunkPtr chunk);
 private:
 	WorldGen() = delete;
+
+
 };

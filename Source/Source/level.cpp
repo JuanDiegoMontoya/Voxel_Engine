@@ -48,12 +48,11 @@ void Level::Init()
 
 	int cc = 8; // chunk count
 	updatedChunks_.reserve(cc * cc * cc);
-	sizeof(Block);
-	// initialize a single chunk
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
-	WorldGen::GenerateSimpleWorld(cc, cc, cc, .999f, updatedChunks_);
+	//WorldGen::GenerateSimpleWorld(cc, cc, cc, .999f, updatedChunks_);
+	WorldGen::GenerateHeightMapWorld(cc, cc, this);
 
 	// TODO: enable compiler C++ optimizations (currently disabled for debugging purposes)
 
@@ -293,7 +292,7 @@ void Level::DrawDebug()
 		ImGui::NewLine();
 		ImGui::Text("Flying: %s", activeCursor ? "False" : "True");
 
-		int dist = 5;
+		float dist = 5;
 		ImGui::Text("Raycast information:");
 		ImGui::Text("Ray length: %d", dist);
 		raycast(
@@ -334,7 +333,7 @@ void Level::DrawDebug()
 		}
 		));
 
-		ImGui::End;
+		ImGui::End();
 	}
 
 	renderAxisIndicators();

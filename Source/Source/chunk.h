@@ -1,5 +1,7 @@
 #pragma once
 #include "block.h"
+#include "biome.h"
+#include "misc_utils.h"
 
 // cubic dimensions of a single chunk
 //#define CHUNK_SIZE 16
@@ -19,25 +21,6 @@ struct localpos
 typedef struct Chunk
 {
 private:
-	struct ivec3Hash
-	{
-		// condenses an ivec3 into a singular number that can be used in a hash
-		size_t operator()(const glm::ivec3& vec) const
-		{
-			//return ID3D(vec.x, vec.y, vec.z, Chunk::GetChunkSize(), Chunk::GetChunkSize());
-			using std::size_t;
-			using std::hash;
-
-			return ((vec.x * 5209) ^ (vec.y * 1811)) ^ (vec.z * 7297);
-		}
-	};
-	struct ivec3KeyEq
-	{
-		bool operator()(const glm::ivec3& first, const glm::ivec3& second) const
-		{
-			return first == second;
-		}
-	};
 public:
 	Chunk(bool active = false);
 	~Chunk();
@@ -129,7 +112,7 @@ public:
 
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 	friend class Level;
-	static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, ivec3Hash> chunks;
+	static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 private:
 
 	void buildBlockVertices(

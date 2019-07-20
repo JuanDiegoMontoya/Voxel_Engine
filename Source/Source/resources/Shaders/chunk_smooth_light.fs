@@ -44,7 +44,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
   // calculate bias (based on depth map resolution and slope)
   vec3 normal = normalize(vNormal);
   vec3 lightDir = normalize(lightPos - vPos);
-  float bias = max(0.0001 * (1.0 - dot(normal, lightDir)), 0.0001);
+  float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.001);
   //bias = 0.0;
   
   // check whether current frag pos is in shadow
@@ -52,15 +52,16 @@ float ShadowCalculation(vec4 fragPosLightSpace)
   // PCF
   float shadow = 0.0;
   vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-  for(int x = -1; x <= 1; ++x)
+  int samples = 1;
+  for(int x = -samples; x <= samples; ++x)
   {
-    for(int y = -1; y <= 1; ++y)
+    for(int y = -samples; y <= samples; ++y)
     {
       float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
       shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
     }    
   }
-  shadow /= 9.0;
+  shadow /= pow(samples * 2 + 1, 2);
   
   // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
   if(projCoords.z > 1.0)

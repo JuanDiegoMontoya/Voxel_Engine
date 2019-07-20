@@ -25,6 +25,8 @@ public:
 		bDirt,
 		bMetal,
 		bGrass,
+		bSand,
+		bSnow,
 
 		bCount
 	};
