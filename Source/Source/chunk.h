@@ -118,7 +118,7 @@ public:
 
 	inline glm::vec3 GetMax() const
 	{
-		return glm::vec3(pos_ * CHUNK_SIZE + CHUNK_SIZE - 1);
+		return glm::vec3(pos_ * CHUNK_SIZE + CHUNK_SIZE - 0);
 	}
 
 	inline bool IsVisible() const { return visible_; }

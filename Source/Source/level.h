@@ -46,7 +46,8 @@ private:
 	GamePtr game_;
 	std::vector<Camera*> cameras_;			 // all cameras in the scene
 	std::vector<GameObjectPtr> objects_; // all game objects in the scene
-	glm::vec3 bgColor_ = glm::vec3(53.f / 255.f, 81.f / 255.f, 98.f / 255.f);
+	//glm::vec3 bgColor_ = glm::vec3(53.f / 255.f, 81.f / 255.f, 98.f / 255.f);
+	glm::vec3 bgColor_ = glm::vec3(.529f, .808f, .922f);
 	
 	Sun sun_;
 	

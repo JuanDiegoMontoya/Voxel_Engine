@@ -20,6 +20,7 @@
 #include "vendor/ctpl_stl.h"
 #include "input.h"
 #include "pick.h"
+#include "settings.h"
 #include <functional>
 
 using namespace std::chrono;
@@ -45,7 +46,7 @@ void Level::Init()
 	cameras_.push_back(new Camera(kControlCam));
 	Render::SetCamera(cameras_[0]);
 
-	int cc = 12; // chunk count
+	int cc = 8; // chunk count
 	updatedChunks_.reserve(cc * cc * cc);
 	sizeof(Block);
 	// initialize a single chunk
@@ -99,6 +100,7 @@ void Level::Init()
 void Level::Update(float dt)
 {
 	PERF_BENCHMARK_START;
+	glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
 	ProcessUpdatedChunks();
 	CheckInteraction();
@@ -141,6 +143,7 @@ void Level::Update(float dt)
 		renderQuad();
 	}
 
+	glDisable(GL_FRAMEBUFFER_SRGB);
 	PERF_BENCHMARK_END;
 }
 
@@ -216,10 +219,10 @@ void Level::DrawShadows()
 			chunk.second->Render();
 		}
 	});
-
+	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, 1920, 1080);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 static VAO* blockHoverVao = nullptr;
@@ -471,7 +474,7 @@ void Level::checkBlockPlacement()
 
 void Level::checkBlockDestruction()
 {
-	if (Input::Mouse().pressed[GLFW_MOUSE_BUTTON_1] && 
+	if (Input::Mouse().down[GLFW_MOUSE_BUTTON_1] && 
 		!ImGui::IsAnyItemHovered() && 
 		!ImGui::IsAnyItemActive() && 
 		!ImGui::IsAnyItemFocused())

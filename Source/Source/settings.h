@@ -60,10 +60,10 @@ namespace Settings
 		bool danglyBits = true;		// scaling squares on the edges of the selected object
 	};
 
-	typename GFX Graphics;
-	typename CTL Controls;
-	typename SND Sound;
-	typename EDT Editor;
+	static typename GFX Graphics;
+	static typename CTL Controls;
+	static typename SND Sound;
+	static typename EDT Editor;
 
 //bool DrawOptions();
 //void reinitializeDatMfGlfwContextBruh();
