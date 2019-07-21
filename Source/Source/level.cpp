@@ -46,7 +46,7 @@ void Level::Init()
 	cameras_.push_back(new Camera(kControlCam));
 	Render::SetCamera(cameras_[0]);
 
-	int cc = 4; // chunk count
+	int cc = 8; // chunk count
 	updatedChunks_.reserve(cc * cc * cc);
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
