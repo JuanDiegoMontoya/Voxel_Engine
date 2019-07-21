@@ -60,7 +60,7 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 	module::Perlin surface;
 	surface.SetLacunarity(1);
 	surface.SetOctaveCount(3);
-	surface.SetFrequency(.2);
+	surface.SetFrequency(.3);
 	surface.SetPersistence(.5);
 
 	module::RidgedMulti tunneler;

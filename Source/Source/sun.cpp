@@ -19,26 +19,9 @@ Sun::Sun()
 	vao_->AddBuffer(*vbo_, layout);
 	vbo_->Unbind();
 	vao_->Unbind();
+	
+	initCascadedShadowMapFBO();
 
-	// configure depth map FBO
-	// -----------------------
-	glGenFramebuffers(1, &depthMapFBO_);
-	// create depth texture
-	glGenTextures(1, &depthMapTex_);
-	glBindTexture(GL_TEXTURE_2D, depthMapTex_);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowSize_.x, shadowSize_.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-	// attach depth texture as FBO's depth buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTex_, 0);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	near_ = 0.1f;
 	far_ = 130.f;
@@ -92,4 +75,42 @@ void Sun::Render()
 			Note: this means the sun should be rendered first each frame
 			to prevent depth-related artifacts from appearing. */
 	//glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void Sun::initCascadedShadowMapFBO()
+{
+	// configure depth map FBO
+	// -----------------------
+	glGenFramebuffers(1, &depthMapFBO_);
+	// create depth texture
+	glGenTextures(shadowCascades_, &depthMapTexes_[0]);
+
+	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	for (unsigned i = 0; i < shadowCascades_; i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[0]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowSize_.x, shadowSize_.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	}
+
+	// attach depth texture as FBO's depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexes_[0], 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	ASSERT_MSG(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE,
+		"Shadow cascade framebuffer incomplete.");
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Sun::bindForWriting(unsigned index)
+{
+	ASSERT(index < shadowCascades_);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, depthMapFBO_);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexes_[index], 0);
 }

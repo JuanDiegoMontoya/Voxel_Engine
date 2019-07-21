@@ -12,7 +12,7 @@ class VBO;
 
 struct localpos
 {
-	localpos(glm::ivec3& chunk, glm::ivec3& block)
+	localpos(const glm::ivec3& chunk, const glm::ivec3& block)
 		: chunk_pos(chunk), block_pos(block) {}
 	glm::ivec3 chunk_pos; // within world
 	glm::ivec3 block_pos; // within chunk
@@ -112,7 +112,8 @@ public:
 
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 	friend class Level;
-	static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
+	//static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
+	static std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 private:
 
 	void buildBlockVertices(

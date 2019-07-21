@@ -207,7 +207,7 @@ void Level::DrawShadows()
 	glViewport(0, 0, sun_.GetShadowSize().x, sun_.GetShadowSize().y);
 	glBindFramebuffer(GL_FRAMEBUFFER, sun_.GetDepthFBO());
 	glClear(GL_DEPTH_BUFFER_BIT);
-
+	
 	// render blocks in each active chunk
 	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
 		[&](std::pair<glm::ivec3, Chunk*> chunk)
@@ -219,6 +219,7 @@ void Level::DrawShadows()
 		}
 	});
 	
+	// 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -473,7 +474,7 @@ void Level::checkBlockPlacement()
 
 void Level::checkBlockDestruction()
 {
-	if (Input::Mouse().down[GLFW_MOUSE_BUTTON_1] && 
+	if (Input::Mouse().pressed[GLFW_MOUSE_BUTTON_1] && 
 		!ImGui::IsAnyItemHovered() && 
 		!ImGui::IsAnyItemActive() && 
 		!ImGui::IsAnyItemFocused())

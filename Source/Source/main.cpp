@@ -19,7 +19,7 @@ int main()
 	set_glfw_callbacks(window);
 
 	// basically vsync
-	//glfwSwapInterval(1);
+	glfwSwapInterval(1);
 
 	Render::Init();
 

@@ -15,7 +15,8 @@
 	TODO: use IBOs to save GPU memory
 */
 
-Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
+//Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
+std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
 
 static std::mutex mtx;
 
@@ -198,7 +199,8 @@ GenQuad:
 	float shiny = Block::PropertiesTable[block.GetType()].specular;
 	//shiny = 128;
 	glm::vec4 color = Block::PropertiesTable[block.GetType()].color;
-	//glm::vec3 clrBias = Utils::get_random_vec3_r(-.1, .1);
+
+	// slightly randomize color for each block to make them more visible (temporary solution)
 	float clrBias = Utils::get_random_r(-.03, .03);
 
 	// sadly we gotta copy all this stuff 6 times
