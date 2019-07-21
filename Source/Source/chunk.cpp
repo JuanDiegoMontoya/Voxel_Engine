@@ -198,11 +198,13 @@ GenQuad:
 	float shiny = Block::PropertiesTable[block.GetType()].specular;
 	//shiny = 128;
 	glm::vec4 color = Block::PropertiesTable[block.GetType()].color;
+	//glm::vec3 clrBias = Utils::get_random_vec3_r(-.1, .1);
+	float clrBias = Utils::get_random_r(-.03, .03);
 
 	// sadly we gotta copy all this stuff 6 times
 	for (int i = 0; i < 6; i++)
 	{
-		tColors.push_back(glm::vec3(color.r, color.g, color.b));
+		tColors.push_back(glm::vec3(color.r, color.g, color.b) + clrBias);
 		tNormals.push_back(Render::cube_normals_divisor2[curQuad]);
 		tSpeculars.push_back(shiny);
 	}

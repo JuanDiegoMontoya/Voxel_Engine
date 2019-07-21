@@ -76,6 +76,15 @@ namespace Utils
 		return distribution(generator);
 	}
 
+	glm::vec3 get_random_vec3_r(float low, float high)
+	{
+		static thread_local std::mt19937 generator;
+		std::uniform_real_distribution<float> distribution1(low, high);
+		std::uniform_real_distribution<float> distribution2(low, high);
+		std::uniform_real_distribution<float> distribution3(low, high);
+		return glm::vec3(distribution1(generator), distribution2(generator), distribution3(generator));
+	}
+
 
 	// disregards color and width
 	//DebugLineData PointsToASLine(const glm::vec2& p1, const glm::vec2& p2)

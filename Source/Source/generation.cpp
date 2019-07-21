@@ -7,6 +7,7 @@
 #include "generation.h"
 #include <noise/noise.h>
 #include "vendor/noiseutils.h"
+#include <execution>
 
 int maxHeight = 255;
 
@@ -50,31 +51,53 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 	module::DEFAULT_PERLIN_QUALITY;
 	module::DEFAULT_PERLIN_SEED;
 
-	//module::Perlin noise;
-	module::Cylinders one;
-	module::RidgedMulti two;
-	module::Perlin control;
-	module::Blend blender;
-	blender.SetSourceModule(0, one);
-	blender.SetSourceModule(1, two);
-	blender.SetControlModule(control);
+	module::DEFAULT_RIDGED_FREQUENCY;
+	module::DEFAULT_RIDGED_LACUNARITY;
+	module::DEFAULT_RIDGED_OCTAVE_COUNT;
+	module::DEFAULT_RIDGED_QUALITY;
+	module::DEFAULT_RIDGED_SEED;
 
-	module::Const one1;
-	module::Voronoi two1;
-	module::Perlin control1;
-	module::Blend blender1;
-	blender1.SetSourceModule(0, one1);
-	blender1.SetSourceModule(1, two1);
-	blender1.SetControlModule(blender);
+	module::Perlin surface;
+	surface.SetLacunarity(1);
+	surface.SetOctaveCount(3);
+	surface.SetFrequency(.2);
+	surface.SetPersistence(.5);
 
-	module::Blend poop;
-	poop.SetSourceModule(0, blender);
-	poop.SetSourceModule(1, blender1);
-	poop.SetControlModule(blender1);
-	
+	module::RidgedMulti tunneler;
+	// higher lacunarity = thinner tunnels
+	tunneler.SetLacunarity(2.);
+	// connectivity/complexity of tunnels (unsure)
+	tunneler.SetOctaveCount(5);
+	// higher frequency = more common, thicker tunnels 
+	// raise lacunarity as frequency decreases
+	tunneler.SetFrequency(.01);
+	module::Invert inverter;
+	inverter.SetSourceModule(0, tunneler);
+
+	//module::Cylinders one;
+	//module::RidgedMulti two;
+	//module::Perlin control;
+	//module::Blend blender;
+	//blender.SetSourceModule(0, one);
+	//blender.SetSourceModule(1, two);
+	//blender.SetControlModule(control);
+
+	//module::Const one1;
+	//module::Voronoi two1;
+	//module::Perlin control1;
+	//module::Blend blender1;
+	//blender1.SetSourceModule(0, one1);
+	//blender1.SetSourceModule(1, two1);
+	//blender1.SetControlModule(blender);
+
+	//module::Blend poop;
+	//poop.SetSourceModule(0, blender);
+	//poop.SetSourceModule(1, blender1);
+	//poop.SetControlModule(blender1);
+	//noise.GetValue()
 	utils::NoiseMap heightMap;
 	utils::NoiseMapBuilderPlane heightMapBuilder;
-	heightMapBuilder.SetSourceModule(control);
+	heightMapBuilder.SetSourceModule(surface);
 	heightMapBuilder.SetDestNoiseMap(heightMap);
 	heightMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
 
@@ -86,7 +109,7 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 			heightMapBuilder.SetBounds(xc, xc + 1, zc, zc + 1);
 			heightMapBuilder.Build();
 
-			// generate surface layer
+			// generate EVERYTHING
 			for (int i = 0; i < Chunk::CHUNK_SIZE; i++)
 			{
 				for (int k = 0; k < Chunk::CHUNK_SIZE; k++)
@@ -96,7 +119,7 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 					//utils::Color* color = height.GetSlabPtr(i, k);
 					float height = *heightMap.GetConstSlabPtr(i, k);
 
-					int y = Utils::mapToRange(height, -1.f, 1.f, -0.f, 200.f);
+					int y = Utils::mapToRange(height, -1.f, 1.f, -0.f, 100.f);
 					level->UpdateBlockAt(glm::ivec3(worldX, y, worldZ), Block::BlockType::bGrass);
 
 					// generate subsurface
@@ -110,6 +133,30 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 				}
 			}
 
+			// generate tunnels
+			std::for_each(
+				std::execution::seq,
+				Chunk::chunks.begin(),
+				Chunk::chunks.end(),
+				[&](const std::pair<glm::ivec3, Chunk*>& p)
+			{
+				if (!p.second)
+					return;
+				for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
+				{
+					for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
+					{
+						for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
+						{
+							glm::dvec3 pos = (p.first * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
+							double val = tunneler.GetValue(pos.x, pos.y, pos.z);
+							//std::cout << val << '\n';
+							if (val > .9)
+								p.second->At(xb, yb, zb).SetType(Block::bAir);
+						}
+					}
+				}
+			});
 
 			//utils::WriterBMP writer;
 			//writer.SetSourceImage(image);

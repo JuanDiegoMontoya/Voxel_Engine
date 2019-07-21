@@ -25,6 +25,9 @@ namespace Utils
 	// thread-safe
 	float get_random_r(float low, float high);
 
+	// generates a vector with random components in the given range (thread-safe)
+	glm::vec3 get_random_vec3_r(float low, float high);
+
 	template<typename T, typename Q>
 	T mapToRange(T val, Q r1s, Q r1e, Q r2s, Q r2e)
 	{
