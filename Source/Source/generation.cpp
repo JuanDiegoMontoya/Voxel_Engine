@@ -57,11 +57,60 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 	module::DEFAULT_RIDGED_QUALITY;
 	module::DEFAULT_RIDGED_SEED;
 
-	module::Perlin surface;
-	surface.SetLacunarity(1);
-	surface.SetOctaveCount(3);
-	surface.SetFrequency(.3);
-	surface.SetPersistence(.5);
+	module::Const canvas0;
+	canvas0.SetConstValue(-1.0);
+	module::Const gray;
+	gray.SetConstValue(0);
+
+	// add a little bit of plains to a blank canvas
+	module::Perlin plains;
+	plains.SetLacunarity(1);
+	plains.SetOctaveCount(3);
+	plains.SetFrequency(.1);
+	plains.SetPersistence(.5);
+	module::Perlin plainsPicker;
+	plainsPicker.SetSeed(0);
+	plainsPicker.SetLacunarity(0);
+	plainsPicker.SetFrequency(.2);
+	plainsPicker.SetOctaveCount(3);
+	module::Select plainsSelect;
+	plainsSelect.SetBounds(-1, 0);
+	plainsSelect.SetEdgeFalloff(.1);
+	plainsSelect.SetSourceModule(0, canvas0);
+	plainsSelect.SetSourceModule(1, plains);
+	plainsSelect.SetControlModule(plainsPicker);
+	module::Select canvas1;
+	canvas1.SetEdgeFalloff(1.5);
+	canvas1.SetSourceModule(0, canvas0);
+	canvas1.SetSourceModule(1, plainsSelect);
+	canvas1.SetControlModule(canvas0);
+
+	module::Perlin hillsLumpy;
+	hillsLumpy.SetFrequency(.2);
+	hillsLumpy.SetOctaveCount(2);
+	hillsLumpy.SetPersistence(1.5);
+	module::Const hillsHeight;
+	hillsHeight.SetConstValue(1);
+	module::Add hills;
+	hills.SetSourceModule(0, hillsLumpy);
+	hills.SetSourceModule(1, hillsHeight);
+	module::Perlin hillsPicker;
+	hillsPicker.SetSeed(1);
+	hillsPicker.SetLacunarity(0);
+	hillsPicker.SetFrequency(.2);
+	hillsPicker.SetOctaveCount(3);
+	module::Select hillsSelect;
+	hillsSelect.SetBounds(-1, 0);
+	hillsSelect.SetEdgeFalloff(.1);
+	hillsSelect.SetSourceModule(0, canvas0);
+	hillsSelect.SetSourceModule(1, hills);
+	hillsSelect.SetControlModule(hillsPicker);
+	module::Select canvas2;
+	canvas2.SetEdgeFalloff(1.1);
+	canvas2.SetBounds(-1, -.5);
+	canvas2.SetSourceModule(0, canvas1);
+	canvas2.SetSourceModule(1, hillsSelect);
+	canvas2.SetControlModule(canvas1);
 
 	module::RidgedMulti tunneler;
 	// higher lacunarity = thinner tunnels
@@ -97,7 +146,7 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 	//noise.GetValue()
 	utils::NoiseMap heightMap;
 	utils::NoiseMapBuilderPlane heightMapBuilder;
-	heightMapBuilder.SetSourceModule(surface);
+	heightMapBuilder.SetSourceModule(canvas2);
 	heightMapBuilder.SetDestNoiseMap(heightMap);
 	heightMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
 
@@ -118,6 +167,7 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 					int worldZ = zc * Chunk::CHUNK_SIZE + k;
 					//utils::Color* color = height.GetSlabPtr(i, k);
 					float height = *heightMap.GetConstSlabPtr(i, k);
+					height = height < -1 ? -1 : height;
 
 					int y = Utils::mapToRange(height, -1.f, 1.f, -0.f, 100.f);
 					level->UpdateBlockAt(glm::ivec3(worldX, y, worldZ), Block::BlockType::bGrass);
@@ -134,29 +184,29 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 			}
 
 			// generate tunnels
-			std::for_each(
-				std::execution::seq,
-				Chunk::chunks.begin(),
-				Chunk::chunks.end(),
-				[&](const std::pair<glm::ivec3, Chunk*>& p)
-			{
-				if (!p.second)
-					return;
-				for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
-				{
-					for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
-					{
-						for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
-						{
-							glm::dvec3 pos = (p.first * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
-							double val = tunneler.GetValue(pos.x, pos.y, pos.z);
-							//std::cout << val << '\n';
-							if (val > .9)
-								p.second->At(xb, yb, zb).SetType(Block::bAir);
-						}
-					}
-				}
-			});
+			//std::for_each(
+			//	std::execution::par,
+			//	Chunk::chunks.begin(),
+			//	Chunk::chunks.end(),
+			//	[&](const std::pair<glm::ivec3, Chunk*>& p)
+			//{
+			//	if (!p.second)
+			//		return;
+			//	for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
+			//	{
+			//		for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
+			//		{
+			//			for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
+			//			{
+			//				glm::dvec3 pos = (p.first * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
+			//				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
+			//				//std::cout << val << '\n';
+			//				if (val > .9)
+			//					p.second->At(xb, yb, zb).SetType(Block::bAir);
+			//			}
+			//		}
+			//	}
+			//});
 
 			//utils::WriterBMP writer;
 			//writer.SetSourceImage(image);
@@ -168,7 +218,139 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 
 }
 
-void WorldGen::GenerateChunk(glm::ivec3 cpos, ChunkPtr chunk)
+void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 {
-	// sample the image that defines which biome each chunk is
+	static bool init = true;
+	static module::Const canvas0;
+	static module::Const gray;
+	static module::Perlin plains;
+	static module::Perlin plainsPicker;
+	static module::Select plainsSelect;
+	static module::Select canvas1;
+	static module::Perlin hillsLumpy;
+	static module::Const hillsHeight;
+	static module::Add hills;
+	static module::Perlin hillsPicker;
+	static module::Select hillsSelect;
+	static module::Select canvas2;
+	static module::RidgedMulti tunneler;
+	static module::Invert inverter;
+	static utils::NoiseMap heightMap;
+	static utils::NoiseMapBuilderPlane heightMapBuilder;
+	if (init)
+	{
+		canvas0.SetConstValue(-1.0);
+		gray.SetConstValue(0);
+
+		// add a little bit of plains to a blank canvas
+		plains.SetLacunarity(0);
+		plains.SetOctaveCount(3);
+		plains.SetFrequency(.03);
+		plains.SetPersistence(.5);
+		plainsPicker.SetSeed(0);
+		plainsPicker.SetLacunarity(0);
+		plainsPicker.SetFrequency(.1);
+		plainsPicker.SetOctaveCount(3);
+		plainsSelect.SetBounds(-1, 0);
+		plainsSelect.SetEdgeFalloff(.1);
+		plainsSelect.SetSourceModule(0, canvas0);
+		plainsSelect.SetSourceModule(1, plains);
+		plainsSelect.SetControlModule(plainsPicker);
+		canvas1.SetEdgeFalloff(1.5);
+		canvas1.SetSourceModule(0, canvas0);
+		canvas1.SetSourceModule(1, plainsSelect);
+		canvas1.SetControlModule(canvas0);
+
+		hillsLumpy.SetFrequency(.2);
+		hillsLumpy.SetOctaveCount(2);
+		hillsLumpy.SetPersistence(1.5);
+		hillsHeight.SetConstValue(1);
+		hills.SetSourceModule(0, hillsLumpy);
+		hills.SetSourceModule(1, hillsHeight);
+		hillsPicker.SetSeed(1);
+		hillsPicker.SetLacunarity(0);
+		hillsPicker.SetFrequency(.1);
+		hillsPicker.SetOctaveCount(3);
+		hillsSelect.SetBounds(-1, 0);
+		hillsSelect.SetEdgeFalloff(.1);
+		hillsSelect.SetSourceModule(0, canvas0);
+		hillsSelect.SetSourceModule(1, hills);
+		hillsSelect.SetControlModule(hillsPicker);
+		canvas2.SetEdgeFalloff(1.1);
+		canvas2.SetBounds(-1, -.5);
+		canvas2.SetSourceModule(0, canvas1);
+		canvas2.SetSourceModule(1, hillsSelect);
+		canvas2.SetControlModule(canvas1);
+
+		// higher lacunarity = thinner tunnels
+		tunneler.SetLacunarity(2.);
+		// connectivity/complexity of tunnels (unsure)
+		tunneler.SetOctaveCount(5);
+		// higher frequency = more common, thicker tunnels 
+		// raise lacunarity as frequency decreases
+		tunneler.SetFrequency(.01);
+		inverter.SetSourceModule(0, tunneler);
+
+		heightMapBuilder.SetSourceModule(canvas2);
+		heightMapBuilder.SetDestNoiseMap(heightMap);
+		heightMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
+
+		init = false;
+	}
+
+	heightMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z, cpos.z + 1);
+	heightMapBuilder.Build();
+
+	// generate EVERYTHING
+	for (int i = 0; i < Chunk::CHUNK_SIZE; i++)
+	{
+		for (int j = 0; j < Chunk::CHUNK_SIZE; j++)
+		{
+			for (int k = 0; k < Chunk::CHUNK_SIZE; k++)
+			{
+				int worldX = cpos.x * Chunk::CHUNK_SIZE + i;
+				int worldY = cpos.y * Chunk::CHUNK_SIZE + j;
+				int worldZ = cpos.z * Chunk::CHUNK_SIZE + k;
+				//utils::Color* color = height.GetSlabPtr(i, k);
+				float height = *heightMap.GetConstSlabPtr(i, k);
+				height = height < -1 ? -1 : height;
+
+				int y = Utils::mapToRange(height, -1.f, 1.f, -0.f, 150.f);
+				double val = tunneler.GetValue(worldX, worldY, worldZ);
+
+				// top cover
+				if (y == worldY)
+				{
+					if (hillsPicker.GetValue(worldX, worldY, worldZ) * 30 + worldY > 90)
+						level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bSnow);
+					else
+						level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bGrass);
+				}
+				if (worldY >= y - 3 && worldY < y)
+					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bDirt);
+
+				// generate subsurface
+				if (worldY >= -10 && worldY < y - 3)
+					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
+				if (val > .9)
+					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::bAir);
+			}
+		}
+	}
+
+	// generate tunnels
+	//for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
+	//{
+	//	for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
+	//	{
+	//		for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
+	//		{
+	//			glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
+	//			double val = tunneler.GetValue(pos.x, pos.y, pos.z);
+	//			//std::cout << val << '\n';
+	//			if (val > .9)
+	//				level->UpdateBlockAt(glm::ivec3(xb, yb, zb), Block::bAir);
+	//		}
+	//	}
+	//}
 }

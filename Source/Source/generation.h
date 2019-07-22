@@ -24,7 +24,7 @@ public:
 	/*
 		Populates a chunk based on its position in the world
 	*/
-	static void GenerateChunk(glm::ivec3 cpos,  ChunkPtr chunk);
+	static void GenerateChunk(glm::ivec3 cpos, LevelPtr level);
 private:
 	WorldGen() = delete;
 

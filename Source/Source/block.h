@@ -18,7 +18,7 @@ typedef class Block
 public:
 
 	// defines various block properties and behaviors
-	enum BlockType : int
+	enum BlockType : unsigned short
 	{
 		bAir = 0, // default type
 		bStone,

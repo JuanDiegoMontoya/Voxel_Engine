@@ -131,6 +131,7 @@ private:
 	glm::ivec3 pos_; // position relative to other chunks (1 chunk = 1 index)
 	bool active_;
 	bool visible_;
+	bool generate_ = false; // if the chunks needs to be generated
 
 	// rendering stuff
 	VAO* vao_ = nullptr;

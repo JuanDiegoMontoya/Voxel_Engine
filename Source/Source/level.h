@@ -50,12 +50,14 @@ private:
 	glm::vec3 bgColor_ = glm::vec3(.529f, .808f, .922f);
 	
 	Sun sun_;
-	
+	float renderdist_ = 300.f;
+	float renderLeniency_ = 100.f;
 	bool activeCursor = false;
 
-	//https://www.reddit.com/r/VoxelGameDev/comments/2t1kkh/best_method_of_chunk_management_in_3d/
-	//https://www.reddit.com/r/VoxelGameDev/comments/b6bgu8/voxel_chunk_management_c_opengl/
-	//std::unordered_map<glm::ivec3, ChunkPtr> activechunks_;
+	void createNearbyChunks(); // and delete far away chunks
+	void generateNewChunks();
+	const unsigned genMax = 5; // maximum chunks to generate per frame
+	std::vector<ChunkPtr> genChunks; // chunks which need to be generated
 
 	void checkBlockPlacement();
 	void checkBlockDestruction();

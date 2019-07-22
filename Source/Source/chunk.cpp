@@ -61,7 +61,6 @@ void Chunk::Render()
 	if (vao_)
 	{
 		vao_->Bind();
-		Chunk::chunks;
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
 	}
 }
