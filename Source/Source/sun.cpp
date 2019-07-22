@@ -7,7 +7,8 @@
 #include "camera.h"
 #include "pipeline.h"
 #include "shader.h"
-//#define LIl|IL yeet
+#include "settings.h"
+#include <limits>
 
 Sun::Sun()
 {
@@ -46,7 +47,14 @@ void Sun::Update()
 	//glm::mat4 lightView = glm::lookAt(pos_, dir_, glm::vec3(0.0, 1.0, 0.0));
 	glm::mat4 lightView = glm::lookAt(pos_, Render::GetCamera()->GetPos(), glm::vec3(0.0, 1.0, 0.0));
 	sunViewProj_ = lightProjection * lightView;
+	view_ = lightView;
 	//frustum_->Transform(lightProjection, lightView);
+
+	// equally spaced cascade ends (may change in future)
+	cascadeEnds_[0] = near_;
+	cascadeEnds_[1] = far_ / 3.f;
+	cascadeEnds_[2] = far_ / 3.f * 2;
+	cascadeEnds_[3] = far_;
 }
 
 void Sun::Render()
@@ -113,4 +121,91 @@ void Sun::bindForWriting(unsigned index)
 	ASSERT(index < shadowCascades_);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, depthMapFBO_);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexes_[index], 0);
+}
+
+void Sun::bindForReading()
+{
+	switch (shadowCascades_) // fall-through intended
+	{
+	case 3:
+		glActiveTexture(2);
+		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[2]);
+	case 2:
+		glActiveTexture(1);
+		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[1]);
+	case 1:
+		glActiveTexture(0);
+		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[0]);
+	}
+}
+
+void Sun::calcOrthoProjs()
+{
+	// Get the inverse of the view transform
+	glm::mat4 Cam = Render::GetCamera()->GetView();
+	glm::mat4 CamInv = glm::inverse(Cam);
+
+	// Get the light space tranform
+	glm::mat4 LightM = view_;;
+
+	float ar = (float)Settings::Graphics.screenX / Settings::Graphics.screenY;
+	float fov = Render::GetCamera()->GetFov(); // degrees
+	float tanHalfHFOV = tanf(glm::radians(fov / 2.0f));
+	float tanHalfVFOV = tanf(glm::radians((fov * ar) / 2.0f));
+
+	for (unsigned i = 0; i < shadowCascades_; i++)
+	{
+		float xn = cascadeEnds_[i] * tanHalfHFOV;
+		float xf = cascadeEnds_[i + 1] * tanHalfHFOV;
+		float yn = cascadeEnds_[i] * tanHalfVFOV;
+		float yf = cascadeEnds_[i + 1] * tanHalfVFOV;
+
+		glm::vec4 frustumCorners[8] =
+		{
+			// near face
+			glm::vec4(xn, yn, cascadeEnds_[i], 1.0),
+			glm::vec4(-xn, yn, cascadeEnds_[i], 1.0),
+			glm::vec4(xn, -yn, cascadeEnds_[i], 1.0),
+			glm::vec4(-xn, -yn, cascadeEnds_[i], 1.0),
+
+			// far face
+			glm::vec4(xf, yf, cascadeEnds_[i + 1], 1.0),
+			glm::vec4(-xf, yf, cascadeEnds_[i + 1], 1.0),
+			glm::vec4(xf, -yf, cascadeEnds_[i + 1], 1.0),
+			glm::vec4(-xf, -yf, cascadeEnds_[i + 1], 1.0)
+		};
+		glm::vec4 frustumCornersL[8];
+
+		float minX = std::numeric_limits<float>::max();
+		float maxX = std::numeric_limits<float>::min();
+		float minY = std::numeric_limits<float>::max();
+		float maxY = std::numeric_limits<float>::min();
+		float minZ = std::numeric_limits<float>::max();
+		float maxZ = std::numeric_limits<float>::min();
+
+		for (unsigned j = 0; j < 8; j++)
+		{
+
+			// Transform the frustum coordinate from view to world space
+			glm::vec4 vW = CamInv * frustumCorners[j];
+
+			// Transform the frustum coordinate from world to light space
+			frustumCornersL[j] = LightM * vW;
+
+			minX = glm::min(minX, frustumCornersL[j].x);
+			maxX = glm::max(maxX, frustumCornersL[j].x);
+			minY = glm::min(minY, frustumCornersL[j].y);
+			maxY = glm::max(maxY, frustumCornersL[j].y);
+			minZ = glm::min(minZ, frustumCornersL[j].z);
+			maxZ = glm::max(maxZ, frustumCornersL[j].z);
+		}
+
+		shadowOrthoProjInfo_[i].r = maxX;
+		shadowOrthoProjInfo_[i].l = minX;
+		shadowOrthoProjInfo_[i].b = minY;
+		shadowOrthoProjInfo_[i].t = maxY;
+		shadowOrthoProjInfo_[i].f = maxZ;
+		shadowOrthoProjInfo_[i].n = minZ;
+		shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+	}
 }

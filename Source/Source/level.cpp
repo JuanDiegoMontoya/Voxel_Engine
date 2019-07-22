@@ -130,7 +130,7 @@ void Level::Update(float dt)
 	{
 		Shader::shaders["debug_shadow"]->Use();
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex());
+		//glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex());
 		renderQuad();
 	}
 
@@ -167,14 +167,21 @@ void Level::DrawNormal()
 	currShader->setMat4("u_proj", Render::GetCamera()->GetProj());
 	currShader->setVec3("viewPos", Render::GetCamera()->GetPos());
 	currShader->setVec3("lightPos", sun_.GetPos());
-	currShader->setMat4("lightSpaceMatrix", sun_.GetViewProj());
+	//currShader->setMat4("lightSpaceMatrix", sun_.GetViewProj());
+
+	for (int i = 0; i < sun_.GetNumCascades(); i++)
+	{
+		glm::vec4 vView(0, 0, sun_.GetCascadeEnds()[i + 1], 1);
+		glm::vec4 vClip = Render::GetCamera()->GetProj() * vView;
+		currShader->setFloat(std::string("cascadeEndClipSpace[" + std::to_string(i) + "]").c_str(), vClip.z);
+		currShader->setMat4(std::string("lightSpaceMatrix[" + std::to_string(i) + "]").c_str(), sun_.GetShadowOrthoProjMtxs()[i]);
+	}
 
 	currShader->setVec3("dirLight.direction", sun_.GetDir());
 	currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
 	currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
 	currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex());
+	sun_.bindForReading();
 	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
 		[&](std::pair<glm::ivec3, Chunk*> chunk)
 	{

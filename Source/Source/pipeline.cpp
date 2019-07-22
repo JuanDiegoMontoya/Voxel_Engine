@@ -110,7 +110,9 @@ namespace Render
 
 		Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
 		Shader::shaders["chunk_shaded"]->Use();
-		Shader::shaders["chunk_shaded"]->setInt("shadowMap", 0);
+		Shader::shaders["chunk_shaded"]->setInt("shadowMap[0]", 0);
+		Shader::shaders["chunk_shaded"]->setInt("shadowMap[1]", 1);
+		Shader::shaders["chunk_shaded"]->setInt("shadowMap[2]", 2);
 
 		Shader::shaders["debug_shadow"] = new Shader("debug_shadow.vs", "debug_shadow.fs");
 		Shader::shaders["debug_shadow"]->Use();

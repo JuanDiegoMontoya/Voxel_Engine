@@ -14,10 +14,11 @@ class Camera
 public:
 	Camera(CameraType type);
 	void Update(float dt);
-	inline const glm::mat4& GetView() { return view_; }
-	inline const glm::mat4& GetProj() { return proj_; }
-	inline const glm::vec3& GetPos() { return worldpos_; }
-	inline const Frustum* GetFrustum() { return frustum_; }
+	inline const glm::mat4& GetView() const { return view_; }
+	inline const glm::mat4& GetProj() const { return proj_; }
+	inline const glm::vec3& GetPos() const { return worldpos_; }
+	inline const Frustum* GetFrustum() const { return frustum_; }
+	inline const float GetFov() const { return fov_; }
 
 	inline void SetPos(const glm::vec3& v) { worldpos_ = v; }
 
