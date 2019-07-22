@@ -43,10 +43,11 @@ Level::~Level()
 // for now this function is where we declare objects
 void Level::Init()
 {
+	Chunk::chunks.max_load_factor(.1f);
 	cameras_.push_back(new Camera(kControlCam));
 	Render::SetCamera(cameras_[0]);
 
-	int cc = 8; // chunk count
+	int cc = 0; // chunk count
 	updatedChunks_.reserve(cc * cc * cc);
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
@@ -115,17 +116,8 @@ void Level::Update(float dt)
 		for (auto& cam : cameras_)
 			cam->Update(dt);
 
-	std::for_each(
-		std::execution::par_unseq,
-		Chunk::chunks.begin(),
-		Chunk::chunks.end(),
-		[](auto& p)
-	{
-		if (p.second)
-		{
-			p.second->Update();
-		}
-	});
+	createNearbyChunks();
+	generateNewChunks();
 
 	sun_.Update();
 	DrawShadows(); // write to shadow map
@@ -212,7 +204,7 @@ void Level::DrawShadows()
 	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
 		[&](std::pair<glm::ivec3, Chunk*> chunk)
 	{
-		if (chunk.second && chunk.second->IsVisible())// && sun_.GetFrustum()->IsInside(chunk.second) >= Frustum::Visibility::Partial)
+		if (chunk.second)// && chunk.second->IsVisible())// && sun_.GetFrustum()->IsInside(chunk.second) >= Frustum::Visibility::Partial)
 		{
 			currShader->setMat4("model", chunk.second->GetModel());
 			chunk.second->Render();
@@ -439,6 +431,80 @@ void Level::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::ivec3& n
 	if (cb && nb && nb->GetType() != Block::bAir)
 		if (!isChunkInUpdateList(Chunk::chunks[p2.chunk_pos]))
 			updatedChunks_.push_back(Chunk::chunks[p2.chunk_pos]);
+}
+
+void Level::createNearbyChunks()
+{
+	// delete far away chunks, then create chunks that are close
+	std::for_each(
+		std::execution::seq,
+		Chunk::chunks.begin(),
+		Chunk::chunks.end(),
+		[&](auto& p)
+	{
+		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
+		if (p.second)
+		{
+			if (dist > renderdist_ + renderLeniency_)
+			{
+				delete p.second;
+				p.second = nullptr;
+				return;
+			}
+		}
+		else if (dist <= renderdist_)
+		{
+			p.second = new Chunk(true);
+			p.second->SetPos(p.first);
+			p.second->generate_ = true;
+		}
+	});
+}
+
+void Level::generateNewChunks()
+{
+	//std::for_each(
+	//	Chunk::chunks.begin(),
+	//	Chunk::chunks.end(),
+	//	[&](auto& p)
+	//{
+	//	if (p.second)
+	//		if (p.second->generate_)
+	//			genChunks.push_back(p.second);
+	//});
+
+	//// sort chunks to update by distance from camera
+	//std::sort(std::execution::par,
+	//	genChunks.begin(),
+	//	genChunks.end(),
+	//	[&](ChunkPtr& a, ChunkPtr& b)->bool
+	//{
+	//	return glm::distance(Render::GetCamera()->GetPos(), glm::vec3(a->GetPos() * Chunk::CHUNK_SIZE)) <
+	//				 glm::distance(Render::GetCamera()->GetPos(), glm::vec3(b->GetPos() * Chunk::CHUNK_SIZE));
+	//});
+
+	// generate each chunk that needs to be
+	unsigned maxgen = genMax;
+	std::for_each(
+		std::execution::seq,
+		Chunk::chunks.begin(),
+		Chunk::chunks.end(),
+		[&](auto& p)
+	{
+		ChunkPtr chunk = p.second;
+		if (chunk)
+		{
+			if (chunk->generate_ && maxgen > 0)
+			{
+				WorldGen::GenerateChunk(chunk->GetPos(), this);
+				chunk->generate_ = false;
+				maxgen--;
+			}
+			chunk->Update();
+		}
+	});
+
+	//genChunks.clear();
 }
 
 void Level::checkBlockPlacement()
