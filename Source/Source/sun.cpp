@@ -23,7 +23,6 @@ Sun::Sun()
 	
 	initCascadedShadowMapFBO();
 
-
 	near_ = 0.1f;
 	far_ = 130.f;
 	dir_ = glm::vec3(.3f, -1, -0.5);
@@ -51,10 +50,15 @@ void Sun::Update()
 	//frustum_->Transform(lightProjection, lightView);
 
 	// equally spaced cascade ends (may change in future)
-	cascadeEnds_[0] = near_;
-	cascadeEnds_[1] = far_ / 3.f;
-	cascadeEnds_[2] = far_ / 3.f * 2;
-	cascadeEnds_[3] = far_;
+	float persNear = Render::GetCamera()->GetNear();
+	float persFar = Render::GetCamera()->GetFar();
+	cascadeEnds_[0] = persNear;
+	//cascadeEnds_[1] = persFar / 3.f;
+	//cascadeEnds_[2] = persFar / 3.f * 2;
+	cascadeEnds_[1] = 75.f;
+	cascadeEnds_[2] = 150.f;
+	cascadeEnds_[3] = persFar;
+	calcOrthoProjs();
 }
 
 void Sun::Render()
@@ -96,8 +100,8 @@ void Sun::initCascadedShadowMapFBO()
 	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
 	for (unsigned i = 0; i < shadowCascades_; i++)
 	{
-		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[0]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowSize_.x, shadowSize_.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, shadowSize_.x, shadowSize_.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
@@ -125,18 +129,25 @@ void Sun::bindForWriting(unsigned index)
 
 void Sun::bindForReading()
 {
-	switch (shadowCascades_) // fall-through intended
-	{
-	case 3:
-		glActiveTexture(2);
-		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[2]);
-	case 2:
-		glActiveTexture(1);
-		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[1]);
-	case 1:
-		glActiveTexture(0);
-		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[0]);
-	}
+	//switch (shadowCascades_) // fall-through intended
+	//{
+	//case 3:
+	//	glActiveTexture(2);
+	//	glBindTexture(GL_TEXTURE_2D, depthMapTexes_[2]);
+	//case 2:
+	//	glActiveTexture(1);
+	//	glBindTexture(GL_TEXTURE_2D, depthMapTexes_[1]);
+	//case 1:
+	//	glActiveTexture(0);
+	//	glBindTexture(GL_TEXTURE_2D, depthMapTexes_[0]);
+	//}
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, depthMapTexes_[0]);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, depthMapTexes_[1]);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, depthMapTexes_[2]);
 }
 
 void Sun::calcOrthoProjs()
@@ -146,9 +157,10 @@ void Sun::calcOrthoProjs()
 	glm::mat4 CamInv = glm::inverse(Cam);
 
 	// Get the light space tranform
-	glm::mat4 LightM = view_;;
+	//glm::mat4 LightM = view_;
+	glm::mat4 LightM = glm::lookAt(glm::vec3(0), dir_, glm::vec3(0, 1, 0));
 
-	float ar = (float)Settings::Graphics.screenX / Settings::Graphics.screenY;
+	float ar = (float)Settings::Graphics.screenX / (float)Settings::Graphics.screenY;
 	float fov = Render::GetCamera()->GetFov(); // degrees
 	float tanHalfHFOV = tanf(glm::radians(fov / 2.0f));
 	float tanHalfVFOV = tanf(glm::radians((fov * ar) / 2.0f));
@@ -185,7 +197,6 @@ void Sun::calcOrthoProjs()
 
 		for (unsigned j = 0; j < 8; j++)
 		{
-
 			// Transform the frustum coordinate from view to world space
 			glm::vec4 vW = CamInv * frustumCorners[j];
 
@@ -200,12 +211,13 @@ void Sun::calcOrthoProjs()
 			maxZ = glm::max(maxZ, frustumCornersL[j].z);
 		}
 
-		shadowOrthoProjInfo_[i].r = maxX;
-		shadowOrthoProjInfo_[i].l = minX;
-		shadowOrthoProjInfo_[i].b = minY;
-		shadowOrthoProjInfo_[i].t = maxY;
-		shadowOrthoProjInfo_[i].f = maxZ;
-		shadowOrthoProjInfo_[i].n = minZ;
+		//shadowOrthoProjInfo_[i].r = maxX;
+		//shadowOrthoProjInfo_[i].l = minX;
+		//shadowOrthoProjInfo_[i].b = minY;
+		//shadowOrthoProjInfo_[i].t = maxY;
+		//shadowOrthoProjInfo_[i].f = maxZ;
+		//shadowOrthoProjInfo_[i].n = minZ;
 		shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY);
 	}
 }

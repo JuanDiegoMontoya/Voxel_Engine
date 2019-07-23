@@ -129,8 +129,9 @@ void Level::Update(float dt)
 	if (Input::Keyboard().down[GLFW_KEY_4])
 	{
 		Shader::shaders["debug_shadow"]->Use();
-		glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex());
+		Shader::shaders["debug_shadow"]->setInt("depthMap", debugCascadeQuad);
+		glActiveTexture(GL_TEXTURE0 + debugCascadeQuad);
+		glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex()[debugCascadeQuad]);
 		renderQuad();
 	}
 
@@ -169,15 +170,17 @@ void Level::DrawNormal()
 	currShader->setVec3("lightPos", sun_.GetPos());
 	//currShader->setMat4("lightSpaceMatrix", sun_.GetViewProj());
 
+	std::vector<float> zVals;
 	for (int i = 0; i < sun_.GetNumCascades(); i++)
 	{
 		glm::vec4 vView(0, 0, sun_.GetCascadeEnds()[i + 1], 1);
 		glm::vec4 vClip = Render::GetCamera()->GetProj() * vView;
-		currShader->setFloat(std::string("cascadeEndClipSpace[" + std::to_string(i) + "]").c_str(), vClip.z);
-		currShader->setMat4(std::string("lightSpaceMatrix[" + std::to_string(i) + "]").c_str(), sun_.GetShadowOrthoProjMtxs()[i]);
+		zVals.push_back(vClip.z);
 	}
 
-	currShader->setVec3("dirLight.direction", sun_.GetDir());
+	currShader->set1FloatArray("cascadeEndClipSpace", zVals, zVals.size());
+	glUniformMatrix4fv(currShader->Uniforms["lightSpaceMatrix"], sun_.GetNumCascades(), GL_FALSE, &sun_.GetShadowOrthoProjMtxs()[0][0][0]);
+	//currShader->setVec3("dirLight.direction", sun_.GetDir());
 	currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
 	currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
 	currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
@@ -185,7 +188,7 @@ void Level::DrawNormal()
 	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
 		[&](std::pair<glm::ivec3, Chunk*> chunk)
 	{
-		if (chunk.second && chunk.second->IsVisible())
+		if (chunk.second)// && chunk.second->IsVisible())
 		{
 			currShader->setMat4("u_model", chunk.second->GetModel());
 			chunk.second->Render();
@@ -201,24 +204,29 @@ void Level::DrawShadows()
 
 	ShaderPtr currShader = Shader::shaders["shadow"];
 	currShader->Use();
-	currShader->setMat4("lightSpaceMatrix", sun_.GetViewProj());
 
 	glViewport(0, 0, sun_.GetShadowSize().x, sun_.GetShadowSize().y);
-	glBindFramebuffer(GL_FRAMEBUFFER, sun_.GetDepthFBO());
-	glClear(GL_DEPTH_BUFFER_BIT);
-	
-	// render blocks in each active chunk
-	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
-		[&](std::pair<glm::ivec3, Chunk*> chunk)
+	//glBindFramebuffer(GL_FRAMEBUFFER, sun_.GetDepthFBO());
+	glm::mat4 poopy = glm::translate(glm::mat4(1), sun_.GetDir());
+
+	for (int i = 0; i < sun_.GetNumCascades(); i++)
 	{
-		if (chunk.second)// && chunk.second->IsVisible())// && sun_.GetFrustum()->IsInside(chunk.second) >= Frustum::Visibility::Partial)
+		sun_.bindForWriting(i);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		currShader->setMat4("lightSpaceMatrix", sun_.GetShadowOrthoProjMtxs()[i] * poopy);// *sun_.GetView());
+
+		// render blocks in each active chunk
+		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
+			[&](std::pair<glm::ivec3, Chunk*> chunk)
 		{
-			currShader->setMat4("model", chunk.second->GetModel());
-			chunk.second->Render();
-		}
-	});
+			if (chunk.second)// && chunk.second->IsVisible())// && sun_.GetFrustum()->IsInside(chunk.second) >= Frustum::Visibility::Partial)
+			{
+				currShader->setMat4("model", chunk.second->GetModel());
+				chunk.second->Render();
+			}
+		});
+	}
 	
-	// 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -291,6 +299,7 @@ void Level::DrawDebug()
 
 		ImGui::NewLine();
 		ImGui::Text("Flying: %s", activeCursor ? "False" : "True");
+		ImGui::SliderInt("Cascade View", &debugCascadeQuad, 0, 2);
 
 		float dist = 5;
 		ImGui::Text("Raycast information:");

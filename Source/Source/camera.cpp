@@ -8,7 +8,7 @@
 Camera::Camera(CameraType type) : type_(type) 
 {
 	frustum_ = new Frustum;
-	proj_ = glm::perspective(glm::radians(fov_), 1920.f / 1080.f, 0.1f, 800.f);
+	proj_ = glm::perspective(glm::radians(fov_), 1920.f / 1080.f, near_, far_);
 }
 
 // update movement and generate view matrix

@@ -7,10 +7,10 @@ layout (location = 3) in float aShininess;
 
 const int NUM_CASCADES = 3;
 
+uniform mat4 lightSpaceMatrix[NUM_CASCADES];
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_proj;
-uniform mat4 lightSpaceMatrix[NUM_CASCADES];
 
 out vec3 vPos;
 out vec4 vColor;
@@ -27,7 +27,7 @@ void main()
   vNormal = transpose(inverse(mat3(u_model))) * aNormal;
   for (int i = 0; i < NUM_CASCADES; i++)
     FragPosLightSpace[i] = lightSpaceMatrix[i] * vec4(vPos, 1.0);
-  ClipSpacePosZ = gl_Position.z;
   
   gl_Position = u_proj * u_view * u_model * vec4(aScreenPos, 1.0);
+  ClipSpacePosZ = gl_Position.z;
 }

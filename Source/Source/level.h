@@ -46,11 +46,10 @@ private:
 	GamePtr game_;
 	std::vector<Camera*> cameras_;			 // all cameras in the scene
 	std::vector<GameObjectPtr> objects_; // all game objects in the scene
-	//glm::vec3 bgColor_ = glm::vec3(53.f / 255.f, 81.f / 255.f, 98.f / 255.f);
-	glm::vec3 bgColor_ = glm::vec3(.529f, .808f, .922f);
+	glm::vec3 bgColor_ = glm::vec3(.529f, .808f, .922f); // sky blue
 	
 	Sun sun_;
-	float renderdist_ = 300.f;
+	float renderdist_ = 100.f;
 	float renderLeniency_ = 100.f;
 	bool activeCursor = false;
 
@@ -62,6 +61,8 @@ private:
 	void checkBlockPlacement();
 	void checkBlockDestruction();
 
+	// debug
+	int debugCascadeQuad = 0;
 }Level, *LevelPtr;
 
 void renderAxisIndicators();

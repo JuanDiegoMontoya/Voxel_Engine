@@ -46,11 +46,10 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(shad
 	{
 		GLint max_length;
 		GLint num_uniforms;
-		
+
 		glGetProgramiv(programID, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
 		//GLchar* pname = (GLchar*)alloca(max_length * sizeof(GLchar));
 		GLchar* pname = new GLchar[max_length];
-		//std::string pname;
 		glGetProgramiv(programID, GL_ACTIVE_UNIFORMS, &num_uniforms);
 
 		for (GLint i = 0; i < num_uniforms; ++i)
@@ -68,6 +67,8 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) : shaderID(shad
 			Uniforms.insert(std::pair<GLchar*, GLint>(pname1, loc));
 		}
 
+		// unfortunately we must have this in the same scope as where it's constructed
+		// alloca prevents the use of delete, but its implementation is compiler dependent
 		delete[] pname;
 	}
 }

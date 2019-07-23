@@ -1,16 +1,13 @@
 #version 450 core
 
-// TODO: incorporate shadow map thingy
-
 struct DirLight
 {
-    vec3 direction;
-  
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-};
+  vec3 direction;
 
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+};
 const int NUM_CASCADES = 3;
 
 // material properties
@@ -21,16 +18,17 @@ in vec3 vPos;
 in vec4 FragPosLightSpace[NUM_CASCADES];
 in float ClipSpacePosZ;
 
+uniform sampler2D shadowMap[NUM_CASCADES];
+uniform float cascadeEndClipSpace[NUM_CASCADES];
 uniform DirLight dirLight; // the sun
 uniform vec3 viewPos;
 uniform vec3 lightPos;
-uniform sampler2D shadowMap[NUM_CASCADES];
-uniform float cascadeEndClipSpace[NUM_CASCADES];
 
 out vec4 fragColor;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 
+/*
 float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
 {
   // perform perspective divide
@@ -68,10 +66,29 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
   shadow /= pow(samples * 2 + 1, 2);
   
   // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-  if(projCoords.z > 1.0)
-    shadow = 0.0;
+  //if(projCoords.z > 1.0)
+    //shadow = 0.0;
     
   return shadow;
+}
+*/
+
+float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
+{
+  vec3 ProjCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+
+  vec2 UVCoords;
+  UVCoords.x = 0.5 * ProjCoords.x + 0.5;
+  UVCoords.y = 0.5 * ProjCoords.y + 0.5;
+
+  float z = 0.5 * ProjCoords.z + 0.5;
+  float Depth = texture(shadowMap[cascadeIndex], UVCoords).x;
+
+  if (Depth < z + 0.00001)
+    //return 0.5;
+    return 0.0;
+  else
+    return 1.0;
 }
 
 void main()
@@ -99,21 +116,24 @@ void main()
   
   // calculate shadow
   float shadow = 0;
-  vec3 poopoo;
+  vec3 poopoo = vec3(0);
   for (int i = 0; i < NUM_CASCADES; i++)
   {
-    if (ClipSpacePosZ <= cascadeEndClipSpace[i])
+    if (ClipSpacePosZ <= abs(cascadeEndClipSpace[i]))
     {
-      poopoo[i] = .1;
+      poopoo[i] = 1;
       shadow = ShadowCalculation(i, FragPosLightSpace[i]);
       break;
     }
   }
   //float shadow = ShadowCalculation(FragPosLightSpace);                      
-  vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color + poopoo;    
+  vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
   
-  fragColor = vec4(lighting, 1.0);
-  //fragColor = vec4(vec3(1.0 - shadow), 1.0); // shadow debugging
+  //fragColor = vec4(poopoo, 1) + vec4(lighting, 0) * 0.00001;
+  //fragColor = vec4(lighting, 1.0);
+  //fragColor = vec4(vec3(FragPosLightSpace[0].y / 10), 1) + vec4(lighting, 0) * 0.0001;
+  //fragColor = vec4(vec3(ClipSpacePosZ) / 100, 1) + vec4(lighting, 0) * 0.0001;
+  fragColor = vec4(vec3(shadow) + vec3(0, 0, ClipSpacePosZ / 100), 1) + vec4(lighting, 0) * 0.0001;
 }
 
 /*

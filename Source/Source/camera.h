@@ -19,6 +19,8 @@ public:
 	inline const glm::vec3& GetPos() const { return worldpos_; }
 	inline const Frustum* GetFrustum() const { return frustum_; }
 	inline const float GetFov() const { return fov_; }
+	inline const float GetNear() const { return near_; }
+	inline const float GetFar() const { return far_; }
 
 	inline void SetPos(const glm::vec3& v) { worldpos_ = v; }
 
@@ -37,4 +39,7 @@ private:
 	float yaw_ = -90.0f;
 	float roll_ = 0;
 	float fov_ = 80.f;
+
+	float near_ = .1f;
+	float far_ = 800.f;
 };

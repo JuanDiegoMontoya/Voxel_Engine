@@ -69,7 +69,7 @@ private:
 	float far_;
 
 	Frustum* frustum_;
-	BasicFrustum shadowOrthoProjInfo_[3];
+	//BasicFrustum shadowOrthoProjInfo_[3];
 	glm::mat4 shadowOrthoProjMtxs_[3];
 
 	VAO* vao_;

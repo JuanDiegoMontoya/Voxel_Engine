@@ -110,13 +110,15 @@ namespace Render
 
 		Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
 		Shader::shaders["chunk_shaded"]->Use();
-		Shader::shaders["chunk_shaded"]->setInt("shadowMap[0]", 0);
-		Shader::shaders["chunk_shaded"]->setInt("shadowMap[1]", 1);
-		Shader::shaders["chunk_shaded"]->setInt("shadowMap[2]", 2);
+		std::vector<int> values = { 0, 1, 2 };
+		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[0]", 0);
+		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[1]", 1);
+		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[2]", 2);
+		Shader::shaders["chunk_shaded"]->setIntArray("shadowMap", values, values.size());
 
 		Shader::shaders["debug_shadow"] = new Shader("debug_shadow.vs", "debug_shadow.fs");
 		Shader::shaders["debug_shadow"]->Use();
-		Shader::shaders["debug_shadow"]->setInt("depthMap", 0);
+		Shader::shaders["debug_shadow"]->setInt("depthMap", 1);
 	}
 
 	void SetCamera(Camera* cam)
