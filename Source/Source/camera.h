@@ -41,5 +41,5 @@ private:
 	float fov_ = 80.f;
 
 	float near_ = .1f;
-	float far_ = 800.f;
+	float far_ = 200.f;
 };

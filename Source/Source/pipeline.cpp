@@ -111,6 +111,7 @@ namespace Render
 		Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
 		Shader::shaders["chunk_shaded"]->Use();
 		std::vector<int> values = { 0, 1, 2 };
+		//std::vector<int> values = { 1, 2, 3 };
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[0]", 0);
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[1]", 1);
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[2]", 2);

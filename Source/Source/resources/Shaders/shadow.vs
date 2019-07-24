@@ -2,7 +2,7 @@
 
 layout (location = 0) in vec3 aPos;
 
-uniform mat4 lightSpaceMatrix;
+uniform mat4 lightSpaceMatrix; // proj * view (of the light)
 uniform mat4 model;
 
 void main()

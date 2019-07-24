@@ -55,8 +55,8 @@ void Sun::Update()
 	cascadeEnds_[0] = persNear;
 	//cascadeEnds_[1] = persFar / 3.f;
 	//cascadeEnds_[2] = persFar / 3.f * 2;
-	cascadeEnds_[1] = 75.f;
-	cascadeEnds_[2] = 150.f;
+	cascadeEnds_[1] = 45.f;
+	cascadeEnds_[2] = 90.f;
 	cascadeEnds_[3] = persFar;
 	calcOrthoProjs();
 }
@@ -102,12 +102,12 @@ void Sun::initCascadedShadowMapFBO()
 	{
 		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, shadowSize_.x, shadowSize_.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 	}
 
 	// attach depth texture as FBO's depth buffer
@@ -142,11 +142,11 @@ void Sun::bindForReading()
 	//	glBindTexture(GL_TEXTURE_2D, depthMapTexes_[0]);
 	//}
 
-	glActiveTexture(GL_TEXTURE1);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, depthMapTexes_[0]);
-	glActiveTexture(GL_TEXTURE2);
+	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, depthMapTexes_[1]);
-	glActiveTexture(GL_TEXTURE3);
+	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, depthMapTexes_[2]);
 }
 
@@ -217,7 +217,10 @@ void Sun::calcOrthoProjs()
 		//shadowOrthoProjInfo_[i].t = maxY;
 		//shadowOrthoProjInfo_[i].f = maxZ;
 		//shadowOrthoProjInfo_[i].n = minZ;
-		shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
-		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY);
+		shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * view_;
+		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * glm::lookAt(pos_, Render::GetCamera()->GetPos(), glm::vec3(0, 1, 0));
+		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * Render::GetCamera()->GetView();
+		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * LightM;
+		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
 	}
 }

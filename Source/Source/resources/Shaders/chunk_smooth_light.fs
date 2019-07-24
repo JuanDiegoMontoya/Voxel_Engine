@@ -28,7 +28,7 @@ out vec4 fragColor;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 
-/*
+///*
 float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
 {
   // perform perspective divide
@@ -71,8 +71,8 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
     
   return shadow;
 }
-*/
-
+//*/
+/*
 float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
 {
   vec3 ProjCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -81,7 +81,7 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
   UVCoords.x = 0.5 * ProjCoords.x + 0.5;
   UVCoords.y = 0.5 * ProjCoords.y + 0.5;
 
-  float z = 0.5 * ProjCoords.z + 0.5;
+  //float z = 0.5 * ProjCoords.z + 0.5;
   float Depth = texture(shadowMap[cascadeIndex], UVCoords).x;
 
   if (Depth < z + 0.00001)
@@ -90,6 +90,7 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
   else
     return 1.0;
 }
+*/
 
 void main()
 {
@@ -121,19 +122,20 @@ void main()
   {
     if (ClipSpacePosZ <= abs(cascadeEndClipSpace[i]))
     {
-      poopoo[i] = 1;
+      poopoo[i] = .2;
       shadow = ShadowCalculation(i, FragPosLightSpace[i]);
       break;
     }
   }
   //float shadow = ShadowCalculation(FragPosLightSpace);                      
   vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
+  vec4 irrelevant = vec4(lighting, 0) * 0.0001;
   
-  //fragColor = vec4(poopoo, 1) + vec4(lighting, 0) * 0.00001;
+  //fragColor = vec4(poopoo, 1) + irrelevant;
   //fragColor = vec4(lighting, 1.0);
-  //fragColor = vec4(vec3(FragPosLightSpace[0].y / 10), 1) + vec4(lighting, 0) * 0.0001;
-  //fragColor = vec4(vec3(ClipSpacePosZ) / 100, 1) + vec4(lighting, 0) * 0.0001;
-  fragColor = vec4(vec3(shadow) + vec3(0, 0, ClipSpacePosZ / 100), 1) + vec4(lighting, 0) * 0.0001;
+  //fragColor = vec4(vec3(FragPosLightSpace[0].y / 10), 1) + irrelevant;
+  //fragColor = vec4(vec3(ClipSpacePosZ) / 100, 1) + irrelevant;
+  fragColor = vec4(vec3(shadow / 3) + vec3(ClipSpacePosZ / 200) + poopoo, 1) + irrelevant;
 }
 
 /*

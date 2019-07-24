@@ -126,15 +126,27 @@ void Level::Update(float dt)
 	DrawDebug();
 
 	// debug shadows
-	if (Input::Keyboard().down[GLFW_KEY_4])
+	//if (Input::Keyboard().down[GLFW_KEY_4])
 	{
+		glViewport(0, 0, 256, 256);
 		Shader::shaders["debug_shadow"]->Use();
-		Shader::shaders["debug_shadow"]->setInt("depthMap", debugCascadeQuad);
-		glActiveTexture(GL_TEXTURE0 + debugCascadeQuad);
-		glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex()[debugCascadeQuad]);
+		Shader::shaders["debug_shadow"]->setInt("depthMap", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex()[0]);
+		renderQuad();
+		glViewport(256, 0, 256, 256);
+		Shader::shaders["debug_shadow"]->setInt("depthMap", 1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex()[1]);
+		renderQuad();
+		glViewport(512, 0, 256, 256);
+		Shader::shaders["debug_shadow"]->setInt("depthMap", 2);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex()[2]);
 		renderQuad();
 	}
 
+	// disable gamma correction for other rendering operations
 	glDisable(GL_FRAMEBUFFER_SRGB);
 	PERF_BENCHMARK_END;
 }
@@ -180,6 +192,7 @@ void Level::DrawNormal()
 
 	currShader->set1FloatArray("cascadeEndClipSpace", zVals, zVals.size());
 	glUniformMatrix4fv(currShader->Uniforms["lightSpaceMatrix"], sun_.GetNumCascades(), GL_FALSE, &sun_.GetShadowOrthoProjMtxs()[0][0][0]);
+	//currShader->setMat4("lightSpaceMatrix[0]", sun_.GetShadowOrthoProjMtxs()[0]);
 	//currShader->setVec3("dirLight.direction", sun_.GetDir());
 	currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
 	currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
@@ -213,7 +226,7 @@ void Level::DrawShadows()
 	{
 		sun_.bindForWriting(i);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		currShader->setMat4("lightSpaceMatrix", sun_.GetShadowOrthoProjMtxs()[i] * poopy);// *sun_.GetView());
+		currShader->setMat4("lightSpaceMatrix", sun_.GetShadowOrthoProjMtxs()[i]);// *sun_.GetView());
 
 		// render blocks in each active chunk
 		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
