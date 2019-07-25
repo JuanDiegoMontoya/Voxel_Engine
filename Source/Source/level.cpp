@@ -191,8 +191,8 @@ void Level::DrawNormal()
 	}
 
 	currShader->set1FloatArray("cascadeEndClipSpace", zVals, zVals.size());
-	glUniformMatrix4fv(currShader->Uniforms["lightSpaceMatrix"], sun_.GetNumCascades(), GL_FALSE, &sun_.GetShadowOrthoProjMtxs()[0][0][0]);
-	//currShader->setMat4("lightSpaceMatrix[0]", sun_.GetShadowOrthoProjMtxs()[0]);
+	//glUniformMatrix4fv(currShader->Uniforms["lightSpaceMatrix"], sun_.GetNumCascades(), GL_FALSE, &sun_.GetShadowOrthoProjMtxs()[0][0][0]);
+	currShader->setMat4("lightSpaceMatrix[0]", sun_.GetShadowOrthoProjMtxs()[0]);
 	//currShader->setVec3("dirLight.direction", sun_.GetDir());
 	currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
 	currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
@@ -268,12 +268,6 @@ void Level::DrawDebug()
 		ImGui::Checkbox("Follow Cam", &sun_.followCam);
 		ImGui::SliderFloat("Follow Distance", &sun_.followDist, 0, 500, "%.0f");
 
-		float far = sun_.GetFarPlane();
-		if (ImGui::SliderFloat("Far Plane", &far, 1, 1000, "%.0f"))
-			sun_.SetFarPlane(far);
-
-		ImGui::SliderFloat("Projection Window", &sun_.projSize, 0, 500, "%.0f");
-
 		//int shadow = sun_.GetShadowSize().x;
 		//if (ImGui::InputInt("Shadow Scale", &shadow, 1024, 1024))
 		//{
@@ -312,7 +306,6 @@ void Level::DrawDebug()
 
 		ImGui::NewLine();
 		ImGui::Text("Flying: %s", activeCursor ? "False" : "True");
-		ImGui::SliderInt("Cascade View", &debugCascadeQuad, 0, 2);
 
 		float dist = 5;
 		ImGui::Text("Raycast information:");

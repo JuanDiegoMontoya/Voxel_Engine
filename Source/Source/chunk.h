@@ -144,7 +144,7 @@ private:
 	// temporary buffer(s)
 	std::vector<glm::vec3> tPositions;
 	std::vector<glm::vec3> tNormals;
-	std::vector<glm::vec3> tColors;
+	std::vector<glm::vec4> tColors;
 	std::vector<float> tSpeculars;
 	std::vector<GLubyte> indices; // probably finna be unused
 	//std::vector<glm::vec3> vtxPosBuffer; // positions

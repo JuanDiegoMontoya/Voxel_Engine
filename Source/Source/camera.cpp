@@ -43,6 +43,7 @@ void Camera::Update(float dt)
 		temp.y = sin(glm::radians(pitch_));
 		temp.z = cos(glm::radians(pitch_)) * sin(glm::radians(yaw_));
 		front = glm::normalize(temp);
+		dir_ = front;
 		break;
 	case kAffixedCam: // attached to an object, possibly follows directionality
 		// TODO: add behavior to follow object

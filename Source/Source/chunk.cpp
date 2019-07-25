@@ -86,9 +86,9 @@ void Chunk::BuildBuffers()
 	glEnableVertexAttribArray(0);
 
 	// colors
-	colors_ = new VBO(&tColors[0], sizeof(glm::vec3) * tColors.size());
+	colors_ = new VBO(&tColors[0], sizeof(glm::vec4) * tColors.size());
 	colors_->Bind();
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
 	glEnableVertexAttribArray(1);
 
 	// normals
@@ -178,11 +178,14 @@ void Chunk::buildSingleBlockFace(
 {
 	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
 
-	if (!chunks[nearblock.chunk_pos])
+	ChunkPtr near = chunks[nearblock.chunk_pos];
+	if (!near)
 		goto GenQuad;
-	if (!chunks[nearblock.chunk_pos]->active_)
+	if (!near->active_)
 		goto GenQuad;
-	if (chunks[nearblock.chunk_pos]->At(nearblock.block_pos).GetType() != Block::bAir)
+	if (near->At(nearblock.block_pos).GetType() != Block::bAir && near->At(nearblock.block_pos).GetType() != Block::bWater)
+		return;
+	if (near->At(nearblock.block_pos).GetType() == Block::bWater && block.GetType() == Block::bWater)
 		return;
 	if (Block::PropertiesTable[block.GetType()].invisible)
 		return;
@@ -205,7 +208,7 @@ GenQuad:
 	// sadly we gotta copy all this stuff 6 times
 	for (int i = 0; i < 6; i++)
 	{
-		tColors.push_back(glm::vec3(color.r, color.g, color.b) + clrBias);
+		tColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b) + clrBias, color.a));
 		tNormals.push_back(Render::cube_normals_divisor2[curQuad]);
 		tSpeculars.push_back(shiny);
 	}

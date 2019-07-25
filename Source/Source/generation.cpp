@@ -237,10 +237,27 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	static module::Invert inverter;
 	static utils::NoiseMap heightMap;
 	static utils::NoiseMapBuilderPlane heightMapBuilder;
+
+	static module::RidgedMulti riversBase;
+	static module::Perlin riversRandomizer;
+	static module::Turbulence rivers;
+	static utils::NoiseMap riverMap;
+	static utils::NoiseMapBuilderPlane riverMapBuilder;
+
 	if (init)
 	{
 		canvas0.SetConstValue(-1.0);
 		gray.SetConstValue(0);
+
+		riversBase.SetLacunarity(3.);
+		riversBase.SetOctaveCount(1);
+		riversBase.SetFrequency(.10);
+		riversRandomizer.SetOctaveCount(1);
+
+		rivers.SetSourceModule(0, riversBase);
+		rivers.SetRoughness(1);
+		
+		//rivers.SetPersistence(.1);
 
 		// add a little bit of plains to a blank canvas
 		plains.SetLacunarity(0);
@@ -291,6 +308,10 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		tunneler.SetFrequency(.01);
 		inverter.SetSourceModule(0, tunneler);
 
+		riverMapBuilder.SetSourceModule(rivers);
+		riverMapBuilder.SetDestNoiseMap(riverMap);
+		riverMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
+
 		heightMapBuilder.SetSourceModule(canvas2);
 		heightMapBuilder.SetDestNoiseMap(heightMap);
 		heightMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
@@ -300,6 +321,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 
 	heightMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z, cpos.z + 1);
 	heightMapBuilder.Build();
+	riverMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z, cpos.z + 1);
+	riverMapBuilder.Build();
 
 	// generate EVERYTHING
 	for (int i = 0; i < Chunk::CHUNK_SIZE; i++)
@@ -313,27 +336,36 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				int worldZ = cpos.z * Chunk::CHUNK_SIZE + k;
 				//utils::Color* color = height.GetSlabPtr(i, k);
 				float height = *heightMap.GetConstSlabPtr(i, k);
+				float riverVal = *riverMap.GetConstSlabPtr(i, k);
 				height = height < -1 ? -1 : height;
 
 				int y = Utils::mapToRange(height, -1.f, 1.f, -0.f, 150.f);
+				int riverModifier = 0;
+				if (riverVal > 0)
+					riverModifier = glm::clamp(Utils::mapToRange(riverVal, 0.05f, 0.2f, 0.f, 5.f), 0.f, 30.f);
+				int actualHeight = y - riverModifier;
+
+				if (worldY > actualHeight && worldY < y)
+					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bWater);
+
 				double val = tunneler.GetValue(worldX, worldY, worldZ);
 
 				// top cover
-				if (y == worldY)
+				if (actualHeight == worldY)
 				{
 					if (hillsPicker.GetValue(worldX, worldY, worldZ) * 30 + worldY > 90)
 						level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bSnow);
 					else
 						level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bGrass);
 				}
-				if (worldY >= y - 3 && worldY < y)
+				if (worldY >= actualHeight - 3 && worldY < actualHeight)
 					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bDirt);
 
 				// generate subsurface
-				if (worldY >= -10 && worldY < y - 3)
+				if (worldY >= -10 && worldY < actualHeight - 3)
 					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
-				if (val > .9)
-					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::bAir);
+				//if (val > .9)
+				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::bAir);
 			}
 		}
 	}

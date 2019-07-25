@@ -8,7 +8,7 @@ struct DirLight
   vec3 diffuse;
   vec3 specular;
 };
-const int NUM_CASCADES = 3;
+const int NUM_CASCADES = 1;
 
 // material properties
 in vec4 vColor; // since there will be no textures, this is the diffuse component
@@ -50,7 +50,6 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
   //bias = 0.0;
   
   // check whether current frag pos is in shadow
-  // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
   // PCF
   float shadow = 0.0;
   vec2 texelSize = 1.0 / textureSize(shadowMap[cascadeIndex], 0);
@@ -66,8 +65,8 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
   shadow /= pow(samples * 2 + 1, 2);
   
   // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-  //if(projCoords.z > 1.0)
-    //shadow = 0.0;
+  if(projCoords.z > 1.0)
+    shadow = 0.0;
     
   return shadow;
 }
@@ -123,19 +122,19 @@ void main()
     if (ClipSpacePosZ <= abs(cascadeEndClipSpace[i]))
     {
       poopoo[i] = .2;
-      shadow = ShadowCalculation(i, FragPosLightSpace[i]);
+      shadow = ShadowCalculation(0, FragPosLightSpace[0]);
       break;
     }
   }
   //float shadow = ShadowCalculation(FragPosLightSpace);                      
-  vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
+  vec3 lighting = (ambient + (1.0 - shadow * .000001) * (diffuse + specular)) * color;    
   vec4 irrelevant = vec4(lighting, 0) * 0.0001;
   
   //fragColor = vec4(poopoo, 1) + irrelevant;
-  //fragColor = vec4(lighting, 1.0);
+  fragColor = vec4(lighting, vColor.a);
   //fragColor = vec4(vec3(FragPosLightSpace[0].y / 10), 1) + irrelevant;
   //fragColor = vec4(vec3(ClipSpacePosZ) / 100, 1) + irrelevant;
-  fragColor = vec4(vec3(shadow / 3) + vec3(ClipSpacePosZ / 200) + poopoo, 1) + irrelevant;
+  //fragColor = vec4(vec3(shadow / 3) + vec3(ClipSpacePosZ / 200) + poopoo, 1) + irrelevant;
 }
 
 /*

@@ -12,7 +12,6 @@
 
 Sun::Sun()
 {
-	frustum_ = new Frustum();
 	vao_ = new VAO();
 	vbo_ = new VBO(Render::square_vertices_3d, sizeof(Render::square_vertices_3d));
 	VBOlayout layout;
@@ -23,10 +22,8 @@ Sun::Sun()
 	
 	initCascadedShadowMapFBO();
 
-	near_ = 0.1f;
-	far_ = 130.f;
 	dir_ = glm::vec3(.3f, -1, -0.5);
-	pos_ = -dir_ * 200.f;
+	pos_ = -dir_ * 100.f;
 }
 
 void Sun::Update()
@@ -42,21 +39,15 @@ void Sun::Update()
 	if (followCam)
 		pos_ = Render::GetCamera()->GetPos() - dir_ * followDist;
 	
-	glm::mat4 lightProjection = glm::ortho(-projSize, projSize, -projSize, projSize, near_, far_);
 	//glm::mat4 lightView = glm::lookAt(pos_, dir_, glm::vec3(0.0, 1.0, 0.0));
-	glm::mat4 lightView = glm::lookAt(pos_, Render::GetCamera()->GetPos(), glm::vec3(0.0, 1.0, 0.0));
-	sunViewProj_ = lightProjection * lightView;
-	view_ = lightView;
-	//frustum_->Transform(lightProjection, lightView);
+	view_ = glm::lookAt(pos_, glm::normalize(Render::GetCamera()->GetPos()), glm::vec3(0.0, 1.0, 0.0));
 
 	// equally spaced cascade ends (may change in future)
 	float persNear = Render::GetCamera()->GetNear();
 	float persFar = Render::GetCamera()->GetFar();
 	cascadeEnds_[0] = persNear;
-	//cascadeEnds_[1] = persFar / 3.f;
-	//cascadeEnds_[2] = persFar / 3.f * 2;
-	cascadeEnds_[1] = 45.f;
-	cascadeEnds_[2] = 90.f;
+	cascadeEnds_[1] = 35.f;
+	cascadeEnds_[2] = 70.f;
 	cascadeEnds_[3] = persFar;
 	calcOrthoProjs();
 }
@@ -97,7 +88,8 @@ void Sun::initCascadedShadowMapFBO()
 	// create depth texture
 	glGenTextures(shadowCascades_, &depthMapTexes_[0]);
 
-	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	//float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	//float borderColor[] = { 0, 0, 0, 0 };
 	for (unsigned i = 0; i < shadowCascades_; i++)
 	{
 		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[i]);
@@ -154,11 +146,13 @@ void Sun::calcOrthoProjs()
 {
 	// Get the inverse of the view transform
 	glm::mat4 Cam = Render::GetCamera()->GetView();
+	//glm::mat4 Cam = glm::lookAt(pos_, Render::GetCamera()->GetDir(), glm::vec3(0, 1, 0));
 	glm::mat4 CamInv = glm::inverse(Cam);
 
 	// Get the light space tranform
-	//glm::mat4 LightM = view_;
-	glm::mat4 LightM = glm::lookAt(glm::vec3(0), dir_, glm::vec3(0, 1, 0));
+	glm::mat4 LightM = view_;
+	//glm::mat4 LightM = glm::lookAt(glm::vec3(0), dir_, glm::vec3(0, 1, 0));
+	//glm::mat4 LightM = glm::lookAt(-pos_, dir_, glm::vec3(0, 1, 0));
 
 	float ar = (float)Settings::Graphics.screenX / (float)Settings::Graphics.screenY;
 	float fov = Render::GetCamera()->GetFov(); // degrees
@@ -217,10 +211,11 @@ void Sun::calcOrthoProjs()
 		//shadowOrthoProjInfo_[i].t = maxY;
 		//shadowOrthoProjInfo_[i].f = maxZ;
 		//shadowOrthoProjInfo_[i].n = minZ;
-		shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * view_;
+		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * view_;
+		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, 0.f, 100.f) * LightM;
 		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * glm::lookAt(pos_, Render::GetCamera()->GetPos(), glm::vec3(0, 1, 0));
-		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * Render::GetCamera()->GetView();
+		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * Render::GetCamera()->GetView());
 		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * LightM;
-		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+		shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
 	}
 }

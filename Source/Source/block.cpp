@@ -10,7 +10,8 @@ const std::vector<BlockProperties> Block::PropertiesTable =
 	{BlockProperties(128,	glm::vec4(.9f, .9f, 1.f, 1))},				// metal
 	{BlockProperties(8,		glm::vec4(0, 1, 0, 1))},							// grass
 	{BlockProperties(4,		glm::vec4(.761f, .698f, .502f, 1))},	// sand
-	{BlockProperties(4,		glm::vec4(1, .98f, .98f, 1))}					// snow
+	{BlockProperties(4,		glm::vec4(1, .98f, .98f, 1))},				// snow
+	{BlockProperties(128,	glm::vec4(0, .476f, .745f, .8))}			// water
 };
 
 glm::ivec3 stretch(int index, int w, int h)

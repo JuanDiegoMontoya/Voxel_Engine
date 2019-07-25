@@ -27,6 +27,7 @@ public:
 		bGrass,
 		bSand,
 		bSnow,
+		bWater,
 
 		bCount
 	};
