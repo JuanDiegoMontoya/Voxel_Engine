@@ -26,6 +26,8 @@ public:
 	*/
 	static void GenerateChunk(glm::ivec3 cpos, LevelPtr level);
 private:
+	static float getSlope(utils::NoiseMap& heightmap, int x, int z);
+
 	WorldGen() = delete;
 
 

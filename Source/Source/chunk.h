@@ -25,8 +25,6 @@ public:
 	Chunk(bool active = false);
 	~Chunk();
 
-	glm::vec3 colorTEMP;
-
 	void Update();
 	void Render();
 	void BuildBuffers();
@@ -56,16 +54,6 @@ public:
 			mod.y >= 0 ? mod.y : CHUNK_SIZE + mod.y,
 			mod.z >= 0 ? mod.z : CHUNK_SIZE + mod.z);
 		return localpos(chk, mod);
-		
-		//glm::ivec3 chk;// = worldPos >> glm::sqrt(CHUNK_SIZE);
-		//chk.x = worldPos.x >> glm::log2<int>(CHUNK_SIZE);
-		//chk.y = worldPos.y >> glm::log2<int>(CHUNK_SIZE);
-		//chk.z = worldPos.z >> glm::log2<int>(CHUNK_SIZE);
-		//glm::ivec3 mod;// = worldPos % CHUNK_SIZE;
-		//mod.x = worldPos.x & CHUNK_SIZE;
-		//mod.y = worldPos.y & CHUNK_SIZE;
-		//mod.z = worldPos.z & CHUNK_SIZE;
-		//return localpos(chk, mod);
 	}
 
 	// gives the true world position of a block within a chunk
@@ -116,7 +104,7 @@ public:
 	static std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 private:
 
-	void buildBlockVertices(
+	void buildBlockVertices_normal(
 		const glm::ivec3& pos,
 		const float* data,
 		int quadStride,
@@ -127,10 +115,16 @@ private:
 		const glm::ivec3& blockPos,
 		const Block& block);
 
+	void buildBlockVertices_marched_cubes(
+		const glm::ivec3& pos,
+		const Block& block);
+	void polygonize(const glm::ivec3& pos);
+	double isolevel = .5; // used in marching cubes, determines if a point is solid or not
+
 	glm::mat4 model_;
 	glm::ivec3 pos_; // position relative to other chunks (1 chunk = 1 index)
 	bool active_;
-	bool visible_;
+	bool visible_; // used in frustum culling
 	bool generate_ = false; // if the chunks needs to be generated
 
 	// rendering stuff
@@ -147,9 +141,6 @@ private:
 	std::vector<glm::vec4> tColors;
 	std::vector<float> tSpeculars;
 	std::vector<GLubyte> indices; // probably finna be unused
-	//std::vector<glm::vec3> vtxPosBuffer; // positions
-	//std::vector<glm::vec2> vtxTexBuffer; // texture UVs
-	//std::vector<glm::vec3> vtxNmlBuffer; // normals
 	//std::vector<glm::vec3> vtxTanBuffer; // tangents
 	//std::vector<glm::vec3> vtxBitBuffer; // bitangents
 	size_t vertexCount_ = 0; // number of vertices composing the mesh of the chunk

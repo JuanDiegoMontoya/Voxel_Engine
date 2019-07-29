@@ -263,7 +263,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		plains.SetLacunarity(0);
 		plains.SetOctaveCount(3);
 		plains.SetFrequency(.03);
-		plains.SetPersistence(.5);
+		plains.SetPersistence(.8);
 		plainsPicker.SetSeed(0);
 		plainsPicker.SetLacunarity(0);
 		plainsPicker.SetFrequency(.1);
@@ -280,8 +280,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 
 		hillsLumpy.SetFrequency(.2);
 		hillsLumpy.SetOctaveCount(2);
-		hillsLumpy.SetPersistence(1.5);
-		hillsHeight.SetConstValue(1);
+		hillsLumpy.SetPersistence(1.0);
+		hillsHeight.SetConstValue(0);
 		hills.SetSourceModule(0, hillsLumpy);
 		hills.SetSourceModule(1, hillsHeight);
 		hillsPicker.SetSeed(1);
@@ -319,7 +319,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		init = false;
 	}
 
-	heightMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z, cpos.z + 1);
+	heightMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z , cpos.z + 1);
 	heightMapBuilder.Build();
 	riverMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z, cpos.z + 1);
 	riverMapBuilder.Build();
@@ -341,17 +341,19 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 
 				int y = Utils::mapToRange(height, -1.f, 1.f, -0.f, 150.f);
 				int riverModifier = 0;
-				if (riverVal > 0)
+				if (riverVal > 0 && getSlope(heightMap, i, k) < 0.004f)
 					riverModifier = glm::clamp(Utils::mapToRange(riverVal, 0.05f, 0.2f, 0.f, 5.f), 0.f, 30.f);
 				int actualHeight = y - riverModifier;
 
-				if (worldY > actualHeight && worldY < y)
+				//if (worldY > actualHeight && worldY < y)
+				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bSand);
+				if (worldY > actualHeight && worldY < y - 1)
 					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bWater);
 
-				double val = tunneler.GetValue(worldX, worldY, worldZ);
+				double val = tunneler.GetValue(worldX, worldY, worldZ); // maybe also use for rivers
 
 				// top cover
-				if (actualHeight == worldY)
+				if (worldY == actualHeight)
 				{
 					if (hillsPicker.GetValue(worldX, worldY, worldZ) * 30 + worldY > 90)
 						level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bSnow);
@@ -366,6 +368,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
 				//if (val > .9)
 				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::bAir);
+				//if (val > .87 && worldY >= actualHeight - 3 && worldY <= actualHeight + 2)
+				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bAir);
 			}
 		}
 	}
@@ -385,4 +389,23 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	//		}
 	//	}
 	//}
+}
+
+// TODO: make this function able to look past the end of the heightmap
+float WorldGen::getSlope(utils::NoiseMap& heightmap, int x, int z)
+{
+	//float height = *heightmap.GetConstSlabPtr(x, z);
+	float height = heightmap.GetValue(x, z);
+
+	// Compute the differentials by stepping over 1 in both directions.
+	float val1 = heightmap.GetValue(x + 1, z);
+	float val2 = heightmap.GetValue(x, z + 1);
+	//if (val1 == 0 || val2 == 0)
+	//	return 0;
+	float dx = val1 - height;
+	float dz = val2 - height;
+	
+	// The "steepness" is the magnitude of the gradient vector
+	// For a faster but not as accurate computation, you can just use abs(dx) + abs(dy)
+	return glm::sqrt(dx * dx + dz * dz);
 }

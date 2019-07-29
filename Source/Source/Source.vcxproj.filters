@@ -346,5 +346,8 @@
     <ClCompile Include="superchunk.cpp">
       <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
+    <ClCompile Include="march_cubes.cpp">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

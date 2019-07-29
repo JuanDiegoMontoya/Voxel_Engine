@@ -23,11 +23,6 @@ static std::mutex mtx;
 Chunk::Chunk(bool active) : active_(active)
 {
 	vao_ = new VAO();
-
-	float r = Utils::get_random(0, 1);
-	float g = Utils::get_random(0, 1);
-	float b = Utils::get_random(0, 1);
-	colorTEMP = glm::vec4(r, g, b, 1.f);
 }
 
 Chunk::~Chunk()
@@ -132,19 +127,15 @@ void Chunk::BuildMesh()
 				// obscured IF side is adjacent to opaque block
 				// NOT obscured if side is adjacent to nothing or transparent block
 				glm::ivec3 pos(x, y, z);
-				buildBlockVertices(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
+				buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
 			}
 		}
 	}
 	// "buildbuffers" would normally happen here
 	// 'vertices' is stored until "buildbuffers" is called
-	tPositions;
-	tNormals;
-	tColors;
-	tSpeculars;
 }
 
-void Chunk::buildBlockVertices(const glm::ivec3 & pos, const float * data, int quadStride, const Block& block)
+void Chunk::buildBlockVertices_normal(const glm::ivec3 & pos, const float * data, int quadStride, const Block& block)
 {
 	int x = pos.x;
 	int y = pos.y;
