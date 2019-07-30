@@ -374,7 +374,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		}
 	}
 
-	// generate tunnels
+	//// generate tunnels
 	//for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
 	//{
 	//	for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
@@ -389,6 +389,46 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	//		}
 	//	}
 	//}
+}
+
+void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
+{
+	for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
+	{
+		for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
+		{
+			for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
+			{
+				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
+				double dens = GetCurrentNoise(pos);
+				if (dens < Chunk::isolevel - .1)
+					level->UpdateBlockAt(glm::ivec3(pos), Block::bAir);
+				else
+					level->UpdateBlockAt(glm::ivec3(pos), Block::bGrass);
+			}
+		}
+	}
+}
+
+float WorldGen::GetCurrentNoise(const glm::vec3& wpos)
+{
+	static bool init = true;
+	static module::RidgedMulti dense;
+
+	if (init)
+	{
+		// higher lacunarity = thinner tunnels
+		dense.SetLacunarity(2.);
+		// connectivity/complexity of tunnels (unsure)
+		dense.SetOctaveCount(5);
+		// higher frequency = more common, thicker tunnels 
+		// raise lacunarity as frequency decreases
+		dense.SetFrequency(.01);
+		// init generator here
+	}
+
+	//return 1;
+	return dense.GetValue(wpos.x, wpos.y, wpos.z);
 }
 
 // TODO: make this function able to look past the end of the heightmap

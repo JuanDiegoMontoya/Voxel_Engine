@@ -18,6 +18,22 @@ struct localpos
 	glm::ivec3 block_pos; // within chunk
 };
 
+/*
+	0: -x-y+z
+	1: +x-y+z
+	2: +x-y-z
+	3: -x-y-z
+	4: -x+y+z
+	5: +x+y+z
+	6: +x+y-z
+	7: -x+y-z
+*/
+typedef struct
+{
+	glm::vec3 p[8];
+	double val[8]; // density values
+} cell;
+
 typedef struct Chunk
 {
 private:
@@ -100,6 +116,7 @@ public:
 
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 	friend class Level;
+	friend class WorldGen;
 	//static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 	static std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 private:
@@ -118,8 +135,15 @@ private:
 	void buildBlockVertices_marched_cubes(
 		const glm::ivec3& pos,
 		const Block& block);
-	void polygonize(const glm::ivec3& pos);
-	double isolevel = .5; // used in marching cubes, determines if a point is solid or not
+	int polygonize(const glm::ivec3& pos);
+	cell buildCellFromVoxel(const glm::vec3& wpos);
+	glm::vec3 VertexInterp(double isolevel, glm::vec3 p1, glm::vec3 p2, double valp1, double valp2);
+
+	/*
+		Used for marching cubes. Determines the minimum density of a point
+		for it to be considered solid or not.
+	*/
+	static double isolevel; // between 0 and 1
 
 	glm::mat4 model_;
 	glm::ivec3 pos_; // position relative to other chunks (1 chunk = 1 index)

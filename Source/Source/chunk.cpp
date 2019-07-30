@@ -18,6 +18,8 @@
 //Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
 std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
 
+double Chunk::isolevel = 0.9;
+
 static std::mutex mtx;
 
 Chunk::Chunk(bool active) : active_(active)
@@ -127,7 +129,8 @@ void Chunk::BuildMesh()
 				// obscured IF side is adjacent to opaque block
 				// NOT obscured if side is adjacent to nothing or transparent block
 				glm::ivec3 pos(x, y, z);
-				buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
+				//buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
+				buildBlockVertices_marched_cubes(pos, At(x, y, z));
 			}
 		}
 	}
@@ -184,13 +187,9 @@ void Chunk::buildSingleBlockFace(
 GenQuad:
 	// transform the vertices relative to the chunk
 	// (the full world transformation will be completed in a shader)
-
-	//	Utils::mapToRange(glm::vec3(blockPos), 0.f, (float)CHUNK_SIZE, -(float)CHUNK_SIZE / 2.0f, (float)CHUNK_SIZE/ 2.0f)); // scaled
 	glm::mat4 localTransform = glm::translate(glm::mat4(1.f), glm::vec3(blockPos) + .5f); // non-scaled
 
-	//float shiny = Utils::get_random_r(0, 128);
 	float shiny = Block::PropertiesTable[block.GetType()].specular;
-	//shiny = 128;
 	glm::vec4 color = Block::PropertiesTable[block.GetType()].color;
 
 	// slightly randomize color for each block to make them more visible (temporary solution)

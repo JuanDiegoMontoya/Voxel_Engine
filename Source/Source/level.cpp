@@ -519,7 +519,8 @@ void Level::generateNewChunks()
 		{
 			if (chunk->generate_ && maxgen > 0)
 			{
-				WorldGen::GenerateChunk(chunk->GetPos(), this);
+				//WorldGen::GenerateChunk(chunk->GetPos(), this);
+				WorldGen::Generate3DNoiseChunk(chunk->GetPos(), this);
 				chunk->generate_ = false;
 				maxgen--;
 			}

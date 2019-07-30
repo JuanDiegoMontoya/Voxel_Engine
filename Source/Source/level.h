@@ -49,7 +49,7 @@ private:
 	glm::vec3 bgColor_ = glm::vec3(.529f, .808f, .922f); // sky blue
 	
 	Sun sun_;
-	float renderdist_ = 100.f;
+	float renderdist_ = 30.f;
 	float renderLeniency_ = 100.f;
 	bool activeCursor = false;
 
