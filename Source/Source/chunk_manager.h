@@ -11,14 +11,15 @@ public:
 
 	// interaction
 	void Update(LevelPtr level);
-	void UpdateBlock(glm::ivec3 wpos, Block::BlockType t);
+	void UpdateBlock(glm::ivec3& wpos, Block::BlockType t);
 
 	// getters
-	float GetLoadDistance() { return loadDistance_; }
-	float GetUnloadLeniency() { return unloadLeniency_; }
-	unsigned GetMaxLoadPerFrame() { return maxLoadPerFrame_; }
+	float GetLoadDistance() const { return loadDistance_; }
+	float GetUnloadLeniency() const { return unloadLeniency_; }
+	unsigned GetMaxLoadPerFrame() const { return maxLoadPerFrame_; }
 
 	// setters
+	void SetCurrentLevel(LevelPtr level) { level_ = level; }
 	void SetLoadDistance(float d) { loadDistance_ = d; }
 	void SetUnloadLeniency(float d) { unloadLeniency_ = d; }
 	void SetMaxLoadPerFrame(unsigned n) { maxLoadPerFrame_ = n; }
@@ -37,4 +38,5 @@ private:
 	unsigned maxLoadPerFrame_;
 	std::vector<ChunkPtr> updatedChunks_;
 	std::vector<ChunkPtr> genChunkList_;
+	LevelPtr level_;
 };

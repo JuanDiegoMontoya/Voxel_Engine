@@ -25,7 +25,6 @@ public:
 	void DrawDebug();
 	void CheckCollision();
 	void CheckInteraction();
-	void ProcessUpdatedChunks();
 	void UpdateBlockAt(glm::ivec3 wpos, Block::BlockType type);
 
 	inline void SetBgColor(glm::vec3 c) { bgColor_ = c; }
@@ -41,10 +40,6 @@ public:
 private:
 	ChunkManager chunkManager_;
 
-	// returns true if chunk is already going to be updated
-	bool isChunkInUpdateList(ChunkPtr chunk);
-	void checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::ivec3& near);
-	std::vector<ChunkPtr> updatedChunks_;
 	std::string name_; // name of file
 	GamePtr game_;
 	std::vector<Camera*> cameras_;			 // all cameras in the scene
@@ -55,11 +50,6 @@ private:
 	float renderdist_ = 500.f;
 	float renderLeniency_ = 100.f;
 	bool activeCursor = false;
-
-	void createNearbyChunks(); // and delete far away chunks
-	void generateNewChunks();
-	const unsigned genMax = 5; // maximum chunks to generate per frame
-	std::vector<ChunkPtr> genChunks; // chunks which need to be generated
 
 	void checkBlockPlacement();
 	void checkBlockDestruction();

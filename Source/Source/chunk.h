@@ -119,11 +119,11 @@ public:
 	static constexpr int CHUNK_SIZE = 32;
 
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
-	friend class Level;
 	friend class WorldGen;
+	friend class ChunkManager;
+private:
 	//static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 	static std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
-private:
 
 	void buildBlockVertices_normal(
 		const glm::ivec3& pos,

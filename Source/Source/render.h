@@ -1,18 +1,26 @@
 #pragma once
-//#include "stdafx.h"
+#include <functional>
 
 class VAO;
 class IBO;
 class Shader;
+typedef struct Chunk* ChunkPtr;
+typedef std::function<void()> shaderCB;
 
 class Renderer
 {
 public:
-	void Draw(const VAO& va, const IBO& ib, const Shader& shader);
-	void DrawArrays(const VAO & va, GLuint count, const Shader & shader);
+	// interation
+	void DrawAll();
 	void Clear();
-	//void SetClearColor() const;
 
 private:
+	// broad-phase rendering
+	void drawShadows(); // construct shadow map(s)
+	void drawNormal();	// draw what we see
+	void drawPostProcessing(); // apply post processing effects
 
+	// narrow-phase rendering
+	void drawChunk(ChunkPtr chunk, shaderCB uniform_cb);
+	void drawBillboard(VAO* vao, size_t count, shaderCB uniform_cb);
 };

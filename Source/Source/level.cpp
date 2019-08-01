@@ -43,15 +43,12 @@ Level::~Level()
 // for now this function is where we declare objects
 void Level::Init()
 {
-	Chunk::chunks.max_load_factor(.1f);
 	cameras_.push_back(new Camera(kControlCam));
 	Render::SetCamera(cameras_[0]);
 
-	int cc = 0; // chunk count
-	updatedChunks_.reserve(cc * cc * cc);
-
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
+	chunkManager_.SetCurrentLevel(this);
 	chunkManager_.SetLoadDistance(500.f);
 	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(5);
@@ -71,8 +68,7 @@ void Level::Init()
 	//	}
 	//}
 
-	ProcessUpdatedChunks();
-	TestCoordinateStuff();
+	//TestCoordinateStuff();
 
 	//std::cout << "POST Processed chunk positions (x, y, z):" << '\n';
 	//for (auto& chunk : Chunk::chunks)
@@ -99,9 +95,6 @@ void Level::Update(float dt)
 	PERF_BENCHMARK_START;
 	glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
-	ProcessUpdatedChunks();
-	CheckInteraction();
-
 	if (Input::Keyboard().pressed[GLFW_KEY_GRAVE_ACCENT])
 	{
 		activeCursor = !activeCursor;
@@ -113,8 +106,8 @@ void Level::Update(float dt)
 		for (auto& cam : cameras_)
 			cam->Update(dt);
 
-	createNearbyChunks();
-	generateNewChunks();
+	CheckInteraction();
+	chunkManager_.Update(this);
 
 	sun_.Update();
 	DrawShadows(); // write to shadow map
@@ -361,174 +354,10 @@ void Level::CheckInteraction()
 	checkBlockDestruction();
 }
 
-void Level::ProcessUpdatedChunks()
-{
-	std::for_each(
-		std::execution::par_unseq,
-		updatedChunks_.begin(),
-		updatedChunks_.end(),
-		[](ChunkPtr& chunk)
-	{
-		if (chunk)
-			chunk->BuildMesh();
-	});
-
-	// this operation cannot be parallelized
-	std::for_each(
-		std::execution::seq,
-		updatedChunks_.begin(),
-		updatedChunks_.end(),
-		[](ChunkPtr& chunk)
-	{
-		if (chunk)
-			chunk->BuildBuffers();
-	});
-
-	updatedChunks_.clear();
-}
-
 // handles everything that needs to be done when a block is changed
 void Level::UpdateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
 {
-	localpos p = Chunk::worldBlockToLocalPos(wpos);
-	BlockPtr block = Chunk::AtWorld(wpos);
-	ChunkPtr chunk = Chunk::chunks[p.chunk_pos];
-
-	if (block && block->GetType() == ty) // ignore if same type
-		return;
-	
-	// create empty chunk if it's null
-	if (!chunk)
-	{
-		Chunk::chunks[p.chunk_pos] = chunk = new Chunk(true);
-		chunk->SetPos(p.chunk_pos);
-	}
-
-	if (!block) // skip null blocks
-		block = &chunk->At(p.block_pos);
-	block->SetType(ty);
-
-	// add to update list if it ain't
-	if (!isChunkInUpdateList(chunk))
-		updatedChunks_.push_back(chunk);
-
-	// check if adjacent to opaque blocks in nearby chunks, then update those chunks if it is
-	glm::ivec3 dirs[] =
-	{
-		{ -1,  0,  0 },
-		{  1,  0,  0 },
-		{  0, -1,  0 },
-		{  0,  1,  0 },
-		{  0,  0, -1 },
-		{  0,  0,  1 }
-	};
-	for (const auto& dir : dirs)
-	{
-		checkUpdateChunkNearBlock(wpos, dir);
-	}
-}
-
-bool Level::isChunkInUpdateList(ChunkPtr c)
-{
-	for (auto& chunk : updatedChunks_)
-	{
-		if (chunk == c)
-			return true;
-	}
-	return false;
-}
-
-void Level::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::ivec3& near)
-{
-	localpos p1 = Chunk::worldBlockToLocalPos(pos);
-	localpos p2 = Chunk::worldBlockToLocalPos(pos + near);
-	if (p1.chunk_pos == p2.chunk_pos)
-		return;
-
-	// update chunk if near block is NOT air/invisible
-	BlockPtr cb = Chunk::AtWorld(pos);
-	BlockPtr nb = Chunk::AtWorld(pos + near);
-	if (cb && nb && nb->GetType() != Block::bAir)
-		if (!isChunkInUpdateList(Chunk::chunks[p2.chunk_pos]))
-			updatedChunks_.push_back(Chunk::chunks[p2.chunk_pos]);
-}
-
-void Level::createNearbyChunks()
-{
-	// delete far away chunks, then create chunks that are close
-	std::for_each(
-		std::execution::seq,
-		Chunk::chunks.begin(),
-		Chunk::chunks.end(),
-		[&](auto& p)
-	{
-		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
-		if (p.second)
-		{
-			if (dist > renderdist_ + renderLeniency_)
-			{
-				delete p.second;
-				p.second = nullptr;
-				return;
-			}
-		}
-		else if (dist <= renderdist_)
-		{
-			p.second = new Chunk(true);
-			p.second->SetPos(p.first);
-			p.second->generate_ = true;
-		}
-	});
-}
-
-void Level::generateNewChunks()
-{
-	//std::for_each(
-	//	Chunk::chunks.begin(),
-	//	Chunk::chunks.end(),
-	//	[&](auto& p)
-	//{
-	//	if (p.second)
-	//		if (p.second->generate_)
-	//			genChunks.push_back(p.second);
-	//});
-
-	//// sort chunks to update by distance from camera
-	//std::sort(std::execution::par,
-	//	genChunks.begin(),
-	//	genChunks.end(),
-	//	[&](ChunkPtr& a, ChunkPtr& b)->bool
-	//{
-	//	return glm::distance(Render::GetCamera()->GetPos(), glm::vec3(a->GetPos() * Chunk::CHUNK_SIZE)) <
-	//				 glm::distance(Render::GetCamera()->GetPos(), glm::vec3(b->GetPos() * Chunk::CHUNK_SIZE));
-	//});
-
-	// generate each chunk that needs to be
-	unsigned maxgen = genMax;
-	std::for_each(
-		std::execution::seq,
-		Chunk::chunks.begin(),
-		Chunk::chunks.end(),
-		[&](auto& p)
-	{
-		ChunkPtr chunk = p.second;
-		if (chunk)
-		{
-			if (chunk->generate_ && maxgen > 0)
-			{
-#if MARCHED_CUBES
-				WorldGen::Generate3DNoiseChunk(chunk->GetPos(), this);
-#else
-				WorldGen::GenerateChunk(chunk->GetPos(), this);
-#endif
-				chunk->generate_ = false;
-				maxgen--;
-			}
-			chunk->Update();
-		}
-	});
-
-	//genChunks.clear();
+	chunkManager_.UpdateBlock(wpos, ty);
 }
 
 void Level::checkBlockPlacement()
