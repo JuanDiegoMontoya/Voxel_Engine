@@ -52,12 +52,9 @@ void Level::Init()
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
-	//WorldGen::GenerateSimpleWorld(cc, cc, cc, .999f, updatedChunks_);
-	WorldGen::GenerateHeightMapWorld(cc, cc, this);
-
-	// TODO: enable compiler C++ optimizations (currently disabled for debugging purposes)
-
-	// TODO: call updateBlock() function AND add checking to update nearby chunks if necessary
+	chunkManager_.SetLoadDistance(500.f);
+	chunkManager_.SetUnloadLeniency(100.f);
+	chunkManager_.SetMaxLoadPerFrame(5);
 
 	//std::cout << "PRE Processed chunk positions (x, y, z):" << '\n';
 	//for (auto& chunk : Chunk::chunks)
@@ -222,7 +219,7 @@ void Level::DrawShadows()
 	//glBindFramebuffer(GL_FRAMEBUFFER, sun_.GetDepthFBO());
 	glm::mat4 poopy = glm::translate(glm::mat4(1), sun_.GetDir());
 
-	for (int i = 0; i < sun_.GetNumCascades(); i++)
+	for (unsigned i = 0; i < sun_.GetNumCascades(); i++)
 	{
 		sun_.bindForWriting(i);
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -519,8 +516,11 @@ void Level::generateNewChunks()
 		{
 			if (chunk->generate_ && maxgen > 0)
 			{
-				//WorldGen::GenerateChunk(chunk->GetPos(), this);
+#if MARCHED_CUBES
 				WorldGen::Generate3DNoiseChunk(chunk->GetPos(), this);
+#else
+				WorldGen::GenerateChunk(chunk->GetPos(), this);
+#endif
 				chunk->generate_ = false;
 				maxgen--;
 			}

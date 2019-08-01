@@ -129,8 +129,11 @@ void Chunk::BuildMesh()
 				// obscured IF side is adjacent to opaque block
 				// NOT obscured if side is adjacent to nothing or transparent block
 				glm::ivec3 pos(x, y, z);
-				//buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
+#if MARCHED_CUBES
 				buildBlockVertices_marched_cubes(pos, At(x, y, z));
+#else
+				buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
+#endif
 			}
 		}
 	}

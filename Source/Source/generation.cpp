@@ -401,7 +401,7 @@ void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
 			{
 				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 				double dens = GetCurrentNoise(pos);
-				if (dens < Chunk::isolevel - .1)
+				if (dens + .0 < Chunk::isolevel)
 					level->UpdateBlockAt(glm::ivec3(pos), Block::bAir);
 				else
 					level->UpdateBlockAt(glm::ivec3(pos), Block::bGrass);
@@ -410,7 +410,7 @@ void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
 	}
 }
 
-float WorldGen::GetCurrentNoise(const glm::vec3& wpos)
+double WorldGen::GetCurrentNoise(const glm::vec3& wpos)
 {
 	static bool init = true;
 	static module::RidgedMulti dense;

@@ -3,8 +3,7 @@
 #include "biome.h"
 #include "misc_utils.h"
 
-// cubic dimensions of a single chunk
-//#define CHUNK_SIZE 16
+#define MARCHED_CUBES (false)
 
 //typedef class Block;
 class VAO;
@@ -33,6 +32,11 @@ typedef struct
 	glm::vec3 p[8];
 	double val[8]; // density values
 } cell;
+
+typedef struct
+{
+	glm::vec3 ps[3];
+} tri;
 
 typedef struct Chunk
 {
@@ -138,6 +142,7 @@ private:
 	int polygonize(const glm::ivec3& pos);
 	cell buildCellFromVoxel(const glm::vec3& wpos);
 	glm::vec3 VertexInterp(double isolevel, glm::vec3 p1, glm::vec3 p2, double valp1, double valp2);
+	//glm::vec3 VertexInterp2(glm::vec3 p1, glm::vec3 p2, double value);
 
 	/*
 		Used for marching cubes. Determines the minimum density of a point

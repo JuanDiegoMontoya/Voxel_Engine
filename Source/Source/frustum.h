@@ -8,15 +8,12 @@ public:
 	enum Plane { Right, Left, Bottom, Top, Front, Back };
 	enum { A, B, C, D };
 
-	//! CTOR/DTOR:
 	inline Frustum() {}
 	inline virtual ~Frustum() {}
 
-	//! SERVICES:
 	void Transform(const glm::mat4& proj, const glm::mat4& view);
-	void Normalize(Plane plane);
 
-	//! CULLING:
+	// culling
 	enum Visibility { Invisible, Partial, Full };
 	Visibility IsInside(const glm::vec3& point) const;
 	Visibility IsInside(const Chunk& box) const;
@@ -27,5 +24,6 @@ public:
 	}
 
 private:
+	void Normalize(Plane plane);
 	float data_[6][4];
 };

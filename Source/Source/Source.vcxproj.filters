@@ -212,6 +212,9 @@
     <ClInclude Include="superchunk.h">
       <Filter>Game\Voxel Engine</Filter>
     </ClInclude>
+    <ClInclude Include="chunk_manager.h">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -347,6 +350,9 @@
       <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="march_cubes.cpp">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="chunk_manager.cpp">
       <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
   </ItemGroup>

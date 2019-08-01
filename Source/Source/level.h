@@ -1,4 +1,5 @@
 #pragma once
+#include "chunk_manager.h"
 #include "block.h"
 #include "camera.h"
 #include "game.h"
@@ -38,6 +39,8 @@ public:
 	friend class Block;
 	friend class WorldGen;
 private:
+	ChunkManager chunkManager_;
+
 	// returns true if chunk is already going to be updated
 	bool isChunkInUpdateList(ChunkPtr chunk);
 	void checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::ivec3& near);
@@ -49,7 +52,7 @@ private:
 	glm::vec3 bgColor_ = glm::vec3(.529f, .808f, .922f); // sky blue
 	
 	Sun sun_;
-	float renderdist_ = 30.f;
+	float renderdist_ = 500.f;
 	float renderLeniency_ = 100.f;
 	bool activeCursor = false;
 
