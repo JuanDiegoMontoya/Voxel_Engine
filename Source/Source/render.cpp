@@ -21,10 +21,6 @@ void Renderer::drawChunk(ChunkPtr chunk, shaderCB uniform_cb)
 {
 }
 
-void Renderer::drawChunk(ChunkPtr chunk, shaderCB uniform_cb)
-{
-}
-
 void Renderer::drawBillboard(VAO * vao, size_t count, shaderCB uniform_cb)
 {
 }

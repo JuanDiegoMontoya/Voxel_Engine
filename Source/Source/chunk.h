@@ -121,9 +121,10 @@ public:
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 	friend class WorldGen;
 	friend class ChunkManager;
+	static std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
+
 private:
 	//static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
-	static std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 
 	void buildBlockVertices_normal(
 		const glm::ivec3& pos,

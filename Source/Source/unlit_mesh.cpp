@@ -10,9 +10,9 @@ void Unlit_Mesh::Draw(ShaderPtr shader)
 	shader->setMat4("u_proj", proj);
 
 	// since we don't have an ibo with 36 positions
-	if (indexed)
-		renderer.Draw(*vao, *ibo, *shader);
-	else
-		renderer.DrawArrays(*vao, vertices.size(), *shader);
+	//if (indexed)
+	//	renderer.Draw(*vao, *ibo, *shader);
+	//else
+	//	renderer.DrawArrays(*vao, vertices.size(), *shader);
 	vao->Unbind();
 }

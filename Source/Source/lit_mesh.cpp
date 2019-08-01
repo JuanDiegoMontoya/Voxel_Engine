@@ -26,9 +26,9 @@ void Lit_Mesh::Draw(ShaderPtr shader)
 	// draw mesh
 	//glBindVertexArray(VAO);
 	vao->Bind();
-	if (indexed)
-		renderer.Draw(*vao, *ibo, *shader);
-	else
-		renderer.DrawArrays(*vao, vertices.size(), *shader);
+	//if (indexed)
+	//	renderer.Draw(*vao, *ibo, *shader);
+	//else
+	//	renderer.DrawArrays(*vao, vertices.size(), *shader);
 	vao->Unbind();
 }
