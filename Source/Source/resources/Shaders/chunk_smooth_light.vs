@@ -5,7 +5,7 @@ layout (location = 1) in vec4 aColor;
 layout (location = 2) in vec3 aNormal;
 layout (location = 3) in float aShininess;
 
-const int NUM_CASCADES = 1;
+const int NUM_CASCADES = 3;
 
 uniform mat4 lightSpaceMatrix[NUM_CASCADES];
 uniform mat4 u_model;

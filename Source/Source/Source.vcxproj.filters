@@ -215,6 +215,9 @@
     <ClInclude Include="chunk_manager.h">
       <Filter>Game\Voxel Engine</Filter>
     </ClInclude>
+    <ClInclude Include="directional_light.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -354,6 +357,9 @@
     </ClCompile>
     <ClCompile Include="chunk_manager.cpp">
       <Filter>Game\Voxel Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="directional_light.cpp">
+      <Filter>Graphics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

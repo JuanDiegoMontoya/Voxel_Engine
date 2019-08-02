@@ -8,7 +8,7 @@ struct DirLight
   vec3 diffuse;
   vec3 specular;
 };
-const int NUM_CASCADES = 1;
+const int NUM_CASCADES = 3;
 
 // material properties
 in vec4 vColor; // since there will be no textures, this is the diffuse component

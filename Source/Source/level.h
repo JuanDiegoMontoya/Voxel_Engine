@@ -5,6 +5,7 @@
 #include "game.h"
 #include "game_object.h"
 #include "sun.h"
+#include "render.h"
 
 //class Camera;
 typedef struct Chunk* ChunkPtr;
@@ -26,6 +27,7 @@ public:
 	void CheckCollision();
 	void CheckInteraction();
 	void UpdateBlockAt(glm::ivec3 wpos, Block::BlockType type);
+	void DrawImGui();
 
 	inline void SetBgColor(glm::vec3 c) { bgColor_ = c; }
 
@@ -39,6 +41,7 @@ public:
 	friend class WorldGen;
 private:
 	ChunkManager chunkManager_;
+	Renderer renderer_;
 
 	std::string name_; // name of file
 	GamePtr game_;
@@ -47,8 +50,6 @@ private:
 	glm::vec3 bgColor_ = glm::vec3(.529f, .808f, .922f); // sky blue
 	
 	Sun sun_;
-	float renderdist_ = 500.f;
-	float renderLeniency_ = 100.f;
 	bool activeCursor = false;
 
 	void checkBlockPlacement();
@@ -57,6 +58,3 @@ private:
 	// debug
 	int debugCascadeQuad = 0;
 }Level, *LevelPtr;
-
-void renderAxisIndicators();
-void renderQuad();

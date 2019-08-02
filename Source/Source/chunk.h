@@ -121,6 +121,7 @@ public:
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 	friend class WorldGen;
 	friend class ChunkManager;
+	friend class Renderer;
 	static std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 
 private:

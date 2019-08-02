@@ -112,10 +112,10 @@ namespace Render
 		Shader::shaders["chunk_shaded"]->Use();
 		std::vector<int> values = { 0, 1, 2 };
 		//std::vector<int> values = { 1, 2, 3 };
-		Shader::shaders["chunk_shaded"]->setInt("shadowMap[0]", 0);
+		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[0]", 0);
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[1]", 1);
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[2]", 2);
-		//Shader::shaders["chunk_shaded"]->setIntArray("shadowMap", values, values.size());
+		Shader::shaders["chunk_shaded"]->setIntArray("shadowMap", values, values.size());
 
 		Shader::shaders["debug_shadow"] = new Shader("debug_shadow.vs", "debug_shadow.fs");
 		Shader::shaders["debug_shadow"]->Use();

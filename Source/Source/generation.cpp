@@ -170,7 +170,7 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 					float height = *heightMap.GetConstSlabPtr(i, k);
 					height = height < -1 ? -1 : height;
 
-					int y = Utils::mapToRange(height, -1.f, 1.f, -0.f, 100.f);
+					int y = (int)Utils::mapToRange(height, -1.f, 1.f, -0.f, 100.f);
 					level->UpdateBlockAt(glm::ivec3(worldX, y, worldZ), Block::BlockType::bGrass);
 
 					// generate subsurface
@@ -340,7 +340,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				float riverVal = *riverMap.GetConstSlabPtr(i, k);
 				height = height < -1 ? -1 : height;
 
-				int y = Utils::mapToRange(height, -1.f, 1.f, -0.f, 150.f);
+				int y = (int)Utils::mapToRange(height, -1.f, 1.f, -0.f, 150.f);
 				int riverModifier = 0;
 				if (riverVal > 0 && getSlope(heightMap, i, k) < 0.004f)
 					riverModifier = glm::clamp(Utils::mapToRange(riverVal, 0.05f, 0.2f, 0.f, 5.f), 0.f, 30.f);

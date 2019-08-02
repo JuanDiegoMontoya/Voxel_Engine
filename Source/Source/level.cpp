@@ -49,7 +49,7 @@ void Level::Init()
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(500.f);
+	chunkManager_.SetLoadDistance(50.f);
 	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(5);
 
@@ -93,7 +93,6 @@ void Level::Init()
 void Level::Update(float dt)
 {
 	PERF_BENCHMARK_START;
-	glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
 	if (Input::Keyboard().pressed[GLFW_KEY_GRAVE_ACCENT])
 	{
@@ -106,138 +105,21 @@ void Level::Update(float dt)
 		for (auto& cam : cameras_)
 			cam->Update(dt);
 
+	sun_.Update();
 	CheckInteraction();
 	chunkManager_.Update(this);
+	renderer_.SetDirLight(&sun_.GetDirLight());
+	renderer_.SetSun(&sun_);
 
-	sun_.Update();
-	DrawShadows(); // write to shadow map
-	sun_.Render(); // render sun as the first "actual" object
-	DrawNormal();
-	DrawDebug();
+	renderer_.DrawAll();
+	DrawImGui();
 
-	// debug shadows
-	//if (Input::Keyboard().down[GLFW_KEY_4])
-	{
-		glViewport(0, 0, 256, 256);
-		Shader::shaders["debug_shadow"]->Use();
-		Shader::shaders["debug_shadow"]->setInt("depthMap", 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex()[0]);
-		renderQuad();
-		glViewport(256, 0, 256, 256);
-		Shader::shaders["debug_shadow"]->setInt("depthMap", 1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex()[1]);
-		renderQuad();
-		glViewport(512, 0, 256, 256);
-		Shader::shaders["debug_shadow"]->setInt("depthMap", 2);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, sun_.GetDepthTex()[2]);
-		renderQuad();
-	}
-
-	// disable gamma correction for other rendering operations
-	glDisable(GL_FRAMEBUFFER_SRGB);
 	PERF_BENCHMARK_END;
-}
-
-// unused
-void Level::Draw()
-{
-	//glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK); // don't forget to reset original culling face
-	glViewport(0, 0, 1920, 1080);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	// render blocks in each active chunk
-	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
-		[&](std::pair<glm::ivec3, Chunk*> chunk)
-	{
-		if (chunk.second)
-			chunk.second->Render();
-	});
-}
-
-void Level::DrawNormal()
-{
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK); // don't forget to reset original culling face
-
-	// render blocks in each active chunk
-	ShaderPtr currShader = Shader::shaders["chunk_shaded"];
-	currShader->Use();
-	currShader->setMat4("u_view", Render::GetCamera()->GetView());
-	currShader->setMat4("u_proj", Render::GetCamera()->GetProj());
-	currShader->setVec3("viewPos", Render::GetCamera()->GetPos());
-	currShader->setVec3("lightPos", sun_.GetPos());
-	//currShader->setMat4("lightSpaceMatrix", sun_.GetViewProj());
-
-	std::vector<float> zVals;
-	for (int i = 0; i < sun_.GetNumCascades(); i++)
-	{
-		glm::vec4 vView(0, 0, sun_.GetCascadeEnds()[i + 1], 1);
-		glm::vec4 vClip = Render::GetCamera()->GetProj() * vView;
-		zVals.push_back(vClip.z);
-	}
-
-	currShader->set1FloatArray("cascadeEndClipSpace", zVals, zVals.size());
-	//glUniformMatrix4fv(currShader->Uniforms["lightSpaceMatrix"], sun_.GetNumCascades(), GL_FALSE, &sun_.GetShadowOrthoProjMtxs()[0][0][0]);
-	currShader->setMat4("lightSpaceMatrix[0]", sun_.GetShadowOrthoProjMtxs()[0]);
-	//currShader->setVec3("dirLight.direction", sun_.GetDir());
-	currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
-	currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-	currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-	sun_.bindForReading();
-	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
-		[&](std::pair<glm::ivec3, Chunk*> chunk)
-	{
-		if (chunk.second)// && chunk.second->IsVisible())
-		{
-			currShader->setMat4("u_model", chunk.second->GetModel());
-			chunk.second->Render();
-		}
-	});
-}
-
-void Level::DrawShadows()
-{
-	// 1. render depth of scene to texture (from light's perspective)
-	//glDisable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
-
-	ShaderPtr currShader = Shader::shaders["shadow"];
-	currShader->Use();
-
-	glViewport(0, 0, sun_.GetShadowSize().x, sun_.GetShadowSize().y);
-	//glBindFramebuffer(GL_FRAMEBUFFER, sun_.GetDepthFBO());
-	glm::mat4 poopy = glm::translate(glm::mat4(1), sun_.GetDir());
-
-	for (unsigned i = 0; i < sun_.GetNumCascades(); i++)
-	{
-		sun_.bindForWriting(i);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		currShader->setMat4("lightSpaceMatrix", sun_.GetShadowOrthoProjMtxs()[i]);// *sun_.GetView());
-
-		// render blocks in each active chunk
-		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
-			[&](std::pair<glm::ivec3, Chunk*> chunk)
-		{
-			if (chunk.second)// && chunk.second->IsVisible())// && sun_.GetFrustum()->IsInside(chunk.second) >= Frustum::Visibility::Partial)
-			{
-				currShader->setMat4("model", chunk.second->GetModel());
-				chunk.second->Render();
-			}
-		});
-	}
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 static VAO* blockHoverVao = nullptr;
 static VBO* blockHoverVbo = nullptr;
-void Level::DrawDebug()
+void Level::DrawImGui()
 {
 	{
 		ImGui::SetNextWindowPos(ImVec2(20, 20));
@@ -340,8 +222,6 @@ void Level::DrawDebug()
 
 		ImGui::End();
 	}
-
-	renderAxisIndicators();
 }
 
 void Level::CheckCollision()
@@ -421,76 +301,4 @@ void Level::checkBlockDestruction()
 		}
 		));
 	}
-}
-
-static unsigned int axisIndicatorVAO;
-static unsigned int axisIndicatorVBO;
-static VAO* axisVAO;
-static VBO* axisVBO;
-void renderAxisIndicators()
-{
-	if (axisVAO == nullptr)
-	{
-		float indicatorVertices[] =
-		{
-			// positions			// colors
-			0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // x-axis
-			1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // y-axis
-			0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, // z-axis
-			0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
-		};
-
-		axisVAO = new VAO();
-		axisVBO = new VBO(indicatorVertices, sizeof(indicatorVertices), GL_STATIC_DRAW);
-		VBOlayout layout;
-		layout.Push<float>(3);
-		layout.Push<float>(3);
-		axisVAO->AddBuffer(*axisVBO, layout);
-	}
-	/* Renders the axis indicator (a screen-space object) as though it were
-		one that exists in the world for simplicity. */
-	ShaderPtr currShader = Shader::shaders["axis"];
-	currShader->Use();
-	Camera* cam = Render::GetCamera();
-	currShader->setMat4("u_model", glm::translate(glm::mat4(1), cam->GetPos() + cam->front * 10.f)); // add scaling factor (larger # = smaller visual)
-	currShader->setMat4("u_view", cam->GetView());
-	currShader->setMat4("u_proj", cam->GetProj());
-	glClear(GL_DEPTH_BUFFER_BIT); // allows indicator to always be rendered
-	axisVAO->Bind();
-	glLineWidth(2.f);
-	glDrawArrays(GL_LINES, 0, 6);
-	axisVAO->Unbind();
-}
-
-// draw the shadow map/view of the world from the sun's perspective
-static unsigned int quadVAO = 0;
-static unsigned int quadVBO;
-void renderQuad()
-{
-	if (quadVAO == 0)
-	{
-		float quadVertices[] =
-		{
-			// positions        // texture Coords
-			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-		};
-		// setup plane VAO
-		glGenVertexArrays(1, &quadVAO);
-		glGenBuffers(1, &quadVBO);
-		glBindVertexArray(quadVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-	}
-	glBindVertexArray(quadVAO);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindVertexArray(0);
 }
