@@ -25,6 +25,7 @@ void DirLight::Update(const glm::vec3& pos, const glm::vec3& dir)
 	cascadeEnds_[2] = 70.f;
 	cascadeEnds_[3] = persFar;
 	calcOrthoProjs();
+	//calcPersProjs();
 }
 
 void DirLight::initCascadedShadowMapFBO()
@@ -46,6 +47,8 @@ void DirLight::initCascadedShadowMapFBO()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 	}
 
@@ -93,18 +96,18 @@ void DirLight::calcOrthoProjs()
 {
 	// Get the inverse of the view transform
 	glm::mat4 Cam = Render::GetCamera()->GetView();
-	//glm::mat4 Cam = glm::lookAt(pos_, Render::GetCamera()->GetDir(), glm::vec3(0, 1, 0));
+	//glm::mat4 Cam = glm::lookAt(tPos_, Render::GetCamera()->GetDir(), glm::vec3(0, 1, 0));
 	glm::mat4 CamInv = glm::inverse(Cam);
 
 	// Get the light space tranform
 	glm::mat4 LightM = view_;
-	//glm::mat4 LightM = glm::lookAt(glm::vec3(0), dir_, glm::vec3(0, 1, 0));
-	//glm::mat4 LightM = glm::lookAt(-pos_, dir_, glm::vec3(0, 1, 0));
+	//glm::mat4 LightM = glm::lookAt(glm::vec3(0), tDir_, glm::vec3(0, 1, 0));
+	//glm::mat4 LightM = glm::lookAt(tPos_, -tDir_, glm::vec3(0, 1, 0));
 
 	float ar = (float)Settings::Graphics.screenX / (float)Settings::Graphics.screenY;
 	float fov = Render::GetCamera()->GetFov(); // degrees
-	float tanHalfHFOV = tanf(glm::radians(fov / 2.0f));
-	float tanHalfVFOV = tanf(glm::radians((fov * ar) / 2.0f));
+	float tanHalfHFOV = glm::tan(glm::radians(fov / 2.0f));
+	float tanHalfVFOV = glm::tan(glm::radians((fov * ar) / 2.0f));
 
 	for (unsigned i = 0; i < shadowCascades_; i++)
 	{
@@ -160,9 +163,22 @@ void DirLight::calcOrthoProjs()
 		//shadowOrthoProjInfo_[i].n = minZ;
 		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * view_;
 		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, 0.f, 100.f) * LightM;
-		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * glm::lookAt(pos_, Render::GetCamera()->GetPos(), glm::vec3(0, 1, 0));
-		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * Render::GetCamera()->GetView());
+		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * glm::lookAt(tPos_, -Render::GetCamera()->GetPos(), glm::vec3(0, 1, 0));
+		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * Render::GetCamera()->GetView();
 		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * LightM;
 		shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+	}
+}
+
+void DirLight::calcPersProjs()
+{
+	/*
+	float fov_ = 80.f;
+	float near_ = .1f;
+	float far_ = 500.f;
+	*/
+	for (int i = 0; i < shadowCascades_; i++)
+	{
+		shadowOrthoProjMtxs_[i] = glm::perspective(glm::radians(80.f), 1920.f / 1080.f, cascadeEnds_[i], cascadeEnds_[i + 1]) * Render::GetCamera()->GetView();
 	}
 }

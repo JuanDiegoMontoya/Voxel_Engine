@@ -30,8 +30,6 @@ public:
 	inline void SetPos(const glm::vec3& pos) { tPos_ = pos; }
 	inline void SetShadowSize(const glm::ivec2& s) { shadowSize_ = s; }
 	inline void SetNumCascades(unsigned num) { shadowCascades_ = num; }
-	inline void SetNearPlane(float f) { near_ = f; }
-	inline void SetFarPlane(float f) { far_ = f; }
 
 	friend class Renderer;
 private:
@@ -40,20 +38,17 @@ private:
 	void bindForWriting(unsigned index);
 	void bindForReading();
 	void calcOrthoProjs();
+	void calcPersProjs();
 
 	// vars
 	glm::vec3 tDir_;
 	glm::vec3 tPos_;
-	glm::mat4 lightViewProj_;
 	glm::mat4 view_;
 	glm::ivec2 shadowSize_ = glm::ivec2(2048, 2048);
 	GLuint depthMapFBO_;
 	unsigned shadowCascades_ = 3; // 3 = max (uvec3)
 	glm::uvec3 depthMapTexes_;
 	glm::vec4 cascadeEnds_;
-
-	float near_;
-	float far_;
 
 	glm::mat4 shadowOrthoProjMtxs_[3];
 };

@@ -9,6 +9,8 @@
 #include "pipeline.h"
 #include "settings.h"
 #include "sun.h"
+#include "input.h"
+
 #include "render.h"
 
 // draws everything at once, I guess?
@@ -35,43 +37,73 @@ void Renderer::Clear()
 
 void Renderer::drawShadows()
 {
-	DrawCB preDrawCB =
-		[this]()
 	{
-		// 1. render depth of scene to texture (from light's perspective)
-		//glDisable(GL_CULL_FACE);
-		//glCullFace(GL_FRONT);
+		//DrawCB preDrawCB =
+		//	[this]()
+		//{
+		//	// 1. render depth of scene to texture (from light's perspective)
+		//	//glDisable(GL_CULL_FACE);
+		//	//glCullFace(GL_FRONT);
 
-		ShaderPtr currShader = Shader::shaders["shadow"];
-		currShader->Use();
+		//	ShaderPtr currShader = Shader::shaders["shadow"];
+		//	currShader->Use();
 
-		glViewport(0, 0, activeDirLight_->GetShadowSize().x, activeDirLight_->GetShadowSize().y);
-		//glBindFramebuffer(GL_FRAMEBUFFER, dirLight.GetDepthFBO());
-		glm::mat4 poopy = glm::translate(glm::mat4(1), activeDirLight_->GetDir());
+		//	glViewport(0, 0, activeDirLight_->GetShadowSize().x, activeDirLight_->GetShadowSize().y);
+		//	for (unsigned i = 0; i < activeDirLight_->GetNumCascades(); i++)
+		//	{
+		//		activeDirLight_->bindForWriting(i);
+		//		glClear(GL_DEPTH_BUFFER_BIT);
+		//		currShader->setMat4("lightSpaceMatrix", activeDirLight_->GetShadowOrthoProjMtxs()[i]);// *dirLight.GetView());
+		//	}
+		//};
 
-		for (unsigned i = 0; i < activeDirLight_->GetNumCascades(); i++)
+		//ModelCB drawCB =
+		//	[](const glm::mat4& model)
+		//{
+		//	Shader::shaders["shadow"]->setMat4("model", model);
+		//};
+
+		//DrawCB postDrawCB =
+		//	[]()
+		//{
+		//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//	glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
+		//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//};
+
+		//drawChunks(false, preDrawCB, drawCB, postDrawCB);
+	}
+
+	// 1. render depth of scene to texture (from light's perspective)
+	//glDisable(GL_CULL_FACE);
+	//glCullFace(GL_FRONT);
+
+	ShaderPtr currShader = Shader::shaders["shadow"];
+	currShader->Use();
+
+	glViewport(0, 0, activeDirLight_->GetShadowSize().x, activeDirLight_->GetShadowSize().y);
+
+	for (unsigned i = 0; i < activeDirLight_->GetNumCascades(); i++)
+	{
+		activeDirLight_->bindForWriting(i);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		currShader->setMat4("lightSpaceMatrix", activeDirLight_->GetShadowOrthoProjMtxs()[i]);
+
+		// render blocks in each active chunk
+		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
+			[&](std::pair<glm::ivec3, Chunk*> chunk)
 		{
-			activeDirLight_->bindForWriting(i);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			currShader->setMat4("lightSpaceMatrix", activeDirLight_->GetShadowOrthoProjMtxs()[i]);// *dirLight.GetView());
-		}
-	};
+			if (chunk.second)// && chunk.second->IsVisible())// && sun_.GetFrustum()->IsInside(chunk.second) >= Frustum::Visibility::Partial)
+			{
+				currShader->setMat4("model", chunk.second->GetModel());
+				chunk.second->Render();
+			}
+		});
+	}
 
-	ModelCB drawCB =
-		[](const glm::mat4& model)
-	{
-		Shader::shaders["shadow"]->setMat4("model", model);
-	};
-
-	DrawCB postDrawCB =
-		[]()
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	};
-
-	drawChunks(false, preDrawCB, drawCB, postDrawCB);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::drawSky()
@@ -175,25 +207,25 @@ void Renderer::drawBillboard(VAO * vao, size_t count, DrawCB uniform_cb)
 void Renderer::drawDepthMapsDebug()
 {
 	// debug shadows
-	//if (Input::Keyboard().down[GLFW_KEY_4])
+	if (Input::Keyboard().down[GLFW_KEY_4])
 	{
 		// TODO: figure out how to do this without making everything draw to last framebuffer
 		Shader::shaders["debug_shadow"]->Use();
 		for (int i = 0; i < 3; i++)
 		{
-			//glViewport(0 + 256 * i, 0, 256, 256);
-			//Shader::shaders["debug_shadow"]->setInt("depthMap", i);
-			//glActiveTexture(GL_TEXTURE0 + i);
-			//glBindTexture(GL_TEXTURE_2D, activeDirLight_->GetDepthTex()[i]);
-			//drawQuad();
+			glViewport(0 + 512 * i, 0, 512, 512);
+			Shader::shaders["debug_shadow"]->setInt("depthMap", i);
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, activeDirLight_->GetDepthTex()[i]);
+			drawQuad();
 		}
 	}
 }
 
-static VAO* axisVAO;
-static VBO* axisVBO;
 void Renderer::drawAxisIndicators()
 {
+	static VAO* axisVAO;
+	static VBO* axisVBO;
 	if (axisVAO == nullptr)
 	{
 		float indicatorVertices[] =
@@ -230,10 +262,10 @@ void Renderer::drawAxisIndicators()
 }
 
 // draw the shadow map/view of the world from the sun's perspective
-static unsigned int quadVAO = 0;
-static unsigned int quadVBO;
 void Renderer::drawQuad()
 {
+	static unsigned int quadVAO = 0;
+	static unsigned int quadVBO;
 	if (quadVAO == 0)
 	{
 		float quadVertices[] =

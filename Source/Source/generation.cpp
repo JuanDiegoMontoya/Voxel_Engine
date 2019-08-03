@@ -375,21 +375,21 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		}
 	}
 
-	//// generate tunnels
-	//for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
-	//{
-	//	for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
-	//	{
-	//		for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
-	//		{
-	//			glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
-	//			double val = tunneler.GetValue(pos.x, pos.y, pos.z);
-	//			//std::cout << val << '\n';
-	//			if (val > .9)
-	//				level->UpdateBlockAt(glm::ivec3(xb, yb, zb), Block::bAir);
-	//		}
-	//	}
-	//}
+	// generate tunnels
+	for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
+	{
+		for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
+		{
+			for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
+			{
+				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
+				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
+				//std::cout << val << '\n';
+				if (val > .9)
+					level->UpdateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
+			}
+		}
+	}
 }
 
 void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)

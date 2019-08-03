@@ -105,14 +105,14 @@ void Level::Update(float dt)
 		for (auto& cam : cameras_)
 			cam->Update(dt);
 
-	sun_.Update();
-	CheckInteraction();
 	chunkManager_.Update(this);
+	CheckInteraction();
+	sun_.Update();
 	renderer_.SetDirLight(&sun_.GetDirLight());
 	renderer_.SetSun(&sun_);
 
-	renderer_.DrawAll();
 	DrawImGui();
+	renderer_.DrawAll();
 
 	PERF_BENCHMARK_END;
 }

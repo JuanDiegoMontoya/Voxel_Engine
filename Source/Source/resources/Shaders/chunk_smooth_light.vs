@@ -27,6 +27,7 @@ void main()
   vNormal = transpose(inverse(mat3(u_model))) * aNormal;
   for (int i = 0; i < NUM_CASCADES; i++)
     FragPosLightSpace[i] = lightSpaceMatrix[i] * vec4(vPos, 1.0);
+    //FragPosLightSpace[i] = lightSpaceMatrix[i] * u_model * vec4(aScreenPos, 1.0);
   
   gl_Position = u_proj * u_view * u_model * vec4(aScreenPos, 1.0);
   ClipSpacePosZ = gl_Position.z;
