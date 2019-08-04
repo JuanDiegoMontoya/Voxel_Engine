@@ -57,11 +57,14 @@ float fbm(vec2 uv)
 
 float ripplePos(float x, float z)
 {
-  //return sin(u_time * 2) * (sin(x) + cos(z)) * .1 + noise(vec3(x, z, u_time)) * .5;
-  return perlinNoise(vec2(x / 10. + u_time / 3, z / 10. + u_time / 3)) * .4;// + sin(u_time * 2);
+  //return sin(u_time * 2) * (sin(x) + cos(z)) * .5;
+  return perlinNoise(vec2(x / 10. + u_time / 3, z / 10. + u_time / 3)) * 0.4;// + sin(u_time * 2);
   //return perlinNoise(vec2(x / 10., z / 10.));// + sin(u_time * 2);
+  //return hash(vec2(x, z + u_time)).x;
+  //return 0;
 }
 
+// sample the heightmap in 3 places to obtain the normal
 vec3 rippleNormal(vec2 pos0)
 {
   vec2 pos1 = pos0 + vec2(1, 0);
@@ -78,7 +81,7 @@ vec3 rippleNormal(vec2 pos0)
   vec3 ln1 = rp1 - rp0;
   vec3 ln2 = rp2 - rp0;
   
-  return cross(ln1, ln2);
+  return cross(ln2, ln1);
 }
 
 void main()
@@ -95,7 +98,7 @@ void main()
   
   vColor = aColor;
   vNormal = transpose(inverse(mat3(u_model))) * aNormal;
-  vNormal -= rippleNormal(vPos.xz);
+  vNormal += rippleNormal(vPos.xz);
   for (int i = 0; i < NUM_CASCADES; i++)
     FragPosLightSpace[i] = lightSpaceMatrix[i] * vec4(vPos, 1.0);
     //FragPosLightSpace[i] = lightSpaceMatrix[i] * u_model * vec4(aScreenPos, 1.0);

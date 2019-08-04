@@ -214,6 +214,7 @@ void Renderer::drawNormal()
 
 void Renderer::drawWater()
 {
+	glDisable(GL_CULL_FACE);
 	ShaderPtr currShader = Shader::shaders["chunk_water"];
 	currShader->Use();
 
@@ -275,6 +276,7 @@ void Renderer::drawWater()
 			chunk.second->RenderWater();
 		}
 	});
+	glEnable(GL_CULL_FACE);
 }
 
 void Renderer::drawPostProcessing()
