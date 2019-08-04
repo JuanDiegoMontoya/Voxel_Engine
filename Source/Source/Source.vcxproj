@@ -331,7 +331,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="water.cpp" />
+    <ClCompile Include="water_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="biome.h" />
@@ -391,7 +391,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="vendor\imgui\stb_textedit.h" />
     <ClInclude Include="vendor\imgui\stb_truetype.h" />
     <ClInclude Include="vendor\noiseutils.h" />
-    <ClInclude Include="water.h" />
+    <ClInclude Include="water_manager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -22,6 +22,7 @@ void Renderer::DrawAll()
 	drawShadows();
 	drawSky();
 	drawNormal();
+	drawWater();
 	drawAxisIndicators();
 
 	drawDepthMapsDebug();
@@ -115,6 +116,7 @@ void Renderer::drawShadows()
 			{
 				currShader->setMat4("model", chunk.second->GetModel());
 				chunk.second->Render();
+				//chunk.second->RenderWater();
 			}
 		});
 	}
@@ -208,6 +210,71 @@ void Renderer::drawNormal()
 	DrawCB postDrawCB = [](){}; // does nothing (yet)
 
 	drawChunks(true, preDrawCB, drawCB, postDrawCB);
+}
+
+void Renderer::drawWater()
+{
+	ShaderPtr currShader = Shader::shaders["chunk_water"];
+	currShader->Use();
+
+	glm::mat4 vView[3];
+	glm::vec3 LitDir = glm::normalize(activeDirLight_->GetPos());
+	glm::vec3 right = glm::normalize(glm::cross(LitDir, glm::vec3(0.0f, 1.0f, 0.0f)));
+	glm::vec3 up = glm::normalize(glm::cross(right, LitDir));
+	for (unsigned int i = 0; i < 3; ++i)
+	{
+		vView[i] = glm::lookAt(activeDirLight_->GetModlCent(i), activeDirLight_->GetModlCent(i) + LitDir * .2f, up);
+	}
+	glm::mat4 projection = Render::GetCamera()->GetProj();
+	glm::vec4 cascadEnds = activeDirLight_->GetCascadeEnds();
+	glm::vec3 cascadeEndsClipSpace =
+		glm::vec3((projection*glm::vec4(0.0f, 0.0f, -cascadEnds[1], 1.0f)).z,
+		(projection*glm::vec4(0.0f, 0.0f, -cascadEnds[2], 1.0f)).z,
+			(projection*glm::vec4(0.0f, 0.0f, -cascadEnds[3], 1.0f)).z);
+	glm::vec3 ratios(
+		activeDirLight_->GetRatio(vView[0], 0),
+		activeDirLight_->GetRatio(vView[1], 1),
+		activeDirLight_->GetRatio(vView[2], 2)
+	);
+
+	// render water in each active chunk
+	currShader->setFloat("u_time", (float)glfwGetTime());
+	currShader->setMat4("u_view", Render::GetCamera()->GetView());
+	currShader->setMat4("u_proj", Render::GetCamera()->GetProj());
+	currShader->setVec3("viewPos", Render::GetCamera()->GetPos());
+	currShader->setVec3("lightPos", activeDirLight_->GetPos());
+
+	std::vector<float> zVals;
+	for (int i = 0; i < activeDirLight_->GetNumCascades(); i++)
+	{
+		glm::vec4 vView(0, 0, activeDirLight_->GetCascadeEnds()[i + 1], 1);
+		glm::vec4 vClip = Render::GetCamera()->GetProj() * vView;
+		zVals.push_back(vClip.z);
+	}
+
+	glm::mat4 liteMats[3];
+	liteMats[0] = activeDirLight_->GetProjMat(vView[0], 0) * vView[0];
+	liteMats[1] = activeDirLight_->GetProjMat(vView[1], 1) * vView[1];
+	liteMats[2] = activeDirLight_->GetProjMat(vView[2], 2) * vView[2];
+	glUniformMatrix4fv(currShader->Uniforms["lightSpaceMatrix"],
+		3, GL_FALSE,
+		&liteMats[0][0][0]);
+	glUniform1fv(currShader->Uniforms["cascadeEndClipSpace"], 3, &cascadeEndsClipSpace[0]);
+
+	currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
+	currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+	currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+	activeDirLight_->bindForReading();
+
+	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
+		[&](std::pair<glm::ivec3, Chunk*> chunk)
+	{
+		if (chunk.second)// && chunk.second->IsVisible())
+		{
+			currShader->setMat4("u_model", chunk.second->GetModel());
+			chunk.second->RenderWater();
+		}
+	});
 }
 
 void Renderer::drawPostProcessing()

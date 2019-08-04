@@ -26,6 +26,7 @@ private:
 	void drawShadows(); // construct shadow map(s)
 	void drawSky();
 	void drawNormal();	// draw what we see
+	void drawWater();
 	void drawPostProcessing(); // apply post processing effects
 
 	// narrow-phase rendering

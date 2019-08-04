@@ -13,6 +13,7 @@
 
 /*
 	TODO: use IBOs to save GPU memory
+	TODO: ensure water shader is getting uniforms 'n' stuff
 */
 
 //Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
@@ -25,6 +26,7 @@ static std::mutex mtx;
 Chunk::Chunk(bool active) : active_(active)
 {
 	vao_ = new VAO();
+	wvao_ = new VAO();
 }
 
 Chunk::~Chunk()
@@ -39,6 +41,17 @@ Chunk::~Chunk()
 		delete colors_;
 	if (speculars_)
 		delete speculars_;
+
+	if (wvao_)
+		delete wvao_;
+	if (wpositions_)
+		delete wpositions_;
+	if (wnormals_)
+		delete wnormals_;
+	if (wcolors_)
+		delete wcolors_;
+	if (wspeculars_)
+		delete wspeculars_;
 }
 
 void Chunk::Update()
@@ -62,52 +75,106 @@ void Chunk::Render()
 	}
 }
 
+void Chunk::RenderWater()
+{
+	if (wvao_)
+	{
+		wvao_->Bind();
+		glDrawArrays(GL_TRIANGLES, 0, wvertexCount_);
+	}
+}
+
 void Chunk::BuildBuffers()
 {
-	vao_->Bind();
-	if (positions_)
-		delete positions_;
-	if (normals_)
-		delete normals_;
-	if (colors_)
-		delete colors_;
-	if (speculars_)
-		delete speculars_;
-
 	// generate various vertex buffers
+	{
+		vao_->Bind();
+		if (positions_)
+			delete positions_;
+		if (normals_)
+			delete normals_;
+		if (colors_)
+			delete colors_;
+		if (speculars_)
+			delete speculars_;
+		// screen positions
+		positions_ = new VBO(&tPositions[0], sizeof(glm::vec3) * tPositions.size());
+		positions_->Bind();
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0); // screenpos
+		glEnableVertexAttribArray(0);
 
-	// screen positions
-	positions_ = new VBO(&tPositions[0], sizeof(glm::vec3) * tPositions.size());
-	positions_->Bind();
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0); // screenpos
-	glEnableVertexAttribArray(0);
+		// colors
+		colors_ = new VBO(&tColors[0], sizeof(glm::vec4) * tColors.size());
+		colors_->Bind();
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
+		glEnableVertexAttribArray(1);
 
-	// colors
-	colors_ = new VBO(&tColors[0], sizeof(glm::vec4) * tColors.size());
-	colors_->Bind();
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
-	glEnableVertexAttribArray(1);
+		// normals
+		normals_ = new VBO(&tNormals[0], sizeof(glm::vec3) * tNormals.size());
+		normals_->Bind();
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+		glEnableVertexAttribArray(2);
 
-	// normals
-	normals_ = new VBO(&tNormals[0], sizeof(glm::vec3) * tNormals.size());
-	normals_->Bind();
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-	glEnableVertexAttribArray(2);
+		// specular
+		speculars_ = new VBO(&tSpeculars[0], sizeof(float) * tSpeculars.size());
+		speculars_->Bind();
+		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+		glEnableVertexAttribArray(3);
 
-	// specular
-	speculars_ = new VBO(&tSpeculars[0], sizeof(float) * tSpeculars.size());
-	speculars_->Bind();
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-	glEnableVertexAttribArray(3);
+		vao_->Unbind();
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	vao_->Unbind();
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+		vertexCount_ = tPositions.size(); // divisor = number of floats per vertex
+		tPositions.clear();
+		tNormals.clear();
+		tColors.clear();
+		tSpeculars.clear();
+	}
 
-	vertexCount_ = tPositions.size(); // divisor = number of floats per vertex
-	tPositions.clear();
-	tNormals.clear();
-	tColors.clear();
-	tSpeculars.clear();
+	// epic copypasta
+	{
+		wvao_->Bind();
+		if (wpositions_)
+			delete wpositions_;
+		if (wnormals_)
+			delete wnormals_;
+		if (wcolors_)
+			delete wcolors_;
+		if (wspeculars_)
+			delete wspeculars_;
+		// screen positions
+		wpositions_ = new VBO(&wtPositions[0], sizeof(glm::vec3) * wtPositions.size());
+		wpositions_->Bind();
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0); // screenpos
+		glEnableVertexAttribArray(0);
+
+		// colors
+		wcolors_ = new VBO(&wtColors[0], sizeof(glm::vec4) * wtColors.size());
+		wcolors_->Bind();
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
+		glEnableVertexAttribArray(1);
+
+		// normals
+		wnormals_ = new VBO(&wtNormals[0], sizeof(glm::vec3) * wtNormals.size());
+		wnormals_->Bind();
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+		glEnableVertexAttribArray(2);
+
+		// specular
+		wspeculars_ = new VBO(&wtSpeculars[0], sizeof(float) * wtSpeculars.size());
+		wspeculars_->Bind();
+		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+		glEnableVertexAttribArray(3);
+
+		wvao_->Unbind();
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		wvertexCount_ = wtPositions.size(); // divisor = number of floats per vertex
+		wtPositions.clear();
+		wtNormals.clear();
+		wtColors.clear();
+		wtSpeculars.clear();
+	}
 }
 
 void Chunk::BuildMesh()
@@ -174,6 +241,7 @@ void Chunk::buildSingleBlockFace(
 	const Block& block)															// block-specific information
 {
 	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
+	bool isWater = block.GetType() == Block::bWater;
 
 	ChunkPtr near = chunks[nearblock.chunk_pos];
 	if (!near)
@@ -201,9 +269,18 @@ GenQuad:
 	// sadly we gotta copy all this stuff 6 times
 	for (int i = 0; i < 6; i++)
 	{
-		tColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b) + clrBias, color.a));
-		tNormals.push_back(Render::cube_normals_divisor2[curQuad]);
-		tSpeculars.push_back(shiny);
+		if (isWater)
+		{
+			wtColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b) + clrBias, color.a));
+			wtNormals.push_back(Render::cube_normals_divisor2[curQuad]);
+			wtSpeculars.push_back(shiny);
+		}
+		else
+		{
+			tColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b) + clrBias, color.a));
+			tNormals.push_back(Render::cube_normals_divisor2[curQuad]);
+			tSpeculars.push_back(shiny);
+		}
 	}
 
 	for (int i = quadStride * curQuad; i < quadStride * (curQuad + 1); i += 8) // += floats per vertex
@@ -216,7 +293,10 @@ GenQuad:
 		tri = localTransform * tri;
 
 		// pos
-		tPositions.push_back(tri);
+		if (isWater)
+			wtPositions.push_back(tri);
+		else
+			tPositions.push_back(tri);
 
 		// texture
 		//quad.push_back(data[i + 6]);

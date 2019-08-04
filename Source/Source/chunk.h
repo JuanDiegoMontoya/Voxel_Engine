@@ -47,6 +47,7 @@ public:
 
 	void Update();
 	void Render();
+	void RenderWater();
 	void BuildBuffers();
 	void BuildMesh();
 
@@ -171,6 +172,19 @@ private:
 	std::vector<glm::vec3> tNormals;
 	std::vector<glm::vec4> tColors;
 	std::vector<float> tSpeculars;
+
+	// water rendering stuff
+	VAO* wvao_ = nullptr;
+	VBO* wpositions_ = nullptr;
+	VBO* wnormals_ = nullptr;
+	VBO* wcolors_ = nullptr;
+	VBO* wspeculars_ = nullptr;
+	std::vector<glm::vec3> wtPositions;
+	std::vector<glm::vec3> wtNormals;
+	std::vector<glm::vec4> wtColors;
+	std::vector<float>		 wtSpeculars;
+	size_t wvertexCount_ = 0;
+
 	std::vector<GLubyte> indices; // probably finna be unused
 	//std::vector<glm::vec3> vtxTanBuffer; // tangents
 	//std::vector<glm::vec3> vtxBitBuffer; // bitangents

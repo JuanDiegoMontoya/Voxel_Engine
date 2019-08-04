@@ -108,14 +108,16 @@ namespace Render
 		Shader::shaders["axis"] = new Shader("axis.vs", "axis.fs");
 		Shader::shaders["flat_color"] = new Shader("flat_color.vs", "flat_color.fs");
 
+		Shader::shaders["chunk_water"] = new Shader("chunk_water.vs", "chunk_water.fs");
 		Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
-		Shader::shaders["chunk_shaded"]->Use();
 		std::vector<int> values = { 0, 1, 2 };
 		//std::vector<int> values = { 1, 2, 3 };
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[0]", 0);
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[1]", 1);
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[2]", 2);
+		Shader::shaders["chunk_shaded"]->Use();
 		Shader::shaders["chunk_shaded"]->setIntArray("shadowMap", values, values.size());
+		Shader::shaders["chunk_water"]->setIntArray("shadowMap", values, values.size());
 
 		Shader::shaders["debug_shadow"] = new Shader("debug_shadow.vs", "debug_shadow.fs");
 		Shader::shaders["debug_shadow"]->Use();

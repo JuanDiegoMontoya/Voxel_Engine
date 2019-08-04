@@ -218,7 +218,7 @@
     <ClInclude Include="directional_light.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="water.h">
+    <ClInclude Include="water_manager.h">
       <Filter>Game\Voxel Engine</Filter>
     </ClInclude>
   </ItemGroup>
@@ -364,7 +364,7 @@
     <ClCompile Include="directional_light.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="water.cpp">
+    <ClCompile Include="water_manager.cpp">
       <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
   </ItemGroup>
