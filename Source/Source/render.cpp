@@ -77,23 +77,41 @@ void Renderer::drawShadows()
 	// 1. render depth of scene to texture (from light's perspective)
 	//glDisable(GL_CULL_FACE);
 	//glCullFace(GL_FRONT);
+	glViewport(0, 0, activeDirLight_->GetShadowSize().x, activeDirLight_->GetShadowSize().y);
+
+
+
+	glm::mat4 view = Render::GetCamera()->GetView();
+	glm::mat4 vView[3];
+	glm::vec3 LitDir = glm::normalize(activeDirLight_->GetPos());
+	glm::vec3 right = glm::normalize(glm::cross(LitDir, glm::vec3(0.0f, 1.0f, 0.0f)));
+	glm::vec3 up = glm::normalize(glm::cross(right, LitDir));
+	glm::mat4 LitViewFam = glm::lookAt(activeDirLight_->GetPos(), Render::GetCamera()->GetPos(), up);
+
+	activeDirLight_->calcOrthoProjs(LitViewFam);
+	for (unsigned int i = 0; i < 3; ++i)
+	{
+		vView[i] = glm::lookAt(activeDirLight_->GetModlCent(i), activeDirLight_->GetModlCent(i) + LitDir * 0.2f, up);
+	}
+
+
 
 	ShaderPtr currShader = Shader::shaders["shadow"];
 	currShader->Use();
-
-	glViewport(0, 0, activeDirLight_->GetShadowSize().x, activeDirLight_->GetShadowSize().y);
 
 	for (unsigned i = 0; i < activeDirLight_->GetNumCascades(); i++)
 	{
 		activeDirLight_->bindForWriting(i);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		currShader->setMat4("lightSpaceMatrix", activeDirLight_->GetShadowOrthoProjMtxs()[i]);
 
-		// render blocks in each active chunk
+		//currShader->setMat4("lightSpaceMatrix", activeDirLight_->GetShadowOrthoProjMtxs()[i]);
+		currShader->setMat4("lightSpaceMatrix", activeDirLight_->GetProjMat(vView[i], i) * vView[i]);
+
+		// draw objects in world
 		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
 			[&](std::pair<glm::ivec3, Chunk*> chunk)
 		{
-			if (chunk.second)// && chunk.second->IsVisible())// && sun_.GetFrustum()->IsInside(chunk.second) >= Frustum::Visibility::Partial)
+			if (chunk.second)// && chunk.second->IsVisible())
 			{
 				currShader->setMat4("model", chunk.second->GetModel());
 				chunk.second->Render();
@@ -119,6 +137,23 @@ void Renderer::drawNormal()
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK); // don't forget to reset original culling face
 		
+
+		glm::mat4 vView[3];
+		glm::vec3 LitDir = glm::normalize(activeDirLight_->GetPos());
+		glm::vec3 right = glm::normalize(glm::cross(LitDir, glm::vec3(0.0f, 1.0f, 0.0f)));
+		glm::vec3 up = glm::normalize(glm::cross(right, LitDir));
+		for (unsigned int i = 0; i < 3; ++i)
+		{
+			vView[i] = glm::lookAt(activeDirLight_->GetModlCent(i), activeDirLight_->GetModlCent(i) + LitDir * 0.2f, up);
+		}
+		glm::mat4 projection = Render::GetCamera()->GetProj();
+		glm::vec4 cascadEnds = activeDirLight_->GetCascadeEnds();
+		glm::vec3 cascadeEndsClipSpace =
+			glm::vec3((projection*glm::vec4(0.0f, 0.0f, -cascadEnds[1], 1.0f)).z,
+			(projection*glm::vec4(0.0f, 0.0f, -cascadEnds[2], 1.0f)).z,
+				(projection*glm::vec4(0.0f, 0.0f, -cascadEnds[3], 1.0f)).z);
+
+
 		// render blocks in each active chunk
 		ShaderPtr currShader = Shader::shaders["chunk_shaded"];
 		currShader->Use();
@@ -136,10 +171,20 @@ void Renderer::drawNormal()
 			zVals.push_back(vClip.z);
 		}
 
-		currShader->set1FloatArray("cascadeEndClipSpace", zVals, zVals.size());
-		glUniformMatrix4fv(currShader->Uniforms["lightSpaceMatrix"], 
-			activeDirLight_->GetNumCascades(), GL_FALSE, 
-			&activeDirLight_->GetShadowOrthoProjMtxs()[0][0][0]);
+		glm::mat4 liteMats[3];
+		liteMats[0] = activeDirLight_->GetProjMat(vView[0], 0) * vView[0];
+		liteMats[1] = activeDirLight_->GetProjMat(vView[1], 1) * vView[1];
+		liteMats[2] = activeDirLight_->GetProjMat(vView[2], 2) * vView[2];
+		glUniformMatrix4fv(currShader->Uniforms["lightSpaceMatrix"],
+			3, GL_FALSE,
+			&liteMats[0][0][0]);
+		glUniform1fv(currShader->Uniforms["cascadeEndClipSpace"], 3, &cascadeEndsClipSpace[0]);
+		//glUniform1fv(currShader->Uniforms["cascadeEndClipSpace"], 3, &zVals[0]);
+
+		//currShader->set1FloatArray("cascadeEndClipSpace", zVals, zVals.size());
+		//glUniformMatrix4fv(currShader->Uniforms["lightSpaceMatrix"], 
+		//	activeDirLight_->GetNumCascades(), GL_FALSE, 
+		//	&activeDirLight_->GetShadowOrthoProjMtxs()[0][0][0]);
 		//currShader->setMat4("lightSpaceMatrix[0]", activeDirLight_->GetShadowOrthoProjMtxs()[0]);
 		//currShader->setVec3("dirLight.direction", dirLight.GetDir());
 		currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);

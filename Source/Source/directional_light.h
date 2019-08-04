@@ -25,6 +25,40 @@ public:
 	inline const glm::vec4& GetCascadeEnds() const { return cascadeEnds_; }
 	inline const glm::mat4* GetShadowOrthoProjMtxs() const { return shadowOrthoProjMtxs_; }
 
+	// special
+	glm::mat4 GetProjMat(glm::mat4& view, unsigned int index)
+	{
+		return glm::ortho(
+			(view * modeldFrusCorns[index][1]).x, 
+			(view * modeldFrusCorns[index][0]).x, 
+			(view * modeldFrusCorns[index][2]).y, 
+			(view * modeldFrusCorns[index][0]).y, 
+			(view * modeldFrusCorns[index][0]).z, 
+			(view * modeldFrusCorns[index][4]).z);
+	}
+
+	float GetRatio(glm::mat4& view, int index)
+	{
+		if (index > -1 && index < 4)
+		{
+			return((-(view*modeldFrusCorns[index][0]).z + (view*modeldFrusCorns[index][4]).z));
+		}
+		else
+		{
+			return 1.0f;
+		}
+	}
+	glm::vec3 GetModlCent(unsigned int index)
+	{
+		glm::vec4 temp = glm::vec4(0.0f);
+		for (unsigned int i = 0; i < 8; ++i)
+		{
+			temp += modeldFrusCorns[index][i];
+		}
+		glm::vec4 temp2 = temp / 8.0f;
+		return glm::vec3(temp2);
+	}
+
 	// setters
 	inline void SetDir(const glm::vec3& dir) { tDir_ = dir; }
 	inline void SetPos(const glm::vec3& pos) { tPos_ = pos; }
@@ -37,7 +71,7 @@ private:
 	void initCascadedShadowMapFBO();
 	void bindForWriting(unsigned index);
 	void bindForReading();
-	void calcOrthoProjs();
+	void calcOrthoProjs(const glm::mat4& vView);
 	void calcPersProjs();
 
 	// vars
@@ -50,5 +84,6 @@ private:
 	glm::uvec3 depthMapTexes_;
 	glm::vec4 cascadeEnds_;
 
+	glm::vec4 modeldFrusCorns[3][8];
 	glm::mat4 shadowOrthoProjMtxs_[3];
 };

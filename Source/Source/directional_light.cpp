@@ -15,7 +15,8 @@ void DirLight::Update(const glm::vec3& pos, const glm::vec3& dir)
 	tPos_ = pos;
 	tDir_ = dir;
 
-	view_ = glm::lookAt(tPos_, glm::normalize(Render::GetCamera()->GetPos()), glm::vec3(0.0, 1.0, 0.0));
+	view_ = glm::lookAt(tPos_, -glm::normalize(Render::GetCamera()->GetPos()), glm::vec3(0.0, 1.0, 0.0));
+	//view_ = glm::lookAt(-tPos_, glm::vec3(0), glm::vec3(0.0, 1.0, 0.0));
 
 	// equally spaced cascade ends (may change in future)
 	float persNear = Render::GetCamera()->GetNear();
@@ -24,7 +25,7 @@ void DirLight::Update(const glm::vec3& pos, const glm::vec3& dir)
 	cascadeEnds_[1] = 35.f;
 	cascadeEnds_[2] = 70.f;
 	cascadeEnds_[3] = persFar;
-	calcOrthoProjs();
+	//calcOrthoProjs();
 	//calcPersProjs();
 }
 
@@ -42,6 +43,7 @@ void DirLight::initCascadedShadowMapFBO()
 	{
 		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, shadowSize_.x, shadowSize_.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, shadowSize_.x, shadowSize_.y, 0, GL_RGBA, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
@@ -92,7 +94,7 @@ void DirLight::bindForReading()
 	glBindTexture(GL_TEXTURE_2D, depthMapTexes_[2]);
 }
 
-void DirLight::calcOrthoProjs()
+void DirLight::calcOrthoProjs(const glm::mat4& vView)
 {
 	// Get the inverse of the view transform
 	glm::mat4 Cam = Render::GetCamera()->GetView();
@@ -100,14 +102,17 @@ void DirLight::calcOrthoProjs()
 	glm::mat4 CamInv = glm::inverse(Cam);
 
 	// Get the light space tranform
-	glm::mat4 LightM = view_;
+	//glm::mat4 LightM = view_;
+	glm::mat4 LightM = vView;
 	//glm::mat4 LightM = glm::lookAt(glm::vec3(0), tDir_, glm::vec3(0, 1, 0));
 	//glm::mat4 LightM = glm::lookAt(tPos_, -tDir_, glm::vec3(0, 1, 0));
 
 	float ar = (float)Settings::Graphics.screenX / (float)Settings::Graphics.screenY;
 	float fov = Render::GetCamera()->GetFov(); // degrees
-	float tanHalfHFOV = glm::tan(glm::radians(fov / 2.0f));
-	float tanHalfVFOV = glm::tan(glm::radians((fov * ar) / 2.0f));
+	//float tanHalfHFOV = glm::tan(glm::radians(fov / 2.0f));
+	//float tanHalfVFOV = glm::tan(glm::radians((fov * ar) / 2.0f));
+	float tanHalfHFOV = glm::tan(glm::radians(fov / 2.0f)) / ar;
+	float tanHalfVFOV = glm::tan(glm::radians((fov * ar) / 2.0f)) / ar;
 
 	for (unsigned i = 0; i < shadowCascades_; i++)
 	{
@@ -119,16 +124,16 @@ void DirLight::calcOrthoProjs()
 		glm::vec4 frustumCorners[8] =
 		{
 			// near face
-			glm::vec4(xn, yn, cascadeEnds_[i], 1.0),
-			glm::vec4(-xn, yn, cascadeEnds_[i], 1.0),
-			glm::vec4(xn, -yn, cascadeEnds_[i], 1.0),
-			glm::vec4(-xn, -yn, cascadeEnds_[i], 1.0),
+			glm::vec4(xn, yn, -cascadeEnds_[i], 1.0),
+			glm::vec4(-xn, yn, -cascadeEnds_[i], 1.0),
+			glm::vec4(xn, -yn, -cascadeEnds_[i], 1.0),
+			glm::vec4(-xn, -yn, -cascadeEnds_[i], 1.0),
 
 			// far face
-			glm::vec4(xf, yf, cascadeEnds_[i + 1], 1.0),
-			glm::vec4(-xf, yf, cascadeEnds_[i + 1], 1.0),
-			glm::vec4(xf, -yf, cascadeEnds_[i + 1], 1.0),
-			glm::vec4(-xf, -yf, cascadeEnds_[i + 1], 1.0)
+			glm::vec4(xf, yf, -cascadeEnds_[i + 1], 1.0),
+			glm::vec4(-xf, yf, -cascadeEnds_[i + 1], 1.0),
+			glm::vec4(xf, -yf, -cascadeEnds_[i + 1], 1.0),
+			glm::vec4(-xf, -yf, -cascadeEnds_[i + 1], 1.0)
 		};
 		glm::vec4 frustumCornersL[8];
 
@@ -153,7 +158,20 @@ void DirLight::calcOrthoProjs()
 			maxY = glm::max(maxY, frustumCornersL[j].y);
 			minZ = glm::min(minZ, frustumCornersL[j].z);
 			maxZ = glm::max(maxZ, frustumCornersL[j].z);
+
+			if (j == 7)
+			{
+				modeldFrusCorns[i][0] = glm::inverse(LightM) * glm::vec4(maxX, maxY, minZ, 1.0f);
+				modeldFrusCorns[i][1] = glm::inverse(LightM) * glm::vec4(minX, maxY, minZ, 1.0f);
+				modeldFrusCorns[i][2] = glm::inverse(LightM) * glm::vec4(maxX, minY, minZ, 1.0f);
+				modeldFrusCorns[i][3] = glm::inverse(LightM) * glm::vec4(minX, minY, minZ, 1.0f);
+				modeldFrusCorns[i][4] = glm::inverse(LightM) * glm::vec4(maxX, maxY, maxZ, 1.0f);
+				modeldFrusCorns[i][5] = glm::inverse(LightM) * glm::vec4(minX, maxY, maxZ, 1.0f);
+				modeldFrusCorns[i][6] = glm::inverse(LightM) * glm::vec4(maxX, minY, maxZ, 1.0f);
+				modeldFrusCorns[i][7] = glm::inverse(LightM) * glm::vec4(minX, minY, maxZ, 1.0f);
+			}
 		}
+
 
 		//shadowOrthoProjInfo_[i].r = maxX;
 		//shadowOrthoProjInfo_[i].l = minX;
@@ -166,8 +184,20 @@ void DirLight::calcOrthoProjs()
 		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * glm::lookAt(tPos_, -Render::GetCamera()->GetPos(), glm::vec3(0, 1, 0));
 		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * Render::GetCamera()->GetView();
 		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * LightM;
-		shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
 	}
+
+	//for (int i = 0; i < 3; i++)
+	//{
+	//	shadowOrthoProjMtxs_[i] =
+	//		glm::ortho(
+	//		(view_*modeldFrusCorns[i][1]).x, 
+	//		(view_*modeldFrusCorns[i][0]).x,
+	//		(view_*modeldFrusCorns[i][2]).y,
+	//		(view_*modeldFrusCorns[i][0]).y,
+	//		(view_*modeldFrusCorns[i][0]).z,
+	//		(view_*modeldFrusCorns[i][4]).z) * LightM;
+	//}
 }
 
 void DirLight::calcPersProjs()

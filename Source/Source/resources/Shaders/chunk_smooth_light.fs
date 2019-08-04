@@ -28,7 +28,7 @@ out vec4 fragColor;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 
-/*
+///*
 float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
 {
   // perform perspective divide
@@ -65,13 +65,13 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
   shadow /= pow(samples * 2 + 1, 2);
   
   // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-  //if(projCoords.z > 1.0)
-    //shadow = 0.0;
+  if(projCoords.z > 1.0)
+    shadow = 0.0;
     
   return shadow;
 }
-*/
-///*
+//*/
+/*
 float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
 {
   vec3 ProjCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -88,7 +88,7 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
   else
     return 1.0;
 }
-//*/
+*/
 
 void main()
 {
@@ -118,7 +118,7 @@ void main()
   vec3 poopoo = vec3(0);
   for (int i = 0; i < NUM_CASCADES; i++)
   {
-    if (ClipSpacePosZ <= abs(cascadeEndClipSpace[i]))
+    if (ClipSpacePosZ <= (cascadeEndClipSpace[i]))
     {
       poopoo[i] = .2;
       shadow = ShadowCalculation(i, FragPosLightSpace[i]);
