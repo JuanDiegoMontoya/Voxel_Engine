@@ -327,7 +327,6 @@ void Renderer::drawDepthMapsDebug()
 	// debug shadows
 	if (Input::Keyboard().down[GLFW_KEY_4])
 	{
-		// TODO: figure out how to do this without making everything draw to last framebuffer
 		Shader::shaders["debug_shadow"]->Use();
 		for (int i = 0; i < 3; i++)
 		{

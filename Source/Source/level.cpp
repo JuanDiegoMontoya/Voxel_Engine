@@ -146,6 +146,11 @@ void Level::DrawImGui()
 		//	glm::clamp(shadow, 0, 16384);
 		//	sun_.SetShadowSize(glm::ivec2(shadow));
 		//}
+		if (ImGui::Button("Recompile Water Shader"))
+		{
+			delete Shader::shaders["chunk_water"];
+			Shader::shaders["chunk_water"] = new Shader("chunk_water.vs", "chunk_water.fs");
+		}
 
 		ImGui::End();
 	}
