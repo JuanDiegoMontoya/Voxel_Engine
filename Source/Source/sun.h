@@ -33,7 +33,7 @@ public:
 	glm::vec3 orbitPos = glm::vec3(0);
 
 	bool followCam = true;
-	float followDist = 75.f;
+	float followDist = 350.f;
 private:
 	DirLight dirLight_;
 	glm::vec3 dir_;

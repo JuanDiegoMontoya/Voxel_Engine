@@ -78,12 +78,12 @@ private:
 	glm::vec3 tDir_;
 	glm::vec3 tPos_;
 	glm::mat4 view_;
-	glm::ivec2 shadowSize_ = glm::ivec2(2048, 2048);
+	glm::ivec2 shadowSize_ = glm::ivec2(4096, 4096);
 	GLuint depthMapFBO_;
 	unsigned shadowCascades_ = 3; // 3 = max (uvec3)
 	glm::uvec3 depthMapTexes_;
 	glm::vec4 cascadeEnds_;
-
+	
 	glm::vec4 modeldFrusCorns[3][8];
 	glm::mat4 shadowOrthoProjMtxs_[3];
 };

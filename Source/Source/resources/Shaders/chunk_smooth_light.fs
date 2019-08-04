@@ -46,7 +46,7 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
   // calculate bias (based on depth map resolution and slope)
   vec3 normal = normalize(vNormal);
   vec3 lightDir = normalize(lightPos - vPos);
-  float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.001);
+  float bias = max(0.0005 * (1.0 - dot(normal, lightDir)), 0.0005);
   //bias = 0.0;
   
   // check whether current frag pos is in shadow
@@ -66,7 +66,7 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
   
   // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
   if(projCoords.z > 1.0)
-    shadow = 0.0;
+    shadow = 1.0;
     
   return shadow;
 }
@@ -87,6 +87,21 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
     return 0.0;
   else
     return 1.0;
+}
+*/
+/*
+float ShadowCalculation(int cascIndex, vec4 fragPosLightSpace)
+{
+	vec3 projCord = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	projCord = projCord * 0.5 + 0.5;
+	if(projCord.z > 1.0f)
+		return 1.0f;
+	float currentDepth = projCord.z;
+	float fShadowMapValue = texture(shadowMap[cascIndex], projCord.xy).r;
+
+	float fShadow = 1.0f;
+	fShadow = clamp(exp(Ratios[cascIndex] * 5.0f * ( fShadowMapValue - currentDepth ) ), 0.0, 1.0 );
+	return fShadow;
 }
 */
 
@@ -118,7 +133,7 @@ void main()
   vec3 poopoo = vec3(0);
   for (int i = 0; i < NUM_CASCADES; i++)
   {
-    if (ClipSpacePosZ <= (cascadeEndClipSpace[i]))
+    if (ClipSpacePosZ <= cascadeEndClipSpace[i])
     {
       poopoo[i] = .2;
       shadow = ShadowCalculation(i, FragPosLightSpace[i]);
@@ -126,14 +141,14 @@ void main()
     }
   }
   //float shadow = ShadowCalculation(FragPosLightSpace);                      
-  vec3 lighting = (ambient + (1.0 - shadow * .000001) * (diffuse + specular)) * color;    
+  vec3 lighting = (ambient + (1.05 - shadow) * (diffuse + specular)) * color;    
   vec4 irrelevant = vec4(lighting, 0) * 0.0001;
   
   //fragColor = vec4(poopoo, 1) + irrelevant;
-  //fragColor = vec4(lighting, vColor.a);
+  fragColor = vec4(lighting, vColor.a);
   //fragColor = vec4(vec3(FragPosLightSpace[0].y / 10), 1) + irrelevant;
   //fragColor = vec4(vec3(ClipSpacePosZ) / 100, 1) + irrelevant;
-  fragColor = vec4(vec3(shadow / 3) + vec3(ClipSpacePosZ / 200) + poopoo, 1) + irrelevant;
+  //fragColor = vec4(vec3(shadow / 3) + vec3(ClipSpacePosZ / 200) + poopoo, 1) + irrelevant;
 }
 
 /*

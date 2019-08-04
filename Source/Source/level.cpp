@@ -49,7 +49,7 @@ void Level::Init()
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(50.f);
+	chunkManager_.SetLoadDistance(100.f);
 	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(5);
 
@@ -111,8 +111,8 @@ void Level::Update(float dt)
 	renderer_.SetDirLight(&sun_.GetDirLight());
 	renderer_.SetSun(&sun_);
 
-	DrawImGui();
 	renderer_.DrawAll();
+	DrawImGui();
 
 	PERF_BENCHMARK_END;
 }

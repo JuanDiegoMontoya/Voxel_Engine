@@ -91,7 +91,7 @@ void Renderer::drawShadows()
 	activeDirLight_->calcOrthoProjs(LitViewFam);
 	for (unsigned int i = 0; i < 3; ++i)
 	{
-		vView[i] = glm::lookAt(activeDirLight_->GetModlCent(i), activeDirLight_->GetModlCent(i) + LitDir * 0.2f, up);
+		vView[i] = glm::lookAt(activeDirLight_->GetModlCent(i), activeDirLight_->GetModlCent(i) + LitDir * .2f, up);
 	}
 
 
@@ -144,7 +144,7 @@ void Renderer::drawNormal()
 		glm::vec3 up = glm::normalize(glm::cross(right, LitDir));
 		for (unsigned int i = 0; i < 3; ++i)
 		{
-			vView[i] = glm::lookAt(activeDirLight_->GetModlCent(i), activeDirLight_->GetModlCent(i) + LitDir * 0.2f, up);
+			vView[i] = glm::lookAt(activeDirLight_->GetModlCent(i), activeDirLight_->GetModlCent(i) + LitDir * .2f, up);
 		}
 		glm::mat4 projection = Render::GetCamera()->GetProj();
 		glm::vec4 cascadEnds = activeDirLight_->GetCascadeEnds();
@@ -152,6 +152,11 @@ void Renderer::drawNormal()
 			glm::vec3((projection*glm::vec4(0.0f, 0.0f, -cascadEnds[1], 1.0f)).z,
 			(projection*glm::vec4(0.0f, 0.0f, -cascadEnds[2], 1.0f)).z,
 				(projection*glm::vec4(0.0f, 0.0f, -cascadEnds[3], 1.0f)).z);
+		glm::vec3 ratios(
+			activeDirLight_->GetRatio(vView[0], 0),
+			activeDirLight_->GetRatio(vView[1], 1),
+			activeDirLight_->GetRatio(vView[2], 2)
+		);
 
 
 		// render blocks in each active chunk
@@ -161,6 +166,7 @@ void Renderer::drawNormal()
 		currShader->setMat4("u_proj", Render::GetCamera()->GetProj());
 		currShader->setVec3("viewPos", Render::GetCamera()->GetPos());
 		currShader->setVec3("lightPos", activeDirLight_->GetPos());
+		//currShader->setVec3("ratios", ratios);
 		//currShader->setMat4("lightSpaceMatrix", dirLight.GetViewProj());
 		
 		std::vector<float> zVals;

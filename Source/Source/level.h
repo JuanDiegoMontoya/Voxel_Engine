@@ -20,10 +20,6 @@ public:
 
 	void Init();
 	void Update(float dt);
-	void Draw();
-	void DrawNormal();
-	void DrawShadows();
-	void DrawDebug();
 	void CheckCollision();
 	void CheckInteraction();
 	void UpdateBlockAt(glm::ivec3 wpos, Block::BlockType type);

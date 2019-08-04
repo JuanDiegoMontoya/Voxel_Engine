@@ -22,7 +22,7 @@ void DirLight::Update(const glm::vec3& pos, const glm::vec3& dir)
 	float persNear = Render::GetCamera()->GetNear();
 	float persFar = Render::GetCamera()->GetFar();
 	cascadeEnds_[0] = persNear;
-	cascadeEnds_[1] = 35.f;
+	cascadeEnds_[1] = 25.f;
 	cascadeEnds_[2] = 70.f;
 	cascadeEnds_[3] = persFar;
 	//calcOrthoProjs();
@@ -111,8 +111,8 @@ void DirLight::calcOrthoProjs(const glm::mat4& vView)
 	float fov = Render::GetCamera()->GetFov(); // degrees
 	//float tanHalfHFOV = glm::tan(glm::radians(fov / 2.0f));
 	//float tanHalfVFOV = glm::tan(glm::radians((fov * ar) / 2.0f));
-	float tanHalfHFOV = glm::tan(glm::radians(fov / 2.0f)) / ar;
-	float tanHalfVFOV = glm::tan(glm::radians((fov * ar) / 2.0f)) / ar;
+	float tanHalfHFOV = glm::tan(glm::radians(fov / 2.0f)) * ar;
+	float tanHalfVFOV = glm::tan(glm::radians((fov * ar) / 2.0f)) * ar;
 
 	for (unsigned i = 0; i < shadowCascades_; i++)
 	{

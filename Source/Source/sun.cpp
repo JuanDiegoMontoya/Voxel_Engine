@@ -59,7 +59,7 @@ void Sun::Render()
 	currShader->setVec3("CameraRight", view[0][0], view[1][0], view[2][0]);
 	currShader->setVec3("CameraUp", view[0][1], view[1][1], view[2][1]);
 	currShader->setVec3("BillboardPos", pos_);
-	currShader->setVec2("BillboardSize", 5.5f, 5.5f);
+	currShader->setVec2("BillboardSize", 15.5f, 15.5f);
 
 	currShader->setVec4("u_color", 1.f, 1.f, 0.f, 1.f);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
