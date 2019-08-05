@@ -52,6 +52,7 @@ void Level::Init()
 	chunkManager_.SetLoadDistance(100.f);
 	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(5);
+	renderer_.Init();
 
 	//std::cout << "PRE Processed chunk positions (x, y, z):" << '\n';
 	//for (auto& chunk : Chunk::chunks)
@@ -151,6 +152,11 @@ void Level::DrawImGui()
 			delete Shader::shaders["chunk_water"];
 			Shader::shaders["chunk_water"] = new Shader("chunk_water.vs", "chunk_water.fs");
 		}
+		if (ImGui::Button("Recompile Debug Map"))
+		{
+			delete Shader::shaders["debug_map3"];
+			Shader::shaders["debug_map3"] = new Shader("debug_map.vs", "debug_map.fs");
+		}
 
 		ImGui::End();
 	}
@@ -212,14 +218,19 @@ void Level::DrawImGui()
 			}
 
 			glClear(GL_DEPTH_BUFFER_BIT);
+			//glDisable(GL_CULL_FACE);
+			glLineWidth(2);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			blockHoverVao->Bind();
 			ShaderPtr curr = Shader::shaders["flat_color"];
 			curr->Use();
 			curr->setMat4("u_model", glm::translate(glm::mat4(1), glm::vec3(x, y, z) + .5f));
 			curr->setMat4("u_view", Render::GetCamera()->GetView());
 			curr->setMat4("u_proj", Render::GetCamera()->GetProj());
-			curr->setVec4("u_color", glm::vec4(1, 1, 1, .2f));
+			curr->setVec4("u_color", glm::vec4(1, 1, 1, .4f));
 			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			//glEnable(GL_CULL_FACE);
 
 			return true;
 		}

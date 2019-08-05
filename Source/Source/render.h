@@ -15,6 +15,7 @@ class Renderer
 {
 public:
 	Renderer();
+	void Init();
 
 	// interation
 	void DrawAll();

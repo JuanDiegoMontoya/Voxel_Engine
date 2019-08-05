@@ -76,7 +76,8 @@ vec3 waterColorModifier()
   vec3 acuteMod = vec3(0);
   vec3 obtuseMod = vec3(0, 1, 0);
   vec3 lightDir = normalize(viewPos - vPos);
-  float angle = clamp(dot(lightDir, vNormal), 0, 1) * .2;
+  //float angle = clamp(dot(lightDir, vNormal), 0, 1) * .2;
+  float angle = abs(dot(lightDir, vNormal)) * .2;
   vec3 angleEffect = mix(acuteMod, obtuseMod, vec3(angle));
   
   return rippleEffect + angleEffect;
@@ -178,4 +179,5 @@ void main()
   
   float waterVis = waterAngleVisModifier();
   fragColor = vec4(lighting, vColor.a + waterVis);
+  //fragColor = vec4(normal, 1.) + irrelevant;
 }

@@ -91,6 +91,7 @@ void main()
   vPos = vec3(u_model * vec4(aScreenPos, 1.0));
   float rip = ripplePos(vPos.x, vPos.z) * .5 + .5;
   
+  // translation matrix
   mat4 ripTran = mat4(
   1.0, 0.0, 0.0, 0.0, 
   0.0, 1.0, 0.0, 0.0, 

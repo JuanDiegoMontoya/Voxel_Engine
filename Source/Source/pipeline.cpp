@@ -110,6 +110,7 @@ namespace Render
 
 		Shader::shaders["chunk_water"] = new Shader("chunk_water.vs", "chunk_water.fs");
 		Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
+		Shader::shaders["chunk_geometry"] = new Shader("chunk_gBuffer.vs", "chunk_gBuffer.fs");
 		std::vector<int> values = { 0, 1, 2 };
 		//std::vector<int> values = { 1, 2, 3 };
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[0]", 0);
@@ -117,11 +118,15 @@ namespace Render
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[2]", 2);
 		Shader::shaders["chunk_shaded"]->Use();
 		Shader::shaders["chunk_shaded"]->setIntArray("shadowMap", values, values.size());
+		Shader::shaders["chunk_water"]->Use();
 		Shader::shaders["chunk_water"]->setIntArray("shadowMap", values, values.size());
+		//Shader::shaders["chunk_geometry"]->Use();
 
+
+		Shader::shaders["debug_map3"] = new Shader("debug_map.vs", "debug_map.fs");
 		Shader::shaders["debug_shadow"] = new Shader("debug_shadow.vs", "debug_shadow.fs");
 		Shader::shaders["debug_shadow"]->Use();
-		Shader::shaders["debug_shadow"]->setInt("depthMap", 1);
+		//Shader::shaders["debug_shadow"]->setInt("depthMap", 1);
 	}
 
 	void SetCamera(Camera* cam)

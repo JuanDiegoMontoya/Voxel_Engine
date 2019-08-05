@@ -13,10 +13,14 @@
 
 #include "render.h"
 
-// initializes the gBuffer and its attached texture textures
-Renderer::Renderer()
+#define VISUALIZE_MAPS 1
+
+Renderer::Renderer(){}
+
+// initializes the gBuffer and its attached textures
+void Renderer::Init()
 {
-	//initDeferredBuffers();
+	initDeferredBuffers();
 }
 
 // draws everything at once, I guess?
@@ -24,6 +28,8 @@ Renderer::Renderer()
 void Renderer::DrawAll()
 {
 	glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
+
+	geometryPass();
 
 	drawShadows();
 	drawSky();
@@ -349,6 +355,41 @@ void Renderer::drawDepthMapsDebug()
 			drawQuad();
 		}
 	}
+
+	if (Input::Keyboard().down[GLFW_KEY_5])
+	{
+		Shader::shaders["debug_map3"]->Use();
+		glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
+
+		Shader::shaders["debug_map3"]->setInt("map", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+		drawQuad();
+	}
+
+#if VISUALIZE_MAPS
+	if (Input::Keyboard().down[GLFW_KEY_6])
+	{
+		Shader::shaders["debug_map3"]->Use();
+		glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
+
+		Shader::shaders["debug_map3"]->setInt("map", 1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, gNormal);
+		drawQuad();
+	}
+
+	if (Input::Keyboard().down[GLFW_KEY_7])
+	{
+		Shader::shaders["debug_map3"]->Use();
+		glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
+
+		Shader::shaders["debug_map3"]->setInt("map", 2);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, gPosition);
+		drawQuad();
+	}
+#endif
 }
 
 void Renderer::drawAxisIndicators()
@@ -402,7 +443,11 @@ void Renderer::initDeferredBuffers()
 	// position 'color' buffer
 	glGenTextures(1, &gPosition);
 	glBindTexture(GL_TEXTURE_2D, gPosition);
+#if VISUALIZE_MAPS
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scrX, scrY, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+#else
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
+#endif
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
@@ -410,7 +455,11 @@ void Renderer::initDeferredBuffers()
 	// normal 'color' buffer
 	glGenTextures(1, &gNormal);
 	glBindTexture(GL_TEXTURE_2D, gNormal);
+#if VISUALIZE_MAPS
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scrX, scrY, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+#else
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
+#endif
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
@@ -422,7 +471,7 @@ void Renderer::initDeferredBuffers()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
-
+	
 	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(3, attachments);
 
@@ -439,6 +488,24 @@ void Renderer::initDeferredBuffers()
 // render deferred geometry and fully opaque surfaces (aka not-water)
 void Renderer::geometryPass()
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	ShaderPtr currShader = Shader::shaders["chunk_geometry"];
+	currShader->Use();
+	currShader->setMat4("projection", Render::GetCamera()->GetProj());
+	currShader->setMat4("view", Render::GetCamera()->GetView());
+
+	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
+		[&](std::pair<glm::ivec3, Chunk*> chunk)
+	{
+		if (chunk.second)// && chunk.second->IsVisible())
+		{
+			currShader->setMat4("model", chunk.second->GetModel());
+			chunk.second->Render();
+			//chunk.second->RenderWater();
+		}
+	});
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 // lite up dat mf'in geometry we got there
