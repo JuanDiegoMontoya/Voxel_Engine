@@ -25,8 +25,8 @@ vec2 smoothy(vec2 x) { return vec2(fade(x.x), fade(x.y)); }
 
 vec2 hash(vec2 co)
 {
-    float m = dot(co, vec2(12.9898, 78.233));
-    return fract(vec2(sin(m),cos(m))* 43758.5453) * 2. - 1.;
+  float m = dot(co, vec2(12.9898, 78.233));
+  return fract(vec2(sin(m),cos(m))* 43758.5453) * 2. - 1.;
 }
 
 float perlinNoise(vec2 uv)
@@ -36,8 +36,8 @@ float perlinNoise(vec2 uv)
   vec2 mmpt= smoothy(pt);
 
   vec4 grads = vec4(
-        dot(hash(PT + vec2(.0, 1.)), pt-vec2(.0, 1.)),   dot(hash(PT + vec2(1., 1.)), pt-vec2(1., 1.)),
-        dot(hash(PT + vec2(.0, .0)), pt-vec2(.0, .0)),   dot(hash(PT + vec2(1., .0)), pt-vec2(1., 0.))
+    dot(hash(PT + vec2(.0, 1.)), pt-vec2(.0, 1.)), dot(hash(PT + vec2(1., 1.)), pt-vec2(1., 1.)),
+    dot(hash(PT + vec2(.0, .0)), pt-vec2(.0, .0)), dot(hash(PT + vec2(1., .0)), pt-vec2(1., 0.))
   );
 
   return 5.*mix (mix (grads.z, grads.w, mmpt.x), mix (grads.x, grads.y, mmpt.x), mmpt.y);
@@ -45,14 +45,14 @@ float perlinNoise(vec2 uv)
 
 float fbm(vec2 uv)
 {
-    float finalNoise = 0.;
-    finalNoise += .50000*perlinNoise(2.*uv);
-    finalNoise += .25000*perlinNoise(4.*uv);
-    finalNoise += .12500*perlinNoise(8.*uv);
-    finalNoise += .06250*perlinNoise(16.*uv);
-    finalNoise += .03125*perlinNoise(32.*uv);
+  float finalNoise = 0.;
+  finalNoise += .50000*perlinNoise(2.*uv);
+  finalNoise += .25000*perlinNoise(4.*uv);
+  finalNoise += .12500*perlinNoise(8.*uv);
+  finalNoise += .06250*perlinNoise(16.*uv);
+  finalNoise += .03125*perlinNoise(32.*uv);
 
-    return finalNoise;
+  return finalNoise;
 }
 
 float ripplePos(float x, float z)
@@ -62,6 +62,7 @@ float ripplePos(float x, float z)
   //return perlinNoise(vec2(x / 10., z / 10.));// + sin(u_time * 2);
   //return hash(vec2(x, z + u_time)).x;
   //return 0;
+  //return fbm(vec2(x / 10. + u_time / 5, z / 10. + u_time / 5)) * 0.4;// + sin(u_time * 2);
 }
 
 // sample the heightmap in 3 places to obtain the normal

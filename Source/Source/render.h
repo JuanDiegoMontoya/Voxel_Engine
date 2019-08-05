@@ -14,6 +14,8 @@ typedef std::function<void(const glm::mat4&)> ModelCB;
 class Renderer
 {
 public:
+	Renderer();
+
 	// interation
 	void DrawAll();
 	void Clear();
@@ -41,6 +43,16 @@ private:
 	void drawDepthMapsDebug();
 	void drawAxisIndicators();
 
+	// deferred rendering
+	void initDeferredBuffers();
+	void geometryPass();
+	void lightingPass();
+
 	DirLight* activeDirLight_;
 	Sun* activeSun_;
+
+	// ssr & deferred rendering
+	unsigned gBuffer; // framebuffer
+	unsigned gPosition, gNormal, gAlbedoSpec;
+	unsigned rboDepth; // depth renderbuffer
 };

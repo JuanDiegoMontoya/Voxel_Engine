@@ -23,10 +23,74 @@ uniform float cascadeEndClipSpace[NUM_CASCADES];
 uniform DirLight dirLight; // the sun
 uniform vec3 viewPos;
 uniform vec3 lightPos;
+uniform float u_time;
 
 out vec4 fragColor;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
+
+// WATER NOISE STUFF
+float fade(float t) { return t * t * t * (t * (t * 6. - 15.) + 10.); }
+vec2 smoothy(vec2 x) { return vec2(fade(x.x), fade(x.y)); }
+
+vec2 hash(vec2 co)
+{
+  float m = dot(co, vec2(12.9898, 78.233));
+  return fract(vec2(sin(m),cos(m))* 43758.5453) * 2. - 1.;
+}
+
+float perlinNoise(vec2 uv)
+{
+  vec2 PT  = floor(uv);
+  vec2 pt  = fract(uv);
+  vec2 mmpt= smoothy(pt);
+
+  vec4 grads = vec4(
+    dot(hash(PT + vec2(.0, 1.)), pt-vec2(.0, 1.)), dot(hash(PT + vec2(1., 1.)), pt-vec2(1., 1.)),
+    dot(hash(PT + vec2(.0, .0)), pt-vec2(.0, .0)), dot(hash(PT + vec2(1., .0)), pt-vec2(1., 0.))
+  );
+
+  return 5.*mix (mix (grads.z, grads.w, mmpt.x), mix (grads.x, grads.y, mmpt.x), mmpt.y);
+}
+
+float fbm(vec2 uv)
+{
+  float finalNoise = 0.;
+  finalNoise += .50000*perlinNoise(2.*uv);
+  finalNoise += .25000*perlinNoise(4.*uv);
+  finalNoise += .12500*perlinNoise(8.*uv);
+  finalNoise += .06250*perlinNoise(16.*uv);
+  finalNoise += .03125*perlinNoise(32.*uv);
+
+  return finalNoise;
+}
+
+vec3 waterColorModifier()
+{
+  // compute ripple effect with perlin noise
+  float rip = perlinNoise(vPos.xz * 3)
+  + perlinNoise(vec2(vPos.xz * u_time * .005));
+  vec3 rippleEffect = normalize(vec3(rip, rip, rip)) * .02;
+  
+  // compute view angle effect
+  vec3 acuteMod = vec3(0);
+  vec3 obtuseMod = vec3(0, 1, 0);
+  vec3 lightDir = normalize(viewPos - vPos);
+  float angle = clamp(dot(lightDir, vNormal), 0, 1) * .2;
+  vec3 angleEffect = mix(acuteMod, obtuseMod, vec3(angle));
+  
+  return rippleEffect + angleEffect;
+}
+
+float waterAngleVisModifier()
+{
+  vec3 lightDir = normalize(viewPos - vPos);
+  vec3 normal = normalize(vNormal);
+  float angle = clamp(dot(lightDir, normal), 0, 1);
+  float alpha = mix(1, 0, angle) * .08;
+  return alpha;
+}
+// END WATER NOISE STUFF
 
 ///*
 float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
@@ -75,6 +139,7 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
 void main()
 {
   vec3 color = vColor.rgb;
+  color += waterColorModifier();
   vec3 normal = normalize(vNormal);
   vec3 lightColor = dirLight.diffuse;
   
@@ -111,5 +176,6 @@ void main()
   vec3 lighting = (ambient + (1.05 - shadow * .00001) * (diffuse + specular)) * color;    
   vec4 irrelevant = vec4(lighting, 0) * 0.0001;
   
-  fragColor = vec4(lighting, vColor.a);
+  float waterVis = waterAngleVisModifier();
+  fragColor = vec4(lighting, vColor.a + waterVis);
 }

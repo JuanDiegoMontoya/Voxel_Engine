@@ -13,6 +13,12 @@
 
 #include "render.h"
 
+// initializes the gBuffer and its attached texture textures
+Renderer::Renderer()
+{
+	//initDeferredBuffers();
+}
+
 // draws everything at once, I guess?
 // this should be fine
 void Renderer::DrawAll()
@@ -126,11 +132,13 @@ void Renderer::drawShadows()
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+// draw sky objects (then clear the depth buffer)
 void Renderer::drawSky()
 {
 	activeSun_->Render();
 }
 
+// draw solid objects in each chunk
 void Renderer::drawNormal()
 {
 	DrawCB preDrawCB =
@@ -212,6 +220,7 @@ void Renderer::drawNormal()
 	drawChunks(true, preDrawCB, drawCB, postDrawCB);
 }
 
+// draw water in each chunk
 void Renderer::drawWater()
 {
 	glDisable(GL_CULL_FACE);
@@ -279,6 +288,7 @@ void Renderer::drawWater()
 	glEnable(GL_CULL_FACE);
 }
 
+// all post processing effects
 void Renderer::drawPostProcessing()
 {
 }
@@ -378,6 +388,62 @@ void Renderer::drawAxisIndicators()
 	glLineWidth(2.f);
 	glDrawArrays(GL_LINES, 0, 6);
 	axisVAO->Unbind();
+}
+
+void Renderer::initDeferredBuffers()
+{
+	int scrX = Settings::Graphics.screenX;
+	int scrY = Settings::Graphics.screenY;
+
+	glGenFramebuffers(1, &gBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+
+	// 'color' indicates that the data is stored in a color format
+	// position 'color' buffer
+	glGenTextures(1, &gPosition);
+	glBindTexture(GL_TEXTURE_2D, gPosition);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+
+	// normal 'color' buffer
+	glGenTextures(1, &gNormal);
+	glBindTexture(GL_TEXTURE_2D, gNormal);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+
+	// color + specular 'color' buffer
+	glGenTextures(1, &gAlbedoSpec);
+	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scrX, scrY, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
+
+	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, attachments);
+
+	// attach depth renderbuffer
+	glGenRenderbuffers(1, &rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, scrX, scrY);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
+	ASSERT_MSG(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Incomplete framebuffer!");
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+// render deferred geometry and fully opaque surfaces (aka not-water)
+void Renderer::geometryPass()
+{
+}
+
+// lite up dat mf'in geometry we got there
+void Renderer::lightingPass()
+{
 }
 
 // draw the shadow map/view of the world from the sun's perspective

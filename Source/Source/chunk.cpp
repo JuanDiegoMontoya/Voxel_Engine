@@ -271,7 +271,7 @@ GenQuad:
 	{
 		if (isWater)
 		{
-			wtColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b) + clrBias, color.a));
+			wtColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b), color.a));
 			wtNormals.push_back(Render::cube_normals_divisor2[curQuad]);
 			wtSpeculars.push_back(shiny);
 		}
