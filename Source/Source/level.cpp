@@ -174,6 +174,9 @@ void Level::DrawImGui()
 			Render::GetCamera()->SetPos(pos);
 		pos = Render::GetCamera()->front;
 		ImGui::Text("Camera Direction: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
+		pos = pos * .5f + .5f;
+		ImGui::SameLine();
+		ImGui::ColorButton("visualization", ImVec4(pos.x, pos.y, pos.z, 1.f));
 
 		localpos local = Chunk::worldBlockToLocalPos(Render::GetCamera()->GetPos());
 		ImGui::Text("In chunk pos: (%d, %d, %d)", local.chunk_pos.x, local.chunk_pos.y, local.chunk_pos.z);

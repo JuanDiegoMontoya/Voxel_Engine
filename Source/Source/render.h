@@ -54,6 +54,6 @@ private:
 
 	// ssr & deferred rendering
 	unsigned gBuffer; // framebuffer
-	unsigned gPosition, gNormal, gAlbedoSpec;
+	unsigned gPosition, gNormal, gAlbedoSpec, gDepth;
 	unsigned rboDepth; // depth renderbuffer
 };

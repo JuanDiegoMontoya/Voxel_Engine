@@ -120,7 +120,10 @@ namespace Render
 		Shader::shaders["chunk_shaded"]->setIntArray("shadowMap", values, values.size());
 		Shader::shaders["chunk_water"]->Use();
 		Shader::shaders["chunk_water"]->setIntArray("shadowMap", values, values.size());
-		//Shader::shaders["chunk_geometry"]->Use();
+		Shader::shaders["chunk_water"]->setInt("ssr_positions", 3);
+		//Shader::shaders["chunk_water"]->setInt("ssr_normals", 4);
+		Shader::shaders["chunk_water"]->setInt("ssr_albedoSpec", 5);
+		Shader::shaders["chunk_water"]->setInt("ssr_depth", 6);
 
 
 		Shader::shaders["debug_map3"] = new Shader("debug_map.vs", "debug_map.fs");

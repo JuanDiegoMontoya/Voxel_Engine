@@ -25,15 +25,108 @@ uniform vec3 viewPos;
 uniform vec3 lightPos;
 uniform float u_time;
 
+// ssr
+//in vec2 ssTexCoords;
+in vec3 camNormal; // view space
+vec2 ssTexCoords;
+uniform sampler2D ssr_positions;
+uniform sampler2D ssr_normals;
+uniform sampler2D ssr_albedoSpec;
+uniform sampler2D ssr_depth;
+uniform mat4 u_view;
+uniform mat4 u_proj;
+uniform vec3 ssr_skyColor;
+uniform mat4 inv_projection;
+
 out vec4 fragColor;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
+
+
+
+
+
+vec3 calcViewPosition(in vec2 texCoord)
+{
+  // Combine UV & depth into XY & Z (NDC)
+  //vec3 rawPosition = vec3(texCoord, texture(ssr_depth, texCoord).r);
+  vec3 rawPosition = vec3(texCoord, gl_FragCoord.z);
+  
+  // Convert from (0, 1) range to (-1, 1)
+  vec4 ScreenSpacePosition = vec4(rawPosition * 2. - 1., 1.);
+  
+  // Undo Perspective transformation to bring into view space
+  vec4 ViewPosition = inv_projection * ScreenSpacePosition;
+  
+  // Perform perspective divide and return
+  return ViewPosition.xyz / ViewPosition.w;
+}
+
+vec3 calcViewPositionDepthTex(in vec2 texCoord)
+{
+  vec3 rawPosition = vec3(texCoord, texture(ssr_depth, texCoord).r);
+  vec4 ScreenSpacePosition = vec4(rawPosition * 2. - 1., 1.);
+  vec4 ViewPosition = inv_projection * ScreenSpacePosition;
+  return ViewPosition.xyz / ViewPosition.w;
+}
+
+vec2 rayCast(vec3 dir, inout vec3 hitCoord, out float dDepth)
+{
+  dir *= .3;
+
+  for (int i = 0; i < 20; i++)
+  {
+    hitCoord += dir; 
+    
+    // convert 3D coords into 2D screenspace
+    vec4 projectedCoord = u_proj * vec4(hitCoord, 1.0);
+    projectedCoord.xy /= projectedCoord.w;
+    projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5; 
+
+    float depth = calcViewPositionDepthTex(projectedCoord.xy).z;
+    dDepth = hitCoord.z - depth;
+
+    if(dDepth < 0.0)
+      return projectedCoord.xy;
+  }
+
+  return vec2(-1.0f);
+}
+
+vec3 ssr()
+{
+  ssTexCoords.x = gl_FragCoord.x / textureSize(ssr_positions, 0).x;
+  ssTexCoords.y = gl_FragCoord.y / textureSize(ssr_positions, 0).y;
+  vec2 texCoord = ssTexCoords;
+  
+  //vec3 normal = texture(ssr_normals, texCoord).xyz * 2.0 - 1.0;
+  //vec3 normal = normalize(vNormal);
+  vec3 normal = camNormal;
+  vec3 fViewPos = calcViewPosition(texCoord);
+  
+  // Reflection vector
+  vec3 reflected = normalize(reflect(normalize(fViewPos), normalize(normal)));
+  
+  // Ray cast
+  vec3 hitPos = fViewPos;
+  float dDepth;
+  float minRayStep = .1f;
+  vec2 coords = rayCast(reflected * max(minRayStep, -fViewPos.z), hitPos, dDepth);
+  if (coords != vec2(-1.0))
+    return mix(vec3(coords, 0), texture(ssr_albedoSpec, coords).rgb, .00009);
+  else
+    return vColor.rgb;
+}
+
+
+
+
 
 // WATER NOISE STUFF
 float fade(float t) { return t * t * t * (t * (t * 6. - 15.) + 10.); }
 vec2 smoothy(vec2 x) { return vec2(fade(x.x), fade(x.y)); }
 
-vec2 hash(vec2 co)
+vec2 hash2(vec2 co)
 {
   float m = dot(co, vec2(12.9898, 78.233));
   return fract(vec2(sin(m),cos(m))* 43758.5453) * 2. - 1.;
@@ -46,23 +139,11 @@ float perlinNoise(vec2 uv)
   vec2 mmpt= smoothy(pt);
 
   vec4 grads = vec4(
-    dot(hash(PT + vec2(.0, 1.)), pt-vec2(.0, 1.)), dot(hash(PT + vec2(1., 1.)), pt-vec2(1., 1.)),
-    dot(hash(PT + vec2(.0, .0)), pt-vec2(.0, .0)), dot(hash(PT + vec2(1., .0)), pt-vec2(1., 0.))
+    dot(hash2(PT + vec2(.0, 1.)), pt-vec2(.0, 1.)), dot(hash2(PT + vec2(1., 1.)), pt-vec2(1., 1.)),
+    dot(hash2(PT + vec2(.0, .0)), pt-vec2(.0, .0)), dot(hash2(PT + vec2(1., .0)), pt-vec2(1., 0.))
   );
 
   return 5.*mix (mix (grads.z, grads.w, mmpt.x), mix (grads.x, grads.y, mmpt.x), mmpt.y);
-}
-
-float fbm(vec2 uv)
-{
-  float finalNoise = 0.;
-  finalNoise += .50000*perlinNoise(2.*uv);
-  finalNoise += .25000*perlinNoise(4.*uv);
-  finalNoise += .12500*perlinNoise(8.*uv);
-  finalNoise += .06250*perlinNoise(16.*uv);
-  finalNoise += .03125*perlinNoise(32.*uv);
-
-  return finalNoise;
 }
 
 vec3 waterColorModifier()
@@ -179,5 +260,8 @@ void main()
   
   float waterVis = waterAngleVisModifier();
   fragColor = vec4(lighting, vColor.a + waterVis);
+  fragColor = vec4(ssr(), 1.0) + fragColor * .00001;
+  //fragColor = vec4(vNormal * .5 + .5, 1.0) + fragColor * ssr().rrrr * .00001;
+  //fragColor = vec4(ssTexCoords, 0.0, 1.0) + (fragColor + vec4(ssr(), 0)) * .00001;
   //fragColor = vec4(normal, 1.) + irrelevant;
 }

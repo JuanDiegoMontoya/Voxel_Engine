@@ -13,12 +13,28 @@ uniform mat4 u_view;
 uniform mat4 u_proj;
 uniform float u_time;
 
+// ssr
+//out vec2 ssTexCoords;
+uniform sampler2D ssr_positions;
+out vec3 camNormal;
+
 out vec3 vPos;
 out vec4 vColor;
 out vec3 vNormal;
 out float vShininess;
 out vec4 FragPosLightSpace[NUM_CASCADES];
 out float ClipSpacePosZ;
+
+vec2 computeSSTexCoord()
+{
+  vec4 ndc = gl_Position;
+  vec2 scrSize = textureSize(ssr_positions, 0);
+  ndc /= ndc.w; // perspective divide
+  // the "+0" is where the viewport start point would be
+  ndc.x = (ndc.x + 1.0) * scrSize.x / 2.0 + 0; // viewport transformation
+  ndc.y = (ndc.y + 1.0) * scrSize.y / 2.0 + 0; // viewport transformation
+  return ndc.xy;
+}
 
 float fade(float t) { return t * t * t * (t * (t * 6. - 15.) + 10.); }
 vec2 smoothy(vec2 x) { return vec2(fade(x.x), fade(x.y)); }
@@ -58,8 +74,8 @@ float fbm(vec2 uv)
 float ripplePos(float x, float z)
 {
   //return sin(u_time * 2) * (sin(x) + cos(z)) * .5;
-  return perlinNoise(vec2(x / 10. + u_time / 3, z / 10. + u_time / 3)) * 0.4;// + sin(u_time * 2);
-  //return perlinNoise(vec2(x / 10., z / 10.));// + sin(u_time * 2);
+  //return perlinNoise(vec2(x / 10. + u_time / 3, z / 10. + u_time / 3)) * 2.4;// + sin(u_time * 2);
+  return perlinNoise(vec2(x / 10., z / 10.)) * 0;// + sin(u_time * 2);
   //return hash(vec2(x, z + u_time)).x;
   //return 0;
   //return fbm(vec2(x / 10. + u_time / 5, z / 10. + u_time / 5)) * 0.4;// + sin(u_time * 2);
@@ -101,10 +117,12 @@ void main()
   vColor = aColor;
   vNormal = transpose(inverse(mat3(u_model))) * aNormal;
   vNormal += rippleNormal(vPos.xz);
+  camNormal = aNormal + rippleNormal(vPos.xz);
   for (int i = 0; i < NUM_CASCADES; i++)
     FragPosLightSpace[i] = lightSpaceMatrix[i] * vec4(vPos, 1.0);
     //FragPosLightSpace[i] = lightSpaceMatrix[i] * u_model * vec4(aScreenPos, 1.0);
   
   gl_Position = u_proj * u_view * u_model * ripTran * vec4(aScreenPos, 1.0);
   ClipSpacePosZ = gl_Position.z;
+  //ssTexCoords = computeSSTexCoord();
 }

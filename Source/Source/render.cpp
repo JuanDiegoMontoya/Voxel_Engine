@@ -27,7 +27,7 @@ void Renderer::Init()
 // this should be fine
 void Renderer::DrawAll()
 {
-	glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
+	//glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
 	geometryPass();
 
@@ -232,6 +232,12 @@ void Renderer::drawWater()
 	glDisable(GL_CULL_FACE);
 	ShaderPtr currShader = Shader::shaders["chunk_water"];
 	currShader->Use();
+	std::vector<int> values = { 0, 1, 2 };
+	currShader->setIntArray("shadowMap", values, values.size());
+	currShader->setInt("ssr_positions", 3);
+	//currShader->setInt("ssr_normals", 4);
+	currShader->setInt("ssr_albedoSpec", 5);
+	currShader->setInt("ssr_depth", 6);
 
 	glm::mat4 vView[3];
 	glm::vec3 LitDir = glm::normalize(activeDirLight_->GetPos());
@@ -257,8 +263,11 @@ void Renderer::drawWater()
 	currShader->setFloat("u_time", (float)glfwGetTime());
 	currShader->setMat4("u_view", Render::GetCamera()->GetView());
 	currShader->setMat4("u_proj", Render::GetCamera()->GetProj());
+	currShader->setMat4("inv_projection", glm::inverse(Render::GetCamera()->GetProj()));
 	currShader->setVec3("viewPos", Render::GetCamera()->GetPos());
 	currShader->setVec3("lightPos", activeDirLight_->GetPos());
+
+	//currShader->setVec3("ssr_skyColor", glm::vec3(.529f, .808f, .922f));
 
 	std::vector<float> zVals;
 	for (int i = 0; i < activeDirLight_->GetNumCascades(); i++)
@@ -281,6 +290,17 @@ void Renderer::drawWater()
 	currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
 	currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
 	activeDirLight_->bindForReading();
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, gPosition);
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, gNormal);
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_2D, gDepth);
+	currShader->setInt("ssr_positions", 3);
+	//currShader->setInt("ssr_normals", 4);
+	currShader->setInt("ssr_albedoSpec", 5);
 
 	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
 		[&](std::pair<glm::ivec3, Chunk*> chunk)
@@ -367,6 +387,16 @@ void Renderer::drawDepthMapsDebug()
 		drawQuad();
 	}
 
+	if (Input::Keyboard().down[GLFW_KEY_8])
+	{
+		glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
+		Shader::shaders["debug_shadow"]->Use();
+		Shader::shaders["debug_shadow"]->setInt("depthMap", 3);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, gDepth);
+
+		drawQuad();
+	}
 #if VISUALIZE_MAPS
 	if (Input::Keyboard().down[GLFW_KEY_6])
 	{
@@ -389,6 +419,7 @@ void Renderer::drawDepthMapsDebug()
 		glBindTexture(GL_TEXTURE_2D, gPosition);
 		drawQuad();
 	}
+
 #endif
 }
 
@@ -471,15 +502,28 @@ void Renderer::initDeferredBuffers()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
-	
-	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-	glDrawBuffers(3, attachments);
 
+	// depth 'color' buffer
+	glGenTextures(1, &gDepth);
+	glBindTexture(GL_TEXTURE_2D, gDepth);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gDepth, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
+
+	
+	unsigned int attachments[4] = { 
+		GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, 
+		GL_COLOR_ATTACHMENT2, GL_DEPTH_ATTACHMENT };
+	glDrawBuffers(3, attachments);
+	
 	// attach depth renderbuffer
-	glGenRenderbuffers(1, &rboDepth);
-	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, scrX, scrY);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+	//glGenRenderbuffers(1, &rboDepth);
+	//glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, scrX, scrY);
+	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
 	ASSERT_MSG(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Incomplete framebuffer!");
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
