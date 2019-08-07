@@ -70,6 +70,36 @@ vec3 calcViewPositionDepthTex(in vec2 texCoord)
   return ViewPosition.xyz / ViewPosition.w;
 }
 
+vec2 binarySearch(inout vec3 dir, inout vec3 hitCoord, inout float dDepth)
+{
+  float depth;
+
+  vec4 projectedCoord;
+
+  for(int i = 0; i < 20; i++) {
+    projectedCoord = u_proj * vec4(hitCoord, 1.0);
+    projectedCoord.xy /= projectedCoord.w;
+    projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+    //depth = texture(ssr_positions, projectedCoord.xy).z;
+    depth = calcViewPositionDepthTex(projectedCoord.xy).z;
+
+    dDepth = hitCoord.z - depth;
+
+    dir *= 0.5;
+    if(dDepth > 0.0)
+      hitCoord += dir;
+    else
+      hitCoord -= dir;    
+  }
+
+  projectedCoord = u_proj * vec4(hitCoord, 1.0);
+  projectedCoord.xy /= projectedCoord.w;
+  projectedCoord.xy = projectedCoord.xy * 0.5 + 0.5;
+
+  return vec2(projectedCoord.xy);
+}
+
 vec2 rayCast(vec3 dir, inout vec3 hitCoord, out float dDepth)
 {
   dir *= .3;
@@ -86,8 +116,9 @@ vec2 rayCast(vec3 dir, inout vec3 hitCoord, out float dDepth)
     float depth = calcViewPositionDepthTex(projectedCoord.xy).z;
     dDepth = hitCoord.z - depth;
 
-    if(dDepth < 0.0)
-      return projectedCoord.xy;
+    if((dir.z - dDepth) < 1.2 && dDepth < 0.0 && i > 0)
+      //return projectedCoord.xy;
+      return binarySearch(dir, hitCoord, dDepth);
   }
 
   return vec2(-1.0f);
@@ -101,6 +132,7 @@ vec3 ssr()
   
   //vec3 normal = texture(ssr_normals, texCoord).xyz * 2.0 - 1.0;
   //vec3 normal = normalize(vNormal);
+  // normal at initial ray position
   vec3 normal = camNormal;
   vec3 fViewPos = calcViewPosition(texCoord);
   
@@ -110,13 +142,97 @@ vec3 ssr()
   // Ray cast
   vec3 hitPos = fViewPos;
   float dDepth;
-  float minRayStep = .1f;
+  float minRayStep = .05f;
   vec2 coords = rayCast(reflected * max(minRayStep, -fViewPos.z), hitPos, dDepth);
   if (coords != vec2(-1.0))
-    return mix(vec3(coords, 0), texture(ssr_albedoSpec, coords).rgb, .00009);
+    return mix(vec3(0), texture(ssr_albedoSpec, coords).rgb / 2, .5);
   else
-    return vColor.rgb;
+    return vec3(0);
 }
+
+
+
+
+/*
+// Create a float value 0 to 1 into a color from red, through green and then blue.
+vec4 rainbow(float x) {
+  float level = x * 2.0;
+  float r, g, b;
+  if (level <= 0) {
+    r = g = b = 0;
+  } else if (level <= 1) {
+    r = mix(1, 0, level);
+    g = mix(0, 1, level);
+    b = 0;
+  } else if (level > 1) {
+    r = 0;
+    g = mix(1, 0, level-1);
+    b = mix(0, 1, level-1);
+  }
+  return vec4(r, g, b, 1);
+}
+ 
+//uniform sampler2D colTex;     // Color texture sampler
+//uniform sampler2D posTex;     // World position texture sampler
+//uniform sampler2D normalTex;  // Normal texture sampler
+//in vec2 screen;               // The screen position (0 to 1)
+//layout(location = 0) out vec4 color;
+ 
+vec3 ssr()
+{
+  vec4 color = vec4(1, 0, 0, 1);
+  
+  //vec3 worldStartingPos = texture(posTex, screen).xyz;
+  vec3 worldStartingPos = vPos.xyz;
+  //vec3 normal = texture(normalTex, screen).xyz;
+  vec3 normal = camNormal.xyz;
+  //vec3 cameraToWorld = worldStartingPos.xyz - UBOCamera.xyz;
+  vec3 cameraToWorld = worldStartingPos.xyz - viewPos.xyz;
+  float cameraToWorldDist = length(cameraToWorld);
+  vec3 cameraToWorldNorm = normalize(cameraToWorld);
+  vec3 refl = normalize(reflect(cameraToWorldNorm, normal)); // This is the reflection vector
+
+  if (dot(refl, cameraToWorldNorm) < 0) {
+    // Ignore reflections going backwards towards the camera, indicate with blue
+    color = vec4(0,0,1,1);
+    return color.xyz;
+  }
+
+  vec3 newPos;
+  vec4 newScreen;
+  float i = 0;
+  vec3 rayTrace = worldStartingPos;
+  float currentWorldDist, rayDist;
+  float incr = 0.4;
+  do {
+    i += 0.05;
+    rayTrace += refl*incr;
+    incr *= 1.3;
+    //newScreen = UBOProjectionviewMatrix * vec4(rayTrace, 1);
+    newScreen = u_proj * u_view * vec4(rayTrace, 1);
+    newScreen /= newScreen.w;
+    //newPos = texture(posTex, newScreen.xy/2.0+0.5).xyz;
+    newPos = texture(ssr_positions, newScreen.xy/2.0+0.5).xyz;
+    //currentWorldDist = length(newPos.xyz - UBOCamera.xyz);
+    currentWorldDist = length(newPos.xyz - viewPos.xyz);
+    //rayDist = length(rayTrace.xyz - UBOCamera.xyz);
+    rayDist = length(rayTrace.xyz - viewPos.xyz);
+    if (newScreen.x > 1 || newScreen.x < -1 || newScreen.y > 1 || newScreen.y < -1 || newScreen.z > 1 || newScreen.z < -1 || i >= 1.0 || cameraToWorldDist > currentWorldDist) {
+      break; // This is a failure mode.
+    }
+  } while(rayDist < currentWorldDist);
+
+  if (cameraToWorldDist > currentWorldDist)
+    color = vec4(1,1,0,1); // Yellow indicates we found a pixel hidden behind another object
+  else if (newScreen.x > 1 || newScreen.x < -1 || newScreen.y > 1 || newScreen.y < -1)
+    color = vec4(0,0,0,1); // Black used for outside of screen
+  else if (newScreen.z > 1 && newScreen.z < -1)
+    color = vec4(1,1,1,1); // White outside of frustum
+  else
+    color = rainbow(i); // Encode number of iterations as a color. Red, then green and last blue
+  return color.xyz + texture(ssr_albedoSpec, vec2(0)).xyz * .0001 + texture(ssr_depth, vec2(0)).xyz * .0001;
+}
+*/
 
 
 
@@ -259,8 +375,8 @@ void main()
   vec4 irrelevant = vec4(lighting, 0) * 0.0001;
   
   float waterVis = waterAngleVisModifier();
-  fragColor = vec4(lighting, vColor.a + waterVis);
-  fragColor = vec4(ssr(), 1.0) + fragColor * .00001;
+  fragColor = vec4(lighting + ssr() * .3, vColor.a + waterVis);
+  //fragColor = vec4(ssr(), 0.0) * .5 + fragColor;
   //fragColor = vec4(vNormal * .5 + .5, 1.0) + fragColor * ssr().rrrr * .00001;
   //fragColor = vec4(ssTexCoords, 0.0, 1.0) + (fragColor + vec4(ssr(), 0)) * .00001;
   //fragColor = vec4(normal, 1.) + irrelevant;

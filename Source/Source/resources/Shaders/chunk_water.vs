@@ -74,8 +74,8 @@ float fbm(vec2 uv)
 float ripplePos(float x, float z)
 {
   //return sin(u_time * 2) * (sin(x) + cos(z)) * .5;
-  //return perlinNoise(vec2(x / 10. + u_time / 3, z / 10. + u_time / 3)) * 2.4;// + sin(u_time * 2);
-  return perlinNoise(vec2(x / 10., z / 10.)) * 0;// + sin(u_time * 2);
+  return perlinNoise(vec2(x / 10. + u_time / 3, z / 10. + u_time / 3)) * .4;// + sin(u_time * 2);
+  //return perlinNoise(vec2(x / 10., z / 10.)) * 1;// + sin(u_time * 2);
   //return hash(vec2(x, z + u_time)).x;
   //return 0;
   //return fbm(vec2(x / 10. + u_time / 5, z / 10. + u_time / 5)) * 0.4;// + sin(u_time * 2);

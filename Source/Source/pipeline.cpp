@@ -101,6 +101,7 @@ namespace Render
 		glFrontFace(GL_CCW);
 
 		// initialize all of the shaders that will be used
+		Shader::shaders["postprocess"] = new Shader("postprocess.vs", "postprocess.fs");
 		Shader::shaders["flat"] = new Shader("flat_color_instanced.vs", "flat_color_instanced.fs");
 		Shader::shaders["chunk"] = new Shader("chunk_flat.vs", "chunk_flat.fs");
 		Shader::shaders["sun"] = new Shader("flat_sun.vs", "flat_sun.fs");
@@ -123,7 +124,7 @@ namespace Render
 		Shader::shaders["chunk_water"]->setInt("ssr_positions", 3);
 		//Shader::shaders["chunk_water"]->setInt("ssr_normals", 4);
 		Shader::shaders["chunk_water"]->setInt("ssr_albedoSpec", 5);
-		Shader::shaders["chunk_water"]->setInt("ssr_depth", 6);
+		//Shader::shaders["chunk_water"]->setInt("ssr_depth", 6);
 
 
 		Shader::shaders["debug_map3"] = new Shader("debug_map.vs", "debug_map.fs");

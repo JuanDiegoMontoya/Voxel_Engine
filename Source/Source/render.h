@@ -49,6 +49,10 @@ private:
 	void geometryPass();
 	void lightingPass();
 
+	// post processing
+	void initPPBuffers();
+	void postProcess();
+
 	DirLight* activeDirLight_;
 	Sun* activeSun_;
 
@@ -56,4 +60,9 @@ private:
 	unsigned gBuffer; // framebuffer
 	unsigned gPosition, gNormal, gAlbedoSpec, gDepth;
 	unsigned rboDepth; // depth renderbuffer
+
+	// pp
+	unsigned pBuffer;
+	unsigned pColor;
+	unsigned pDepth;
 };

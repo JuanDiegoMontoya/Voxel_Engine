@@ -13,7 +13,7 @@
 
 #include "render.h"
 
-#define VISUALIZE_MAPS 1
+#define VISUALIZE_MAPS 0
 
 Renderer::Renderer(){}
 
@@ -21,14 +21,16 @@ Renderer::Renderer(){}
 void Renderer::Init()
 {
 	initDeferredBuffers();
+	initPPBuffers();
 }
 
 // draws everything at once, I guess?
 // this should be fine
 void Renderer::DrawAll()
 {
-	//glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
+	glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	geometryPass();
 
 	drawShadows();
@@ -36,8 +38,9 @@ void Renderer::DrawAll()
 	drawNormal();
 	drawWater();
 	drawAxisIndicators();
-
 	drawDepthMapsDebug();
+
+	postProcess();
 
 	glDisable(GL_FRAMEBUFFER_SRGB);
 }
@@ -477,7 +480,7 @@ void Renderer::initDeferredBuffers()
 #if VISUALIZE_MAPS
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scrX, scrY, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
 #endif
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -503,14 +506,12 @@ void Renderer::initDeferredBuffers()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
 
-	// depth 'color' buffer
+	// depth attachment
 	glGenTextures(1, &gDepth);
 	glBindTexture(GL_TEXTURE_2D, gDepth);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gDepth, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
 
 	
@@ -546,7 +547,7 @@ void Renderer::geometryPass()
 		{
 			currShader->setMat4("model", chunk.second->GetModel());
 			chunk.second->Render();
-			//chunk.second->RenderWater();
+			chunk.second->RenderWater();
 		}
 	});
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -557,7 +558,78 @@ void Renderer::lightingPass()
 {
 }
 
-// draw the shadow map/view of the world from the sun's perspective
+void Renderer::initPPBuffers()
+{
+	int scrX = Settings::Graphics.screenX;
+	int scrY = Settings::Graphics.screenY;
+
+	glGenFramebuffers(1, &pBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
+
+	// color buffer
+	glGenTextures(1, &pColor);
+	glBindTexture(GL_TEXTURE_2D, pColor);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, scrX, scrY, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pColor, 0);
+
+	// depth attachment
+	glGenTextures(1, &pDepth);
+	glBindTexture(GL_TEXTURE_2D, pDepth);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, pDepth, 0);
+
+	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	ASSERT_MSG(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Incomplete framebuffer!");
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::postProcess()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	int scrX = Settings::Graphics.screenX;
+	int scrY = Settings::Graphics.screenY;
+
+	// copy default framebuffer contents into pBuffer
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pBuffer);
+	glBlitFramebuffer(
+		0, 0, scrX, scrY, 
+		0, 0, scrX, scrY, 
+		GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
+
+	ShaderPtr shader = Shader::shaders["postprocess"];
+	shader->Use();
+	shader->setInt("colorMap", 0);
+	shader->setInt("depthMap", 1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, pColor);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, pDepth);
+	//shader->setFloat("near_plane", Render::GetCamera()->GetNear());
+	//shader->setFloat("far_plane", Render::GetCamera()->GetFar());
+
+	glDisable(GL_FRAMEBUFFER_SRGB);
+	drawQuad();
+	//glEnable(GL_FRAMEBUFFER_SRGB);
+
+	// copy pBuffer contents into default framebuffer
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, pBuffer);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBlitFramebuffer(
+		0, 0, scrX, scrY, 
+		0, 0, scrX, scrY, 
+		GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+// draws a single quad over the entire viewport
 void Renderer::drawQuad()
 {
 	static unsigned int quadVAO = 0;

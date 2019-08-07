@@ -157,6 +157,11 @@ void Level::DrawImGui()
 			delete Shader::shaders["debug_map3"];
 			Shader::shaders["debug_map3"] = new Shader("debug_map.vs", "debug_map.fs");
 		}
+		if (ImGui::Button("Recompile Postprocess Shader"))
+		{
+			//delete Shader::shaders["postprocess"];
+			Shader::shaders["postprocess"] = new Shader("postprocess.vs", "postprocess.fs");
+		}
 
 		ImGui::End();
 	}

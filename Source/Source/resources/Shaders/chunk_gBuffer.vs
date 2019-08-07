@@ -21,5 +21,6 @@ void main()
   vColor = aColor;
   vNormal = transpose(inverse(mat3(model))) * aNormal;
   
+  //gl_Position = projection * view * model * vec4(aPos, 1.0);
   gl_Position = projection * view * model * vec4(aPos, 1.0);
 }
