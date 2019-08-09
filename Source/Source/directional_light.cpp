@@ -103,7 +103,7 @@ void DirLight::calcOrthoProjs(const glm::mat4& vView)
 
 	// Get the light space tranform
 	//glm::mat4 LightM = view_;
-	glm::mat4 LightM = vView;
+	glm::mat4 LightM = vView * glm::translate(glm::mat4(1), tPos_);
 	//glm::mat4 LightM = glm::lookAt(glm::vec3(0), tDir_, glm::vec3(0, 1, 0));
 	//glm::mat4 LightM = glm::lookAt(tPos_, -tDir_, glm::vec3(0, 1, 0));
 

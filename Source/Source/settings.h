@@ -20,7 +20,7 @@ namespace Settings
 	struct GFX
 	{
 		bool vsync = true;
-		int multisamples = 2; // 0 = no msaa
+		int multisamples = 0; // 0 = no msaa
 		bool reinit = false; // enabled when reinitializing context
 
 		bool fullscreen = false;

@@ -74,8 +74,8 @@ float fbm(vec2 uv)
 float ripplePos(float x, float z)
 {
   //return sin(u_time * 2) * (sin(x) + cos(z)) * .5;
-  return perlinNoise(vec2(x / 10. + u_time / 3, z / 10. + u_time / 3)) * .4;// + sin(u_time * 2);
-  //return perlinNoise(vec2(x / 10., z / 10.)) * 1;// + sin(u_time * 2);
+  return perlinNoise(vec2(x / 10. + u_time / 3, z / 10. + u_time / 3)) * 2.4;// + sin(u_time * 2);
+  //return perlinNoise(vec2(x / 10., z / 10.)) * 0;// + sin(u_time * 2);
   //return hash(vec2(x, z + u_time)).x;
   //return 0;
   //return fbm(vec2(x / 10. + u_time / 5, z / 10. + u_time / 5)) * 0.4;// + sin(u_time * 2);
@@ -117,7 +117,7 @@ void main()
   vColor = aColor;
   vNormal = transpose(inverse(mat3(u_model))) * aNormal;
   vNormal += rippleNormal(vPos.xz);
-  camNormal = aNormal + rippleNormal(vPos.xz);
+  camNormal = normalize(aNormal + rippleNormal(vPos.xz));//rippleNormal(vPos.xz);
   for (int i = 0; i < NUM_CASCADES; i++)
     FragPosLightSpace[i] = lightSpaceMatrix[i] * vec4(vPos, 1.0);
     //FragPosLightSpace[i] = lightSpaceMatrix[i] * u_model * vec4(aScreenPos, 1.0);

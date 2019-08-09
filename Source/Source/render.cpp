@@ -40,7 +40,8 @@ void Renderer::DrawAll()
 	drawAxisIndicators();
 	drawDepthMapsDebug();
 
-	postProcess();
+	//postProcess();
+	//drawPostProcessing();
 
 	glDisable(GL_FRAMEBUFFER_SRGB);
 }
@@ -320,6 +321,29 @@ void Renderer::drawWater()
 // all post processing effects
 void Renderer::drawPostProcessing()
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // bind default framebuffer
+	glDisable(GL_DEPTH_TEST);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	int scrX = Settings::Graphics.screenX;
+	int scrY = Settings::Graphics.screenY;
+
+	ShaderPtr shader = Shader::shaders["postprocess"];
+	shader->Use();
+	shader->setInt("colorMap", 0);
+	shader->setInt("depthMap", 1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, pColor);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, pDepth);
+	//shader->setFloat("near_plane", Render::GetCamera()->GetNear());
+	//shader->setFloat("far_plane", Render::GetCamera()->GetFar());
+
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_FRAMEBUFFER_SRGB);
+	drawQuad();
+
+	glEnable(GL_DEPTH_TEST);
 }
 
 void Renderer::drawChunks(
@@ -400,6 +424,29 @@ void Renderer::drawDepthMapsDebug()
 
 		drawQuad();
 	}
+
+	if (Input::Keyboard().down[GLFW_KEY_9])
+	{
+		glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
+		Shader::shaders["debug_map3"]->Use();
+		Shader::shaders["debug_map3"]->setInt("map", 4);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, pColor);
+
+		drawQuad();
+	}
+
+	if (Input::Keyboard().down[GLFW_KEY_0])
+	{
+		glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
+		Shader::shaders["debug_shadow"]->Use();
+		Shader::shaders["debug_shadow"]->setInt("depthMap", 5);
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, pDepth);
+
+		drawQuad();
+	}
+
 #if VISUALIZE_MAPS
 	if (Input::Keyboard().down[GLFW_KEY_6])
 	{
@@ -547,7 +594,7 @@ void Renderer::geometryPass()
 		{
 			currShader->setMat4("model", chunk.second->GetModel());
 			chunk.second->Render();
-			chunk.second->RenderWater();
+			//chunk.second->RenderWater();
 		}
 	});
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -570,19 +617,25 @@ void Renderer::initPPBuffers()
 	glGenTextures(1, &pColor);
 	glBindTexture(GL_TEXTURE_2D, pColor);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, scrX, scrY, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pColor, 0);
 
 	// depth attachment
 	glGenTextures(1, &pDepth);
 	glBindTexture(GL_TEXTURE_2D, pDepth);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, pDepth, 0);
 
-	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	//glGenRenderbuffers(1, &pDepth);
+	//glBindRenderbuffer(GL_RENDERBUFFER, pDepth);
+	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, scrX, scrY); // use a single renderbuffer object for both a depth AND stencil buffer.
+	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, pDepth); // now actually attach it
+	
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	
 	ASSERT_MSG(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Incomplete framebuffer!");
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -590,6 +643,7 @@ void Renderer::initPPBuffers()
 void Renderer::postProcess()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
+	glClearColor(1, 1, 1, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	int scrX = Settings::Graphics.screenX;
@@ -597,12 +651,18 @@ void Renderer::postProcess()
 
 	// copy default framebuffer contents into pBuffer
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glReadBuffer(GL_BACK);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pBuffer);
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	glBlitFramebuffer(
-		0, 0, scrX, scrY, 
-		0, 0, scrX, scrY, 
+		0, 0, scrX/2, scrY/2, 
+		0, 0, scrX/2, scrY/2, 
 		GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-	glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
+	//glBlitFramebuffer(
+	//	0, 0, scrX / 2, scrY / 2,
+	//	0, 0, scrX / 2, scrY / 2,
+	//	GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	ShaderPtr shader = Shader::shaders["postprocess"];
 	shader->Use();
@@ -615,18 +675,29 @@ void Renderer::postProcess()
 	//shader->setFloat("near_plane", Render::GetCamera()->GetNear());
 	//shader->setFloat("far_plane", Render::GetCamera()->GetFar());
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_FRAMEBUFFER_SRGB);
 	drawQuad();
-	//glEnable(GL_FRAMEBUFFER_SRGB);
+	glEnable(GL_FRAMEBUFFER_SRGB);
+
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// copy pBuffer contents into default framebuffer
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, pBuffer);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glBlitFramebuffer(
-		0, 0, scrX, scrY, 
-		0, 0, scrX, scrY, 
-		GL_COLOR_BUFFER_BIT, GL_NEAREST);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glBindFramebuffer(GL_READ_FRAMEBUFFER, pBuffer);
+	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	//glBlitFramebuffer(
+	//	0, 0, scrX / 2, scrY / 2,
+	//	0, 0, scrX / 2, scrY / 2,
+	//	GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	//glBlitFramebuffer(
+	//	0, 0, scrX / 2, scrY / 2,
+	//	0, 0, scrX / 2, scrY / 2,
+	//	GL_DEPTH_BUFFER, GL_NEAREST); // must be GL_NEAREST for depth
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//glEnable(GL_DEPTH_TEST);
 }
 
 // draws a single quad over the entire viewport

@@ -1,6 +1,7 @@
 #version 450 core
 
-layout (location = 0) out vec4 FragColor;
+//layout (location = 0) out vec4 FragColor;
+out vec4 FragColor;
 
 in vec2 TexCoords;
 
@@ -22,7 +23,7 @@ void main()
   
   // TODO: figure out this stupid thing
   vec3 rgb = texture(colorMap, TexCoords).rgb;
-  vec4 color = vec4(rgb, 2.0) / 2 - 1; // do the thang
+  vec4 color = vec4(rgb, 2.0) / 2 + .5; // do the thang
   vec3 real = 1-color.rgb;
-  FragColor = vec4(real, .7); // normalized space or something
+  FragColor = vec4(color.rgb, 0); // normalized space or something
 }
