@@ -21,7 +21,7 @@ Performance was tested on this system for reference:
 - Chunk frustum culling
 - Baked ambient occlusion on blocks
 - Realistic water effects
-- Direction environment lighting
+- Directional environment lighting
 - (*WIP*) Deferred rendering pipeline
 - (*WIP*) Ray traced screen space water reflections
 - (*WIP*) Cascaded shadow maps
