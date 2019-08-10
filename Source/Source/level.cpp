@@ -49,7 +49,7 @@ void Level::Init()
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(100.f);
+	chunkManager_.SetLoadDistance(400.f);
 	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(5);
 	renderer_.Init();
