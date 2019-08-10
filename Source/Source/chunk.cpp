@@ -277,31 +277,87 @@ GenQuad:
 		}
 		else
 		{
-			tColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b) + clrBias, color.a));
 			tNormals.push_back(Render::cube_normals_divisor2[curQuad]);
 			tSpeculars.push_back(shiny);
 		}
 	}
 
+	// loop should iterate 6 times
 	for (int i = quadStride * curQuad; i < quadStride * (curQuad + 1); i += 8) // += floats per vertex
 	{
-		glm::vec4 tri(
+		glm::vec4 vert(
 			data[i + 0], 
 			data[i + 1], 
 			data[i + 2], 
 			1.f);
-		tri = localTransform * tri;
+		glm::vec4 finalvert = localTransform * vert;
 
 		// pos
 		if (isWater)
-			wtPositions.push_back(tri);
+			wtPositions.push_back(finalvert);
 		else
-			tPositions.push_back(tri);
+		{
+			float invOcclusion = computeBlockAO(block, blockPos, glm::vec3(vert), nearFace);
+			tColors.push_back(glm::vec4((glm::vec3(color.r, color.g, color.b)) * invOcclusion, color.a));
+			tPositions.push_back(finalvert);
+		}
 
 		// texture
 		//quad.push_back(data[i + 6]);
 		//quad.push_back(data[i + 7]);
 	}
+}
+
+// computes how many of the two adjacent faces to the corner (that aren't this block) are solid
+// returns a brightness scalar
+float Chunk::computeBlockAO(
+	Block block,
+	const glm::ivec3& blockPos,
+	const glm::vec3& corner,
+	const glm::ivec3& nearFace)
+{
+	glm::ivec3 normal = nearFace - blockPos;
+	glm::ivec3 combined = glm::ivec3(corner * 2.f) + normal; // convert corner to -1 to 1 range
+	glm::ivec3 c1(0);
+	glm::ivec3 c2(0);
+	for (int i = 0; i < 3; i++)
+	{
+		if (glm::abs(combined[i]) != 2)
+		{
+			if (combined[i] && c1 == glm::ivec3(0))
+				c1[i] = combined[i];
+			else if (c2 == glm::ivec3(0))
+				c2[i] = combined[i];
+		}
+	}
+
+	float occlusion = 1;
+
+	// block 1
+	localpos nearblock1 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c1 + normal));
+	auto findVal1 = chunks.find(nearblock1.chunk_pos);
+	ChunkPtr near1 = findVal1 == chunks.end() ? nullptr : findVal1->second;
+	if (!near1)
+		goto B2AO;
+	if (!near1->active_)
+		goto B2AO;
+	if (near1->At(nearblock1.block_pos).GetType() != Block::bAir && near1->At(nearblock1.block_pos).GetType() != Block::bWater)
+		occlusion -= .2f;
+
+B2AO:
+	// block 2
+	localpos nearblock2 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c2 + normal));
+	auto findVal2 = chunks.find(nearblock2.chunk_pos);
+	ChunkPtr near2 = findVal2 == chunks.end() ? nullptr : findVal2->second;
+	if (!near2)
+		goto BAO_END;
+	if (!near2->active_)
+		goto BAO_END;
+	if (near2->At(nearblock2.block_pos).GetType() != Block::bAir && near2->At(nearblock2.block_pos).GetType() != Block::bWater)
+		occlusion -= .2f;
+
+BAO_END:
+	return occlusion;
 }
 
 static std::ostream& operator<<(std::ostream& o, glm::ivec3 v)

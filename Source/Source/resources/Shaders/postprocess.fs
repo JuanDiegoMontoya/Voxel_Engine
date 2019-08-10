@@ -25,5 +25,5 @@ void main()
   vec3 rgb = texture(colorMap, TexCoords).rgb;
   vec4 color = vec4(rgb, 2.0) / 2 + .5; // do the thang
   vec3 real = 1-color.rgb;
-  FragColor = vec4(color.rgb, 0); // normalized space or something
+  FragColor = vec4(depthValue, depthValue, depthValue, 1) + .2 * vec4(rgb, 1); // normalized space or something
 }

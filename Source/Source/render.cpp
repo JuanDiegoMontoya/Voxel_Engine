@@ -30,9 +30,9 @@ void Renderer::DrawAll()
 {
 	glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
 	geometryPass();
-
+	
 	drawShadows();
 	drawSky();
 	drawNormal();
@@ -40,6 +40,7 @@ void Renderer::DrawAll()
 	drawAxisIndicators();
 	drawDepthMapsDebug();
 
+	//glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
 	//postProcess();
 	//drawPostProcessing();
 
@@ -622,17 +623,17 @@ void Renderer::initPPBuffers()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pColor, 0);
 
 	// depth attachment
-	glGenTextures(1, &pDepth);
-	glBindTexture(GL_TEXTURE_2D, pDepth);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, pDepth, 0);
+	//glGenTextures(1, &pDepth);
+	//glBindTexture(GL_TEXTURE_2D, pDepth);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, pDepth, 0);
 
-	//glGenRenderbuffers(1, &pDepth);
-	//glBindRenderbuffer(GL_RENDERBUFFER, pDepth);
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, scrX, scrY); // use a single renderbuffer object for both a depth AND stencil buffer.
-	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, pDepth); // now actually attach it
+	glGenRenderbuffers(1, &pDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, pDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, scrX, scrY); // use a single renderbuffer object for both a depth AND stencil buffer.
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, pDepth); // now actually attach it
 	
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	
@@ -644,7 +645,7 @@ void Renderer::postProcess()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
 	glClearColor(1, 1, 1, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	int scrX = Settings::Graphics.screenX;
 	int scrY = Settings::Graphics.screenY;
@@ -657,7 +658,7 @@ void Renderer::postProcess()
 	glBlitFramebuffer(
 		0, 0, scrX/2, scrY/2, 
 		0, 0, scrX/2, scrY/2, 
-		GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		GL_COLOR_BUFFER_BIT, GL_NEAREST);
 	//glBlitFramebuffer(
 	//	0, 0, scrX / 2, scrY / 2,
 	//	0, 0, scrX / 2, scrY / 2,
@@ -676,10 +677,13 @@ void Renderer::postProcess()
 	//shader->setFloat("far_plane", Render::GetCamera()->GetFar());
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, scrX / 2, scrY / 2);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_FRAMEBUFFER_SRGB);
 	drawQuad();
 	glEnable(GL_FRAMEBUFFER_SRGB);
+	glViewport(0, 0, scrX, scrY);
+	glEnable(GL_DEPTH_TEST);
 
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

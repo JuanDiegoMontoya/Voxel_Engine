@@ -350,8 +350,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bSand);
 				if (worldY > actualHeight && worldY < y - 1)
 					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bWater);
-				if (worldY < 10)
-					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bWater);
+				//if (worldY < 10)
+				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bWater);
 
 				double val = tunneler.GetValue(worldX, worldY, worldZ); // maybe also use for rivers
 

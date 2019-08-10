@@ -139,6 +139,13 @@ private:
 		const glm::ivec3& blockPos,
 		const Block& block);
 
+	// returns inverse of occludedness
+	float computeBlockAO(
+		Block block,
+		const glm::ivec3& blockPos,
+		const glm::vec3& corner,
+		const glm::ivec3& nearFace);
+
 	void buildBlockVertices_marched_cubes(
 		const glm::ivec3& pos,
 		const Block& block);
