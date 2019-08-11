@@ -19,7 +19,7 @@
 //Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
 std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
 
-double Chunk::isolevel = 0.9;
+double Chunk::isolevel = 0.6;
 
 static std::mutex mtx;
 
@@ -332,6 +332,7 @@ float Chunk::computeBlockAO(
 	}
 
 	float occlusion = 1;
+	const float occAmt = .2f;
 
 	// block 1
 	localpos nearblock1 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c1 + normal));
@@ -342,7 +343,7 @@ float Chunk::computeBlockAO(
 	if (!near1->active_)
 		goto B2AO;
 	if (near1->At(nearblock1.block_pos).GetType() != Block::bAir && near1->At(nearblock1.block_pos).GetType() != Block::bWater)
-		occlusion -= .2f;
+		occlusion -= occAmt;
 
 B2AO:
 	// block 2
@@ -354,7 +355,22 @@ B2AO:
 	if (!near2->active_)
 		goto BAO_END;
 	if (near2->At(nearblock2.block_pos).GetType() != Block::bAir && near2->At(nearblock2.block_pos).GetType() != Block::bWater)
-		occlusion -= .2f;
+		occlusion -= occAmt;
+
+	// check diagonal if not 'fully' occluded
+	if (occlusion > 1 - 2.f * occAmt)
+	{
+		// block 3
+		localpos nearblock3 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c1 + c2 + normal));
+		auto findVal3 = chunks.find(nearblock3.chunk_pos);
+		ChunkPtr near3 = findVal3 == chunks.end() ? nullptr : findVal3->second;
+		if (!near3)
+			goto BAO_END;
+		if (!near3->active_)
+			goto BAO_END;
+		if (near3->At(nearblock3.block_pos).GetType() != Block::bAir && near3->At(nearblock3.block_pos).GetType() != Block::bWater)
+			occlusion -= occAmt;
+	}
 
 BAO_END:
 	return occlusion;

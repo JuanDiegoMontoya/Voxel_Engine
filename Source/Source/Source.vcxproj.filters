@@ -221,6 +221,9 @@
     <ClInclude Include="water_manager.h">
       <Filter>Game\Voxel Engine</Filter>
     </ClInclude>
+    <ClInclude Include="prefab.h">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -365,6 +368,9 @@
       <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="water_manager.cpp">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="prefab.cpp">
       <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
   </ItemGroup>

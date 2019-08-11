@@ -47,11 +47,12 @@ void Level::Init()
 	Render::SetCamera(cameras_[0]);
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
-
+	
+	PrefabManager::InitPrefabs();
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(400.f);
+	chunkManager_.SetLoadDistance(100.f);
 	chunkManager_.SetUnloadLeniency(100.f);
-	chunkManager_.SetMaxLoadPerFrame(5);
+	chunkManager_.SetMaxLoadPerFrame(2);
 	renderer_.Init();
 
 	//std::cout << "PRE Processed chunk positions (x, y, z):" << '\n';
@@ -261,7 +262,12 @@ void Level::CheckInteraction()
 // handles everything that needs to be done when a block is changed
 void Level::UpdateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
 {
-	chunkManager_.UpdateBlock(wpos, ty);
+	chunkManager_.UpdateBlock(wpos, ty, true);
+}
+
+void Level::GenerateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
+{
+	chunkManager_.UpdateBlock(wpos, ty, false);
 }
 
 void Level::checkBlockPlacement()

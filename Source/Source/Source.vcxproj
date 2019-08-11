@@ -189,7 +189,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClCompile>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -237,6 +237,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="lit_mesh.cpp" />
     <ClCompile Include="mesh_comp.cpp" />
     <ClCompile Include="pick.cpp" />
+    <ClCompile Include="prefab.cpp" />
     <ClCompile Include="render_data.cpp" />
     <ClCompile Include="sun.cpp" />
     <ClCompile Include="superchunk.cpp" />
@@ -347,6 +348,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="lit_mesh.h" />
     <ClInclude Include="mesh_comp.h" />
     <ClInclude Include="pick.h" />
+    <ClInclude Include="prefab.h" />
     <ClInclude Include="render_data.h" />
     <ClInclude Include="sun.h" />
     <ClInclude Include="superchunk.h" />

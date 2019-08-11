@@ -34,7 +34,7 @@ void WorldGen::GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse
 						{
 							if (Utils::get_random(0, 1) > sparse)
 								continue;
-							init->At(x, y, z).SetType(static_cast<Block::BlockType>(static_cast<int>(Utils::get_random(1, Block::bCount))));
+							init->At(x, y, z).SetType(static_cast<Block::BlockType>(static_cast<int>(Utils::get_random(1, Block::bCount))), false);
 						}
 					}
 				}
@@ -335,6 +335,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				int worldX = cpos.x * Chunk::CHUNK_SIZE + i;
 				int worldY = cpos.y * Chunk::CHUNK_SIZE + j;
 				int worldZ = cpos.z * Chunk::CHUNK_SIZE + k;
+				glm::ivec3 wpos(worldX, worldY, worldZ);
 				//utils::Color* color = height.GetSlabPtr(i, k);
 				float height = *heightMap.GetConstSlabPtr(i, k);
 				float riverVal = *riverMap.GetConstSlabPtr(i, k);
@@ -349,7 +350,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				//if (worldY > actualHeight && worldY < y)
 				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bSand);
 				if (worldY > actualHeight && worldY < y - 1)
-					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bWater);
+					level->GenerateBlockAt(wpos, Block::BlockType::bWater);
 				//if (worldY < 10)
 				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bWater);
 
@@ -358,17 +359,24 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				// top cover
 				if (worldY == actualHeight)
 				{
+					// surface features
 					if (hillsPicker.GetValue(worldX, worldY, worldZ) * 30 + worldY > 90)
-						level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bSnow);
+						level->GenerateBlockAt(wpos, Block::BlockType::bSnow);
 					else
-						level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bGrass);
+						level->GenerateBlockAt(wpos, Block::BlockType::bGrass);
+
+					if (Utils::get_random(0, 1) > .98f)
+					{
+						GeneratePrefab(PrefabManager::GetPrefab(Prefab::OakTree), wpos + glm::ivec3(0, 1, 0), level);
+					}
 				}
+				// just under top cover
 				if (worldY >= actualHeight - 3 && worldY < actualHeight)
-					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bDirt);
+					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bDirt);
 
 				// generate subsurface
 				if (worldY >= -10 && worldY < actualHeight - 3)
-					level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
+					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
 				//if (val > .9)
 				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::bAir);
 				//if (val > .87 && worldY >= actualHeight - 3 && worldY <= actualHeight + 2)
@@ -388,9 +396,18 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
 				//std::cout << val << '\n';
 				if (val > .9)
-					level->UpdateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
+					level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
 			}
 		}
+	}
+}
+
+void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos, LevelPtr level)
+{
+	for (const auto& pair : prefab.blocks)
+	{
+		// written blocks so they don't get overwritten by normal terrain generation
+		level->UpdateBlockAt(wpos + pair.first, pair.second);
 	}
 }
 
@@ -426,12 +443,12 @@ double WorldGen::GetCurrentNoise(const glm::vec3& wpos)
 		dense.SetOctaveCount(5);
 		// higher frequency = more common, thicker tunnels 
 		// raise lacunarity as frequency decreases
-		dense.SetFrequency(.01);
+		dense.SetFrequency(.02);
 		// init generator here
 	}
 
 	//return 1;
-	return dense.GetValue(wpos.x, wpos.y, wpos.z);
+	return abs(dense.GetValue(wpos.x, wpos.y, wpos.z));
 }
 
 // TODO: make this function able to look past the end of the heightmap

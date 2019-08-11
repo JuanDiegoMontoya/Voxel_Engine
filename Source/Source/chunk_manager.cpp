@@ -23,25 +23,33 @@ void ChunkManager::Update(LevelPtr level)
 	generateNewChunks();
 }
 
-void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t)
+void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, bool written)
 {
 	localpos p = Chunk::worldBlockToLocalPos(wpos);
 	BlockPtr block = Chunk::AtWorld(wpos);
 	ChunkPtr chunk = Chunk::chunks[p.chunk_pos];
 
-	if (block && block->GetType() == t) // ignore if same type
-		return;
+	if (block)
+	{
+		// ignore if same type
+		if (block->GetType() == t)
+			return;
+		// ignore if generating and block is already written (may change in future by adding an overwrite flag)
+		if (written == false && block->IsWritten())
+			return;
+	}
 
 	// create empty chunk if it's null
 	if (!chunk)
 	{
 		Chunk::chunks[p.chunk_pos] = chunk = new Chunk(true);
 		chunk->SetPos(p.chunk_pos);
+		chunk->generate_ = true;
 	}
 
-	if (!block) // skip null blocks
+	if (!block) // reset block if it's invalid
 		block = &chunk->At(p.block_pos);
-	block->SetType(t);
+	block->SetType(t, written);
 
 	// add to update list if it ain't
 	if (!isChunkInUpdateList(chunk))
@@ -132,7 +140,15 @@ void ChunkManager::createNearbyChunks()
 				p.second = nullptr;
 				return;
 			}
+			if (p.second->generate_)
+			{
+				//delete p.second;
+				//p.second = new Chunk(true);
+				//p.second->SetPos(p.first);
+				p.second->generate_ = true;
+			}
 		}
+		// chunk either doesn't exist OR needs to be generated
 		else if (dist <= loadDistance_)
 		{
 			p.second = new Chunk(true);
@@ -144,20 +160,22 @@ void ChunkManager::createNearbyChunks()
 
 void ChunkManager::generateNewChunks()
 {
-	//std::for_each(
+//	std::for_each(
 //	Chunk::chunks.begin(),
 //	Chunk::chunks.end(),
 //	[&](auto& p)
 //{
-//	if (p.second)
+//	float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
+//	if (p.second && dist <= loadDistance_)
 //		if (p.second->generate_)
-//			genChunks.push_back(p.second);
+//			genChunkList_.push_back(p.second);
 //});
-
-//// sort chunks to update by distance from camera
-//std::sort(std::execution::par,
-//	genChunks.begin(),
-//	genChunks.end(),
+//
+//	// sort chunks to update by distance from camera
+//	std::sort(
+//	std::execution::par,
+//	genChunkList_.begin(),
+//	genChunkList_.end(),
 //	[&](ChunkPtr& a, ChunkPtr& b)->bool
 //{
 //	return glm::distance(Render::GetCamera()->GetPos(), glm::vec3(a->GetPos() * Chunk::CHUNK_SIZE)) <
@@ -172,10 +190,11 @@ void ChunkManager::generateNewChunks()
 		Chunk::chunks.end(),
 		[&](auto& p)
 	{
+		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
 		ChunkPtr chunk = p.second;
-		if (chunk)
+		if (chunk && maxgen > 0 && dist <= loadDistance_)
 		{
-			if (chunk->generate_ && maxgen > 0)
+			if (chunk->generate_)
 			{
 #if MARCHED_CUBES
 				WorldGen::Generate3DNoiseChunk(chunk->GetPos(), level_);
@@ -189,5 +208,6 @@ void ChunkManager::generateNewChunks()
 		}
 	});
 
-	//genChunks.clear();
+	//genChunkList_.erase(genChunkList_.begin(), genChunkList_.begin() + maxLoadPerFrame_);
+	//genChunkList_.clear();
 }

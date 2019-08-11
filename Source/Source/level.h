@@ -22,7 +22,10 @@ public:
 	void Update(float dt);
 	void CheckCollision();
 	void CheckInteraction();
+
+	// unconditionally updates a block at a position
 	void UpdateBlockAt(glm::ivec3 wpos, Block::BlockType type);
+	void GenerateBlockAt(glm::ivec3 wpos, Block::BlockType type); // updates a block at a position IF it isn't written yet
 	void DrawImGui();
 
 	inline void SetBgColor(glm::vec3 c) { bgColor_ = c; }

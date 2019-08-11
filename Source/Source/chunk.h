@@ -3,7 +3,7 @@
 #include "biome.h"
 #include "misc_utils.h"
 
-#define MARCHED_CUBES (false)
+#define MARCHED_CUBES (0)
 
 //typedef class Block;
 class VAO;
@@ -164,7 +164,7 @@ private:
 	glm::ivec3 pos_; // position relative to other chunks (1 chunk = 1 index)
 	bool active_;
 	bool visible_; // used in frustum culling
-	bool generate_ = false; // if the chunks needs to be generated
+	bool generate_ = true; // if the chunks needs to be generated
 
 	// rendering stuff
 	VAO* vao_ = nullptr;

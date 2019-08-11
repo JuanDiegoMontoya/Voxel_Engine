@@ -479,7 +479,7 @@ cell Chunk::buildCellFromVoxel(const glm::vec3& wpos)
 		d.p[i] = positions[i];
 		double noise = WorldGen::GetCurrentNoise(wpos + positions[i]);
 		d.val[i] = Utils::mapToRange(noise, isolevel, 1., 0., 1.);
-		d.val[i] = glm::clamp(d.val[i], 0., 1.);
+		//d.val[i] = glm::clamp(d.val[i], 0., 1.);
 		//d.val[i] = WorldGen::GetCurrentNoise(wpos + positions[i]);
 		//if (d.val[i] < isolevel) // it's not within the worldgen, but we're building the mesh anyway (user placed block)
 		//	d.val[i] = .5;

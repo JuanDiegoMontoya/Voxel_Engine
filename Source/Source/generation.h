@@ -1,4 +1,5 @@
 #pragma once
+#include "prefab.h"
 #include "biome.h"
 
 typedef struct Chunk* ChunkPtr;
@@ -25,6 +26,8 @@ public:
 		Populates a chunk based on its position in the world
 	*/
 	static void GenerateChunk(glm::ivec3 cpos, LevelPtr level);
+
+	static void GeneratePrefab(const Prefab& pfab, glm::ivec3 wpos, LevelPtr level);
 
 	static void Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level);
 

@@ -11,7 +11,9 @@ const std::vector<BlockProperties> Block::PropertiesTable =
 	{BlockProperties(8,		glm::vec4(0, 1, 0, 1))},							// grass
 	{BlockProperties(4,		glm::vec4(.761f, .698f, .502f, 1))},	// sand
 	{BlockProperties(4,		glm::vec4(1, .98f, .98f, 1))},				// snow
-	{BlockProperties(256,	glm::vec4(0, .476f, .745f, .9f))}			// water
+	{BlockProperties(256,	glm::vec4(0, .476f, .745f, .9f))},		// water
+	{BlockProperties(4,		glm::vec4(.7294f, .643f, .5412f, 1))},// oak wood
+	{BlockProperties(4,		glm::vec4(.322f, .42f, .18f, 1))}			// oak leaves
 };
 
 glm::ivec3 stretch(int index, int w, int h)
