@@ -39,4 +39,6 @@ private:
 	std::vector<ChunkPtr> updatedChunks_;
 	std::vector<ChunkPtr> genChunkList_;
 	LevelPtr level_;
+
+	ChunkLoadManager loadManager_;
 };

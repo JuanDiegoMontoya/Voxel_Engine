@@ -224,6 +224,9 @@
     <ClInclude Include="prefab.h">
       <Filter>Game\Voxel Engine</Filter>
     </ClInclude>
+    <ClInclude Include="chunk_load_manager.h">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -371,6 +374,9 @@
       <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="prefab.cpp">
+      <Filter>Game\Voxel Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="chunk_load_manager.cpp">
       <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
   </ItemGroup>

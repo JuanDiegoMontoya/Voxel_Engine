@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "chunk.h"
 #include "level.h"
+#include "chunk_load_manager.h"
 #include "chunk_manager.h"
 #include "generation.h"
 #include "pipeline.h"
