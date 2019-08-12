@@ -1,7 +1,7 @@
 #include "stdafx.h"
+#include "chunk_load_manager.h"
 #include "chunk.h"
 #include "level.h"
-#include "chunk_load_manager.h"
 #include "chunk_manager.h"
 #include "generation.h"
 #include "pipeline.h"
@@ -141,13 +141,6 @@ void ChunkManager::createNearbyChunks()
 				p.second = nullptr;
 				return;
 			}
-			if (p.second->generate_)
-			{
-				//delete p.second;
-				//p.second = new Chunk(true);
-				//p.second->SetPos(p.first);
-				p.second->generate_ = true;
-			}
 		}
 		// chunk either doesn't exist OR needs to be generated
 		else if (dist <= loadDistance_)
@@ -183,7 +176,7 @@ void ChunkManager::generateNewChunks()
 //				 glm::distance(Render::GetCamera()->GetPos(), glm::vec3(b->GetPos() * Chunk::CHUNK_SIZE));
 //});
 
-// generate each chunk that needs to be
+	// generate each chunk that needs to be
 	unsigned maxgen = maxLoadPerFrame_;
 	std::for_each(
 		std::execution::seq,
@@ -203,7 +196,8 @@ void ChunkManager::generateNewChunks()
 				WorldGen::GenerateChunk(chunk->GetPos(), level_);
 #endif
 				chunk->generate_ = false;
-				maxgen--;
+				chunk->loaded_ = true;
+				//maxgen--;
 			}
 			chunk->Update();
 		}

@@ -3,6 +3,7 @@
 
 typedef struct Chunk* ChunkPtr;
 typedef class Level* LevelPtr;
+class ChunkLoadManager;
 
 class ChunkManager
 {
@@ -40,5 +41,5 @@ private:
 	std::vector<ChunkPtr> genChunkList_;
 	LevelPtr level_;
 
-	ChunkLoadManager loadManager_;
+	ChunkLoadManager* loadManager_;
 };

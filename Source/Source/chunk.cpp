@@ -25,6 +25,8 @@ static std::mutex mtx;
 
 Chunk::Chunk(bool active) : active_(active)
 {
+	// TODO: these need to be created at the start of each frame or something,
+	// such that creating chunks in parallel won't crash evertying
 	vao_ = new VAO();
 	wvao_ = new VAO();
 }

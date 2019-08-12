@@ -176,15 +176,6 @@ void Renderer::drawNormal()
 		currShader->setVec3("viewPos", Render::GetCamera()->GetPos());
 		currShader->setVec3("lightPos", activeDirLight_->GetPos());
 		//currShader->setVec3("ratios", ratios);
-		//currShader->setMat4("lightSpaceMatrix", dirLight.GetViewProj());
-		
-		//std::vector<float> zVals;
-		//for (int i = 0; i < activeDirLight_->GetNumCascades(); i++)
-		//{
-		//	glm::vec4 vView(0, 0, activeDirLight_->GetCascadeEnds()[i + 1], 1);
-		//	glm::vec4 vClip = Render::GetCamera()->GetProj() * vView;
-		//	zVals.push_back(vClip.z);
-		//}
 
 		glm::mat4 liteMats[3];
 		liteMats[0] = activeDirLight_->GetProjMat(vView[0], 0) * vView[0];
