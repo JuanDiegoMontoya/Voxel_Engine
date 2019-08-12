@@ -50,7 +50,7 @@ void Level::Init()
 	
 	PrefabManager::InitPrefabs();
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(100.f);
+	chunkManager_.SetLoadDistance(300.f);
 	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(2);
 	renderer_.Init();
@@ -259,15 +259,16 @@ void Level::CheckInteraction()
 	checkBlockDestruction();
 }
 
-// handles everything that needs to be done when a block is changed
+// force updates a block in a location
 void Level::UpdateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
 {
-	chunkManager_.UpdateBlock(wpos, ty, true);
+	chunkManager_.UpdateBlock(wpos, ty, std::numeric_limits<unsigned char>::max());
 }
 
-void Level::GenerateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
+// updates a block in a location IFF the new block has a sufficiently high write strength
+void Level::GenerateBlockAt(glm::ivec3 wpos, Block b)
 {
-	chunkManager_.UpdateBlock(wpos, ty, false);
+	chunkManager_.UpdateBlock(wpos, b.GetType(), b.WriteStrength());
 }
 
 void Level::checkBlockPlacement()

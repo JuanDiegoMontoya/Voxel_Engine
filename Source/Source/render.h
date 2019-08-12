@@ -65,4 +65,19 @@ private:
 	unsigned pBuffer;
 	unsigned pColor;
 	unsigned pDepth;
+
+
+
+	// CSM (temp?)
+	glm::mat4 view;
+	glm::mat4 projection;
+	glm::mat4 vView[3];							// 
+	glm::vec3 LitDir;								// direction of light
+	glm::vec3 right;								// light view right
+	glm::vec3 up;										// light view up
+	glm::mat4 LitViewFam;						// light space view matrix
+	glm::vec3 ratios;								// unused (exponential shadows)
+	glm::vec4 cascadEnds;						// light space or something
+	glm::vec3 cascadeEndsClipSpace; // clip space
+
 };

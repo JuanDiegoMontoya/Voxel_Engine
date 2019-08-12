@@ -33,7 +33,7 @@ void Renderer::DrawAll()
 	//glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
 	geometryPass();
 	
-	drawShadows();
+	//drawShadows();
 	drawSky();
 	drawNormal();
 	drawWater();
@@ -97,15 +97,25 @@ void Renderer::drawShadows()
 	//glCullFace(GL_FRONT);
 	glViewport(0, 0, activeDirLight_->GetShadowSize().x, activeDirLight_->GetShadowSize().y);
 
-
-
-	glm::mat4 view = Render::GetCamera()->GetView();
-	glm::mat4 vView[3];
-	glm::vec3 LitDir = glm::normalize(activeDirLight_->GetPos());
-	glm::vec3 right = glm::normalize(glm::cross(LitDir, glm::vec3(0.0f, 1.0f, 0.0f)));
-	glm::vec3 up = glm::normalize(glm::cross(right, LitDir));
-	glm::mat4 LitViewFam = glm::lookAt(activeDirLight_->GetPos(), Render::GetCamera()->GetPos(), up);
-
+	//https://github.com/niley1nov/cascaded-exponential-shadow-mapping/blob/master/src/main8.cpp#L363
+	// CSM stuff
+	view = Render::GetCamera()->GetView();
+	vView[3];
+	LitDir = glm::normalize(-activeDirLight_->GetPos());
+	right = glm::normalize(glm::cross(LitDir, glm::vec3(0.0f, 1.0f, 0.0f)));
+	up = glm::normalize(glm::cross(right, LitDir));
+	LitViewFam = glm::lookAt(activeDirLight_->GetPos(), Render::GetCamera()->GetPos(), up);
+	cascadEnds = activeDirLight_->GetCascadeEnds();
+	projection = Render::GetCamera()->GetProj();
+	cascadeEndsClipSpace =
+		glm::vec3((projection*glm::vec4(0.0f, 0.0f, -cascadEnds[1], 1.0f)).z,
+		(projection*glm::vec4(0.0f, 0.0f, -cascadEnds[2], 1.0f)).z,
+			(projection*glm::vec4(0.0f, 0.0f, -cascadEnds[3], 1.0f)).z);
+	ratios = glm::vec3(
+		activeDirLight_->GetRatio(vView[0], 0),
+		activeDirLight_->GetRatio(vView[1], 1),
+		activeDirLight_->GetRatio(vView[2], 2)
+	);
 	activeDirLight_->calcOrthoProjs(LitViewFam);
 	for (unsigned int i = 0; i < 3; ++i)
 	{
@@ -157,28 +167,6 @@ void Renderer::drawNormal()
 	{
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK); // don't forget to reset original culling face
-		
-
-		glm::mat4 vView[3];
-		glm::vec3 LitDir = glm::normalize(activeDirLight_->GetPos());
-		glm::vec3 right = glm::normalize(glm::cross(LitDir, glm::vec3(0.0f, 1.0f, 0.0f)));
-		glm::vec3 up = glm::normalize(glm::cross(right, LitDir));
-		for (unsigned int i = 0; i < 3; ++i)
-		{
-			vView[i] = glm::lookAt(activeDirLight_->GetModlCent(i), activeDirLight_->GetModlCent(i) + LitDir * .2f, up);
-		}
-		glm::mat4 projection = Render::GetCamera()->GetProj();
-		glm::vec4 cascadEnds = activeDirLight_->GetCascadeEnds();
-		glm::vec3 cascadeEndsClipSpace =
-			glm::vec3((projection*glm::vec4(0.0f, 0.0f, -cascadEnds[1], 1.0f)).z,
-			(projection*glm::vec4(0.0f, 0.0f, -cascadEnds[2], 1.0f)).z,
-				(projection*glm::vec4(0.0f, 0.0f, -cascadEnds[3], 1.0f)).z);
-		glm::vec3 ratios(
-			activeDirLight_->GetRatio(vView[0], 0),
-			activeDirLight_->GetRatio(vView[1], 1),
-			activeDirLight_->GetRatio(vView[2], 2)
-		);
-
 
 		// render blocks in each active chunk
 		ShaderPtr currShader = Shader::shaders["chunk_shaded"];
@@ -190,13 +178,13 @@ void Renderer::drawNormal()
 		//currShader->setVec3("ratios", ratios);
 		//currShader->setMat4("lightSpaceMatrix", dirLight.GetViewProj());
 		
-		std::vector<float> zVals;
-		for (int i = 0; i < activeDirLight_->GetNumCascades(); i++)
-		{
-			glm::vec4 vView(0, 0, activeDirLight_->GetCascadeEnds()[i + 1], 1);
-			glm::vec4 vClip = Render::GetCamera()->GetProj() * vView;
-			zVals.push_back(vClip.z);
-		}
+		//std::vector<float> zVals;
+		//for (int i = 0; i < activeDirLight_->GetNumCascades(); i++)
+		//{
+		//	glm::vec4 vView(0, 0, activeDirLight_->GetCascadeEnds()[i + 1], 1);
+		//	glm::vec4 vClip = Render::GetCamera()->GetProj() * vView;
+		//	zVals.push_back(vClip.z);
+		//}
 
 		glm::mat4 liteMats[3];
 		liteMats[0] = activeDirLight_->GetProjMat(vView[0], 0) * vView[0];
@@ -390,10 +378,15 @@ void Renderer::drawBillboard(VAO * vao, size_t count, DrawCB uniform_cb)
 
 void Renderer::drawDepthMapsDebug()
 {
+	Shader::shaders["debug_shadow"]->Use();
+	Shader::shaders["debug_shadow"]->setFloat("near_plane", Render::GetCamera()->GetNear());
+	Shader::shaders["debug_shadow"]->setFloat("far_plane", Render::GetCamera()->GetFar());
+
 	// debug shadows
 	if (Input::Keyboard().down[GLFW_KEY_4])
 	{
 		Shader::shaders["debug_shadow"]->Use();
+		Shader::shaders["debug_shadow"]->setInt("perspective", 0);
 		for (int i = 0; i < 3; i++)
 		{
 			glViewport(0 + 512 * i, 0, 512, 512);
@@ -420,6 +413,7 @@ void Renderer::drawDepthMapsDebug()
 		glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
 		Shader::shaders["debug_shadow"]->Use();
 		Shader::shaders["debug_shadow"]->setInt("depthMap", 3);
+		Shader::shaders["debug_shadow"]->setInt("perspective", 1);
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, gDepth);
 

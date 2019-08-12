@@ -190,7 +190,7 @@ vec3 waterColorModifier()
 {
   // compute ripple effect with perlin noise
   float rip = perlinNoise(vPos.xz * 3)
-  + perlinNoise(vec2(vPos.xz * u_time * .005));
+  + perlinNoise(vec2(vPos.xz + u_time * .25));
   vec3 rippleEffect = normalize(vec3(rip, rip, rip)) * .02;
   
   // compute view angle effect

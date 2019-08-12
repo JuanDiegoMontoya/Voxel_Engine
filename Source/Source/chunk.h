@@ -137,7 +137,8 @@ private:
 		const glm::ivec3& nearFace,
 		int quadStride, int curQuad, const float* data,
 		const glm::ivec3& blockPos,
-		const Block& block);
+		const Block& block,
+		bool force = false);
 
 	// returns inverse of occludedness
 	float computeBlockAO(

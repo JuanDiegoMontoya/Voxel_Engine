@@ -231,6 +231,7 @@ void Chunk::buildBlockVertices_normal(const glm::ivec3 & pos, const float * data
 
 	// top
 	buildSingleBlockFace(glm::ivec3(x, y + 1, z), quadStride, 5, data, pos, block);
+	
 }
 
 //std::vector<float> Chunk::buildSingleBlockFace(glm::ivec3 near, int low, int high, int x, int y, int z)
@@ -238,19 +239,25 @@ void Chunk::buildSingleBlockFace(
 	const glm::ivec3& nearFace,											// position of nearby block to check
 	int quadStride, int curQuad, const float* data, // vertex + quad data
 	const glm::ivec3& blockPos,											// position of current block
-	const Block& block)															// block-specific information
+	const Block& block,															// block-specific information
+	bool force)																			// force building of this block, if it exists
 {
 	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
 	bool isWater = block.GetType() == Block::bWater;
-
 	ChunkPtr near = chunks[nearblock.chunk_pos];
+	Block block2;
+	if (force)
+		goto GenQuad;
 	if (!near)
 		goto GenQuad;
 	if (!near->active_)
 		goto GenQuad;
-	if (near->At(nearblock.block_pos).GetType() != Block::bAir && near->At(nearblock.block_pos).GetType() != Block::bWater)
+	block2 = near->At(nearblock.block_pos);
+	if (block2.GetType() != Block::bWater && block.GetType() == Block::bWater && (nearFace - blockPos).y > 0)
+		goto GenQuad;
+	if (block2.GetType() != Block::bAir && block2.GetType() != Block::bWater)
 		return;
-	if (near->At(nearblock.block_pos).GetType() == Block::bWater && block.GetType() == Block::bWater)
+	if (block2.GetType() == Block::bWater && block.GetType() == Block::bWater)
 		return;
 	if (Block::PropertiesTable[block.GetType()].invisible)
 		return;

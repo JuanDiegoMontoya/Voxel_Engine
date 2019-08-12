@@ -386,20 +386,20 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	}
 
 	// generate tunnels
-	for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
-	{
-		for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
-		{
-			for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
-			{
-				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
-				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
-				//std::cout << val << '\n';
-				if (val > .9)
-					level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
-			}
-		}
-	}
+	//for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
+	//{
+	//	for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
+	//	{
+	//		for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
+	//		{
+	//			glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
+	//			double val = tunneler.GetValue(pos.x, pos.y, pos.z);
+	//			//std::cout << val << '\n';
+	//			if (val > .9)
+	//				level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
+	//		}
+	//	}
+	//}
 }
 
 void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos, LevelPtr level)
@@ -407,7 +407,7 @@ void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos, LevelPtr le
 	for (const auto& pair : prefab.blocks)
 	{
 		// written blocks so they don't get overwritten by normal terrain generation
-		level->UpdateBlockAt(wpos + pair.first, pair.second);
+		level->GenerateBlockAt(wpos + pair.first, pair.second);
 	}
 }
 
@@ -434,7 +434,7 @@ double WorldGen::GetCurrentNoise(const glm::vec3& wpos)
 {
 	static bool init = true;
 	static module::RidgedMulti dense;
-
+	
 	if (init)
 	{
 		// higher lacunarity = thinner tunnels

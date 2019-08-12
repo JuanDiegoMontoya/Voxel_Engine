@@ -37,8 +37,8 @@ void DirLight::initCascadedShadowMapFBO()
 	// create depth texture
 	glGenTextures(shadowCascades_, &depthMapTexes_[0]);
 
-	//float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
-	float borderColor[] = { 0, 0, 0, 0 };
+	float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	//float borderColor[] = { 0, 0, 0, 1 };
 	for (unsigned i = 0; i < shadowCascades_; i++)
 	{
 		glBindTexture(GL_TEXTURE_2D, depthMapTexes_[i]);
@@ -103,16 +103,12 @@ void DirLight::calcOrthoProjs(const glm::mat4& vView)
 
 	// Get the light space tranform
 	//glm::mat4 LightM = view_;
-	glm::mat4 LightM = vView * glm::translate(glm::mat4(1), tPos_);
-	//glm::mat4 LightM = glm::lookAt(glm::vec3(0), tDir_, glm::vec3(0, 1, 0));
-	//glm::mat4 LightM = glm::lookAt(tPos_, -tDir_, glm::vec3(0, 1, 0));
+	glm::mat4 LightM = vView;// *glm::translate(glm::mat4(1), tPos_);
 
 	float ar = (float)Settings::Graphics.screenX / (float)Settings::Graphics.screenY;
 	float fov = Render::GetCamera()->GetFov(); // degrees
-	//float tanHalfHFOV = glm::tan(glm::radians(fov / 2.0f));
-	//float tanHalfVFOV = glm::tan(glm::radians((fov * ar) / 2.0f));
-	float tanHalfHFOV = glm::tan(glm::radians(fov / 2.0f)) * ar;
-	float tanHalfVFOV = glm::tan(glm::radians((fov * ar) / 2.0f)) * ar;
+	float tanHalfHFOV = glm::tan(glm::radians(fov / 2.0f)) / ar;
+	float tanHalfVFOV = glm::tan(glm::radians((fov * ar) / 2.0f)) / ar;
 
 	for (unsigned i = 0; i < shadowCascades_; i++)
 	{
@@ -150,14 +146,14 @@ void DirLight::calcOrthoProjs(const glm::mat4& vView)
 			glm::vec4 vW = CamInv * frustumCorners[j];
 
 			// Transform the frustum coordinate from world to light space
-			frustumCornersL[j] = LightM * vW;
+			frustumCorners[j] = LightM * vW;
 
-			minX = glm::min(minX, frustumCornersL[j].x);
-			maxX = glm::max(maxX, frustumCornersL[j].x);
-			minY = glm::min(minY, frustumCornersL[j].y);
-			maxY = glm::max(maxY, frustumCornersL[j].y);
-			minZ = glm::min(minZ, frustumCornersL[j].z);
-			maxZ = glm::max(maxZ, frustumCornersL[j].z);
+			minX = glm::min(minX, frustumCorners[j].x);
+			maxX = glm::max(maxX, frustumCorners[j].x);
+			minY = glm::min(minY, frustumCorners[j].y);
+			maxY = glm::max(maxY, frustumCorners[j].y);
+			minZ = glm::min(minZ, frustumCorners[j].z);
+			maxZ = glm::max(maxZ, frustumCorners[j].z);
 
 			if (j == 7)
 			{
@@ -171,33 +167,7 @@ void DirLight::calcOrthoProjs(const glm::mat4& vView)
 				modeldFrusCorns[i][7] = glm::inverse(LightM) * glm::vec4(minX, minY, maxZ, 1.0f);
 			}
 		}
-
-
-		//shadowOrthoProjInfo_[i].r = maxX;
-		//shadowOrthoProjInfo_[i].l = minX;
-		//shadowOrthoProjInfo_[i].b = minY;
-		//shadowOrthoProjInfo_[i].t = maxY;
-		//shadowOrthoProjInfo_[i].f = maxZ;
-		//shadowOrthoProjInfo_[i].n = minZ;
-		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * view_;
-		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, 0.f, 100.f) * LightM;
-		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * glm::lookAt(tPos_, -Render::GetCamera()->GetPos(), glm::vec3(0, 1, 0));
-		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * Render::GetCamera()->GetView();
-		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ) * LightM;
-		//shadowOrthoProjMtxs_[i] = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
 	}
-
-	//for (int i = 0; i < 3; i++)
-	//{
-	//	shadowOrthoProjMtxs_[i] =
-	//		glm::ortho(
-	//		(view_*modeldFrusCorns[i][1]).x, 
-	//		(view_*modeldFrusCorns[i][0]).x,
-	//		(view_*modeldFrusCorns[i][2]).y,
-	//		(view_*modeldFrusCorns[i][0]).y,
-	//		(view_*modeldFrusCorns[i][0]).z,
-	//		(view_*modeldFrusCorns[i][4]).z) * LightM;
-	//}
 }
 
 void DirLight::calcPersProjs()

@@ -13,12 +13,13 @@ struct BlockProperties
 };
 
 // a 1x1x1 cube
+#pragma pack(push, 1)
 typedef class Block
 {
 public:
 
 	// defines various block properties and behaviors
-	enum BlockType : unsigned short
+	enum BlockType : unsigned char // upgrade when over 256 block types
 	{
 		bAir = 0, // default type
 		bStone,
@@ -34,16 +35,18 @@ public:
 		bCount
 	};
 	
-	Block(BlockType t = bAir, bool w = false)	: type_(t), written_(w) {}
+	Block(BlockType t = bAir, unsigned char w = 0, unsigned char l = 0)
+		: type_(t), writeStrength_(w), lightValue_(l) {}
 
 	inline BlockType GetType() const { return type_; }
-	inline bool IsWritten() const { return written_; }
-	inline void SetType(BlockType ty, bool write) { type_ = ty; written_ = write; }
+	inline unsigned char WriteStrength() const { return writeStrength_; }
+	inline void SetType(BlockType ty, unsigned char write) { type_ = ty; writeStrength_ = write; }
 
 	static const std::vector<BlockProperties> PropertiesTable;
 
 private:
-	BlockType type_;
+	BlockType type_ : 8;
+	unsigned char lightValue_ : 4;
 
 	// If the block was placed by the player or generated as part of a prefab,
 	// this will be true. Used to determine whether to write to a block during
@@ -51,7 +54,8 @@ private:
 	// during TERRAIN generation (prefabs will overwrite the value).
 
 	// this should be a char(?) called writeStrength instead to allow varying levels of written-ness
-	bool written_ = false; 
+	unsigned char writeStrength_ : 4;
 }Block, *BlockPtr;
+#pragma pack(pop)
 
 glm::ivec3 stretch(int index, int w, int h);

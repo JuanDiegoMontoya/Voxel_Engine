@@ -23,7 +23,7 @@ void ChunkManager::Update(LevelPtr level)
 	generateNewChunks();
 }
 
-void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, bool written)
+void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned char writeStrength)
 {
 	localpos p = Chunk::worldBlockToLocalPos(wpos);
 	BlockPtr block = Chunk::AtWorld(wpos);
@@ -34,8 +34,8 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, bool writte
 		// ignore if same type
 		if (block->GetType() == t)
 			return;
-		// ignore if generating and block is already written (may change in future by adding an overwrite flag)
-		if (written == false && block->IsWritten())
+		// write policy: skip if new block is WEAKER than current block
+		if (writeStrength < block->WriteStrength())
 			return;
 	}
 
@@ -49,7 +49,7 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, bool writte
 
 	if (!block) // reset block if it's invalid
 		block = &chunk->At(p.block_pos);
-	block->SetType(t, written);
+	block->SetType(t, writeStrength);
 
 	// add to update list if it ain't
 	if (!isChunkInUpdateList(chunk))
