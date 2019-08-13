@@ -24,14 +24,14 @@ void ChunkLoadManager::Push(ChunkPtr c)
 void ChunkLoadManager::init()
 {
 	// single extra thread (may increase in the future)
-	pool_.resize(1);
+	//pool_.resize(1);
 }
 
 void ChunkLoadManager::sort()
 {
 	glm::vec3 camPos = Render::GetCamera()->GetPos();
 
-	// merge sort chunks in list by distance from camera
+	// insertion sort chunks in list by distance from camera
 	// (to load nearer chunks first)
 	for (size_t i = 1; i < genList_.size(); i++)
 	{

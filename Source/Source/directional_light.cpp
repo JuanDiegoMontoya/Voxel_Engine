@@ -131,7 +131,6 @@ void DirLight::calcOrthoProjs(const glm::mat4& vView)
 			glm::vec4(xf, -yf, -cascadeEnds_[i + 1], 1.0),
 			glm::vec4(-xf, -yf, -cascadeEnds_[i + 1], 1.0)
 		};
-		glm::vec4 frustumCornersL[8];
 
 		float minX = std::numeric_limits<float>::max();
 		float maxX = std::numeric_limits<float>::min();

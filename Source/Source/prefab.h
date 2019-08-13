@@ -7,6 +7,7 @@ struct Prefab
 	enum PrefabName : int
 	{
 		OakTree,
+		OakTreeBig,
 
 		pfCount
 	};

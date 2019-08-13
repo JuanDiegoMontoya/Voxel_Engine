@@ -365,9 +365,13 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 					else
 						level->GenerateBlockAt(wpos, Block::BlockType::bGrass);
 
+					// generate surface prefabs
 					if (Utils::get_random(0, 1) > .98f)
 					{
-						GeneratePrefab(PrefabManager::GetPrefab(Prefab::OakTree), wpos + glm::ivec3(0, 1, 0), level);
+						if (Utils::get_random(0, 1) > .8f)
+							GeneratePrefab(PrefabManager::GetPrefab(Prefab::OakTreeBig), wpos + glm::ivec3(0, 1, 0), level);
+						else
+							GeneratePrefab(PrefabManager::GetPrefab(Prefab::OakTree), wpos + glm::ivec3(0, 1, 0), level);
 					}
 				}
 				// just under top cover
@@ -386,20 +390,20 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	}
 
 	// generate tunnels
-	//for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
-	//{
-	//	for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
-	//	{
-	//		for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
-	//		{
-	//			glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
-	//			double val = tunneler.GetValue(pos.x, pos.y, pos.z);
-	//			//std::cout << val << '\n';
-	//			if (val > .9)
-	//				level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
-	//		}
-	//	}
-	//}
+	for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
+	{
+		for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
+		{
+			for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
+			{
+				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
+				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
+				//std::cout << val << '\n';
+				if (val > .9)
+					level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
+			}
+		}
+	}
 }
 
 void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos, LevelPtr level)

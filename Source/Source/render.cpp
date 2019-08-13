@@ -53,6 +53,28 @@ void Renderer::Clear()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
+static VAO* blockHoverVao = nullptr;
+static VBO* blockHoverVbo = nullptr;
+void Renderer::DrawCube()
+{
+	if (blockHoverVao == nullptr)
+	{
+		blockHoverVao = new VAO();
+		blockHoverVbo = new VBO(Render::cube_vertices, sizeof(Render::cube_vertices));
+		VBOlayout layout;
+		layout.Push<float>(3);
+		blockHoverVao->AddBuffer(*blockHoverVbo, layout);
+	}
+	glClear(GL_DEPTH_BUFFER_BIT);
+	//glDisable(GL_CULL_FACE);
+	glLineWidth(2);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	blockHoverVao->Bind();
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glEnable(GL_CULL_FACE);
+}
+
 void Renderer::drawShadows()
 {
 	{

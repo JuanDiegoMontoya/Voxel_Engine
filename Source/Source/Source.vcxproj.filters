@@ -47,6 +47,9 @@
     <Filter Include="vendor\ctpl">
       <UniqueIdentifier>{d94d4b42-3a18-475f-a15a-e49c0985918a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\Editor">
+      <UniqueIdentifier>{477324d8-310d-447b-9295-86ceaf309d57}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sys_window.h">
@@ -227,6 +230,9 @@
     <ClInclude Include="chunk_load_manager.h">
       <Filter>Game\Voxel Engine</Filter>
     </ClInclude>
+    <ClInclude Include="editor.h">
+      <Filter>Game\Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -378,6 +384,9 @@
     </ClCompile>
     <ClCompile Include="chunk_load_manager.cpp">
       <Filter>Game\Voxel Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="editor.cpp">
+      <Filter>Game\Editor</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

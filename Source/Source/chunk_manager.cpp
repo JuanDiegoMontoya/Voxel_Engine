@@ -197,7 +197,7 @@ void ChunkManager::generateNewChunks()
 #endif
 				chunk->generate_ = false;
 				chunk->loaded_ = true;
-				//maxgen--;
+				maxgen--;
 			}
 			chunk->Update();
 		}

@@ -7,7 +7,6 @@
 #include "mesh.h"
 #include "texture.h"
 #include "frustum.h"
-
 #include "transform.h"
 #include "mesh_comp.h"
 #include "unlit_mesh.h"
@@ -119,8 +118,6 @@ void Level::Update(float dt)
 	PERF_BENCHMARK_END;
 }
 
-static VAO* blockHoverVao = nullptr;
-static VBO* blockHoverVbo = nullptr;
 void Level::DrawImGui()
 {
 	{
@@ -217,29 +214,13 @@ void Level::DrawImGui()
 			//glm::vec3 color = Block::PropertiesTable[block->GetType()].color;
 			//ImGui::ColorPicker3("colorr", )
 
-			if (blockHoverVao == nullptr)
-			{
-				blockHoverVao = new VAO();
-				blockHoverVbo = new VBO(Render::cube_vertices, sizeof(Render::cube_vertices));
-				VBOlayout layout;
-				layout.Push<float>(3);
-				blockHoverVao->AddBuffer(*blockHoverVbo, layout);
-			}
-
-			glClear(GL_DEPTH_BUFFER_BIT);
-			//glDisable(GL_CULL_FACE);
-			glLineWidth(2);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			blockHoverVao->Bind();
 			ShaderPtr curr = Shader::shaders["flat_color"];
 			curr->Use();
 			curr->setMat4("u_model", glm::translate(glm::mat4(1), glm::vec3(x, y, z) + .5f));
 			curr->setMat4("u_view", Render::GetCamera()->GetView());
 			curr->setMat4("u_proj", Render::GetCamera()->GetProj());
 			curr->setVec4("u_color", glm::vec4(1, 1, 1, .4f));
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			//glEnable(GL_CULL_FACE);
+			renderer_.DrawCube();
 
 			return true;
 		}
