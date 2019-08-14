@@ -21,6 +21,7 @@
 #include "pick.h"
 #include "settings.h"
 #include <functional>
+#include "editor.h"
 
 using namespace std::chrono;
 //#define OMP_NUM_THREADS = 8;
@@ -47,9 +48,10 @@ void Level::Init()
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 	
+	Editor::renderer = &renderer_;
 	PrefabManager::InitPrefabs();
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(300.f);
+	chunkManager_.SetLoadDistance(100.f);
 	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(2);
 	renderer_.Init();
@@ -113,6 +115,7 @@ void Level::Update(float dt)
 	renderer_.SetSun(&sun_);
 
 	renderer_.DrawAll();
+	Editor::Update();
 	DrawImGui();
 
 	PERF_BENCHMARK_END;
