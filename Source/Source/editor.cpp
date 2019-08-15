@@ -14,7 +14,7 @@ namespace Editor
 	// TODO: work on dis
 	namespace RegionSelect
 	{
-		const int pickLength = 20;// ray cast distance
+		const int pickLength = 5;// ray cast distance
 		size_t selectedPositions;	// how many positions have been selected
 		glm::vec3 wpositions[3];	// selected positions (0-3)
 		glm::vec3 hposition;			// hovered position (others are locked)
@@ -57,7 +57,7 @@ namespace Editor
 			glm::vec3 scale(0);
 			if (selectedPositions == 0)
 			{
-				scale = glm::vec3(1);
+				scale = glm::vec3(0);
 				pos = hposition;
 			}
 			else if (selectedPositions == 1)
@@ -92,7 +92,6 @@ namespace Editor
 			}
 			else// if (selectedPositions == 3)
 			{
-				// component wise
 				glm::vec3 min(
 					glm::min(wpositions[0].x, glm::min(wpositions[1].x, wpositions[2].x)),
 					glm::min(wpositions[0].y, glm::min(wpositions[1].y, wpositions[2].y)),
@@ -107,7 +106,7 @@ namespace Editor
 			}
 
 			glm::mat4 tPos = glm::translate(glm::mat4(1), pos + .5f);
-			glm::mat4 tScale = glm::scale(glm::mat4(1), scale);
+			glm::mat4 tScale = glm::scale(glm::mat4(1), scale + 1.f);
 
 			glDisable(GL_CULL_FACE);
 			ShaderPtr curr = Shader::shaders["flat_color"];
@@ -127,24 +126,36 @@ namespace Editor
 				raycast(
 					Render::GetCamera()->GetPos(),
 					Render::GetCamera()->front,
-					20,
+					pickLength,
 					[&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
 				{
 					if (!block || block->GetType() == Block::bAir)
 						return false;
-					if (selectedPositions == 1 || selectedPositions == 3 || selectedPositions == 0)
+					if (selectedPositions == 0)
 						hposition = glm::vec3(x, y, z);
-					else // if  (selectedPositions == 2)
+					else if (selectedPositions == 1)
 					{
-						// choose 2 axes that produce largest difference between first block, then use original value for the third
+						// find axis that has smallest difference, and lock that one
 						glm::vec3 diff = glm::vec3(x, y, z) - wpositions[0];
 						float smol = std::min(diff.x, std::min(diff.y, diff.z));
 						if (smol == diff.x)
 							hposition = glm::vec3(wpositions[0].x, y, z);
 						else if (smol == diff.y)
 							hposition = glm::vec3(x, wpositions[0].y, z);
-						else
+						else if (smol == diff.z)
 							hposition = glm::vec3(x, y, wpositions[0].z);
+					}
+					else if (selectedPositions == 2)
+					{
+						// only move the axis that is shared between first two positions
+						glm::vec3 diff = wpositions[1] - wpositions[0];
+						hposition = wpositions[0];
+						if (!diff.x)
+							hposition.x = x;
+						if (!diff.y)
+							hposition.y = y;
+						if (!diff.z)
+							hposition.z = z;
 					}
 					SelectBlock();
 					return true;
