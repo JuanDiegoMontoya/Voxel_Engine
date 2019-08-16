@@ -65,10 +65,8 @@ void Renderer::DrawCube()
 		layout.Push<float>(3);
 		blockHoverVao->AddBuffer(*blockHoverVbo, layout);
 	}
-	glClear(GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_DEPTH_BUFFER_BIT);
 	//glDisable(GL_CULL_FACE);
-	glLineWidth(2);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	blockHoverVao->Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

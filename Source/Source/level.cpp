@@ -223,6 +223,8 @@ void Level::DrawImGui()
 			curr->setMat4("u_view", Render::GetCamera()->GetView());
 			curr->setMat4("u_proj", Render::GetCamera()->GetProj());
 			curr->setVec4("u_color", glm::vec4(1, 1, 1, .4f));
+			glLineWidth(2);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			renderer_.DrawCube();
 
 			return true;

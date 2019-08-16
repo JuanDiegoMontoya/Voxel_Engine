@@ -87,7 +87,7 @@ namespace Editor
 					glm::max(wpositions[0].y, glm::max(wpositions[1].y, hposition.y)),
 					glm::max(wpositions[0].z, glm::max(wpositions[1].z, hposition.z)));
 
-				pos = (wpositions[0] + wpositions[1] + hposition) / 3.f;
+				pos = (min + max) / 2.f;
 				scale = glm::abs(max - min);
 			}
 			else// if (selectedPositions == 3)
@@ -101,7 +101,7 @@ namespace Editor
 					glm::max(wpositions[0].y, glm::max(wpositions[1].y, wpositions[2].y)),
 					glm::max(wpositions[0].z, glm::max(wpositions[1].z, wpositions[2].z)));
 
-				pos = (wpositions[0] + wpositions[1] + wpositions[2]) / 3.f;
+				pos = (min + max) / 2.f;
 				scale = glm::abs(max - min);
 			}
 
@@ -109,12 +109,13 @@ namespace Editor
 			glm::mat4 tScale = glm::scale(glm::mat4(1), scale + 1.f);
 
 			glDisable(GL_CULL_FACE);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			ShaderPtr curr = Shader::shaders["flat_color"];
 			curr->Use();
 			curr->setMat4("u_model", tPos * tScale);
 			curr->setMat4("u_view", Render::GetCamera()->GetView());
 			curr->setMat4("u_proj", Render::GetCamera()->GetProj());
-			curr->setVec4("u_color", glm::vec4(1.f, .3f, 1.f, .4f));
+			curr->setVec4("u_color", glm::vec4(1.f, .3f, 1.f, 1.f));
 			renderer->DrawCube();
 			glEnable(GL_CULL_FACE);
 		}
@@ -137,6 +138,7 @@ namespace Editor
 					{
 						// find axis that has smallest difference, and lock that one
 						glm::vec3 diff = glm::vec3(x, y, z) - wpositions[0];
+						diff = glm::abs(diff);
 						float smol = std::min(diff.x, std::min(diff.y, diff.z));
 						if (smol == diff.x)
 							hposition = glm::vec3(wpositions[0].x, y, z);

@@ -31,7 +31,7 @@ GLerrorCB(GLenum source,
 	if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
 
 	std::cout << "---------------" << std::endl;
-	std::cout << "Debug message (" << id << "): " << message << std::endl;
+			std::cout << "Debug message (" << id << "): " << message << std::endl;
 
 	switch (source)
 	{
