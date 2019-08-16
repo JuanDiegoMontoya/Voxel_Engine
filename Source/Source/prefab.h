@@ -19,6 +19,12 @@ struct Prefab
 
 	// blocks and their positions relative to the spawn point of the prefab
 	std::vector<std::pair<glm::ivec3, Block>> blocks;
+
+	template <class Archive>
+	void serialize(Archive& ar)
+	{
+		ar(blocks);
+	}
 };
 
 class PrefabManager

@@ -44,6 +44,12 @@ public:
 
 	static const std::vector<BlockProperties> PropertiesTable;
 
+	template <class Archive>
+	void serialize(Archive& ar)
+	{
+		ar(type_, lightValue_, writeStrength_);
+	}
+
 private:
 	BlockType type_ : 8;
 	unsigned char lightValue_ : 4;

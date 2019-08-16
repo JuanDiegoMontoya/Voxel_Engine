@@ -105,6 +105,7 @@ float ShadowCalculation(int cascIndex, vec4 fragPosLightSpace)
 }
 */
 
+// blinn-phong + cascaded shadows
 void main()
 {
   vec3 color = vColor.rgb;
@@ -124,7 +125,7 @@ void main()
   vec3 viewDir = normalize(viewPos - vPos);
   vec3 reflectDir = reflect(-lightDir, normal);
   float spec = 0.0;
-  vec3 halfwayDir = normalize(lightDir + viewDir);  
+  vec3 halfwayDir = normalize(lightDir + viewDir);
   spec = pow(max(dot(normal, halfwayDir), 0.0), vShininess);
   vec3 specular = spec * dirLight.specular;
   

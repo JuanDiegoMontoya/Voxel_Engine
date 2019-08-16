@@ -9,16 +9,18 @@
 #include "shader.h"
 #include "render.h"
 
+#include <cereal/types/concepts/pair_associative_container.hpp>
+
 namespace Editor
 {
-	// TODO: work on dis
 	namespace RegionSelect
 	{
 		const int pickLength = 5;// ray cast distance
 		size_t selectedPositions;	// how many positions have been selected
 		glm::vec3 wpositions[3];	// selected positions (0-3)
 		glm::vec3 hposition;			// hovered position (others are locked)
-
+		bool open = false;
+		
 		void CancelSelection()
 		{
 			selectedPositions = 0;
@@ -120,9 +122,18 @@ namespace Editor
 			glEnable(GL_CULL_FACE);
 		}
 
+		void SaveRegion()
+		{
+			// prefab-ify the region
+
+			// append the prefab to some file
+		}
+
 		void Update()
 		{
-			if (Input::Keyboard().down[GLFW_KEY_TAB])
+			if (Input::Keyboard().pressed[GLFW_KEY_TAB])
+				open = !open;
+			if (open)
 			{
 				raycast(
 					Render::GetCamera()->GetPos(),
