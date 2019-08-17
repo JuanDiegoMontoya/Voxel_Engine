@@ -118,6 +118,7 @@ void Level::Update(float dt)
 
 	renderer_.DrawAll();
 	Editor::Update();
+	hud_.Update();
 	DrawImGui();
 
 	PERF_BENCHMARK_END;
@@ -273,7 +274,7 @@ void Level::checkBlockPlacement()
 			if (!block || block->GetType() == Block::bAir)
 				return false;
 
-			UpdateBlockAt(glm::ivec3(x, y, z) + glm::ivec3(side), Block::bStone);
+			UpdateBlockAt(glm::ivec3(x, y, z) + glm::ivec3(side), hud_.selected_);
 
 			//Chunk::AtWorld(glm::ivec3(x, y, z) + glm::ivec3(side))->SetType(Block::bStone);
 			//for (auto& chunk : updatedChunks_)

@@ -366,7 +366,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 						level->GenerateBlockAt(wpos, Block::BlockType::bGrass);
 
 					// generate surface prefabs
-					if (Utils::get_random(0, 1) > .98f)
+					if (Utils::get_random(0, 1) > .995f)
 					{
 						if (Utils::get_random(0, 1) > .8f)
 							GeneratePrefab(PrefabManager::GetPrefab(Prefab::OakTreeBig), wpos + glm::ivec3(0, 1, 0), level);

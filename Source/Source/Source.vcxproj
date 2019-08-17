@@ -232,6 +232,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="chunk_manager.cpp" />
     <ClCompile Include="directional_light.cpp" />
     <ClCompile Include="editor.cpp" />
+    <ClCompile Include="hud.cpp" />
     <ClCompile Include="march_cubes.cpp" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="frustum.cpp" />
@@ -239,6 +240,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="lit_mesh.cpp" />
     <ClCompile Include="mesh_comp.cpp" />
     <ClCompile Include="pick.cpp" />
+    <ClCompile Include="player.cpp" />
     <ClCompile Include="prefab.cpp" />
     <ClCompile Include="render_data.cpp" />
     <ClCompile Include="sun.cpp" />
@@ -349,9 +351,11 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="editor.h" />
     <ClInclude Include="frustum.h" />
     <ClInclude Include="generation.h" />
+    <ClInclude Include="hud.h" />
     <ClInclude Include="lit_mesh.h" />
     <ClInclude Include="mesh_comp.h" />
     <ClInclude Include="pick.h" />
+    <ClInclude Include="player.h" />
     <ClInclude Include="prefab.h" />
     <ClInclude Include="render_data.h" />
     <ClInclude Include="sun.h" />

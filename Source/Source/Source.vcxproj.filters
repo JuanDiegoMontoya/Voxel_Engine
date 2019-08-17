@@ -233,6 +233,12 @@
     <ClInclude Include="editor.h">
       <Filter>Game\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="hud.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="player.h">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -387,6 +393,12 @@
     </ClCompile>
     <ClCompile Include="editor.cpp">
       <Filter>Game\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="hud.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="player.cpp">
+      <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

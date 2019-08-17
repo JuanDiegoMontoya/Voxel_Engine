@@ -82,8 +82,9 @@ GLFWwindow* init_glfw_context()
 
 	// vertical sync
 	//if (Settings::Get().Graphics.vsync)
-	//	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
+		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
 	//else
+		// single buffer for less input lag
 	//	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
 
 	const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());

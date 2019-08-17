@@ -24,7 +24,7 @@ public:
 	void SetDirLight(DirLight* d) { activeDirLight_ = d; }
 	void SetSun(Sun* s) { activeSun_ = s; }
 
-	void DrawCube();
+	static void DrawCube();
 
 private:
 	// broad-phase rendering

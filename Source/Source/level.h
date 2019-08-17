@@ -6,6 +6,7 @@
 #include "game_object.h"
 #include "sun.h"
 #include "render.h"
+#include "hud.h"
 
 //class Camera;
 typedef struct Chunk* ChunkPtr;
@@ -41,6 +42,7 @@ public:
 private:
 	ChunkManager chunkManager_;
 	Renderer renderer_;
+	HUD hud_;
 
 	std::string name_; // name of file
 	GamePtr game_;
