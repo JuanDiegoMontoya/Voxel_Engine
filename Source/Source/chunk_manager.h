@@ -13,6 +13,7 @@ public:
 	// interaction
 	void Update(LevelPtr level);
 	void UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned char writeStrength);
+	Block GetBlock(glm::ivec3 wpos);
 
 	// getters
 	float GetLoadDistance() const { return loadDistance_; }

@@ -67,7 +67,7 @@ void ChunkLoadManager::task(ChunkPtr c)
 	{
 		// TODO: check if can be loaded from file before attempting to generate
 #if MARCHED_CUBES
-		WorldGen::Generate3DNoiseChunk(chunk->GetPos(), level_);
+		WorldGen::Generate3DNoiseChunk(c->GetPos(), level_);
 #else
 		WorldGen::GenerateChunk(c->GetPos(), level_);
 #endif

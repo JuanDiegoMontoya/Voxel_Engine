@@ -8,6 +8,7 @@ struct Prefab
 	{
 		OakTree,
 		OakTreeBig,
+		Error,
 
 		pfCount
 	};
@@ -34,7 +35,8 @@ public:
 	static const Prefab& GetPrefab(Prefab::PrefabName p) { return prefabs_[p]; }
 
 private:
-	static void LoadPrefabFromFile(std::string path);
+	static Prefab LoadPrefabFromFile(std::string name);
+	static void LoadAllPrefabs();
 
 	static std::map<Prefab::PrefabName, Prefab> prefabs_;
 };

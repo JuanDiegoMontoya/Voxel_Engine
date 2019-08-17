@@ -1,6 +1,7 @@
 #pragma once
 //#include "level.h"
 //#include "pipeline.h"
+#include "serialize.h"
 
 // visual properties (for now)
 struct BlockProperties
@@ -31,36 +32,49 @@ public:
 		bWater,
 		bOakWood,
 		bOakLeaves,
+		bError,
 
 		bCount
 	};
 	
 	Block(BlockType t = bAir, unsigned char w = 0, unsigned char l = 0)
-		: type_(t), writeStrength_(w), lightValue_(l) {}
+		: type_(t)
+	{
+		SetWriteStrength(w);
+		SetLightValue(l);
+	}
 
-	inline BlockType GetType() const { return type_; }
-	inline unsigned char WriteStrength() const { return writeStrength_; }
-	inline void SetType(BlockType ty, unsigned char write) { type_ = ty; writeStrength_ = write; }
+	// Getters
+	BlockType GetType() const { return type_; }
+	unsigned char WriteStrength() const { return (wlValues_ & 0xF0) >> 4; }
+	unsigned char LightValue() const { return wlValues_ & 0x0F; }
 
-	static const std::vector<BlockProperties> PropertiesTable;
+	// Setters
+	void SetType(BlockType ty, unsigned char write) { type_ = ty; SetWriteStrength(write); }
+	void SetWriteStrength(unsigned char w)
+	{
+		ASSERT(w <= UCHAR_MAX / 2);
+		wlValues_ = (wlValues_ & 0x0F) | (w << 4);
+	}
+	void SetLightValue(unsigned char l)
+	{
+		ASSERT(l <= UCHAR_MAX / 2);
+		wlValues_ = (wlValues_ & 0xF0) | (l);
+	}
 
+	// Serialization
 	template <class Archive>
 	void serialize(Archive& ar)
 	{
-		ar(type_, lightValue_, writeStrength_);
+		ar(type_, wlValues_);
 	}
 
+	static const std::vector<BlockProperties> PropertiesTable;
 private:
-	BlockType type_ : 8;
-	unsigned char lightValue_ : 4;
+	BlockType type_;
 
-	// If the block was placed by the player or generated as part of a prefab,
-	// this will be true. Used to determine whether to write to a block during
-	// chunk generation. If this is true, then the block will not be modified
-	// during TERRAIN generation (prefabs will overwrite the value).
-
-	// this should be a char(?) called writeStrength instead to allow varying levels of written-ness
-	unsigned char writeStrength_ : 4;
+	// left 4 bits = writeStrength; right 4 bits = lightValue
+	unsigned char wlValues_;
 }Block, *BlockPtr;
 #pragma pack(pop)
 

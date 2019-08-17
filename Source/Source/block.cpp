@@ -13,7 +13,8 @@ const std::vector<BlockProperties> Block::PropertiesTable =
 	{BlockProperties(4,		glm::vec4(1, .98f, .98f, 1))},				// snow
 	{BlockProperties(256,	glm::vec4(0, .476f, .745f, .9f))},		// water
 	{BlockProperties(2,		glm::vec4(.729f, .643f, .441f, 1))},	// oak wood
-	{BlockProperties(2,		glm::vec4(.322f, .42f, .18f, 1))}			// oak leaves
+	{BlockProperties(2,		glm::vec4(.322f, .42f, .18f, 1))},		// oak leaves
+	{BlockProperties(64,	glm::vec4(1, 0, 0, 1))}								// error
 };
 
 glm::ivec3 stretch(int index, int w, int h)

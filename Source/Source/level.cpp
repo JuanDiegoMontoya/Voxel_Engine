@@ -48,6 +48,8 @@ void Level::Init()
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 	
+	Editor::level = this;
+	Editor::chunkManager = &chunkManager_;
 	Editor::renderer = &renderer_;
 	PrefabManager::InitPrefabs();
 	chunkManager_.SetCurrentLevel(this);
@@ -248,7 +250,7 @@ void Level::CheckInteraction()
 // force updates a block in a location
 void Level::UpdateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
 {
-	chunkManager_.UpdateBlock(wpos, ty, std::numeric_limits<unsigned char>::max());
+	chunkManager_.UpdateBlock(wpos, ty, std::numeric_limits<unsigned char>::max() / 2);
 }
 
 // updates a block in a location IFF the new block has a sufficiently high write strength

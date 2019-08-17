@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "chunk_manager.h"
 #include <functional>
 #include "input.h"
 #include "block.h"
@@ -8,8 +9,14 @@
 #include "editor.h"
 #include "shader.h"
 #include "render.h"
+#include "prefab.h"
+#include <fstream>
+#include "generation.h"
 
-#include <cereal/types/concepts/pair_associative_container.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/utility.hpp>
+#include <cereal/archives/xml.hpp>
+#include <cereal/archives/binary.hpp>
 
 namespace Editor
 {
@@ -20,7 +27,51 @@ namespace Editor
 		glm::vec3 wpositions[3];	// selected positions (0-3)
 		glm::vec3 hposition;			// hovered position (others are locked)
 		bool open = false;
-		
+		char sName[256];
+		char lName[256];
+
+		void SaveRegion()
+		{
+			// prefab-ify the region
+			glm::vec3 min(
+				glm::min(wpositions[0].x, glm::min(wpositions[1].x, wpositions[2].x)),
+				glm::min(wpositions[0].y, glm::min(wpositions[1].y, wpositions[2].y)),
+				glm::min(wpositions[0].z, glm::min(wpositions[1].z, wpositions[2].z)));
+			glm::vec3 max(
+				glm::max(wpositions[0].x, glm::max(wpositions[1].x, wpositions[2].x)),
+				glm::max(wpositions[0].y, glm::max(wpositions[1].y, wpositions[2].y)),
+				glm::max(wpositions[0].z, glm::max(wpositions[1].z, wpositions[2].z)));
+			Prefab newPfb;
+			for (int x = min.x; x <= max.x; x++)
+			{
+				for (int y = min.y; y <= max.y; y++)
+				{
+					for (int z = min.z; z <= max.z; z++)
+					{
+						Block b = chunkManager->GetBlock(glm::ivec3(x, y, z));
+						b.SetWriteStrength(UCHAR_MAX / 2);
+						newPfb.Add(
+							glm::ivec3(x - min.x, y - min.y, z - min.z), b);
+					}
+				}
+			}
+			
+			// append the prefab to some file
+			std::ofstream os(("./resources/Prefabs/"+ std::string(sName) + ".bin"), std::ios::binary);
+			cereal::BinaryOutputArchive archive(os);
+			archive(newPfb);
+		}
+
+		void LoadRegion()
+		{
+			std::ifstream is(("./resources/Prefabs/" + std::string(lName) + ".bin").c_str(), std::ios::binary);
+			cereal::BinaryInputArchive archive(is);
+			Prefab oldPfb;
+			archive(oldPfb);
+
+			WorldGen::GeneratePrefab(oldPfb, hposition, level);
+		}
+
 		void CancelSelection()
 		{
 			selectedPositions = 0;
@@ -45,7 +96,18 @@ namespace Editor
 				if (ImGui::ButtonEx("save", ImVec2(0, 0), flag))
 				{
 					// save the prefab in a file or something fam
+					SaveRegion();
 				}
+				ImGui::SameLine();
+				ImGui::InputText("##sname", sName, 256);
+
+				if (ImGui::Button("load"))
+				{
+					LoadRegion();
+				}
+				ImGui::SameLine();
+				ImGui::InputText("##lname", lName, 256);
+
 				ImGui::Text("Selected positions: %d", selectedPositions);
 				ImGui::Text("Hovered   : (%.2f, %.2f, %.2f)", hposition.x, hposition.y, hposition.z);
 				ImGui::Text("Position 0: (%.2f, %.2f, %.2f)", wpositions[0].x, wpositions[0].y, wpositions[0].z);
@@ -54,79 +116,74 @@ namespace Editor
 				ImGui::End();
 			}
 
-			// actually draw the bounding box
-			glm::vec3 pos(0);
-			glm::vec3 scale(0);
-			if (selectedPositions == 0)
 			{
-				scale = glm::vec3(0);
-				pos = hposition;
+				// actually draw the bounding box
+				glm::vec3 pos(0);
+				glm::vec3 scale(0);
+				if (selectedPositions == 0)
+				{
+					scale = glm::vec3(0);
+					pos = hposition;
+				}
+				else if (selectedPositions == 1)
+				{
+					// component wise
+					glm::vec3 min(
+						glm::min(wpositions[0].x, hposition.x),
+						glm::min(wpositions[0].y, hposition.y),
+						glm::min(wpositions[0].z, hposition.z));
+					glm::vec3 max(
+						glm::max(wpositions[0].x, hposition.x),
+						glm::max(wpositions[0].y, hposition.y),
+						glm::max(wpositions[0].z, hposition.z));
+
+					pos = (wpositions[0] + hposition) / 2.f;
+					scale = glm::abs(max - min);
+				}
+				else if (selectedPositions == 2)
+				{
+					// component wise
+					glm::vec3 min(
+						glm::min(wpositions[0].x, glm::min(wpositions[1].x, hposition.x)),
+						glm::min(wpositions[0].y, glm::min(wpositions[1].y, hposition.y)),
+						glm::min(wpositions[0].z, glm::min(wpositions[1].z, hposition.z)));
+					glm::vec3 max(
+						glm::max(wpositions[0].x, glm::max(wpositions[1].x, hposition.x)),
+						glm::max(wpositions[0].y, glm::max(wpositions[1].y, hposition.y)),
+						glm::max(wpositions[0].z, glm::max(wpositions[1].z, hposition.z)));
+
+					pos = (min + max) / 2.f;
+					scale = glm::abs(max - min);
+				}
+				else// if (selectedPositions == 3)
+				{
+					glm::vec3 min(
+						glm::min(wpositions[0].x, glm::min(wpositions[1].x, wpositions[2].x)),
+						glm::min(wpositions[0].y, glm::min(wpositions[1].y, wpositions[2].y)),
+						glm::min(wpositions[0].z, glm::min(wpositions[1].z, wpositions[2].z)));
+					glm::vec3 max(
+						glm::max(wpositions[0].x, glm::max(wpositions[1].x, wpositions[2].x)),
+						glm::max(wpositions[0].y, glm::max(wpositions[1].y, wpositions[2].y)),
+						glm::max(wpositions[0].z, glm::max(wpositions[1].z, wpositions[2].z)));
+
+					pos = (min + max) / 2.f;
+					scale = glm::abs(max - min);
+				}
+
+				glm::mat4 tPos = glm::translate(glm::mat4(1), pos + .5f);
+				glm::mat4 tScale = glm::scale(glm::mat4(1), scale + 1.f);
+
+				glDisable(GL_CULL_FACE);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				ShaderPtr curr = Shader::shaders["flat_color"];
+				curr->Use();
+				curr->setMat4("u_model", tPos * tScale);
+				curr->setMat4("u_view", Render::GetCamera()->GetView());
+				curr->setMat4("u_proj", Render::GetCamera()->GetProj());
+				curr->setVec4("u_color", glm::vec4(1.f, .3f, 1.f, 1.f));
+				renderer->DrawCube();
+				glEnable(GL_CULL_FACE);
 			}
-			else if (selectedPositions == 1)
-			{
-				// component wise
-				glm::vec3 min(
-					glm::min(wpositions[0].x, hposition.x),
-					glm::min(wpositions[0].y, hposition.y),
-					glm::min(wpositions[0].z, hposition.z));
-				glm::vec3 max(
-					glm::max(wpositions[0].x, hposition.x),
-					glm::max(wpositions[0].y, hposition.y),
-					glm::max(wpositions[0].z, hposition.z));
-
-				pos = (wpositions[0] + hposition) / 2.f;
-				scale = glm::abs(max - min);
-			}
-			else if (selectedPositions == 2)
-			{
-				// component wise
-				glm::vec3 min(
-					glm::min(wpositions[0].x, glm::min(wpositions[1].x, hposition.x)),
-					glm::min(wpositions[0].y, glm::min(wpositions[1].y, hposition.y)),
-					glm::min(wpositions[0].z, glm::min(wpositions[1].z, hposition.z)));
-				glm::vec3 max(
-					glm::max(wpositions[0].x, glm::max(wpositions[1].x, hposition.x)),
-					glm::max(wpositions[0].y, glm::max(wpositions[1].y, hposition.y)),
-					glm::max(wpositions[0].z, glm::max(wpositions[1].z, hposition.z)));
-
-				pos = (min + max) / 2.f;
-				scale = glm::abs(max - min);
-			}
-			else// if (selectedPositions == 3)
-			{
-				glm::vec3 min(
-					glm::min(wpositions[0].x, glm::min(wpositions[1].x, wpositions[2].x)),
-					glm::min(wpositions[0].y, glm::min(wpositions[1].y, wpositions[2].y)),
-					glm::min(wpositions[0].z, glm::min(wpositions[1].z, wpositions[2].z)));
-				glm::vec3 max(
-					glm::max(wpositions[0].x, glm::max(wpositions[1].x, wpositions[2].x)),
-					glm::max(wpositions[0].y, glm::max(wpositions[1].y, wpositions[2].y)),
-					glm::max(wpositions[0].z, glm::max(wpositions[1].z, wpositions[2].z)));
-
-				pos = (min + max) / 2.f;
-				scale = glm::abs(max - min);
-			}
-
-			glm::mat4 tPos = glm::translate(glm::mat4(1), pos + .5f);
-			glm::mat4 tScale = glm::scale(glm::mat4(1), scale + 1.f);
-
-			glDisable(GL_CULL_FACE);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			ShaderPtr curr = Shader::shaders["flat_color"];
-			curr->Use();
-			curr->setMat4("u_model", tPos * tScale);
-			curr->setMat4("u_view", Render::GetCamera()->GetView());
-			curr->setMat4("u_proj", Render::GetCamera()->GetProj());
-			curr->setVec4("u_color", glm::vec4(1.f, .3f, 1.f, 1.f));
-			renderer->DrawCube();
-			glEnable(GL_CULL_FACE);
-		}
-
-		void SaveRegion()
-		{
-			// prefab-ify the region
-
-			// append the prefab to some file
 		}
 
 		void Update()

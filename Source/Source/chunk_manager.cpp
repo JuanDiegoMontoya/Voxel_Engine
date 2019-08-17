@@ -72,6 +72,14 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned ch
 	}
 }
 
+Block ChunkManager::GetBlock(glm::ivec3 wpos)
+{
+	BlockPtr block = Chunk::AtWorld(wpos);
+	if (!block)
+		return Block();
+	return *block;
+}
+
 void ChunkManager::ProcessUpdatedChunks()
 {
 	std::for_each(

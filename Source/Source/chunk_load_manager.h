@@ -2,7 +2,7 @@
 #include "vendor/ctpl_stl.h"
 
 typedef struct Chunk* ChunkPtr;
-typedef struct Level* LevelPtr;
+typedef class Level* LevelPtr;
 
 // Handles the bulk creation of chunks through threading and messaging.
 // Does not have anything to do with building chunk meshes!
