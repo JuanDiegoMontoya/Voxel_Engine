@@ -5,7 +5,7 @@ This is a tech demo designed to demonstrate the implementation of various render
 (*WIP*) indicates that a feature is mostly complete but has a few bugs that need to be smoothed out. 
 
 Performance was tested on this system for reference:
-- AMD Ryzen 5 2600X Processor
+- AMD Ryzen 5 2600X CPU
 - 16 GB RAM
 - NVIDIA GeForce GTX 1060 6GB
 
@@ -13,8 +13,9 @@ Performance was tested on this system for reference:
 ### Voxels
 - Capable of rendering 10+ million blocks with 144+ FPS
 - Infinite size world
-- Interesting terrain including hills, mountains, plains, rivers, etc.
+- Procedurally generated terrain including hills, mountains, plains, rivers, etc.
 - Block picking (destroying and placing)
+- A prefab editor
 - (*WIP*) Marching cubes implementation for smooth voxels (in worlds defined by a density field)
 
 ### Graphics
@@ -25,3 +26,6 @@ Performance was tested on this system for reference:
 - (*WIP*) Deferred rendering pipeline
 - (*WIP*) Ray traced screen space water reflections
 - (*WIP*) Cascaded shadow maps
+
+### Other
+- Portability. Uses (to my knowledge) no platform dependent libraries or headers
