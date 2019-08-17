@@ -236,27 +236,28 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	static module::Select canvas2;
 	static module::RidgedMulti tunneler;
 	static module::Invert inverter;
-	static utils::NoiseMap heightMap;
-	static utils::NoiseMapBuilderPlane heightMapBuilder;
+	//static utils::NoiseMap heightMap;
+	//static utils::NoiseMapBuilderPlane heightMapBuilder;
 
 	static module::RidgedMulti riversBase;
-	static module::Perlin riversRandomizer;
 	static module::Turbulence rivers;
-	static utils::NoiseMap riverMap;
-	static utils::NoiseMapBuilderPlane riverMapBuilder;
+	//static utils::NoiseMap riverMap;
+	//static utils::NoiseMapBuilderPlane riverMapBuilder;
+	
+	static model::Plane riverMapBuilder;
+	static model::Plane heightMapBuilder;
 
 	if (init)
 	{
 		canvas0.SetConstValue(-1.0);
 		gray.SetConstValue(0);
 
-		riversBase.SetLacunarity(3.);
-		riversBase.SetOctaveCount(1);
-		riversBase.SetFrequency(.10);
-		riversRandomizer.SetOctaveCount(1);
+		riversBase.SetLacunarity(2.);
+		riversBase.SetOctaveCount(5);
+		riversBase.SetFrequency(.0060);
 
 		rivers.SetSourceModule(0, riversBase);
-		rivers.SetRoughness(1);
+		rivers.SetRoughness(5);
 		
 		//rivers.SetPersistence(.1);
 
@@ -309,21 +310,23 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		tunneler.SetFrequency(.01);
 		inverter.SetSourceModule(0, tunneler);
 
-		riverMapBuilder.SetSourceModule(rivers);
-		riverMapBuilder.SetDestNoiseMap(riverMap);
-		riverMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
+		riverMapBuilder.SetModule(riversBase);
+		//riverMapBuilder.SetSourceModule(rivers);
+		//riverMapBuilder.SetDestNoiseMap(riverMap);
+		//riverMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
 
-		heightMapBuilder.SetSourceModule(canvas2);
-		heightMapBuilder.SetDestNoiseMap(heightMap);
-		heightMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
+		heightMapBuilder.SetModule(canvas0);
+		//heightMapBuilder.SetSourceModule(canvas2);
+		//heightMapBuilder.SetDestNoiseMap(heightMap);
+		//heightMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
 
 		init = false;
 	}
 
-	heightMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z , cpos.z + 1);
-	heightMapBuilder.Build();
-	riverMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z, cpos.z + 1);
-	riverMapBuilder.Build();
+	//heightMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z , cpos.z + 1);
+	//heightMapBuilder.Build();
+	//riverMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z, cpos.z + 1);
+	//riverMapBuilder.Build();
 
 	// generate EVERYTHING
 	for (int i = 0; i < Chunk::CHUNK_SIZE; i++)
@@ -336,14 +339,15 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				int worldY = cpos.y * Chunk::CHUNK_SIZE + j;
 				int worldZ = cpos.z * Chunk::CHUNK_SIZE + k;
 				glm::ivec3 wpos(worldX, worldY, worldZ);
-				//utils::Color* color = height.GetSlabPtr(i, k);
-				float height = *heightMap.GetConstSlabPtr(i, k);
-				float riverVal = *riverMap.GetConstSlabPtr(i, k);
+				//float height = *heightMap.GetConstSlabPtr(i, k);
+				//float riverVal = *riverMap.GetConstSlabPtr(i, k);
+				float height = heightMapBuilder.GetValue(worldX, worldZ);
+				float riverVal = riverMapBuilder.GetValue(worldX, worldZ);
 				height = height < -1 ? -1 : height;
 
 				int y = (int)Utils::mapToRange(height, -1.f, 1.f, -0.f, 150.f);
 				int riverModifier = 0;
-				if (riverVal > 0 && getSlope(heightMap, i, k) < 0.004f)
+				if (riverVal > 0 && getSlope(heightMapBuilder, worldX, worldZ) < 0.004f)
 					riverModifier = glm::clamp(Utils::mapToRange(riverVal, 0.05f, 0.2f, 0.f, 5.f), 0.f, 30.f);
 				int actualHeight = y - riverModifier;
 
@@ -390,20 +394,20 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	}
 
 	// generate tunnels
-	for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
-	{
-		for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
-		{
-			for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
-			{
-				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
-				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
-				//std::cout << val << '\n';
-				if (val > .9)
-					level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
-			}
-		}
-	}
+	//for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
+	//{
+	//	for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
+	//	{
+	//		for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
+	//		{
+	//			glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
+	//			double val = tunneler.GetValue(pos.x, pos.y, pos.z);
+	//			//std::cout << val << '\n';
+	//			if (val > .9)
+	//				level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
+	//		}
+	//	}
+	//}
 }
 
 void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos, LevelPtr level)
@@ -456,20 +460,21 @@ double WorldGen::GetCurrentNoise(const glm::vec3& wpos)
 }
 
 // TODO: make this function able to look past the end of the heightmap
-float WorldGen::getSlope(utils::NoiseMap& heightmap, int x, int z)
+float WorldGen::getSlope(model::Plane& pl, int x, int z)
 {
 	//float height = *heightmap.GetConstSlabPtr(x, z);
-	float height = heightmap.GetValue(x, z);
+	float height = pl.GetValue(x, z);
 
 	// Compute the differentials by stepping over 1 in both directions.
-	float val1 = heightmap.GetValue(x + 1, z);
-	float val2 = heightmap.GetValue(x, z + 1);
+	float val1 = pl.GetValue(x + 1, z);
+	float val2 = pl.GetValue(x, z + 1);
+	
 	//if (val1 == 0 || val2 == 0)
 	//	return 0;
 	float dx = val1 - height;
 	float dz = val2 - height;
 	
 	// The "steepness" is the magnitude of the gradient vector
-	// For a faster but not as accurate computation, you can just use abs(dx) + abs(dy)
+	// For a faster but less accurate computation, you can just use abs(dx) + abs(dy)
 	return glm::sqrt(dx * dx + dz * dz);
 }

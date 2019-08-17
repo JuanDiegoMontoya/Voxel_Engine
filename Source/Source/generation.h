@@ -35,7 +35,7 @@ public:
 	static double GetCurrentNoise(const glm::vec3& wpos);
 private:
 	// sample near values in heightmap to obtain rough first derivative
-	static float getSlope(utils::NoiseMap& heightmap, int x, int z);
+	static float getSlope(noise::model::Plane& pl, int x, int z);
 
 	// you can't make this object
 	WorldGen() = delete;
