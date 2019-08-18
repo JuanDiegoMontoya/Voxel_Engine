@@ -2,6 +2,11 @@
 #include "prefab.h"
 #include <filesystem>
 
+#include <fstream>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/utility.hpp>
+#include <cereal/archives/binary.hpp>
+
 std::map<Prefab::PrefabName, Prefab> PrefabManager::prefabs_;
 
 void PrefabManager::InitPrefabs()
@@ -61,14 +66,28 @@ void PrefabManager::InitPrefabs()
 		}
 	}
 	prefabs_[Prefab::Error] = error;
+
+	LoadAllPrefabs();
 }
 
+// TODO: add support for xml and json archives (just check the file extension)
 Prefab PrefabManager::LoadPrefabFromFile(std::string name)
 {
-
+	try
+	{
+		std::ifstream is(("./resources/Prefabs/" + std::string(name) + ".bin").c_str(), std::ios::binary);
+		cereal::BinaryInputArchive archive(is);
+		Prefab pfb;
+		archive(pfb);
+		return pfb;
+	}
+	catch (...)
+	{
+		return prefabs_[Prefab::Error];
+	}
 }
 
 void PrefabManager::LoadAllPrefabs()
 {
-	
+	prefabs_[Prefab::DungeonSmall] = LoadPrefabFromFile("dungeon");
 }

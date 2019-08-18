@@ -1,6 +1,6 @@
 #pragma once
 #include "prefab.h"
-#include "biome.h"
+#include <noise/noise.h>
 
 typedef struct Chunk* ChunkPtr;
 typedef class Level* LevelPtr;
@@ -8,6 +8,15 @@ typedef class Level* LevelPtr;
 class WorldGen
 {
 public:
+	enum TerrainType : unsigned
+	{
+		tNone,  // unfilled terrain (replaced with ocean or something)
+		tPlains,
+		tHills,
+
+		tCount
+	};
+
 	/* 
 		Generates a rectangular world of the given dimensions
 		(in chunks). Sparsity of the blocks can be controlled.
@@ -26,6 +35,9 @@ public:
 		Populates a chunk based on its position in the world
 	*/
 	static void GenerateChunk(glm::ivec3 cpos, LevelPtr level);
+	static TerrainType GetTerrainType(glm::ivec3 wpos);
+	static double GetTemperature(glm::ivec3 wpos);
+	static double GetHumidity(glm::ivec3 wpos);
 
 	static void GeneratePrefab(const Prefab& pfab, glm::ivec3 wpos, LevelPtr level);
 
@@ -39,6 +51,4 @@ private:
 
 	// you can't make this object
 	WorldGen() = delete;
-
-
 };

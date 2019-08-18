@@ -219,68 +219,90 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 
 }
 
+static module::Perlin snowCover;
+static module::Const canvas0;
+static module::Const gray;
+static module::Perlin plains;
+static module::Const plainsHeight;
+static module::Add plainsFinal;
+static module::Perlin plainsPicker;
+static module::Select plainsSelect;
+static module::Select canvas1;
+static module::Perlin hillsLumpy;
+static module::Const hillsHeight;
+static module::Add hills;
+static module::Perlin hillsPicker;
+static module::Select hillsSelect;
+static module::Select canvas2;
+static module::RidgedMulti tunneler;
+static module::Invert inverter;
+//static utils::NoiseMap heightMap;
+//static utils::NoiseMapBuilderPlane heightMapBuilder;
+
+static module::RidgedMulti riversBase;
+static module::Turbulence rivers;
+//static utils::NoiseMap riverMap;
+//static utils::NoiseMapBuilderPlane riverMapBuilder;
+
+static model::Plane riverMapBuilder;
+static model::Plane heightMapBuilder;
+
+static module::Perlin temperature;
+static module::Perlin humidity;
 void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 {
 	static bool init = true;
-	static module::Const canvas0;
-	static module::Const gray;
-	static module::Perlin plains;
-	static module::Perlin plainsPicker;
-	static module::Select plainsSelect;
-	static module::Select canvas1;
-	static module::Perlin hillsLumpy;
-	static module::Const hillsHeight;
-	static module::Add hills;
-	static module::Perlin hillsPicker;
-	static module::Select hillsSelect;
-	static module::Select canvas2;
-	static module::RidgedMulti tunneler;
-	static module::Invert inverter;
-	//static utils::NoiseMap heightMap;
-	//static utils::NoiseMapBuilderPlane heightMapBuilder;
-
-	static module::RidgedMulti riversBase;
-	static module::Turbulence rivers;
-	//static utils::NoiseMap riverMap;
-	//static utils::NoiseMapBuilderPlane riverMapBuilder;
-	
-	static model::Plane riverMapBuilder;
-	static model::Plane heightMapBuilder;
 
 	if (init)
 	{
+		// init temp + humidity maps
+		temperature.SetFrequency(.005);
+		temperature.SetSeed(0);
+		temperature.SetOctaveCount(1);
+		humidity.SetFrequency(.005);
+		humidity.SetSeed(1);
+		humidity.SetOctaveCount(1);
+
+		snowCover.SetFrequency(.01);
 		canvas0.SetConstValue(-1.0);
 		gray.SetConstValue(0);
 
-		riversBase.SetLacunarity(2.);
-		riversBase.SetOctaveCount(5);
-		riversBase.SetFrequency(.0060);
+		riversBase.SetLacunarity(5);
+		//riversBase.SetPersistence(.5);
+		riversBase.SetNoiseQuality(noise::NoiseQuality::QUALITY_STD);
+		riversBase.SetOctaveCount(3);
+		riversBase.SetFrequency(.0100);
 
 		rivers.SetSourceModule(0, riversBase);
-		rivers.SetRoughness(5);
+		rivers.SetRoughness(1);
+		rivers.SetPower(.5);
+		rivers.SetFrequency(.2);
 		
 		//rivers.SetPersistence(.1);
 
 		// add a little bit of plains to a blank canvas
-		plains.SetLacunarity(0);
+		plains.SetLacunarity(1);
 		plains.SetOctaveCount(3);
-		plains.SetFrequency(.03);
+		plains.SetFrequency(.0006);
 		plains.SetPersistence(.8);
+		plainsHeight.SetConstValue(-.8); // height modifier
+		plainsFinal.SetSourceModule(0, plainsHeight);
+		plainsFinal.SetSourceModule(1, plains);
 		plainsPicker.SetSeed(0);
 		plainsPicker.SetLacunarity(0);
-		plainsPicker.SetFrequency(.1);
+		plainsPicker.SetFrequency(.003);
 		plainsPicker.SetOctaveCount(3);
-		plainsSelect.SetBounds(-1, 0);
-		plainsSelect.SetEdgeFalloff(.1);
+		plainsSelect.SetBounds(-1, 0); // % of world to be (-1 to 1)
+		plainsSelect.SetEdgeFalloff(0.15);
 		plainsSelect.SetSourceModule(0, canvas0);
-		plainsSelect.SetSourceModule(1, plains);
+		plainsSelect.SetSourceModule(1, plainsFinal);
 		plainsSelect.SetControlModule(plainsPicker);
 		canvas1.SetEdgeFalloff(1.5);
 		canvas1.SetSourceModule(0, canvas0);
 		canvas1.SetSourceModule(1, plainsSelect);
 		canvas1.SetControlModule(canvas0);
 
-		hillsLumpy.SetFrequency(.2);
+		hillsLumpy.SetFrequency(.006);
 		hillsLumpy.SetOctaveCount(2);
 		hillsLumpy.SetPersistence(1.0);
 		hillsHeight.SetConstValue(0);
@@ -288,10 +310,10 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		hills.SetSourceModule(1, hillsHeight);
 		hillsPicker.SetSeed(1);
 		hillsPicker.SetLacunarity(0);
-		hillsPicker.SetFrequency(.1);
+		hillsPicker.SetFrequency(.003);
 		hillsPicker.SetOctaveCount(3);
-		hillsSelect.SetBounds(-1, 0);
-		hillsSelect.SetEdgeFalloff(.1);
+		hillsSelect.SetBounds(-1, -.2);
+		hillsSelect.SetEdgeFalloff(.2);
 		hillsSelect.SetSourceModule(0, canvas0);
 		hillsSelect.SetSourceModule(1, hills);
 		hillsSelect.SetControlModule(hillsPicker);
@@ -310,12 +332,12 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		tunneler.SetFrequency(.01);
 		inverter.SetSourceModule(0, tunneler);
 
-		riverMapBuilder.SetModule(riversBase);
+		riverMapBuilder.SetModule(rivers);
 		//riverMapBuilder.SetSourceModule(rivers);
 		//riverMapBuilder.SetDestNoiseMap(riverMap);
 		//riverMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
 
-		heightMapBuilder.SetModule(canvas0);
+		heightMapBuilder.SetModule(canvas2);
 		//heightMapBuilder.SetSourceModule(canvas2);
 		//heightMapBuilder.SetDestNoiseMap(heightMap);
 		//heightMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
@@ -348,7 +370,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				int y = (int)Utils::mapToRange(height, -1.f, 1.f, -0.f, 150.f);
 				int riverModifier = 0;
 				if (riverVal > 0 && getSlope(heightMapBuilder, worldX, worldZ) < 0.004f)
-					riverModifier = glm::clamp(Utils::mapToRange(riverVal, 0.05f, 0.2f, 0.f, 5.f), 0.f, 30.f);
+					//riverModifier = glm::clamp(Utils::mapToRange(riverVal, 0.05f, 0.2f, 0.f, 5.f), 0.f, 30.f);
+					riverModifier = glm::clamp(Utils::mapToRange(riverVal, -.35f, .35f, -4.f, 5.f), 0.f, 30.f);
 				int actualHeight = y - riverModifier;
 
 				//if (worldY > actualHeight && worldY < y)
@@ -364,7 +387,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				if (worldY == actualHeight)
 				{
 					// surface features
-					if (hillsPicker.GetValue(worldX, worldY, worldZ) * 30 + worldY > 90)
+					if (snowCover.GetValue(worldX, worldY, worldZ) * 30 + worldY > 90)
 						level->GenerateBlockAt(wpos, Block::BlockType::bSnow);
 					else
 						level->GenerateBlockAt(wpos, Block::BlockType::bGrass);
@@ -384,7 +407,11 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 
 				// generate subsurface
 				if (worldY >= -10 && worldY < actualHeight - 3)
+				{
 					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
+					if (Utils::get_random(0, 1) > .99999f)
+						GeneratePrefab(PrefabManager::GetPrefab(Prefab::DungeonSmall), wpos, level);
+				}
 				//if (val > .9)
 				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::bAir);
 				//if (val > .87 && worldY >= actualHeight - 3 && worldY <= actualHeight + 2)
@@ -408,6 +435,22 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	//		}
 	//	}
 	//}
+}
+
+// TODO: finish this function
+WorldGen::TerrainType WorldGen::GetTerrainType(glm::ivec3 wpos)
+{
+	return TerrainType();
+}
+
+double WorldGen::GetTemperature(glm::ivec3 wpos)
+{
+	return temperature.GetValue(wpos.x, wpos.y, wpos.z);
+}
+
+double WorldGen::GetHumidity(glm::ivec3 wpos)
+{
+	return humidity.GetValue(wpos.x, wpos.y, wpos.z);
 }
 
 void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos, LevelPtr level)

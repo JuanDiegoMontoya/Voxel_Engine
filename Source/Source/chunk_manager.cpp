@@ -33,9 +33,9 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned ch
 	if (block)
 	{
 		// ignore if same type
-		if (block->GetType() == t)
-			return;
-		// write policy: skip if new block is WEAKER than current block
+		//if (block->GetType() == t)
+		//	return;
+		// write policy: skip if new block is WEAKER than current block (same strength WILL overwrite)
 		if (writeStrength < block->WriteStrength())
 			return;
 	}

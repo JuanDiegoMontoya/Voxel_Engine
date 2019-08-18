@@ -15,7 +15,6 @@
 
 #include <cereal/types/vector.hpp>
 #include <cereal/types/utility.hpp>
-#include <cereal/archives/xml.hpp>
 #include <cereal/archives/binary.hpp>
 
 namespace Editor
