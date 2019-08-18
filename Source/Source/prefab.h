@@ -10,6 +10,7 @@ struct Prefab
 		OakTreeBig,
 		Error,
 		DungeonSmall,
+		BorealTree,
 
 		pfCount
 	};

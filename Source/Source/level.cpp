@@ -52,6 +52,7 @@ void Level::Init()
 	Editor::chunkManager = &chunkManager_;
 	Editor::renderer = &renderer_;
 	PrefabManager::InitPrefabs();
+	BiomeManager::InitializeBiomes();
 	chunkManager_.SetCurrentLevel(this);
 	chunkManager_.SetLoadDistance(300.f);
 	chunkManager_.SetUnloadLeniency(100.f);

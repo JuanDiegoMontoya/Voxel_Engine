@@ -247,8 +247,10 @@ static module::Turbulence rivers;
 static model::Plane riverMapBuilder;
 static model::Plane heightMapBuilder;
 
-static module::Perlin temperature;
-static module::Perlin humidity;
+static module::Perlin temperatureNoise;
+static module::Perlin humidityNoise;
+static model::Plane temperature;
+static model::Plane humidity;
 void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 {
 	static bool init = true;
@@ -256,12 +258,14 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	if (init)
 	{
 		// init temp + humidity maps
-		temperature.SetFrequency(.005);
-		temperature.SetSeed(0);
-		temperature.SetOctaveCount(1);
-		humidity.SetFrequency(.005);
-		humidity.SetSeed(1);
-		humidity.SetOctaveCount(1);
+		temperatureNoise.SetFrequency(.005);
+		temperatureNoise.SetSeed(0);
+		temperatureNoise.SetOctaveCount(1);
+		humidityNoise.SetFrequency(.005);
+		humidityNoise.SetSeed(1);
+		humidityNoise.SetOctaveCount(1);
+		temperature.SetModule(temperatureNoise);
+		humidity.SetModule(humidityNoise);
 
 		snowCover.SetFrequency(.01);
 		canvas0.SetConstValue(-1.0);
@@ -420,7 +424,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		}
 	}
 
-	// generate tunnels
+	// generate dummy tunnels
 	//for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
 	//{
 	//	for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
@@ -437,20 +441,27 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	//}
 }
 
-// TODO: finish this function
 WorldGen::TerrainType WorldGen::GetTerrainType(glm::ivec3 wpos)
 {
-	return TerrainType();
+	// TODO: special cases of height e.g. being very deep (underworld, etc.) or being high (sky islands)
+
+	// the order of these gotta be in the order in which they're generated
+	if (plainsSelect.GetValue(wpos.x, 0, wpos.z) != 0)
+		return TerrainType::tPlains;
+	if (hillsSelect.GetValue(wpos.x, 0, wpos.z) != 0)
+		return TerrainType::tHills;
+	return TerrainType::tNone; // anywhere no biome has been generated will be this
 }
 
-double WorldGen::GetTemperature(glm::ivec3 wpos)
+double WorldGen::GetTemperature(double x, double z)
 {
-	return temperature.GetValue(wpos.x, wpos.y, wpos.z);
+	// TODO: perhaps increase temperature with height?
+	return temperature.GetValue(x, z);
 }
 
-double WorldGen::GetHumidity(glm::ivec3 wpos)
+double WorldGen::GetHumidity(double x, double z)
 {
-	return humidity.GetValue(wpos.x, wpos.y, wpos.z);
+	return humidity.GetValue(x, z);
 }
 
 void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos, LevelPtr level)

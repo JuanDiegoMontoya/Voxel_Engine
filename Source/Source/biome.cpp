@@ -39,12 +39,26 @@ void BiomeManager::InitializeBiomes()
 
 	// woodlands
 	{
-		Biome woodlands(.5f, .5f, WorldGen::tPlains, Block::bGrass);
+		Biome woodlands(0, 0, WorldGen::tPlains, Block::bGrass);
 		woodlands.name = "woodlands";
 		woodlands.surfaceFeatures.push_back({ .01f, Prefab::OakTree });
 		registerBiome(woodlands);
 	}
 
+	// snow hills
+	{
+		Biome snowH(.5f, -.5f, WorldGen::tHills, Block::bSnow);
+		snowH.name = "snow hills";
+		snowH.surfaceFeatures.push_back({ .002f, Prefab::BorealTree });
+		registerBiome(snowH);
+	}
+
+	// flat desert
+	{
+		Biome desertF(-.5f, .5f, WorldGen::tPlains, Block::bSand);
+		desertF.name = "flat desert";
+		registerBiome(desertF);
+	}
 	initCustomBiomes();
 }
 
@@ -55,7 +69,7 @@ void BiomeManager::registerBiome(const Biome & biome)
 	biomes[biome.name] = biome;
 }
 
-Biome BiomeManager::loadBiome()
+Biome BiomeManager::loadBiome(std::string name)
 {
 	return Biome();
 }

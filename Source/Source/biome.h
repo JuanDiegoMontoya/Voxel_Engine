@@ -2,6 +2,7 @@
 #include "generation.h"
 
 // TODO: add more properties like grass/water color modifier, etc
+//			 sky color,
 struct Biome
 {
 	Biome(float humid, float temp,
@@ -39,11 +40,11 @@ class BiomeManager
 public:
 	inline static std::map<std::string, Biome> biomes;
 
-	const Biome& GetBiome(float temp, float humid, WorldGen::TerrainType terrain);
-	void InitializeBiomes();
+	const static Biome& GetBiome(float temp, float humid, WorldGen::TerrainType terrain);
+	static void InitializeBiomes();
 private:
-	void registerBiome(const Biome& biome);
+	static void registerBiome(const Biome& biome);
 
-	Biome loadBiome();
-	void initCustomBiomes();
+	static Biome loadBiome(std::string name);
+	static void initCustomBiomes();
 };
