@@ -11,6 +11,7 @@ struct Prefab
 		Error,
 		DungeonSmall,
 		BorealTree,
+		Cactus,
 
 		pfCount
 	};

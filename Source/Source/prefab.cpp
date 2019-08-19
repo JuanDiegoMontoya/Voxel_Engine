@@ -90,4 +90,6 @@ Prefab PrefabManager::LoadPrefabFromFile(std::string name)
 void PrefabManager::LoadAllPrefabs()
 {
 	prefabs_[Prefab::DungeonSmall] = LoadPrefabFromFile("dungeon");
+	prefabs_[Prefab::BorealTree] = LoadPrefabFromFile("borealTree");
+	prefabs_[Prefab::Cactus] = LoadPrefabFromFile("cactus");
 }

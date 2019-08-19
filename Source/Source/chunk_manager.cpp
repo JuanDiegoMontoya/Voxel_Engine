@@ -133,6 +133,23 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 
 void ChunkManager::createNearbyChunks()
 {
+	std::vector<ChunkPtr> deleteList;
+	Utils::erase_if(
+		Chunk::chunks,
+		[&](auto& p)->bool
+	{
+		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
+		if (p.second && dist > loadDistance_ + unloadLeniency_)
+		{
+			deleteList.push_back(p.second);
+			return true;
+		}
+		return false;
+	});
+
+	for (ChunkPtr p : deleteList)
+		delete p;
+
 	// delete far away chunks, then create chunks that are close
 	std::for_each(
 		std::execution::seq,
@@ -143,12 +160,13 @@ void ChunkManager::createNearbyChunks()
 		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
 		if (p.second)
 		{
-			if (dist > loadDistance_ + unloadLeniency_)
-			{
-				delete p.second;
-				p.second = nullptr;
-				return;
-			}
+			//if (dist > loadDistance_ + unloadLeniency_)
+			//{
+			//	Chunk::chunks.erase(p.first);
+			//	delete p.second;
+			//	p.second = nullptr;
+			//	return;
+			//}
 		}
 		// chunk either doesn't exist OR needs to be generated
 		else if (dist <= loadDistance_)

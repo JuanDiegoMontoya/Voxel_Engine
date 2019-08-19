@@ -238,6 +238,12 @@ static module::RidgedMulti tunneler;
 static module::Invert inverter;
 //static utils::NoiseMap heightMap;
 //static utils::NoiseMapBuilderPlane heightMapBuilder;
+static module::RidgedMulti oceans;
+static module::Const oceanHeight;
+static module::Const oceanSmoothValue;
+static module::Multiply oceanSmooth;
+static module::Add finalOcean;
+static module::Select finalCanvas;
 
 static module::RidgedMulti riversBase;
 static module::Turbulence rivers;
@@ -287,9 +293,9 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		// add a little bit of plains to a blank canvas
 		plains.SetLacunarity(1);
 		plains.SetOctaveCount(3);
-		plains.SetFrequency(.0006);
+		plains.SetFrequency(.0016);
 		plains.SetPersistence(.8);
-		plainsHeight.SetConstValue(-.8); // height modifier
+		plainsHeight.SetConstValue(-.3); // height modifier
 		plainsFinal.SetSourceModule(0, plainsHeight);
 		plainsFinal.SetSourceModule(1, plains);
 		plainsPicker.SetSeed(0);
@@ -301,7 +307,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		plainsSelect.SetSourceModule(0, canvas0);
 		plainsSelect.SetSourceModule(1, plainsFinal);
 		plainsSelect.SetControlModule(plainsPicker);
-		canvas1.SetEdgeFalloff(1.5);
+		canvas1.SetEdgeFalloff(.5);
 		canvas1.SetSourceModule(0, canvas0);
 		canvas1.SetSourceModule(1, plainsSelect);
 		canvas1.SetControlModule(canvas0);
@@ -321,11 +327,28 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		hillsSelect.SetSourceModule(0, canvas0);
 		hillsSelect.SetSourceModule(1, hills);
 		hillsSelect.SetControlModule(hillsPicker);
-		canvas2.SetEdgeFalloff(1.1);
-		canvas2.SetBounds(-1, -.5);
+		canvas2.SetEdgeFalloff(.5);
+		canvas2.SetBounds(-1, -.8); // this value makes a big difference somehow
 		canvas2.SetSourceModule(0, canvas1);
 		canvas2.SetSourceModule(1, hillsSelect);
 		canvas2.SetControlModule(canvas1);
+
+
+		// do oceans very last
+		oceans.SetSeed(2);
+		oceans.SetOctaveCount(1);
+		oceans.SetFrequency(.017);
+		oceanSmoothValue.SetConstValue(.3);
+		oceanHeight.SetConstValue(-1.4);
+		oceanSmooth.SetSourceModule(0, oceans);
+		oceanSmooth.SetSourceModule(1, oceanSmoothValue);
+		finalOcean.SetSourceModule(0, oceanSmooth);
+		finalOcean.SetSourceModule(1, oceanHeight);
+		finalCanvas.SetEdgeFalloff(0.1);
+		finalCanvas.SetBounds(-.99, 1);
+		finalCanvas.SetSourceModule(0, finalOcean);
+		finalCanvas.SetSourceModule(1, canvas2);
+		finalCanvas.SetControlModule(canvas2);
 
 		// higher lacunarity = thinner tunnels
 		tunneler.SetLacunarity(2.);
@@ -341,7 +364,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		//riverMapBuilder.SetDestNoiseMap(riverMap);
 		//riverMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
 
-		heightMapBuilder.SetModule(canvas2);
+		heightMapBuilder.SetModule(finalCanvas);
 		//heightMapBuilder.SetSourceModule(canvas2);
 		//heightMapBuilder.SetDestNoiseMap(heightMap);
 		//heightMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
@@ -357,52 +380,45 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	// generate EVERYTHING
 	for (int i = 0; i < Chunk::CHUNK_SIZE; i++)
 	{
+		int worldX = cpos.x * Chunk::CHUNK_SIZE + i;
 		for (int j = 0; j < Chunk::CHUNK_SIZE; j++)
 		{
+			int worldY = cpos.y * Chunk::CHUNK_SIZE + j;
 			for (int k = 0; k < Chunk::CHUNK_SIZE; k++)
 			{
-				int worldX = cpos.x * Chunk::CHUNK_SIZE + i;
-				int worldY = cpos.y * Chunk::CHUNK_SIZE + j;
 				int worldZ = cpos.z * Chunk::CHUNK_SIZE + k;
 				glm::ivec3 wpos(worldX, worldY, worldZ);
-				//float height = *heightMap.GetConstSlabPtr(i, k);
-				//float riverVal = *riverMap.GetConstSlabPtr(i, k);
+				Biome curBiome = BiomeManager::GetBiome(GetTemperature(worldX, worldY, worldZ), GetHumidity(worldX, worldZ), GetTerrainType(wpos));
 				float height = heightMapBuilder.GetValue(worldX, worldZ);
 				float riverVal = riverMapBuilder.GetValue(worldX, worldZ);
-				height = height < -1 ? -1 : height;
+				//height = height < -1 ? -1 : height;
 
-				int y = (int)Utils::mapToRange(height, -1.f, 1.f, -0.f, 150.f);
+				int y = (int)Utils::mapToRange(height, -1.f, 1.f, 0.f, 150.f);
 				int riverModifier = 0;
 				if (riverVal > 0 && getSlope(heightMapBuilder, worldX, worldZ) < 0.004f)
 					//riverModifier = glm::clamp(Utils::mapToRange(riverVal, 0.05f, 0.2f, 0.f, 5.f), 0.f, 30.f);
 					riverModifier = glm::clamp(Utils::mapToRange(riverVal, -.35f, .35f, -4.f, 5.f), 0.f, 30.f);
 				int actualHeight = y - riverModifier;
 
-				//if (worldY > actualHeight && worldY < y)
-				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bSand);
+				// TODO: make rivers have sand around/under them
 				if (worldY > actualHeight && worldY < y - 1)
 					level->GenerateBlockAt(wpos, Block::BlockType::bWater);
-				//if (worldY < 10)
-				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bWater);
+				if (worldY < 0)
+					level->GenerateBlockAt(wpos, Block::BlockType::bWater);
 
-				double val = tunneler.GetValue(worldX, worldY, worldZ); // maybe also use for rivers
+				//double val = tunneler.GetValue(worldX, worldY, worldZ); // maybe also use for rivers
 
 				// top cover
 				if (worldY == actualHeight)
 				{
 					// surface features
-					if (snowCover.GetValue(worldX, worldY, worldZ) * 30 + worldY > 90)
-						level->GenerateBlockAt(wpos, Block::BlockType::bSnow);
-					else
-						level->GenerateBlockAt(wpos, Block::BlockType::bGrass);
+					level->GenerateBlockAt(wpos, curBiome.surfaceCover);
 
 					// generate surface prefabs
-					if (Utils::get_random(0, 1) > .995f)
+					for (const auto& p : curBiome.surfaceFeatures)
 					{
-						if (Utils::get_random(0, 1) > .8f)
-							GeneratePrefab(PrefabManager::GetPrefab(Prefab::OakTreeBig), wpos + glm::ivec3(0, 1, 0), level);
-						else
-							GeneratePrefab(PrefabManager::GetPrefab(Prefab::OakTree), wpos + glm::ivec3(0, 1, 0), level);
+						if (Utils::get_random(0, 1) < p.first && actualHeight == y)
+							GeneratePrefab(PrefabManager::GetPrefab(p.second), wpos + glm::ivec3(0, 1, 0), level);
 					}
 				}
 				// just under top cover
@@ -425,20 +441,20 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	}
 
 	// generate dummy tunnels
-	//for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
-	//{
-	//	for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
-	//	{
-	//		for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
-	//		{
-	//			glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
-	//			double val = tunneler.GetValue(pos.x, pos.y, pos.z);
-	//			//std::cout << val << '\n';
-	//			if (val > .9)
-	//				level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
-	//		}
-	//	}
-	//}
+	for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
+	{
+		for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
+		{
+			for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
+			{
+				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
+				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
+				//std::cout << val << '\n';
+				if (val > .9)
+					level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
+			}
+		}
+	}
 }
 
 WorldGen::TerrainType WorldGen::GetTerrainType(glm::ivec3 wpos)
@@ -446,17 +462,18 @@ WorldGen::TerrainType WorldGen::GetTerrainType(glm::ivec3 wpos)
 	// TODO: special cases of height e.g. being very deep (underworld, etc.) or being high (sky islands)
 
 	// the order of these gotta be in the order in which they're generated
-	if (plainsSelect.GetValue(wpos.x, 0, wpos.z) != 0)
+	double pVal = plainsSelect.GetValue(wpos.x, 0, wpos.z);
+	if (pVal != canvas0.GetConstValue())
 		return TerrainType::tPlains;
-	if (hillsSelect.GetValue(wpos.x, 0, wpos.z) != 0)
+	double hVal = hillsSelect.GetValue(wpos.x, 0, wpos.z);
+	if (hVal != canvas0.GetConstValue())
 		return TerrainType::tHills;
-	return TerrainType::tNone; // anywhere no biome has been generated will be this
+	return TerrainType::tOcean; // anywhere no biome has been generated will be this
 }
 
-double WorldGen::GetTemperature(double x, double z)
+double WorldGen::GetTemperature(double x, double y, double z)
 {
-	// TODO: perhaps increase temperature with height?
-	return temperature.GetValue(x, z);
+	return temperature.GetValue(x, z) - y * .01;
 }
 
 double WorldGen::GetHumidity(double x, double z)
@@ -513,7 +530,6 @@ double WorldGen::GetCurrentNoise(const glm::vec3& wpos)
 	return abs(dense.GetValue(wpos.x, wpos.y, wpos.z));
 }
 
-// TODO: make this function able to look past the end of the heightmap
 float WorldGen::getSlope(model::Plane& pl, int x, int z)
 {
 	//float height = *heightmap.GetConstSlabPtr(x, z);

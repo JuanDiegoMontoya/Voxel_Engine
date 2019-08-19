@@ -54,9 +54,9 @@ void Level::Init()
 	PrefabManager::InitPrefabs();
 	BiomeManager::InitializeBiomes();
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(300.f);
+	chunkManager_.SetLoadDistance(100.f);
 	chunkManager_.SetUnloadLeniency(100.f);
-	chunkManager_.SetMaxLoadPerFrame(2);
+	chunkManager_.SetMaxLoadPerFrame(3);
 	renderer_.Init();
 
 	//std::cout << "PRE Processed chunk positions (x, y, z):" << '\n';
@@ -203,8 +203,25 @@ void Level::DrawImGui()
 		ImGui::NewLine();
 		ImGui::Text("Flying: %s", activeCursor ? "False" : "True");
 
-		float dist = 5;
-		ImGui::Text("Raycast information:");
+		static bool init = true;
+		if (!init)
+		{
+			ImGui::NewLine();
+			const glm::vec3 camPos = Render::GetCamera()->GetPos();
+			float t = WorldGen::GetTemperature(camPos.x, camPos.y, camPos.z);
+			float h = WorldGen::GetHumidity(camPos.x, camPos.z);
+			WorldGen::TerrainType tt = WorldGen::GetTerrainType(camPos);
+			ImGui::Text("Biome info: ");
+			ImGui::Text("Temperature: %.2f", t);
+			ImGui::Text("Humidity: %.2f", h);
+			ImGui::Text("Terrain: %d", (unsigned)tt);
+			ImGui::Text("Biome name: %s", BiomeManager::GetBiome(t, h, tt));
+			ImGui::NewLine();
+		}
+		init = false;
+
+		int dist = 5;
+		ImGui::Text("Voxel raycast information:");
 		ImGui::Text("Ray length: %d", dist);
 		raycast(
 			Render::GetCamera()->GetPos(),
@@ -216,6 +233,9 @@ void Level::DrawImGui()
 			if (!block || block->GetType() == Block::bAir)
 				return false;
 
+			ImGui::Text("Block Type: %d", (unsigned)block->GetType());
+			ImGui::Text("Write Strength: %d", block->WriteStrength());
+			ImGui::Text("Light Value: %d", block->LightValue());
 			ImGui::Text("Block pos:  (%.2f, %.2f, %.2f)", x, y, z);
 			ImGui::Text("Block side: (%.2f, %.2f, %.2f)", side.x, side.y, side.z);
 			//glm::vec3 color = Block::PropertiesTable[block->GetType()].color;

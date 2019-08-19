@@ -31,7 +31,7 @@ void Renderer::DrawAll()
 	glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
 	//glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
-	//geometryPass();
+	geometryPass();
 	
 	//drawShadows();
 	drawSky();

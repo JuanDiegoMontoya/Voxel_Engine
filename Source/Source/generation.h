@@ -13,6 +13,7 @@ public:
 		tNone,  // unfilled terrain (replaced with ocean or something)
 		tPlains,
 		tHills,
+		tOcean,
 
 		tCount
 	};
@@ -36,7 +37,7 @@ public:
 	*/
 	static void GenerateChunk(glm::ivec3 cpos, LevelPtr level);
 	static TerrainType GetTerrainType(glm::ivec3 wpos);
-	static double GetTemperature(double x, double z);
+	static double GetTemperature(double x, double y, double z);
 	static double GetHumidity(double x, double z);
 
 	static void GeneratePrefab(const Prefab& pfab, glm::ivec3 wpos, LevelPtr level);

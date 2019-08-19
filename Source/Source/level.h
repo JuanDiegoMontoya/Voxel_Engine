@@ -27,6 +27,7 @@ public:
 	// unconditionally updates a block at a position
 	void UpdateBlockAt(glm::ivec3 wpos, Block::BlockType type);
 	void GenerateBlockAt(glm::ivec3 wpos, Block b); // updates a block at a position IF it isn't written yet
+	Block GetBlockAt(glm::ivec3 wpos);
 	void DrawImGui();
 
 	inline void SetBgColor(glm::vec3 c) { bgColor_ = c; }

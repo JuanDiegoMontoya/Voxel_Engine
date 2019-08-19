@@ -28,6 +28,7 @@ namespace Editor
 		bool open = false;
 		char sName[256];
 		char lName[256];
+		bool skipAir = false; // if true, newly saved prefabs will skip air blocks within
 
 		void SaveRegion()
 		{
@@ -47,7 +48,10 @@ namespace Editor
 				{
 					for (int z = min.z; z <= max.z; z++)
 					{
+						// TODO: make bottom-middle of prefab be the origin
 						Block b = chunkManager->GetBlock(glm::ivec3(x, y, z));
+						if (skipAir && b.GetType() == Block::bAir)
+							continue;
 						b.SetWriteStrength(UCHAR_MAX / 2);
 						newPfb.Add(
 							glm::ivec3(x - min.x, y - min.y, z - min.z), b);
@@ -107,6 +111,7 @@ namespace Editor
 				ImGui::SameLine();
 				ImGui::InputText("##lname", lName, 256);
 
+				ImGui::Checkbox("Skip air?", &skipAir);
 				ImGui::Text("Selected positions: %d", selectedPositions);
 				ImGui::Text("Hovered   : (%.2f, %.2f, %.2f)", hposition.x, hposition.y, hposition.z);
 				ImGui::Text("Position 0: (%.2f, %.2f, %.2f)", wpositions[0].x, wpositions[0].y, wpositions[0].z);

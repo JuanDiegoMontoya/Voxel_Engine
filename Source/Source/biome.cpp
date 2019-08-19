@@ -37,12 +37,26 @@ void BiomeManager::InitializeBiomes()
 		registerBiome(error);
 	}
 
+	// ocean
+	{
+		Biome ocean(0, 0, WorldGen::tOcean, Block::bSand);
+		ocean.name = "ocean";
+		registerBiome(ocean);
+	}
+
 	// woodlands
 	{
 		Biome woodlands(0, 0, WorldGen::tPlains, Block::bGrass);
 		woodlands.name = "woodlands";
-		woodlands.surfaceFeatures.push_back({ .01f, Prefab::OakTree });
+		woodlands.surfaceFeatures.push_back({ .05f, Prefab::OakTree });
 		registerBiome(woodlands);
+	}
+
+	// flat desert
+	{
+		Biome desertF(-.5f, .5f, WorldGen::tPlains, Block::bSand);
+		desertF.name = "flat desert";
+		registerBiome(desertF);
 	}
 
 	// snow hills
@@ -53,11 +67,12 @@ void BiomeManager::InitializeBiomes()
 		registerBiome(snowH);
 	}
 
-	// flat desert
+	// desert hills
 	{
-		Biome desertF(-.5f, .5f, WorldGen::tPlains, Block::bSand);
-		desertF.name = "flat desert";
-		registerBiome(desertF);
+		Biome desertH(-.5f, .5f, WorldGen::tHills, Block::bSand);
+		desertH.surfaceFeatures.push_back({ .005, Prefab::Cactus });
+		desertH.name = "desert hills";
+		registerBiome(desertH);
 	}
 	initCustomBiomes();
 }
