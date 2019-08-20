@@ -17,14 +17,14 @@ void ChunkLoadManager::Push(ChunkPtr c)
 {
 	if (c->NeedsLoading())
 	{
-		genList_.push_back(c);
+		genList_.push_back({ false, c });
 	}
 }
 
 void ChunkLoadManager::init()
 {
-	// single extra thread (may increase in the future)
-	//pool_.resize(1);
+	// single thread for this task, as more will likely crash everything
+	pool_.resize(1);
 }
 
 void ChunkLoadManager::sort()
@@ -35,33 +35,49 @@ void ChunkLoadManager::sort()
 	// (to load nearer chunks first)
 	for (size_t i = 1; i < genList_.size(); i++)
 	{
-		ChunkPtr key = genList_[i];
+		ChunkPtr key = genList_[i].second;
 		int j = i - 1;
 
-		while (j >= 0 && greater(genList_[j], key, camPos))
+		while (j >= 0 && greater(genList_[j].second, key, camPos))
 		{
-			genList_[j + 1] = genList_[j];
+			genList_[j + 1].second = genList_[j].second;
 			j--;
 		}
-		genList_[j + 1] = key;
+		genList_[j + 1].second = key;
 	}
 }
 
 void ChunkLoadManager::cull()
 {
+	// if the chunk doesn't need to be loaded, remove it from the genList
 	std::remove_if(
 		std::execution::par,
 		genList_.begin(), 
 		genList_.end(),
-		[](ChunkPtr c)->bool
+		[](auto& c)->bool
 	{
-		return !c->NeedsLoading();
+		return !c.second->NeedsLoading();
 	});
 }
 
 // loading task given to thread pool
-void ChunkLoadManager::task(ChunkPtr c)
+void ChunkLoadManager::task(int id)
 {
+	// find a chunk that isn't being worked on currently and use that
+	ChunkPtr c = nullptr;
+	while (!c)
+	{
+		for (auto& p : genList_)
+		{
+			if (!p.first)
+			{
+				p.first = true;
+				c = p.second;
+				break;
+			}
+		}
+	}
+
 	float dist = glm::distance(glm::vec3(c->GetPos() * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
 	if (c)
 	{

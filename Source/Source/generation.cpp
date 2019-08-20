@@ -282,6 +282,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		riversBase.SetNoiseQuality(noise::NoiseQuality::QUALITY_STD);
 		riversBase.SetOctaveCount(3);
 		riversBase.SetFrequency(.0100);
+		riversBase.SetNoiseQuality(NoiseQuality::QUALITY_BEST);
 
 		rivers.SetSourceModule(0, riversBase);
 		rivers.SetRoughness(1);
@@ -295,6 +296,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		plains.SetOctaveCount(3);
 		plains.SetFrequency(.0016);
 		plains.SetPersistence(.8);
+		plains.SetNoiseQuality(NoiseQuality::QUALITY_STD);
 		plainsHeight.SetConstValue(-.3); // height modifier
 		plainsFinal.SetSourceModule(0, plainsHeight);
 		plainsFinal.SetSourceModule(1, plains);
@@ -302,6 +304,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		plainsPicker.SetLacunarity(0);
 		plainsPicker.SetFrequency(.003);
 		plainsPicker.SetOctaveCount(3);
+		plainsPicker.SetNoiseQuality(NoiseQuality::QUALITY_STD);
 		plainsSelect.SetBounds(-1, 0); // % of world to be (-1 to 1)
 		plainsSelect.SetEdgeFalloff(0.15);
 		plainsSelect.SetSourceModule(0, canvas0);
@@ -315,6 +318,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		hillsLumpy.SetFrequency(.006);
 		hillsLumpy.SetOctaveCount(2);
 		hillsLumpy.SetPersistence(1.0);
+		hillsLumpy.SetNoiseQuality(NoiseQuality::QUALITY_STD);
 		hillsHeight.SetConstValue(0);
 		hills.SetSourceModule(0, hillsLumpy);
 		hills.SetSourceModule(1, hillsHeight);
@@ -322,6 +326,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		hillsPicker.SetLacunarity(0);
 		hillsPicker.SetFrequency(.003);
 		hillsPicker.SetOctaveCount(3);
+		hillsPicker.SetNoiseQuality(NoiseQuality::QUALITY_STD);
 		hillsSelect.SetBounds(-1, -.2);
 		hillsSelect.SetEdgeFalloff(.2);
 		hillsSelect.SetSourceModule(0, canvas0);
@@ -338,13 +343,14 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		oceans.SetSeed(2);
 		oceans.SetOctaveCount(1);
 		oceans.SetFrequency(.017);
+		oceans.SetNoiseQuality(NoiseQuality::QUALITY_STD);
 		oceanSmoothValue.SetConstValue(.3);
 		oceanHeight.SetConstValue(-1.4);
 		oceanSmooth.SetSourceModule(0, oceans);
 		oceanSmooth.SetSourceModule(1, oceanSmoothValue);
 		finalOcean.SetSourceModule(0, oceanSmooth);
 		finalOcean.SetSourceModule(1, oceanHeight);
-		finalCanvas.SetEdgeFalloff(0.1);
+		finalCanvas.SetEdgeFalloff(.21);
 		finalCanvas.SetBounds(-.99, 1);
 		finalCanvas.SetSourceModule(0, finalOcean);
 		finalCanvas.SetSourceModule(1, canvas2);
@@ -396,14 +402,13 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				int y = (int)Utils::mapToRange(height, -1.f, 1.f, 0.f, 150.f);
 				int riverModifier = 0;
 				if (riverVal > 0 && getSlope(heightMapBuilder, worldX, worldZ) < 0.004f)
-					//riverModifier = glm::clamp(Utils::mapToRange(riverVal, 0.05f, 0.2f, 0.f, 5.f), 0.f, 30.f);
 					riverModifier = glm::clamp(Utils::mapToRange(riverVal, -.35f, .35f, -4.f, 5.f), 0.f, 30.f);
 				int actualHeight = y - riverModifier;
 
 				// TODO: make rivers have sand around/under them
 				if (worldY > actualHeight && worldY < y - 1)
 					level->GenerateBlockAt(wpos, Block::BlockType::bWater);
-				if (worldY < 0)
+				if (worldY < 0 && worldY > actualHeight) // make ocean
 					level->GenerateBlockAt(wpos, Block::BlockType::bWater);
 
 				//double val = tunneler.GetValue(worldX, worldY, worldZ); // maybe also use for rivers
@@ -412,23 +417,26 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				if (worldY == actualHeight)
 				{
 					// surface features
-					level->GenerateBlockAt(wpos, curBiome.surfaceCover);
+					level->GenerateBlockAtCheap(wpos, curBiome.surfaceCover);
 
 					// generate surface prefabs
-					for (const auto& p : curBiome.surfaceFeatures)
+					if (worldY > 0)
 					{
-						if (Utils::get_random(0, 1) < p.first && actualHeight == y)
-							GeneratePrefab(PrefabManager::GetPrefab(p.second), wpos + glm::ivec3(0, 1, 0), level);
+						for (const auto& p : curBiome.surfaceFeatures)
+						{
+							if (Utils::get_random(0, 1) < p.first && actualHeight == y)
+								GeneratePrefab(PrefabManager::GetPrefab(p.second), wpos + glm::ivec3(0, 1, 0), level);
+						}
 					}
 				}
 				// just under top cover
 				if (worldY >= actualHeight - 3 && worldY < actualHeight)
-					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bDirt);
+					level->GenerateBlockAtCheap(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bDirt);
 
 				// generate subsurface
-				if (worldY >= -10 && worldY < actualHeight - 3)
+				if (worldY >= -30 && worldY < actualHeight - 3)
 				{
-					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
+					level->GenerateBlockAtCheap(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
 					if (Utils::get_random(0, 1) > .99999f)
 						GeneratePrefab(PrefabManager::GetPrefab(Prefab::DungeonSmall), wpos, level);
 				}
@@ -449,11 +457,17 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 			{
 				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
-				//std::cout << val << '\n';
-				if (val > .9)
-					level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
+				if (val > .9 && level->GetBlockAt(pos).GetType() != Block::bWater)
+					level->GenerateBlockAtCheap(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
 			}
 		}
+	}
+
+	// lastly, check if chunk needs its mesh generated
+	if (!Chunk::chunks[cpos]->IsMeshBuilt())
+	{
+		Chunk::chunks[cpos]->BuildMesh();
+		Chunk::chunks[cpos]->BuildBuffers();
 	}
 }
 

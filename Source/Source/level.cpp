@@ -54,7 +54,7 @@ void Level::Init()
 	PrefabManager::InitPrefabs();
 	BiomeManager::InitializeBiomes();
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(100.f);
+	chunkManager_.SetLoadDistance(200.f);
 	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(3);
 	renderer_.Init();
@@ -279,6 +279,16 @@ void Level::UpdateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
 void Level::GenerateBlockAt(glm::ivec3 wpos, Block b)
 {
 	chunkManager_.UpdateBlock(wpos, b.GetType(), b.WriteStrength());
+}
+
+void Level::GenerateBlockAtCheap(glm::ivec3 wpos, Block b)
+{
+	chunkManager_.UpdateBlockCheap(wpos, b);
+}
+
+Block Level::GetBlockAt(glm::ivec3 wpos)
+{
+	return chunkManager_.GetBlock(wpos);
 }
 
 void Level::checkBlockPlacement()

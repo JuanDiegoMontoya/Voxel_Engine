@@ -12,6 +12,9 @@ struct Prefab
 		DungeonSmall,
 		BorealTree,
 		Cactus,
+		BoulderA,
+		BoulderB,
+		BoulderC,
 
 		pfCount
 	};

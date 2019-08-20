@@ -61,7 +61,7 @@ void BiomeManager::InitializeBiomes()
 
 	// snow hills
 	{
-		Biome snowH(.5f, -.5f, WorldGen::tHills, Block::bSnow);
+		Biome snowH(.2f, -.5f, WorldGen::tHills, Block::bSnow);
 		snowH.name = "snow hills";
 		snowH.surfaceFeatures.push_back({ .002f, Prefab::BorealTree });
 		registerBiome(snowH);
@@ -74,6 +74,17 @@ void BiomeManager::InitializeBiomes()
 		desertH.name = "desert hills";
 		registerBiome(desertH);
 	}
+
+	// highlands
+	{
+		Biome highland(.3f, 0.f, WorldGen::tHills, Block::bDryGrass);
+		highland.name = "highland";
+		highland.surfaceFeatures.push_back({ .0005, Prefab::BoulderA });
+		highland.surfaceFeatures.push_back({ .0005, Prefab::BoulderB });
+		highland.surfaceFeatures.push_back({ .0001, Prefab::BoulderC });
+		registerBiome(highland);
+	}
+
 	initCustomBiomes();
 }
 

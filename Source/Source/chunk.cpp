@@ -8,12 +8,10 @@
 #include "shader.h"
 #include "pipeline.h"
 #include "frustum.h"
-#include <mutex>
 #include <sstream>
 
 /*
 	TODO: use IBOs to save GPU memory
-	TODO: ensure water shader is getting uniforms 'n' stuff
 */
 
 //Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
@@ -21,14 +19,12 @@ std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
 
 double Chunk::isolevel = 0.6;
 
-static std::mutex mtx;
-
 Chunk::Chunk(bool active) : active_(active)
 {
 	// TODO: these need to be created at the start of each frame or something,
 	// such that creating chunks in parallel won't crash evertying
-	vao_ = new VAO();
-	wvao_ = new VAO();
+	//vao_ = new VAO();
+	//wvao_ = new VAO();
 }
 
 Chunk::~Chunk()
@@ -90,6 +86,10 @@ void Chunk::BuildBuffers()
 {
 	// generate various vertex buffers
 	{
+		if (!vao_)
+			vao_ = new VAO;
+		if (!wvao_)
+			wvao_ = new VAO;
 		vao_->Bind();
 		if (positions_)
 			delete positions_;
@@ -182,6 +182,7 @@ void Chunk::BuildBuffers()
 void Chunk::BuildMesh()
 {
 	//Camera* cam = Render::GetCamera();
+	meshed_ = true;
 
 	//vertices.reserve(CHUNK_SIZE * CHUNK_SIZE * 6 * 3); // one entire side of a chunk (assumed flat)
 	for (int x = 0; x < CHUNK_SIZE; x++)
@@ -217,7 +218,7 @@ void Chunk::buildBlockVertices_normal(const glm::ivec3 & pos, const float * data
 	int z = pos.z;
 
 	// back
-	buildSingleBlockFace(glm::vec3(x, y, z - 1), quadStride, 0, data, pos, block);
+	buildSingleBlockFace(glm::ivec3(x, y, z - 1), quadStride, 0, data, pos, block);
 
 	// front
 	buildSingleBlockFace(glm::ivec3(x, y, z + 1), quadStride, 1, data, pos, block);

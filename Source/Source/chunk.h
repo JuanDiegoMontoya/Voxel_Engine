@@ -68,6 +68,7 @@ public:
 	inline bool NeedsLoading() const { return loaded_; }
 	inline void SetLoaded(bool b) { loaded_ = b; }
 	inline void SetGenerated(bool b) { generate_ = b; }
+	inline bool IsMeshBuilt() { return meshed_; }
 
 	// may need to upgrade to glm::i64vec3 if worldgen at far distances is fug'd
 	// "origin" chunk goes from 0-CHUNK_SIZE rather than -CHUNK_SIZE/2-CHUNK_SIZE/2
@@ -170,6 +171,7 @@ private:
 	bool visible_;				 // used in frustum culling
 	bool generate_ = true; // if the chunks needs to be generated
 	bool loaded_ = false;  // true if chunk has been loaded
+	bool meshed_ = false;  // always true after buildMesh is called
 
 	// rendering stuff
 	VAO* vao_ = nullptr;

@@ -33,6 +33,7 @@ public:
 		bOakWood,
 		bOakLeaves,
 		bError,
+		bDryGrass,
 
 		bCount
 	};

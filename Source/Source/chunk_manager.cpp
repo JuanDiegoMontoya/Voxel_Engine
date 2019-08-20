@@ -72,6 +72,12 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned ch
 	}
 }
 
+// perform no checks, therefore the chunk must be known prior to placing the block
+void ChunkManager::UpdateBlockCheap(glm::ivec3& wpos, Block block)
+{
+	*Chunk::AtWorld(wpos) = block;
+}
+
 Block ChunkManager::GetBlock(glm::ivec3 wpos)
 {
 	BlockPtr block = Chunk::AtWorld(wpos);
@@ -158,18 +164,8 @@ void ChunkManager::createNearbyChunks()
 		[&](auto& p)
 	{
 		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
-		if (p.second)
-		{
-			//if (dist > loadDistance_ + unloadLeniency_)
-			//{
-			//	Chunk::chunks.erase(p.first);
-			//	delete p.second;
-			//	p.second = nullptr;
-			//	return;
-			//}
-		}
-		// chunk either doesn't exist OR needs to be generated
-		else if (dist <= loadDistance_)
+		// generate null chunks within distance
+		if (!p.second && dist <= loadDistance_)
 		{
 			p.second = new Chunk(true);
 			p.second->SetPos(p.first);

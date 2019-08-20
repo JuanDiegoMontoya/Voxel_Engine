@@ -1,5 +1,6 @@
 #pragma once
 #include "vendor/ctpl_stl.h"
+#include <atomic>
 
 typedef struct Chunk* ChunkPtr;
 typedef class Level* LevelPtr;
@@ -19,12 +20,14 @@ private:
 	void init();
 	void sort(); // insertion sort by distance from camera
 	void cull();
-	void task(ChunkPtr c);
+	void task(int id);
 
 	// returns true if a's distance from camPos is larger than b's
 	bool greater(ChunkPtr a, ChunkPtr b, const glm::vec3& camPos);
 
 	LevelPtr level_;
-	std::vector<ChunkPtr> genList_;
+
+	// <is being processed + the chunk>
+	std::vector<std::pair<bool, ChunkPtr>> genList_;
 	ctpl::thread_pool pool_; // resources
 };

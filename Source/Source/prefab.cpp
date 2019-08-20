@@ -92,4 +92,7 @@ void PrefabManager::LoadAllPrefabs()
 	prefabs_[Prefab::DungeonSmall] = LoadPrefabFromFile("dungeon");
 	prefabs_[Prefab::BorealTree] = LoadPrefabFromFile("borealTree");
 	prefabs_[Prefab::Cactus] = LoadPrefabFromFile("cactus");
+	prefabs_[Prefab::BoulderA] = LoadPrefabFromFile("boulderA");
+	prefabs_[Prefab::BoulderB] = LoadPrefabFromFile("boulderB");
+	prefabs_[Prefab::BoulderC] = LoadPrefabFromFile("boulderC");
 }
