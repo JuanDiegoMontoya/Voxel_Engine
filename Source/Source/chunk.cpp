@@ -66,7 +66,7 @@ void Chunk::Update()
 void Chunk::Render()
 {
 	//ASSERT(vao_ && positions_ && normals_ && colors_);
-	if (vao_)
+	if (vao_ && loaded_)
 	{
 		vao_->Bind();
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
@@ -75,7 +75,7 @@ void Chunk::Render()
 
 void Chunk::RenderWater()
 {
-	if (wvao_)
+	if (wvao_ && loaded_)
 	{
 		wvao_->Bind();
 		glDrawArrays(GL_TRIANGLES, 0, wvertexCount_);
@@ -84,131 +84,137 @@ void Chunk::RenderWater()
 
 void Chunk::BuildBuffers()
 {
-	// generate various vertex buffers
+	//if (loaded_)
 	{
-		if (!vao_)
-			vao_ = new VAO;
-		if (!wvao_)
-			wvao_ = new VAO;
-		vao_->Bind();
-		if (positions_)
-			delete positions_;
-		if (normals_)
-			delete normals_;
-		if (colors_)
-			delete colors_;
-		if (speculars_)
-			delete speculars_;
-		// screen positions
-		positions_ = new VBO(&tPositions[0], sizeof(glm::vec3) * tPositions.size());
-		positions_->Bind();
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0); // screenpos
-		glEnableVertexAttribArray(0);
+		// generate various vertex buffers
+		{
+			if (!vao_)
+				vao_ = new VAO;
+			if (!wvao_)
+				wvao_ = new VAO;
+			vao_->Bind();
+			if (positions_)
+				delete positions_;
+			if (normals_)
+				delete normals_;
+			if (colors_)
+				delete colors_;
+			if (speculars_)
+				delete speculars_;
+			// screen positions
+			positions_ = new VBO(&tPositions[0], sizeof(glm::vec3) * tPositions.size());
+			positions_->Bind();
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0); // screenpos
+			glEnableVertexAttribArray(0);
 
-		// colors
-		colors_ = new VBO(&tColors[0], sizeof(glm::vec4) * tColors.size());
-		colors_->Bind();
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
-		glEnableVertexAttribArray(1);
+			// colors
+			colors_ = new VBO(&tColors[0], sizeof(glm::vec4) * tColors.size());
+			colors_->Bind();
+			glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
+			glEnableVertexAttribArray(1);
 
-		// normals
-		normals_ = new VBO(&tNormals[0], sizeof(glm::vec3) * tNormals.size());
-		normals_->Bind();
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-		glEnableVertexAttribArray(2);
+			// normals
+			normals_ = new VBO(&tNormals[0], sizeof(glm::vec3) * tNormals.size());
+			normals_->Bind();
+			glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+			glEnableVertexAttribArray(2);
 
-		// specular
-		speculars_ = new VBO(&tSpeculars[0], sizeof(float) * tSpeculars.size());
-		speculars_->Bind();
-		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-		glEnableVertexAttribArray(3);
+			// specular
+			speculars_ = new VBO(&tSpeculars[0], sizeof(float) * tSpeculars.size());
+			speculars_->Bind();
+			glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+			glEnableVertexAttribArray(3);
 
-		vao_->Unbind();
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+			vao_->Unbind();
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		vertexCount_ = tPositions.size(); // divisor = number of floats per vertex
-		tPositions.clear();
-		tNormals.clear();
-		tColors.clear();
-		tSpeculars.clear();
-	}
+			vertexCount_ = tPositions.size(); // divisor = number of floats per vertex
+			tPositions.clear();
+			tNormals.clear();
+			tColors.clear();
+			tSpeculars.clear();
+		}
 
-	// epic copypasta
-	{
-		wvao_->Bind();
-		if (wpositions_)
-			delete wpositions_;
-		if (wnormals_)
-			delete wnormals_;
-		if (wcolors_)
-			delete wcolors_;
-		if (wspeculars_)
-			delete wspeculars_;
-		// screen positions
-		wpositions_ = new VBO(&wtPositions[0], sizeof(glm::vec3) * wtPositions.size());
-		wpositions_->Bind();
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0); // screenpos
-		glEnableVertexAttribArray(0);
+		// epic copypasta
+		{
+			wvao_->Bind();
+			if (wpositions_)
+				delete wpositions_;
+			if (wnormals_)
+				delete wnormals_;
+			if (wcolors_)
+				delete wcolors_;
+			if (wspeculars_)
+				delete wspeculars_;
+			// screen positions
+			wpositions_ = new VBO(&wtPositions[0], sizeof(glm::vec3) * wtPositions.size());
+			wpositions_->Bind();
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0); // screenpos
+			glEnableVertexAttribArray(0);
 
-		// colors
-		wcolors_ = new VBO(&wtColors[0], sizeof(glm::vec4) * wtColors.size());
-		wcolors_->Bind();
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
-		glEnableVertexAttribArray(1);
+			// colors
+			wcolors_ = new VBO(&wtColors[0], sizeof(glm::vec4) * wtColors.size());
+			wcolors_->Bind();
+			glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
+			glEnableVertexAttribArray(1);
 
-		// normals
-		wnormals_ = new VBO(&wtNormals[0], sizeof(glm::vec3) * wtNormals.size());
-		wnormals_->Bind();
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-		glEnableVertexAttribArray(2);
+			// normals
+			wnormals_ = new VBO(&wtNormals[0], sizeof(glm::vec3) * wtNormals.size());
+			wnormals_->Bind();
+			glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+			glEnableVertexAttribArray(2);
 
-		// specular
-		wspeculars_ = new VBO(&wtSpeculars[0], sizeof(float) * wtSpeculars.size());
-		wspeculars_->Bind();
-		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-		glEnableVertexAttribArray(3);
+			// specular
+			wspeculars_ = new VBO(&wtSpeculars[0], sizeof(float) * wtSpeculars.size());
+			wspeculars_->Bind();
+			glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+			glEnableVertexAttribArray(3);
 
-		wvao_->Unbind();
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+			wvao_->Unbind();
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		wvertexCount_ = wtPositions.size(); // divisor = number of floats per vertex
-		wtPositions.clear();
-		wtNormals.clear();
-		wtColors.clear();
-		wtSpeculars.clear();
+			wvertexCount_ = wtPositions.size(); // divisor = number of floats per vertex
+			wtPositions.clear();
+			wtNormals.clear();
+			wtColors.clear();
+			wtSpeculars.clear();
+		}
 	}
 }
 
 void Chunk::BuildMesh()
 {
-	//Camera* cam = Render::GetCamera();
-	meshed_ = true;
-
-	//vertices.reserve(CHUNK_SIZE * CHUNK_SIZE * 6 * 3); // one entire side of a chunk (assumed flat)
-	for (int x = 0; x < CHUNK_SIZE; x++)
+	//if (loaded_)
 	{
-		for (int y = 0; y < CHUNK_SIZE; y++)
-		{
-			for (int z = 0; z < CHUNK_SIZE; z++)
-			{
-				// skip fully transparent blocks
-				if (At(x, y, z).GetType() == Block::bAir)
-					continue;
+		//Camera* cam = Render::GetCamera();
+		meshed_ = true;
 
-				// check if each face would be obscured, and adds the ones that aren't to the vbo
-				// obscured IF side is adjacent to opaque block
-				// NOT obscured if side is adjacent to nothing or transparent block
-				glm::ivec3 pos(x, y, z);
+		//vertices.reserve(CHUNK_SIZE * CHUNK_SIZE * 6 * 3); // one entire side of a chunk (assumed flat)
+		for (int x = 0; x < CHUNK_SIZE; x++)
+		{
+			for (int y = 0; y < CHUNK_SIZE; y++)
+			{
+				for (int z = 0; z < CHUNK_SIZE; z++)
+				{
+					// skip fully transparent blocks
+					if (At(x, y, z).GetType() == Block::bAir)
+						continue;
+
+					// check if each face would be obscured, and adds the ones that aren't to the vbo
+					// obscured IF side is adjacent to opaque block
+					// NOT obscured if side is adjacent to nothing or transparent block
+					glm::ivec3 pos(x, y, z);
 #if MARCHED_CUBES
-				buildBlockVertices_marched_cubes(pos, At(x, y, z));
+					buildBlockVertices_marched_cubes(pos, At(x, y, z));
 #else
-				buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
+					buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
 #endif
+				}
 			}
 		}
+		// "buildbuffers" would normally happen here
+		// 'vertices' is stored until "buildbuffers" is called
 	}
-	// "buildbuffers" would normally happen here
-	// 'vertices' is stored until "buildbuffers" is called
 }
 
 void Chunk::buildBlockVertices_normal(const glm::ivec3 & pos, const float * data, int quadStride, const Block& block)

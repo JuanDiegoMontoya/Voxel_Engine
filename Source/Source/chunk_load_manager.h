@@ -1,6 +1,8 @@
 #pragma once
 #include "vendor/ctpl_stl.h"
-#include <atomic>
+//#include <atomic>
+
+#define USE_MULTITHREADED_CHUNK_LOADER 0
 
 typedef struct Chunk* ChunkPtr;
 typedef class Level* LevelPtr;
@@ -15,12 +17,13 @@ public:
 
 	void Update();
 	void Push(ChunkPtr c);
+	void SetCurrentLevel(LevelPtr level);
 
 private:
 	void init();
 	void sort(); // insertion sort by distance from camera
 	void cull();
-	void task(int id);
+	void task(int id, ChunkPtr c);
 
 	// returns true if a's distance from camPos is larger than b's
 	bool greater(ChunkPtr a, ChunkPtr b, const glm::vec3& camPos);
@@ -28,6 +31,6 @@ private:
 	LevelPtr level_;
 
 	// <is being processed + the chunk>
-	std::vector<std::pair<bool, ChunkPtr>> genList_;
+	std::vector<ChunkPtr> genList_;
 	ctpl::thread_pool pool_; // resources
 };

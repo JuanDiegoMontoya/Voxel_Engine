@@ -35,6 +35,7 @@ public:
 	/*
 		Populates a chunk based on its position in the world
 	*/
+	static void InitNoiseFuncs();
 	static void GenerateChunk(glm::ivec3 cpos, LevelPtr level);
 	static TerrainType GetTerrainType(glm::ivec3 wpos);
 	static double GetTemperature(double x, double y, double z);

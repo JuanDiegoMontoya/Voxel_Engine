@@ -1,9 +1,10 @@
 #pragma once
+#include "chunk_load_manager.h"
 #include "block.h"
 
 typedef struct Chunk* ChunkPtr;
 typedef class Level* LevelPtr;
-class ChunkLoadManager;
+//class ChunkLoadManager;
 
 class ChunkManager
 {
@@ -22,7 +23,9 @@ public:
 	unsigned GetMaxLoadPerFrame() const { return maxLoadPerFrame_; }
 
 	// setters
-	void SetCurrentLevel(LevelPtr level) { level_ = level; }
+	void SetCurrentLevel(LevelPtr level) { 
+		level_ = level; 
+		loadManager_->SetCurrentLevel(level); }
 	void SetLoadDistance(float d) { loadDistance_ = d; }
 	void SetUnloadLeniency(float d) { unloadLeniency_ = d; }
 	void SetMaxLoadPerFrame(unsigned n) { maxLoadPerFrame_ = n; }

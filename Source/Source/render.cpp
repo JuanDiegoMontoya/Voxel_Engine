@@ -33,7 +33,7 @@ void Renderer::DrawAll()
 	//glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
 	geometryPass();
 	
-	//drawShadows();
+	drawShadows();
 	drawSky();
 	drawNormal();
 	drawWater();

@@ -257,17 +257,14 @@ static module::Perlin temperatureNoise;
 static module::Perlin humidityNoise;
 static model::Plane temperature;
 static model::Plane humidity;
-void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
+void WorldGen::InitNoiseFuncs()
 {
-	static bool init = true;
-
-	if (init)
 	{
 		// init temp + humidity maps
-		temperatureNoise.SetFrequency(.005);
+		temperatureNoise.SetFrequency(.002);
 		temperatureNoise.SetSeed(0);
 		temperatureNoise.SetOctaveCount(1);
-		humidityNoise.SetFrequency(.005);
+		humidityNoise.SetFrequency(.003);
 		humidityNoise.SetSeed(1);
 		humidityNoise.SetOctaveCount(1);
 		temperature.SetModule(temperatureNoise);
@@ -288,7 +285,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		rivers.SetRoughness(1);
 		rivers.SetPower(.5);
 		rivers.SetFrequency(.2);
-		
+
 		//rivers.SetPersistence(.1);
 
 		// add a little bit of plains to a blank canvas
@@ -374,10 +371,11 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		//heightMapBuilder.SetSourceModule(canvas2);
 		//heightMapBuilder.SetDestNoiseMap(heightMap);
 		//heightMapBuilder.SetDestSize(Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE);
-
-		init = false;
 	}
+}
 
+void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
+{
 	//heightMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z , cpos.z + 1);
 	//heightMapBuilder.Build();
 	//riverMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z, cpos.z + 1);

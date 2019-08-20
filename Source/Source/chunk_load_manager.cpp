@@ -9,16 +9,23 @@
 
 void ChunkLoadManager::Update()
 {
-	cull();
-	sort();
+	//cull();
+	//sort();
 }
 
 void ChunkLoadManager::Push(ChunkPtr c)
 {
 	if (c->NeedsLoading())
 	{
-		genList_.push_back({ false, c });
+		c->SetIsLoading(true); // this may cause problems in the future
+		//genList_.push_back(c);
+		pool_.push([this](int id, ChunkPtr c) { this->task(id, c); }, c);
 	}
+}
+
+void ChunkLoadManager::SetCurrentLevel(LevelPtr level)
+{
+	level_ = level;
 }
 
 void ChunkLoadManager::init()
@@ -35,15 +42,15 @@ void ChunkLoadManager::sort()
 	// (to load nearer chunks first)
 	for (size_t i = 1; i < genList_.size(); i++)
 	{
-		ChunkPtr key = genList_[i].second;
+		ChunkPtr key = genList_[i];
 		int j = i - 1;
 
-		while (j >= 0 && greater(genList_[j].second, key, camPos))
+		while (j >= 0 && greater(genList_[j], key, camPos))
 		{
-			genList_[j + 1].second = genList_[j].second;
+			genList_[j + 1] = genList_[j];
 			j--;
 		}
-		genList_[j + 1].second = key;
+		genList_[j + 1] = key;
 	}
 }
 
@@ -56,29 +63,13 @@ void ChunkLoadManager::cull()
 		genList_.end(),
 		[](auto& c)->bool
 	{
-		return !c.second->NeedsLoading();
+		return !c->NeedsLoading();
 	});
 }
 
 // loading task given to thread pool
-void ChunkLoadManager::task(int id)
+void ChunkLoadManager::task(int id, ChunkPtr c)
 {
-	// find a chunk that isn't being worked on currently and use that
-	ChunkPtr c = nullptr;
-	while (!c)
-	{
-		for (auto& p : genList_)
-		{
-			if (!p.first)
-			{
-				p.first = true;
-				c = p.second;
-				break;
-			}
-		}
-	}
-
-	float dist = glm::distance(glm::vec3(c->GetPos() * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
 	if (c)
 	{
 		// TODO: check if can be loaded from file before attempting to generate
@@ -87,8 +78,9 @@ void ChunkLoadManager::task(int id)
 #else
 		WorldGen::GenerateChunk(c->GetPos(), level_);
 #endif
-		c->SetGenerated(false);
+		c->SetGenerate(false);
 		c->SetLoaded(true);
+		c->SetIsLoading(false);
 	}
 	c->Update();
 }
