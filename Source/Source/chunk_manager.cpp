@@ -16,6 +16,7 @@ ChunkManager::ChunkManager()
 	unloadLeniency_ = 0;
 	maxLoadPerFrame_ = 0;
 	loadManager_ = new ChunkLoadManager();
+	//updatedChunks_.reserve(2000); // big number
 }
 
 void ChunkManager::Update(LevelPtr level)
@@ -97,6 +98,12 @@ Block ChunkManager::GetBlock(glm::ivec3 wpos)
 	return *block;
 }
 
+void ChunkManager::UpdatedChunk(ChunkPtr chunk)
+{
+	if (isChunkInUpdateList(chunk))
+		updatedChunks_.push_back(chunk);
+}
+
 void ChunkManager::ProcessUpdatedChunks()
 {
 	std::for_each(
@@ -105,7 +112,7 @@ void ChunkManager::ProcessUpdatedChunks()
 		updatedChunks_.end(),
 		[](ChunkPtr& chunk)
 	{
-		if (chunk)// && !chunk->NeedsLoading())
+		if (chunk && !chunk->NeedsLoading())
 			chunk->BuildMesh();
 	});
 
@@ -116,7 +123,7 @@ void ChunkManager::ProcessUpdatedChunks()
 		updatedChunks_.end(),
 		[](ChunkPtr& chunk)
 	{
-		if (chunk)// && !chunk->NeedsLoading())
+		if (chunk && !chunk->NeedsLoading())
 			chunk->BuildBuffers();
 	});
 

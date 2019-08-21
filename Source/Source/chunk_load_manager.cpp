@@ -6,6 +6,7 @@
 #include "pipeline.h"
 #include <algorithm>
 #include <execution>
+#include "level.h"
 
 void ChunkLoadManager::Update()
 {
@@ -81,6 +82,7 @@ void ChunkLoadManager::task(int id, ChunkPtr c)
 		c->SetGenerate(false);
 		c->SetLoaded(true);
 		c->SetIsLoading(false);
+		level_->UpdatedChunk(c); // this will cause crashes if loading too many chunks at once
 	}
 	c->Update();
 }

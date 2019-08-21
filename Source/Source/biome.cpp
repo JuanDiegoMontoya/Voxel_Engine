@@ -59,6 +59,17 @@ void BiomeManager::InitializeBiomes()
 		registerBiome(desertF);
 	}
 
+	// tundra
+	{
+		Biome tundra(0, -.5f, WorldGen::tPlains, Block::bSnow);
+		tundra.name = "tundra";
+		tundra.surfaceFeatures.push_back({ .0003, Prefab::BoulderA });
+		tundra.surfaceFeatures.push_back({ .0003, Prefab::BoulderB });
+		tundra.surfaceFeatures.push_back({ .0001, Prefab::BoulderC });
+		tundra.surfaceFeatures.push_back({ .001f, Prefab::BorealTree });
+		registerBiome(tundra);
+	}
+
 	// snow hills
 	{
 		Biome snowH(.2f, -.5f, WorldGen::tHills, Block::bSnow);

@@ -261,15 +261,19 @@ void Chunk::buildSingleBlockFace(
 		goto GenQuad;
 	if (!near->active_)
 		goto GenQuad;
-	block2 = near->At(nearblock.block_pos);
-	if (block2.GetType() != Block::bWater && block.GetType() == Block::bWater && (nearFace - blockPos).y > 0)
-		goto GenQuad;
-	if (block2.GetType() != Block::bAir && block2.GetType() != Block::bWater)
-		return;
-	if (block2.GetType() == Block::bWater && block.GetType() == Block::bWater)
-		return;
-	if (Block::PropertiesTable[block.GetType()].invisible)
-		return;
+
+
+	{
+		block2 = near->At(nearblock.block_pos);
+		if (block2.GetType() != Block::bWater && block.GetType() == Block::bWater && (nearFace - blockPos).y > 0)
+			goto GenQuad;
+		if (block2.GetType() != Block::bAir && block2.GetType() != Block::bWater)
+			return;
+		if (block2.GetType() == Block::bWater && block.GetType() == Block::bWater)
+			return;
+		if (Block::PropertiesTable[block.GetType()].invisible)
+			return;
+	}
 
 GenQuad:
 	// transform the vertices relative to the chunk
