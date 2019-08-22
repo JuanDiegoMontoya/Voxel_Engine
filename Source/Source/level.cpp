@@ -55,10 +55,11 @@ void Level::Init()
 	PrefabManager::InitPrefabs();
 	BiomeManager::InitializeBiomes();
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(100.f);
-	chunkManager_.SetUnloadLeniency(300.f);
+	chunkManager_.SetLoadDistance(300.f);
+	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(3);
 	renderer_.Init();
+	renderer_.chunkManager_ = &chunkManager_;
 
 	//std::cout << "PRE Processed chunk positions (x, y, z):" << '\n';
 	//for (auto& chunk : Chunk::chunks)

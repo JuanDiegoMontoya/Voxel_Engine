@@ -485,7 +485,7 @@ WorldGen::TerrainType WorldGen::GetTerrainType(glm::ivec3 wpos)
 
 double WorldGen::GetTemperature(double x, double y, double z)
 {
-	return temperature.GetValue(x, z) - y * .01;
+	return temperature.GetValue(x, z) - y * .007;
 }
 
 double WorldGen::GetHumidity(double x, double z)

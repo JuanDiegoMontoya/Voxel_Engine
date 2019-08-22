@@ -10,6 +10,7 @@
 #include "settings.h"
 #include "sun.h"
 #include "input.h"
+#include "chunk_manager.h"
 
 #include "render.h"
 
@@ -41,7 +42,7 @@ void Renderer::DrawAll()
 	drawDepthMapsDebug();
 
 	//glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
-	//postProcess();
+	postProcess();
 	//drawPostProcessing();
 
 	glDisable(GL_FRAMEBUFFER_SRGB);
@@ -196,6 +197,16 @@ void Renderer::drawNormal()
 		currShader->setVec3("viewPos", Render::GetCamera()->GetPos());
 		currShader->setVec3("lightPos", activeDirLight_->GetPos());
 		//currShader->setVec3("ratios", ratios);
+		float loadD = chunkManager_->GetLoadDistance();
+		float loadL = chunkManager_->GetUnloadLeniency();
+		// undo gamma correction
+		static glm::vec3 skyColor(
+			glm::pow(.529f, 2.2f),
+			glm::pow(.808f, 2.2f),
+			glm::pow(.922f, 2.2f));
+		currShader->setFloat("fogStart", loadD - loadD / 2.f);
+		currShader->setFloat("fogEnd", loadD + loadL);
+		currShader->setVec3("fogColor", skyColor);
 
 		glm::mat4 liteMats[3];
 		liteMats[0] = activeDirLight_->GetProjMat(vView[0], 0) * vView[0];
@@ -270,6 +281,18 @@ void Renderer::drawWater()
 	currShader->setMat4("inv_projection", glm::inverse(Render::GetCamera()->GetProj()));
 	currShader->setVec3("viewPos", Render::GetCamera()->GetPos());
 	currShader->setVec3("lightPos", activeDirLight_->GetPos());
+
+	// fog
+	float loadD = chunkManager_->GetLoadDistance();
+	float loadL = chunkManager_->GetUnloadLeniency();
+	// undo gamma correction
+	static glm::vec3 skyColor(
+		glm::pow(.529f, 2.2f),
+		glm::pow(.808f, 2.2f),
+		glm::pow(.922f, 2.2f));
+	currShader->setFloat("fogStart", loadD - loadD / 2.f);
+	currShader->setFloat("fogEnd", loadD + loadL);
+	currShader->setVec3("fogColor", skyColor);
 
 	//currShader->setVec3("ssr_skyColor", glm::vec3(.529f, .808f, .922f));
 
@@ -550,7 +573,7 @@ void Renderer::initDeferredBuffers()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
-
+	
 	// color + specular 'color' buffer
 	glGenTextures(1, &gAlbedoSpec);
 	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
@@ -567,7 +590,6 @@ void Renderer::initDeferredBuffers()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
 
-	
 	unsigned int attachments[4] = { 
 		GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, 
 		GL_COLOR_ATTACHMENT2, GL_DEPTH_ATTACHMENT };
@@ -622,24 +644,19 @@ void Renderer::initPPBuffers()
 	// color buffer
 	glGenTextures(1, &pColor);
 	glBindTexture(GL_TEXTURE_2D, pColor);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, scrX, scrY, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scrX, scrY, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pColor, 0);
 
 	// depth attachment
-	//glGenTextures(1, &pDepth);
-	//glBindTexture(GL_TEXTURE_2D, pDepth);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, pDepth, 0);
+	glGenTextures(1, &pDepth);
+	glBindTexture(GL_TEXTURE_2D, pDepth);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, scrX, scrY, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, pDepth, 0);
 
-	glGenRenderbuffers(1, &pDepth);
-	glBindRenderbuffer(GL_RENDERBUFFER, pDepth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, scrX, scrY); // use a single renderbuffer object for both a depth AND stencil buffer.
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, pDepth); // now actually attach it
-	
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	
 	ASSERT_MSG(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Incomplete framebuffer!");
@@ -650,44 +667,41 @@ void Renderer::postProcess()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
 	glClearColor(1, 1, 1, 1);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	int scrX = Settings::Graphics.screenX;
 	int scrY = Settings::Graphics.screenY;
 
 	// copy default framebuffer contents into pBuffer
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	glReadBuffer(GL_BACK);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pBuffer);
-	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	glBlitFramebuffer(
-		0, 0, scrX/2, scrY/2, 
-		0, 0, scrX/2, scrY/2, 
-		GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		0, 0, scrX, scrY, 
+		0, 0, scrX, scrY, 
+		GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	//glBlitFramebuffer(
 	//	0, 0, scrX / 2, scrY / 2,
 	//	0, 0, scrX / 2, scrY / 2,
 	//	GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	ShaderPtr shader = Shader::shaders["postprocess"];
-	shader->Use();
-	shader->setInt("colorMap", 0);
-	shader->setInt("depthMap", 1);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, pColor);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, pDepth);
-	//shader->setFloat("near_plane", Render::GetCamera()->GetNear());
-	//shader->setFloat("far_plane", Render::GetCamera()->GetFar());
+	//glActiveTexture(GL_TEXTURE2);
+	//glBindTexture(GL_TEXTURE_2D, gDepth);
+	ShaderPtr shader = Shader::shaders["postprocess"];
+	shader->Use();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, scrX / 2, scrY / 2);
+	shader->setInt("colorTex", 0);
+	//shader->setInt("depthMap", 2);
+	shader->setFloat("near_plane", Render::GetCamera()->GetNear());
+	shader->setFloat("far_plane", Render::GetCamera()->GetFar());
+
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_FRAMEBUFFER_SRGB);
 	drawQuad();
 	glEnable(GL_FRAMEBUFFER_SRGB);
-	glViewport(0, 0, scrX, scrY);
 	glEnable(GL_DEPTH_TEST);
 
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);

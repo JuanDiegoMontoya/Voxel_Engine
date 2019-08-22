@@ -24,11 +24,14 @@ uniform DirLight dirLight; // the sun
 uniform vec3 viewPos;
 uniform vec3 lightPos;
 
+uniform float fogStart; // world
+uniform float fogEnd;   // world
+uniform vec3 fogColor;
+
 out vec4 fragColor;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 
-///*
 float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
 {
   // perform perspective divide
@@ -70,40 +73,21 @@ float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
     
   return shadow;
 }
-//*/
-/*
-float ShadowCalculation(int cascadeIndex, vec4 fragPosLightSpace)
+
+float map(float val, float r1s, float r1e, float r2s, float r2e)
 {
-  vec3 ProjCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-
-  vec2 UVCoords;
-  UVCoords.x = 0.5 * ProjCoords.x + 0.5;
-  UVCoords.y = 0.5 * ProjCoords.y + 0.5;
-
-  float z = 0.5 * ProjCoords.z + 0.5;
-  float Depth = texture(shadowMap[cascadeIndex], UVCoords).x;
-
-  if (Depth < z + 0.00001)
-    return 0.0;
-  else
+  return (val - r1s) / (r1e - r1s) * (r2e - r2s) + r2s;
+}
+// returns intensity of fog, from 0 to 1
+float FogCalculation()
+{
+  float dist = distance(vPos, viewPos);
+  if (dist > fogEnd)
     return 1.0;
+  if (dist < fogStart)
+    return 0.0;
+  return map(dist, fogStart, fogEnd, 0.0, 1.0);
 }
-*/
-/*
-float ShadowCalculation(int cascIndex, vec4 fragPosLightSpace)
-{
-	vec3 projCord = fragPosLightSpace.xyz / fragPosLightSpace.w;
-	projCord = projCord * 0.5 + 0.5;
-	if(projCord.z > 1.0f)
-		return 1.0f;
-	float currentDepth = projCord.z;
-	float fShadowMapValue = texture(shadowMap[cascIndex], projCord.xy).r;
-
-	float fShadow = 1.0f;
-	fShadow = clamp(exp(Ratios[cascIndex] * 5.0f * ( fShadowMapValue - currentDepth ) ), 0.0, 1.0 );
-	return fShadow;
-}
-*/
 
 // blinn-phong + cascaded shadows
 void main()
@@ -141,48 +125,14 @@ void main()
       break;
     }
   }
-  //float shadow = ShadowCalculation(FragPosLightSpace);                      
-  vec3 lighting = (ambient + (1.05 - shadow * 1.0000001) * (diffuse + specular)) * color;    
+
+  vec3 lighting = (ambient + (1.05 - shadow * 1.00) * (diffuse + specular)) * color;
   vec4 irrelevant = vec4(lighting, 0) * 0.0001;
   
+  lighting = mix(lighting, fogColor, FogCalculation());
   //fragColor = vec4(poopoo, 1) + irrelevant;
   fragColor = vec4(lighting, vColor.a);
   //fragColor = vec4(vec3(FragPosLightSpace[0].y / 10), 1) + irrelevant;
   //fragColor = vec4(vec3(ClipSpacePosZ) / 100, 1) + irrelevant;
   //fragColor = vec4(vec3(shadow / 3) + vec3(ClipSpacePosZ / 200) + poopoo, 1) + irrelevant;
 }
-
-/*
-void main()
-{
-  // properties
-  vec3 norm = normalize(vNormal);
-  vec3 viewDir = normalize(viewPos - vPos);
-  
-  vec3 result = CalcDirLight(dirLight, norm, viewDir);
-  fragColor = vec4(result, 1.0);
-}
-
-vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
-{
-  vec3 lightDir = normalize(-light.direction);
-  
-  // diffuse shading
-  float diff = max(dot(normal, lightDir), 0.0);
-  
-  // specular shading
-  vec3 reflectDir = reflect(-lightDir, normal);
-  float spec = pow(max(dot(viewDir, reflectDir), 0.0), vShininess);
-  //vec3 halfwayDir = normalize(lightDir + viewDir);
-  //spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
-  
-  // combine results
-  vec3 ambient  = light.ambient  * vColor.rgb; // ambient diffuse
-  vec3 diffuse  = light.diffuse  * diff * vColor.rgb;// * vec3(texture(material.diffuse, vTexCoords));
-  vec3 specular = light.specular * spec * vColor.rgb;// * vec3(texture(material.specular, vTexCoords));
-  float shadow = ShadowCalculation(FragPosLightSpace);
-  //return ((ambient + (1.0 - shadow)) * (diffuse + specular) * vColor.rgb);
-  //return ambient + ((1.0 - shadow) * (diffuse + specular));
-  return vec3(1.0 - shadow) + .001 * (specular * diffuse * ambient * shadow);
-}
-*/

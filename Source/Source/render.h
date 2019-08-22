@@ -6,6 +6,7 @@ class IBO;
 class Shader;
 class DirLight;
 class Sun;
+class ChunkManager;
 typedef struct Chunk* ChunkPtr;
 typedef std::function<void()> DrawCB;
 typedef std::function<void(const glm::mat4&)> ModelCB;
@@ -26,6 +27,7 @@ public:
 
 	static void DrawCube();
 
+	ChunkManager* chunkManager_;
 private:
 	// broad-phase rendering
 	void drawShadows(); // construct shadow map(s)
@@ -69,7 +71,6 @@ private:
 	unsigned pDepth;
 
 
-
 	// CSM (temp?)
 	glm::mat4 view;
 	glm::mat4 projection;
@@ -81,5 +82,4 @@ private:
 	glm::vec3 ratios;								// unused (exponential shadows)
 	glm::vec4 cascadEnds;						// light space or something
 	glm::vec3 cascadeEndsClipSpace; // clip space
-
 };

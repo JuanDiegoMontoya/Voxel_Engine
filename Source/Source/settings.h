@@ -60,10 +60,17 @@ namespace Settings
 		bool danglyBits = true;		// scaling squares on the edges of the selected object
 	};
 
+	// world settings
+	struct WLD
+	{
+
+	};
+
 	static typename GFX Graphics;
 	static typename CTL Controls;
 	static typename SND Sound;
 	static typename EDT Editor;
+	static typename WLD World;
 
 //bool DrawOptions();
 //void reinitializeDatMfGlfwContextBruh();
