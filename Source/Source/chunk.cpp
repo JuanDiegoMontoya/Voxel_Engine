@@ -9,6 +9,7 @@
 #include "pipeline.h"
 #include "frustum.h"
 #include <sstream>
+#include "settings.h"
 
 /*
 	TODO: use IBOs to save GPU memory
@@ -317,7 +318,9 @@ GenQuad:
 			wtPositions.push_back(finalvert);
 		else
 		{
-			float invOcclusion = computeBlockAO(block, blockPos, glm::vec3(vert), nearFace);
+			float invOcclusion = 1;
+			if (Settings::Graphics.blockAO)
+				invOcclusion = computeBlockAO(block, blockPos, glm::vec3(vert), nearFace);
 			tColors.push_back(glm::vec4((glm::vec3(color.r, color.g, color.b)) * invOcclusion, color.a));
 			tPositions.push_back(finalvert);
 		}

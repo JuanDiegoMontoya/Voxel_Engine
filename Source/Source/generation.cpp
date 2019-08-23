@@ -382,24 +382,29 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	//riverMapBuilder.Build();
 
 	// generate EVERYTHING
-	for (int i = 0; i < Chunk::CHUNK_SIZE; i++)
+	for (int i = 0; i < Chunk::CHUNK_SIZE; i++)			// x
 	{
 		int worldX = cpos.x * Chunk::CHUNK_SIZE + i;
-		for (int j = 0; j < Chunk::CHUNK_SIZE; j++)
+		for (int k = 0; k < Chunk::CHUNK_SIZE; k++)		// z
 		{
-			int worldY = cpos.y * Chunk::CHUNK_SIZE + j;
-			for (int k = 0; k < Chunk::CHUNK_SIZE; k++)
-			{
-				int worldZ = cpos.z * Chunk::CHUNK_SIZE + k;
-				glm::ivec3 wpos(worldX, worldY, worldZ);
-				Biome curBiome = BiomeManager::GetBiome(GetTemperature(worldX, worldY, worldZ), GetHumidity(worldX, worldZ), GetTerrainType(wpos));
-				float height = heightMapBuilder.GetValue(worldX, worldZ);
-				float riverVal = riverMapBuilder.GetValue(worldX, worldZ);
-				//height = height < -1 ? -1 : height;
+			// height-based values that don't care about y
+			int worldZ = cpos.z * Chunk::CHUNK_SIZE + k;
+			float height = heightMapBuilder.GetValue(worldX, worldZ);
+			float riverVal = riverMapBuilder.GetValue(worldX, worldZ);
+			double humidity = GetHumidity(worldX, worldZ);
+			float slope = getSlope(heightMapBuilder, worldX, worldZ);
 
+			for (int j = 0; j < Chunk::CHUNK_SIZE; j++)	// y
+			{
+				int worldY = cpos.y * Chunk::CHUNK_SIZE + j;
+				glm::ivec3 wpos(worldX, worldY, worldZ);
 				int y = (int)Utils::mapToRange(height, -1.f, 1.f, 0.f, 150.f);
+				if (worldY > y && worldY > 0) // early skip
+					continue;
+				const Biome& curBiome = BiomeManager::GetBiome(GetTemperature(worldX, worldY, worldZ), humidity, GetTerrainType(wpos));
+
 				int riverModifier = 0;
-				if (riverVal > 0 && getSlope(heightMapBuilder, worldX, worldZ) < 0.004f)
+				if (riverVal > 0 && slope < 0.004f)
 					riverModifier = glm::clamp(Utils::mapToRange(riverVal, -.35f, .35f, -4.f, 5.f), 0.f, 30.f);
 				int actualHeight = y - riverModifier;
 
@@ -409,13 +414,11 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				if (worldY < 0 && worldY > actualHeight) // make ocean
 					level->GenerateBlockAt(wpos, Block::BlockType::bWater);
 
-				//double val = tunneler.GetValue(worldX, worldY, worldZ); // maybe also use for rivers
-
 				// top cover
 				if (worldY == actualHeight)
 				{
 					// surface features
-					level->GenerateBlockAtCheap(wpos, curBiome.surfaceCover);
+					level->GenerateBlockAt(wpos, curBiome.surfaceCover);
 
 					// generate surface prefabs
 					if (worldY > 0)
@@ -429,12 +432,12 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				}
 				// just under top cover
 				if (worldY >= actualHeight - 3 && worldY < actualHeight)
-					level->GenerateBlockAtCheap(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bDirt);
+					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bDirt);
 
 				// generate subsurface
 				if (worldY >= -30 && worldY < actualHeight - 3)
 				{
-					level->GenerateBlockAtCheap(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
+					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
 					if (Utils::get_random(0, 1) > .99999f)
 						GeneratePrefab(PrefabManager::GetPrefab(Prefab::DungeonSmall), wpos, level);
 				}
@@ -462,11 +465,12 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	}
 
 	// lastly, check if chunk needs its mesh generated
-	if (!Chunk::chunks[cpos]->IsMeshBuilt())
-	{
-		Chunk::chunks[cpos]->BuildMesh();
-		Chunk::chunks[cpos]->BuildBuffers();
-	}
+	//if (!Chunk::chunks[cpos]->IsMeshBuilt())
+	//{
+	//	Chunk::chunks[cpos]->BuildMesh();
+	//	Chunk::chunks[cpos]->BuildBuffers();
+	//}
+	//level->UpdatedChunk(Chunk::chunks[cpos]);
 }
 
 WorldGen::TerrainType WorldGen::GetTerrainType(glm::ivec3 wpos)

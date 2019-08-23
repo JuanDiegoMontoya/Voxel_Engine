@@ -17,6 +17,7 @@ public:
 	void UpdateBlockCheap(glm::ivec3& wpos, Block block);
 	Block GetBlock(glm::ivec3 wpos); // wrapper function
 	void UpdatedChunk(ChunkPtr chunk);
+	void ReloadAllChunks(); // for when big things change
 
 	// getters
 	float GetLoadDistance() const { return loadDistance_; }

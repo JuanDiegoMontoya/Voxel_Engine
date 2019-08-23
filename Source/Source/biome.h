@@ -1,5 +1,6 @@
 #pragma once
 #include "generation.h"
+#include "misc_utils.h"
 
 // TODO: add more properties like grass/water color modifier, etc
 //			 sky color,
@@ -38,7 +39,23 @@ struct Biome
 class BiomeManager
 {
 public:
-	inline static std::map<std::string, Biome> biomes;
+	//struct hashfunc
+	//{
+	//	size_t operator()(const Biome& b) const
+	//	{
+	//		return Utils::djb2hash()(b.name.c_str());
+	//	}
+	//};
+
+	//struct keyeq
+	//{
+	//	bool operator()(const Biome& first, const Biome& second) const
+	//	{
+	//		return Utils::charPtrKeyEq()(first.name.c_str(), second.name.c_str());
+	//	}
+	//};
+
+	inline static std::unordered_map<std::string, Biome> biomes;
 
 	const static Biome& GetBiome(float temp, float humid, WorldGen::TerrainType terrain);
 	static void InitializeBiomes();

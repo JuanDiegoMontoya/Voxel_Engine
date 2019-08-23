@@ -16,8 +16,6 @@
 #include <thread>
 #include "sun.h"
 
-#define ID2D(x, y, w) (width * row + col)
-
 static void GLAPIENTRY 
 GLerrorCB(GLenum source,
 	GLenum type,

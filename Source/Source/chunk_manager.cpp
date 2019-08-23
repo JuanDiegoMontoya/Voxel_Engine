@@ -44,9 +44,6 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned ch
 
 	if (block)
 	{
-		// ignore if same type
-		//if (block->GetType() == t)
-		//	return;
 		// write policy: skip if new block is WEAKER than current block (same strength WILL overwrite)
 		if (writeStrength < block->WriteStrength())
 			return;
@@ -77,6 +74,8 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned ch
 		{  0,  1,  0 },
 		{  0,  0, -1 },
 		{  0,  0,  1 }
+
+		// TODO: add 8 more cases for diagonals (AO)
 	};
 	for (const auto& dir : dirs)
 	{
@@ -88,6 +87,7 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned ch
 void ChunkManager::UpdateBlockCheap(glm::ivec3& wpos, Block block)
 {
 	*Chunk::AtWorld(wpos) = block;
+	//UpdatedChunk(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
 }
 
 Block ChunkManager::GetBlock(glm::ivec3 wpos)
@@ -104,10 +104,20 @@ void ChunkManager::UpdatedChunk(ChunkPtr chunk)
 		updatedChunks_.push_back(chunk);
 }
 
+void ChunkManager::ReloadAllChunks()
+{
+	for (const auto& p : Chunk::chunks)
+	{
+		if (p.second)
+			if (!isChunkInUpdateList(p.second))
+				updatedChunks_.push_back(p.second);
+	}
+}
+
 void ChunkManager::ProcessUpdatedChunks()
 {
 	std::for_each(
-		std::execution::par_unseq,
+		std::execution::par,
 		updatedChunks_.begin(),
 		updatedChunks_.end(),
 		[](ChunkPtr& chunk)

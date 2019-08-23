@@ -32,9 +32,11 @@ void Renderer::DrawAll()
 	glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
 	//glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
-	geometryPass();
+	if (doGeometryPass)
+		geometryPass();
 	
-	drawShadows();
+	if (renderShadows)
+		drawShadows();
 	drawSky();
 	drawNormal();
 	drawWater();
@@ -42,6 +44,7 @@ void Renderer::DrawAll()
 	drawDepthMapsDebug();
 
 	//glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
+
 	postProcess();
 	//drawPostProcessing();
 
@@ -52,6 +55,16 @@ void Renderer::Clear()
 {
 	glClearColor(0, 0, 0, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+}
+
+void Renderer::ClearCSM()
+{
+	for (int i = 0; i < activeDirLight_->GetNumCascades(); i++)
+	{
+		activeDirLight_->bindForWriting(i);
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 static VAO* blockHoverVao = nullptr;
@@ -205,7 +218,7 @@ void Renderer::drawNormal()
 			glm::pow(.808f, 2.2f),
 			glm::pow(.922f, 2.2f));
 		currShader->setFloat("fogStart", loadD - loadD / 2.f);
-		currShader->setFloat("fogEnd", loadD + loadL);
+		currShader->setFloat("fogEnd", loadD - Chunk::CHUNK_SIZE * 1.44f); // cuberoot(3)
 		currShader->setVec3("fogColor", skyColor);
 
 		glm::mat4 liteMats[3];
@@ -291,7 +304,7 @@ void Renderer::drawWater()
 		glm::pow(.808f, 2.2f),
 		glm::pow(.922f, 2.2f));
 	currShader->setFloat("fogStart", loadD - loadD / 2.f);
-	currShader->setFloat("fogEnd", loadD + loadL);
+	currShader->setFloat("fogEnd", loadD - Chunk::CHUNK_SIZE * 1.44f); // cuberoot(3)
 	currShader->setVec3("fogColor", skyColor);
 
 	//currShader->setVec3("ssr_skyColor", glm::vec3(.529f, .808f, .922f));
@@ -688,15 +701,13 @@ void Renderer::postProcess()
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, pColor);
-	//glActiveTexture(GL_TEXTURE2);
-	//glBindTexture(GL_TEXTURE_2D, gDepth);
 	ShaderPtr shader = Shader::shaders["postprocess"];
 	shader->Use();
 
 	shader->setInt("colorTex", 0);
-	//shader->setInt("depthMap", 2);
-	shader->setFloat("near_plane", Render::GetCamera()->GetNear());
-	shader->setFloat("far_plane", Render::GetCamera()->GetFar());
+	shader->setBool("sharpenFilter", ppSharpenFilter);
+	shader->setBool("edgeDetection", ppEdgeDetection);
+	shader->setBool("blurFilter", ppBlurFilter);
 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_FRAMEBUFFER_SRGB);

@@ -40,6 +40,8 @@ namespace Settings
 			{ 1366, 768 }
 		};
 		const size_t res_amt = resolutions.size();
+
+		static inline bool blockAO = true;
 	};
 
 	struct SND

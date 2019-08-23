@@ -21,6 +21,12 @@ public:
 	// interation
 	void DrawAll();
 	void Clear();
+	void ClearCSM();
+	void ClearGGuffer()
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
 
 	void SetDirLight(DirLight* d) { activeDirLight_ = d; }
 	void SetSun(Sun* s) { activeSun_ = s; }
@@ -28,6 +34,14 @@ public:
 	static void DrawCube();
 
 	ChunkManager* chunkManager_;
+
+	bool renderShadows = true;
+	bool doGeometryPass = true; // for ssr currently
+
+	// pp effects
+	bool ppSharpenFilter = false;
+	bool ppBlurFilter = false;
+	bool ppEdgeDetection = false;
 private:
 	// broad-phase rendering
 	void drawShadows(); // construct shadow map(s)

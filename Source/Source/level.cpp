@@ -55,9 +55,9 @@ void Level::Init()
 	PrefabManager::InitPrefabs();
 	BiomeManager::InitializeBiomes();
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(300.f);
+	chunkManager_.SetLoadDistance(200.f);
 	chunkManager_.SetUnloadLeniency(100.f);
-	chunkManager_.SetMaxLoadPerFrame(3);
+	chunkManager_.SetMaxLoadPerFrame(1);
 	renderer_.Init();
 	renderer_.chunkManager_ = &chunkManager_;
 
@@ -131,7 +131,7 @@ void Level::DrawImGui()
 {
 	{
 		ImGui::SetNextWindowPos(ImVec2(20, 20));
-		ImGui::SetNextWindowSize(ImVec2(400, 600));
+		ImGui::SetNextWindowSize(ImVec2(350, 600));
 		ImGui::Begin("Sun");
 
 		glm::vec3 pos = sun_.GetPos();
@@ -175,7 +175,7 @@ void Level::DrawImGui()
 
 	{
 		ImGui::SetNextWindowPos(ImVec2(1500, 20));
-		ImGui::SetNextWindowSize(ImVec2(400, 600));
+		ImGui::SetNextWindowSize(ImVec2(300, 600));
 		ImGui::Begin("Info");
 
 		ImGui::Text("FPS: %.0f (%.1f ms)", 1.f / game_->GetDT(), 1000 * game_->GetDT());
@@ -257,6 +257,22 @@ void Level::DrawImGui()
 		}
 		));
 
+		ImGui::End();
+	}
+
+	{
+		ImGui::Begin("Global Settings");
+		if (ImGui::Checkbox("Compute baked AO", &Settings::GFX::blockAO))
+			chunkManager_.ReloadAllChunks();
+		if (ImGui::Checkbox("Shadows", &renderer_.renderShadows))
+			renderer_.ClearCSM();
+		if (ImGui::Checkbox("Reflections", &renderer_.doGeometryPass))
+			renderer_.ClearGGuffer();
+		ImGui::NewLine();
+		ImGui::Text("Post processing:");
+		ImGui::Checkbox("Sharpen Filter", &renderer_.ppSharpenFilter);
+		ImGui::Checkbox("Blur Filter", &renderer_.ppBlurFilter);
+		ImGui::Checkbox("Edge detection", &renderer_.ppEdgeDetection);
 		ImGui::End();
 	}
 }

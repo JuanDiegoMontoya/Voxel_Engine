@@ -239,6 +239,9 @@
     <ClInclude Include="player.h">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="xoroshiro.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
