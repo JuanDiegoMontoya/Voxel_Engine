@@ -330,11 +330,11 @@ int Chunk::polygonize(const glm::ivec3& pos)
 	if (grid.val[6] < isolevel) cubeindex |= 64;
 	if (grid.val[7] < isolevel) cubeindex |= 128;
 
-	/* Cube is entirely in/out of the surface */
+	// Cube is entirely in/out of the surface
 	if (edgeTable[cubeindex] == 0)
 		return 0;
 
-	/* Find the vertices where the surface intersects the cube */
+	// Find the vertices where the surface intersects the cube
 	if (edgeTable[cubeindex] & 1)
 		vertlist[0] =
 		VertexInterp(isolevel, grid.p[0], grid.p[1], grid.val[0], grid.val[1]);
@@ -376,22 +376,21 @@ int Chunk::polygonize(const glm::ivec3& pos)
 	int ntriang = 0;
 	glm::mat4 localTransform = 
 		glm::translate(glm::mat4(1.f), glm::vec3(pos) + .5f);
+	// generate each triangle
 	for (int i = 0; triTable[cubeindex][i] != -1; i += 3)
 	{
-		//triangles[ntriang].p[0] = vertlist[triTable[cubeindex][i]];
-		//triangles[ntriang].p[1] = vertlist[triTable[cubeindex][i + 1]];
-		//triangles[ntriang].p[2] = vertlist[triTable[cubeindex][i + 2]];
+		// compute world position of each vertex in triangle
 		glm::vec4 vert1(vertlist[triTable[cubeindex][i + 0]], 1.0f);
 		glm::vec4 vert2(vertlist[triTable[cubeindex][i + 1]], 1.0f);
 		glm::vec4 vert3(vertlist[triTable[cubeindex][i + 2]], 1.0f);
 		vert1 = localTransform * vert1;
 		vert2 = localTransform * vert2;
 		vert3 = localTransform * vert3;
-
 		tPositions.push_back(vert1);
 		tPositions.push_back(vert2);
 		tPositions.push_back(vert3);
 
+		// compute face normal
 		glm::vec3 dir = glm::cross(
 			(vertlist[triTable[cubeindex][i + 1]] - vertlist[triTable[cubeindex][i + 0]]),
 			(vertlist[triTable[cubeindex][i + 2]] - vertlist[triTable[cubeindex][i + 0]]));
@@ -478,7 +477,7 @@ cell Chunk::buildCellFromVoxel(const glm::vec3& wpos)
 		//d.p[i] = wpos + positions[i];
 		d.p[i] = positions[i];
 		double noise = WorldGen::GetCurrentNoise(wpos + positions[i]);
-		d.val[i] = Utils::mapToRange(noise, isolevel, 1., 0., 1.);
+		d.val[i] = Utils::mapToRange(noise, -1., 0., 0., 1.);
 		//d.val[i] = glm::clamp(d.val[i], 0., 1.);
 		//d.val[i] = WorldGen::GetCurrentNoise(wpos + positions[i]);
 		//if (d.val[i] < isolevel) // it's not within the worldgen, but we're building the mesh anyway (user placed block)

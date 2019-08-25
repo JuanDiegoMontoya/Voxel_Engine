@@ -254,7 +254,7 @@ void ChunkManager::generateNewChunks()
 			if (chunk->generate_)
 			{
 #if MARCHED_CUBES
-				WorldGen::Generate3DNoiseChunk(chunk->GetPos(), level_);
+				WorldGen::Generate3DNoiseChunk(glm::vec3(chunk->GetPos()), level_);
 #else
 				WorldGen::GenerateChunk(chunk->GetPos(), level_);
 #endif

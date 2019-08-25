@@ -41,6 +41,8 @@ uniform mat4 u_view;
 uniform mat4 u_proj;
 uniform vec3 ssr_skyColor;
 uniform mat4 inv_projection;
+uniform bool computeSSR;
+uniform bool computeShadow;
 
 out vec4 fragColor;
 
@@ -304,13 +306,16 @@ void main()
   // calculate shadow
   float shadow = 0;
   vec3 poopoo = vec3(0);
-  for (int i = 0; i < NUM_CASCADES; i++)
+  if (computeShadow == true)
   {
-    if (ClipSpacePosZ <= cascadeEndClipSpace[i])
+    for (int i = 0; i < NUM_CASCADES; i++)
     {
-      poopoo[i] = .2;
-      shadow = ShadowCalculation(i, FragPosLightSpace[i]);
-      break;
+      if (ClipSpacePosZ <= cascadeEndClipSpace[i])
+      {
+        poopoo[i] = .2;
+        shadow = ShadowCalculation(i, FragPosLightSpace[i]);
+        break;
+      }
     }
   }
   //float shadow = ShadowCalculation(FragPosLightSpace);                      
@@ -318,7 +323,8 @@ void main()
   vec4 irrelevant = vec4(lighting, 0) * 0.0001;
   
   float waterVis = waterAngleVisModifier();
-  lighting = lighting + ssr() * 0.200;
+  if (computeSSR == true)
+    lighting += ssr() * 0.200;
   lighting = mix(lighting, fogColor, FogCalculation());
   fragColor = vec4(lighting, vColor.a + waterVis);
   //fragColor = vec4(ssr(), 1.0) + fragColor * .0001;

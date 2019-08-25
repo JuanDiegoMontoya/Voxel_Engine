@@ -60,38 +60,6 @@ void Level::Init()
 	chunkManager_.SetMaxLoadPerFrame(1);
 	renderer_.Init();
 	renderer_.chunkManager_ = &chunkManager_;
-
-	//std::cout << "PRE Processed chunk positions (x, y, z):" << '\n';
-	//for (auto& chunk : Chunk::chunks)
-	//{
-	//	if (chunk.second)
-	//	{
-	//		const auto& poo = chunk.second->GetPos();
-	//		std::cout << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
-	//	}
-	//	else
-	//	{
-	//		const auto& poo = chunk.first;
-	//		std::cout << "Disabled chunk at: " << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
-	//	}
-	//}
-
-	//TestCoordinateStuff();
-
-	//std::cout << "POST Processed chunk positions (x, y, z):" << '\n';
-	//for (auto& chunk : Chunk::chunks)
-	//{
-	//	if (chunk.second)
-	//	{
-	//		const auto& poo = chunk.second->GetPos();
-	//		std::cout << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
-	//	}
-	//	else
-	//	{
-	//		const auto& poo = chunk.first;
-	//		std::cout << "Disabled chunk at: " << '(' << poo.x << ", " << poo.y << ", " << poo.z << ')' << std::endl;
-	//	}
-	//}
 	
 	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
 	std::cout << benchmark_duration_.count() << std::endl;
@@ -260,6 +228,7 @@ void Level::DrawImGui()
 		ImGui::End();
 	}
 
+	// TODO: make toggling shadows/reflections ACTUALLY disable them completely
 	{
 		ImGui::Begin("Global Settings");
 		if (ImGui::Checkbox("Compute baked AO", &Settings::GFX::blockAO))
@@ -273,6 +242,7 @@ void Level::DrawImGui()
 		ImGui::Checkbox("Sharpen Filter", &renderer_.ppSharpenFilter);
 		ImGui::Checkbox("Blur Filter", &renderer_.ppBlurFilter);
 		ImGui::Checkbox("Edge detection", &renderer_.ppEdgeDetection);
+		ImGui::Checkbox("Chromatic Aberration", &renderer_.ppChromaticAberration);
 		ImGui::End();
 	}
 }

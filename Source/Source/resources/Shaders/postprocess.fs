@@ -7,6 +7,7 @@ uniform sampler2D colorTex;
 uniform bool sharpenFilter;
 uniform bool blurFilter;
 uniform bool edgeDetection;
+uniform bool chromaticAberration;
 
 #define ID2D(x, y, w) (width * row + col)
 const float offset = 1.0 / 1000.0;
@@ -61,6 +62,15 @@ void main()
       1,  1, 1
     );
     calc3x3kernel(rgb, kernel);
+    ppEffectCount++;
+  }
+
+  if (chromaticAberration == true)
+  {
+    vec3 colorOffsets = vec3(offset, -offset, 0);
+    rgb.r += texture(colorTex, TexCoords.xy + colorOffsets.r).r;
+    rgb.g += texture(colorTex, TexCoords.xy + colorOffsets.g).g;
+    rgb.b += texture(colorTex, TexCoords.xy + colorOffsets.b).b;
     ppEffectCount++;
   }
 

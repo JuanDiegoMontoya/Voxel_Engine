@@ -22,11 +22,7 @@ public:
 	void DrawAll();
 	void Clear();
 	void ClearCSM();
-	void ClearGGuffer()
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	}
+	void ClearGGuffer();
 
 	void SetDirLight(DirLight* d) { activeDirLight_ = d; }
 	void SetSun(Sun* s) { activeSun_ = s; }
@@ -37,11 +33,13 @@ public:
 
 	bool renderShadows = true;
 	bool doGeometryPass = true; // for ssr currently
+	//bool renderSSR = true;
 
 	// pp effects
 	bool ppSharpenFilter = false;
 	bool ppBlurFilter = false;
 	bool ppEdgeDetection = false;
+	bool ppChromaticAberration = false;
 private:
 	// broad-phase rendering
 	void drawShadows(); // construct shadow map(s)

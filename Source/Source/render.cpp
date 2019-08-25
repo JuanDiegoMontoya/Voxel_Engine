@@ -63,8 +63,27 @@ void Renderer::ClearCSM()
 	{
 		activeDirLight_->bindForWriting(i);
 		glClear(GL_DEPTH_BUFFER_BIT);
+		glClearTexSubImage(
+			activeDirLight_->GetDepthTex()[i], 0, 0, 0, 0,
+			activeDirLight_->GetShadowSize().x, activeDirLight_->GetShadowSize().y, 0,
+			GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::ClearGGuffer()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// OpenGL 4.4+
+	int scrX = Settings::Graphics.screenX;
+	int scrY = Settings::Graphics.screenY;
+	glClearTexSubImage(gPosition, 0, 0, 0, 0, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
+	glClearTexSubImage(gNormal, 0, 0, 0, 0, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
+	glClearTexSubImage(gAlbedoSpec, 0, 0, 0, 0, scrX, scrY, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glClearTexSubImage(gDepth, 0, 0, 0, 0, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 }
 
 static VAO* blockHoverVao = nullptr;
@@ -240,6 +259,7 @@ void Renderer::drawNormal()
 		currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
 		currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
 		currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+		currShader->setBool("computeShadow", renderShadows);
 		activeDirLight_->bindForReading();
 	};
 
@@ -287,13 +307,14 @@ void Renderer::drawWater()
 		activeDirLight_->GetRatio(vView[2], 2)
 	);
 
-	// render water in each active chunk
 	currShader->setFloat("u_time", (float)glfwGetTime());
 	currShader->setMat4("u_view", Render::GetCamera()->GetView());
 	currShader->setMat4("u_proj", Render::GetCamera()->GetProj());
 	currShader->setMat4("inv_projection", glm::inverse(Render::GetCamera()->GetProj()));
 	currShader->setVec3("viewPos", Render::GetCamera()->GetPos());
 	currShader->setVec3("lightPos", activeDirLight_->GetPos());
+	currShader->setBool("computeSSR", doGeometryPass);
+	currShader->setBool("computeShadow", renderShadows);
 
 	// fog
 	float loadD = chunkManager_->GetLoadDistance();
@@ -707,6 +728,7 @@ void Renderer::postProcess()
 	shader->setInt("colorTex", 0);
 	shader->setBool("sharpenFilter", ppSharpenFilter);
 	shader->setBool("edgeDetection", ppEdgeDetection);
+	shader->setBool("chromaticAberration", ppChromaticAberration);
 	shader->setBool("blurFilter", ppBlurFilter);
 
 	glDisable(GL_DEPTH_TEST);

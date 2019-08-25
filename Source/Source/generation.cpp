@@ -516,10 +516,10 @@ void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
 			{
 				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 				double dens = GetCurrentNoise(pos);
-				if (dens + .0 < Chunk::isolevel)
-					level->UpdateBlockAt(glm::ivec3(pos), Block::bAir);
+				if (Utils::mapToRange(dens, -1.f, 0.f, 0.f, 1.f) > Chunk::isolevel)
+					level->GenerateBlockAt(glm::ivec3(pos), Block::bGrass);
 				else
-					level->UpdateBlockAt(glm::ivec3(pos), Block::bGrass);
+					level->GenerateBlockAt(glm::ivec3(pos), Block::bAir);
 			}
 		}
 	}
@@ -535,7 +535,7 @@ double WorldGen::GetCurrentNoise(const glm::vec3& wpos)
 		// higher lacunarity = thinner tunnels
 		dense.SetLacunarity(2.);
 		// connectivity/complexity of tunnels (unsure)
-		dense.SetOctaveCount(5);
+		dense.SetOctaveCount(1);
 		// higher frequency = more common, thicker tunnels 
 		// raise lacunarity as frequency decreases
 		dense.SetFrequency(.02);

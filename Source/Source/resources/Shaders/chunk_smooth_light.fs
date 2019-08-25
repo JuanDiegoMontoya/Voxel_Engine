@@ -23,6 +23,7 @@ uniform float cascadeEndClipSpace[NUM_CASCADES];
 uniform DirLight dirLight; // the sun
 uniform vec3 viewPos;
 uniform vec3 lightPos;
+uniform bool computeShadow;
 
 uniform float fogStart; // world
 uniform float fogEnd;   // world
@@ -116,13 +117,16 @@ void main()
   // calculate shadow
   float shadow = 0;
   vec3 poopoo = vec3(0);
-  for (int i = 0; i < NUM_CASCADES; i++)
+  if (computeShadow == true)
   {
-    if (ClipSpacePosZ <= cascadeEndClipSpace[i])
+    for (int i = 0; i < NUM_CASCADES; i++)
     {
-      poopoo[i] = .2;
-      shadow = ShadowCalculation(i, FragPosLightSpace[i]);
-      break;
+      if (ClipSpacePosZ <= cascadeEndClipSpace[i])
+      {
+        poopoo[i] = .2;
+        shadow = ShadowCalculation(i, FragPosLightSpace[i]);
+        break;
+      }
     }
   }
 

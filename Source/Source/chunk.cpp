@@ -20,13 +20,7 @@ std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
 
 double Chunk::isolevel = 0.6;
 
-Chunk::Chunk(bool active) : active_(active)
-{
-	// TODO: these need to be created at the start of each frame or something,
-	// such that creating chunks in parallel won't crash evertying
-	//vao_ = new VAO();
-	//wvao_ = new VAO();
-}
+Chunk::Chunk(bool active) : active_(active) {}
 
 Chunk::~Chunk()
 {
