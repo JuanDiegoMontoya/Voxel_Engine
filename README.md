@@ -2,7 +2,7 @@
 Yet another voxel engine.
 
 This is a tech demo designed to demonstrate the implementation of various rendering and procedural techniques in a large and dynamic environment.
-(*WIP*) indicates that a feature is mostly complete but has a few bugs that need to be smoothed out. 
+(*WIP*) indicates that a feature is basically complete but has a few bugs that need to be smoothed out. 
 
 Performance was tested on this system for reference:
 - AMD Ryzen 5 2600X CPU
@@ -14,24 +14,26 @@ Performance was tested on this system for reference:
 - Capable of rendering 10+ million blocks at 500+ FPS (when not loading chunks)
 - Infinite size world
 - Procedurally generated terrain including hills, mountains, plains, rivers, etc.
-- A variety of biomes, each with their own unique properties and prefabs
+- A variety of biomes, each with their own unique properties and features
 - Meandering natural tunnels and caves
 - Block picking (destroying and placing)
 - A prefab editor
 - (*WIP*) Marching cubes implementation for smooth voxels (in worlds defined by a density field)
 
 ### Graphics
-- Chunk frustum culling
+- Frustum culling of chunks
 - Baked ambient occlusion on blocks
 - Realistic water effects
 - Directional environment lighting
-- (*WIP*) Deferred rendering pipeline
+- Deferred rendering pipeline
+- Post processing effects
 - (*WIP*) Ray traced screen space water reflections
 - (*WIP*) Cascaded shadow maps
 
 ### Other
 - Portability. Uses (to my knowledge) no platform dependent libraries or headers. (Certain libraries would have to be rebuilt for platforms other than x64 Windows)
 - Multithreaded mesh building and (*WIP*) terrain generation.
+- Graphics effects can be toggled dynamically by the user.
 
 
 ## In-Engine
