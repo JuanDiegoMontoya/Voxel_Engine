@@ -14,7 +14,7 @@ struct BlockProperties
 };
 
 // a 1x1x1 cube
-#pragma pack(push, 1)
+//#pragma pack(push, 1)
 typedef class Block
 {
 public:
@@ -77,6 +77,6 @@ private:
 	// left 4 bits = writeStrength; right 4 bits = lightValue
 	unsigned char wlValues_;
 }Block, *BlockPtr;
-#pragma pack(pop)
+//#pragma pack(pop)
 
 glm::ivec3 stretch(int index, int w, int h);
