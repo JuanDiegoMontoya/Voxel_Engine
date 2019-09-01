@@ -17,8 +17,8 @@
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-x64/
-x86/
+Source/x64/
+Source/x86/
 bld/
 [Bb]in/
 [Oo]bj/
@@ -55,9 +55,6 @@ artifacts/
 
 # StyleCop
 StyleCopReport.xml
-
-# Chris' PSD Files
-*.psd
 
 # Files built by Visual Studio
 *_i.c
@@ -336,10 +333,6 @@ ASALocalRun/
 .localhistory/
 /open_git-64.bat
 /open_git-86.bat
-/Engine/Engine/serializeReaders.cpp
-/Engine/Engine/serializeReaders.h
-/Engine/Engine/serializeSetters.cpp
-/Engine/Engine/serializeSetters.h
 
 # temp data storage files
 
