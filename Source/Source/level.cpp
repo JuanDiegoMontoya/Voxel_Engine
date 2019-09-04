@@ -13,7 +13,6 @@
 #include "render_data.h"
 #include "chunk.h"
 #include "sun.h"
-//#include <omp.h>
 #include <chrono>
 #include <execution>
 #include "vendor/ctpl_stl.h"
@@ -24,7 +23,6 @@
 #include "editor.h"
 
 using namespace std::chrono;
-//#define OMP_NUM_THREADS = 8;
 
 Level::Level(std::string name)
 {
@@ -68,8 +66,6 @@ void Level::Init()
 // update every object in the level
 void Level::Update(float dt)
 {
-	PERF_BENCHMARK_START;
-
 	if (Input::Keyboard().pressed[GLFW_KEY_GRAVE_ACCENT])
 	{
 		activeCursor = !activeCursor;
@@ -91,8 +87,6 @@ void Level::Update(float dt)
 	Editor::Update();
 	hud_.Update();
 	DrawImGui();
-
-	PERF_BENCHMARK_END;
 }
 
 void Level::DrawImGui()

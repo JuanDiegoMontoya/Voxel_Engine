@@ -506,6 +506,7 @@ void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos, LevelPtr le
 	}
 }
 
+static double magic = .2; // increase isolevel by this amount (makes it somewhat accurate)
 void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
 {
 	for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
@@ -519,7 +520,6 @@ void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
 				// method 2
 				level->GenerateBlockAt(glm::ivec3(pos), Block::bAir); // air by default
 				cell Cell = Chunk::buildCellFromVoxel(pos);
-				double magic = .2; // increase isolevel by this amount (makes it somewhat accurate)
 				for (double& density : Cell.val)
 					if (Utils::mapToRange(density, -1.f, 1.f, 0.f, 1.f) > Chunk::isolevel + magic)
 					{
@@ -541,7 +541,7 @@ void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
 double WorldGen::GetDensity(const glm::vec3& wpos)
 {
 	static bool init = true;
-	static module::Perlin dense;
+	static module::RidgedMulti dense;
 	
 	if (init)
 	{
@@ -555,8 +555,34 @@ double WorldGen::GetDensity(const glm::vec3& wpos)
 		// init generator here
 	}
 
-	//return 1;
-	return abs(dense.GetValue(wpos.x, wpos.y, wpos.z));
+  glm::vec3 positions[] =
+  {
+    { -.5f, -.5f,  .5f },
+    {  .5f, -.5f,  .5f },
+    {  .5f, -.5f, -.5f },
+    { -.5f, -.5f, -.5f },
+    { -.5f,  .5f,  .5f },
+    {  .5f,  .5f,  .5f },
+    {  .5f,  .5f, -.5f },
+    { -.5f,  .5f, -.5f }
+  };
+
+  double densidee = dense.GetValue(wpos.x, wpos.y, wpos.z);
+
+  //double bruh = 0;
+  //if (Utils::mapToRange(densidee, -1.f, 1.f, 0.f, 1.f) < Chunk::isolevel + magic)
+  //{
+  //  for (auto& v : positions)
+  //  {
+  //    glm::ivec3 tp = wpos + v;
+  //    BlockPtr b = Chunk::AtWorld(tp);
+  //    if (b && b->GetType() != Block::bAir)
+  //      bruh += .2;
+  //  }
+  //  return bruh;
+  //}
+
+	return densidee;
 }
 
 float WorldGen::getSlope(model::Plane& pl, int x, int z)

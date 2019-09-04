@@ -3,7 +3,7 @@
 #include "biome.h"
 #include "misc_utils.h"
 
-#define MARCHED_CUBES 1
+#define MARCHED_CUBES 0
 
 //typedef class Block;
 class VAO;
@@ -157,7 +157,7 @@ private:
 	void buildBlockVertices_marched_cubes(
 		const glm::ivec3& pos,
 		const Block& block);
-	int polygonize(const glm::ivec3& pos);
+	int polygonize(const glm::ivec3& pos, const Block&);
 	glm::vec3 VertexInterp(double isolevel, glm::vec3 p1, glm::vec3 p2, double valp1, double valp2);
 	//glm::vec3 VertexInterp2(glm::vec3 p1, glm::vec3 p2, double value);
 

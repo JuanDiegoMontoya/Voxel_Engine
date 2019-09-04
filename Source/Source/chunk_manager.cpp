@@ -21,6 +21,7 @@ ChunkManager::ChunkManager()
 
 void ChunkManager::Update(LevelPtr level)
 {
+  PERF_BENCHMARK_START;
 	std::for_each(
 		std::execution::par,
 		Chunk::chunks.begin(),
@@ -34,6 +35,7 @@ void ChunkManager::Update(LevelPtr level)
 	ProcessUpdatedChunks();
 	createNearbyChunks();
 	generateNewChunks();
+  PERF_BENCHMARK_END;
 }
 
 void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned char writeStrength)

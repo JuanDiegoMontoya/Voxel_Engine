@@ -8,7 +8,7 @@ void Chunk::buildBlockVertices_marched_cubes(
 	const Block& block)
 {
 	// polygonize will add vertex positions
-	int tris = polygonize(pos);
+	int tris = polygonize(pos, block);
 	vertexCount_ = tris * 3;
 
 	glm::vec4 clr = Block::PropertiesTable[block.GetType()].color;
@@ -16,12 +16,20 @@ void Chunk::buildBlockVertices_marched_cubes(
 	for (int i = 0; i < tris * 3; i++)
 	{
 		//tNormals.push_back(glm::vec3(0)); // temporary
-		tColors.push_back(clr);
-		tSpeculars.push_back(spec);
+		if (block.GetType() == Block::bWater)
+		{
+			wtColors.push_back(clr);
+			wtSpeculars.push_back(spec);
+		}
+		else
+		{
+			tColors.push_back(clr);
+			tSpeculars.push_back(spec);
+		}
 	}
 }
 
-int Chunk::polygonize(const glm::ivec3& pos)
+int Chunk::polygonize(const glm::ivec3& pos, const Block& block)
 {
 	static int edgeTable[256] = {
 	0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -386,18 +394,38 @@ int Chunk::polygonize(const glm::ivec3& pos)
 		vert1 = localTransform * vert1;
 		vert2 = localTransform * vert2;
 		vert3 = localTransform * vert3;
-		tPositions.push_back(vert1);
-		tPositions.push_back(vert2);
-		tPositions.push_back(vert3);
+
+		if (block.GetType() == Block::bWater)
+		{
+			wtPositions.push_back(vert1);
+			wtPositions.push_back(vert2);
+			wtPositions.push_back(vert3);
+		}
+		else
+		{
+			tPositions.push_back(vert1);
+			tPositions.push_back(vert2);
+			tPositions.push_back(vert3);
+		}
 
 		// compute face normal
 		glm::vec3 dir = glm::cross(
 			(vertlist[triTable[cubeindex][i + 1]] - vertlist[triTable[cubeindex][i]]),
 			(vertlist[triTable[cubeindex][i + 2]] - vertlist[triTable[cubeindex][i]]));
 		glm::vec3 norm = glm::normalize(dir);
-		tNormals.push_back(norm);
-		tNormals.push_back(norm);
-		tNormals.push_back(norm);
+
+		if (block.GetType() == Block::bWater)
+		{
+			wtNormals.push_back(norm);
+			wtNormals.push_back(norm);
+			wtNormals.push_back(norm);
+		}
+		else
+		{
+			tNormals.push_back(norm);
+			tNormals.push_back(norm);
+			tNormals.push_back(norm);
+		}
 
 		ntriang++;
 	}
@@ -478,8 +506,6 @@ cell Chunk::buildCellFromVoxel(const glm::vec3& wpos)
 		d.p[i] = positions[i];
 		double noise = WorldGen::GetDensity(wpos + positions[i]);
 		d.val[i] = Utils::mapToRange(noise, -1., 1., 0., 1.);
-		//d.val[i] = glm::clamp(d.val[i], 0., 1.);
-		//d.val[i] = WorldGen::GetCurrentNoise(wpos + positions[i]);
 	}
 
 	return d;

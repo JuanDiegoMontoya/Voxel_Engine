@@ -29,6 +29,7 @@ void Renderer::Init()
 // this should be fine
 void Renderer::DrawAll()
 {
+  PERF_BENCHMARK_START;
 	glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
 	//glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
@@ -49,6 +50,7 @@ void Renderer::DrawAll()
 	//drawPostProcessing();
 
 	glDisable(GL_FRAMEBUFFER_SRGB);
+  PERF_BENCHMARK_END;
 }
 
 void Renderer::Clear()

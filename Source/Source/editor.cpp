@@ -246,6 +246,8 @@ namespace Editor
 
 	void Update()
 	{
+    PERF_BENCHMARK_START;
 		RegionSelect::Update();
+    PERF_BENCHMARK_END;
 	}
 }

@@ -18,7 +18,7 @@
 //Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
 std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
 
-double Chunk::isolevel = 0.6;
+double Chunk::isolevel = 0.60;
 
 Chunk::Chunk(bool active) : active_(active) {}
 
