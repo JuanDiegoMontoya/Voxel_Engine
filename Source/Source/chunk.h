@@ -3,7 +3,7 @@
 #include "biome.h"
 #include "misc_utils.h"
 
-#define MARCHED_CUBES (0)
+#define MARCHED_CUBES 1
 
 //typedef class Block;
 class VAO;
@@ -29,7 +29,7 @@ struct localpos
 */
 typedef struct
 {
-	glm::vec3 p[8];
+	glm::vec3 p[8]; // corner positions
 	double val[8]; // density values
 } cell;
 
@@ -131,6 +131,7 @@ public:
 	friend class Renderer;
 	static std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 
+	static cell buildCellFromVoxel(const glm::vec3& wpos);
 private:
 	//static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 
@@ -157,7 +158,6 @@ private:
 		const glm::ivec3& pos,
 		const Block& block);
 	int polygonize(const glm::ivec3& pos);
-	cell buildCellFromVoxel(const glm::vec3& wpos);
 	glm::vec3 VertexInterp(double isolevel, glm::vec3 p1, glm::vec3 p2, double valp1, double valp2);
 	//glm::vec3 VertexInterp2(glm::vec3 p1, glm::vec3 p2, double value);
 

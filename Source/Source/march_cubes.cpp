@@ -392,8 +392,8 @@ int Chunk::polygonize(const glm::ivec3& pos)
 
 		// compute face normal
 		glm::vec3 dir = glm::cross(
-			(vertlist[triTable[cubeindex][i + 1]] - vertlist[triTable[cubeindex][i + 0]]),
-			(vertlist[triTable[cubeindex][i + 2]] - vertlist[triTable[cubeindex][i + 0]]));
+			(vertlist[triTable[cubeindex][i + 1]] - vertlist[triTable[cubeindex][i]]),
+			(vertlist[triTable[cubeindex][i + 2]] - vertlist[triTable[cubeindex][i]]));
 		glm::vec3 norm = glm::normalize(dir);
 		tNormals.push_back(norm);
 		tNormals.push_back(norm);
@@ -476,12 +476,10 @@ cell Chunk::buildCellFromVoxel(const glm::vec3& wpos)
 	{
 		//d.p[i] = wpos + positions[i];
 		d.p[i] = positions[i];
-		double noise = WorldGen::GetCurrentNoise(wpos + positions[i]);
-		d.val[i] = Utils::mapToRange(noise, -1., 0., 0., 1.);
+		double noise = WorldGen::GetDensity(wpos + positions[i]);
+		d.val[i] = Utils::mapToRange(noise, -1., 1., 0., 1.);
 		//d.val[i] = glm::clamp(d.val[i], 0., 1.);
 		//d.val[i] = WorldGen::GetCurrentNoise(wpos + positions[i]);
-		//if (d.val[i] < isolevel) // it's not within the worldgen, but we're building the mesh anyway (user placed block)
-		//	d.val[i] = .5;
 	}
 
 	return d;

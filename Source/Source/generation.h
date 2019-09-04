@@ -46,7 +46,7 @@ public:
 	static void Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level);
 
 	// returns a density at a particular point
-	static double GetCurrentNoise(const glm::vec3& wpos);
+	static double GetDensity(const glm::vec3& wpos);
 private:
 	// sample near values in heightmap to obtain rough first derivative
 	static float getSlope(noise::model::Plane& pl, int x, int z);

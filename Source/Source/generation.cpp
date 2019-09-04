@@ -515,27 +515,40 @@ void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
 			for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
 			{
 				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
-				double dens = GetCurrentNoise(pos);
-				if (Utils::mapToRange(dens, -1.f, 0.f, 0.f, 1.f) > Chunk::isolevel)
-					level->GenerateBlockAt(glm::ivec3(pos), Block::bGrass);
-				else
-					level->GenerateBlockAt(glm::ivec3(pos), Block::bAir);
+
+				// method 2
+				level->GenerateBlockAt(glm::ivec3(pos), Block::bAir); // air by default
+				cell Cell = Chunk::buildCellFromVoxel(pos);
+				double magic = .2; // increase isolevel by this amount (makes it somewhat accurate)
+				for (double& density : Cell.val)
+					if (Utils::mapToRange(density, -1.f, 1.f, 0.f, 1.f) > Chunk::isolevel + magic)
+					{
+						level->GenerateBlockAt(glm::ivec3(pos), Block::bGrass); // replace by grass
+						continue;
+					}
+
+				// method 1
+				//double dens = GetDensity(pos);
+				//if (Utils::mapToRange(dens, -1.f, 1.f, 0.f, 1.f) + .0501 > Chunk::isolevel)
+				//	level->GenerateBlockAt(glm::ivec3(pos), Block::bGrass);
+				//else
+				//	level->GenerateBlockAt(glm::ivec3(pos), Block::bAir);
 			}
 		}
 	}
 }
 
-double WorldGen::GetCurrentNoise(const glm::vec3& wpos)
+double WorldGen::GetDensity(const glm::vec3& wpos)
 {
 	static bool init = true;
-	static module::RidgedMulti dense;
+	static module::Perlin dense;
 	
 	if (init)
 	{
 		// higher lacunarity = thinner tunnels
 		dense.SetLacunarity(2.);
 		// connectivity/complexity of tunnels (unsure)
-		dense.SetOctaveCount(1);
+		dense.SetOctaveCount(3);
 		// higher frequency = more common, thicker tunnels 
 		// raise lacunarity as frequency decreases
 		dense.SetFrequency(.02);
