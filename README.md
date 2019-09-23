@@ -18,7 +18,7 @@ Performance was tested on this system for reference:
 - Meandering natural tunnels and caves
 - Block picking (destroying and placing)
 - A prefab editor
-- (*WIP*) Marching cubes implementation for smooth voxels (in worlds defined by a density field)
+- Marching cubes implementation for smooth voxels (in worlds defined by a density field):
 
 ### Graphics
 - Blinn-Phong shading model
@@ -55,3 +55,11 @@ Performance was tested on this system for reference:
   - Pressing the "save" button in the prefab menu will save the current region under the name written in the adjacent text box.
   - Pressing the "load" button will generate a prefab of the given name in the adjacent box at the most recent highlighted purple position.
   - Toggling the prefab editor will reset the current region if a mistake has been made.
+
+## Gallery
+Hover to see detail:
+
+![Image of distant terrain.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/distance03.png "Distant terrain showcasing fog, reflections, and biomes.")
+![Image of distant and near terrain.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/distance02.png "Distant and near terrain showcasing shading and shadows.")
+![Image of snowy cave.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/snow_cave.png "Snow cave.")
+![Image showing marched cubes example.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/marched01.png "Marching cubes implementation with scalar field.")
