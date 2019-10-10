@@ -110,8 +110,7 @@ void main()
   vec3 viewDir = normalize(viewPos - vPos);
   vec3 reflectDir = reflect(-lightDir, normal);
   float spec = 0.0;
-  vec3 halfwayDir = normalize(lightDir + viewDir);
-  spec = pow(max(dot(normal, halfwayDir), 0.0), vShininess);
+  spec = pow(max(dot(viewDir, reflectDir), 0.0), vShininess);
   vec3 specular = spec * dirLight.specular;
   
   // calculate shadow
@@ -136,6 +135,7 @@ void main()
   lighting = mix(lighting, fogColor, FogCalculation());
   //fragColor = vec4(poopoo, 1) + irrelevant;
   fragColor = vec4(lighting, vColor.a);
+  //fragColor = vec4(vPos, 1) +  irrelevant;
   //fragColor = vec4(vec3(FragPosLightSpace[0].y / 10), 1) + irrelevant;
   //fragColor = vec4(vec3(ClipSpacePosZ) / 100, 1) + irrelevant;
   //fragColor = vec4(vec3(shadow / 3) + vec3(ClipSpacePosZ / 200) + poopoo, 1) + irrelevant;

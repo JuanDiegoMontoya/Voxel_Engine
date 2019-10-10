@@ -3,7 +3,7 @@
 #include "biome.h"
 #include "misc_utils.h"
 
-#define MARCHED_CUBES 1
+#define MARCHED_CUBES 0
 
 //typedef class Block;
 class VAO;

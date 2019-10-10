@@ -21,7 +21,7 @@ Performance was tested on this system for reference:
 - Marching cubes implementation for smooth voxels (in worlds defined by a density field):
 
 ### Graphics
-- Blinn-Phong shading model
+- Phong illumination model
 - Frustum culling of chunks
 - Baked ambient occlusion on blocks
 - Realistic water effects
