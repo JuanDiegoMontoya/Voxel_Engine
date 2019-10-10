@@ -67,6 +67,7 @@ public:
 	template <class Archive>
 	void serialize(Archive& ar)
 	{
+		// TODO: serialize wlValues as well
 		ar(type_, wlValues_);
 	}
 
@@ -75,8 +76,8 @@ private:
 	BlockType type_;
 
 	// left 4 bits = writeStrength; right 4 bits = lightValue
+	// the lighting information can be derived at runtime, but
+	// the write strength should be serialized in the future
 	unsigned char wlValues_;
 }Block, *BlockPtr;
 //#pragma pack(pop)
-
-glm::ivec3 stretch(int index, int w, int h);

@@ -17,13 +17,3 @@ const std::vector<BlockProperties> Block::PropertiesTable =
 	{BlockProperties(64,	glm::vec4(1, 0, 0, 1))},							// error
 	{BlockProperties(8,		glm::vec4(.75, 1, 0, 1))}							// dry grass
 };
-
-glm::ivec3 stretch(int index, int w, int h)
-{
-	sizeof(Block);
-	int z = index / (w * h);
-	index -= (z * w * h);
-	int y = index / w;
-	int x = index % w;
-	return glm::vec3(x, y, z);
-}
