@@ -50,6 +50,9 @@
     <Filter Include="Game\Editor">
       <UniqueIdentifier>{477324d8-310d-447b-9295-86ceaf309d57}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\Collision">
+      <UniqueIdentifier>{835847b9-3fbb-4edf-a2ae-7dd8a4cbe504}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sys_window.h">
@@ -242,6 +245,12 @@
     <ClInclude Include="xoroshiro.h">
       <Filter>Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="collision_check.h">
+      <Filter>Game\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="collision_shapes.h">
+      <Filter>Game\Collision</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -402,6 +411,9 @@
     </ClCompile>
     <ClCompile Include="player.cpp">
       <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="collision_check.cpp">
+      <Filter>Game\Collision</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

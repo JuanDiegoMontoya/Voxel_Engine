@@ -189,7 +189,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClCompile>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -230,6 +230,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="chunk.cpp" />
     <ClCompile Include="chunk_load_manager.cpp" />
     <ClCompile Include="chunk_manager.cpp" />
+    <ClCompile Include="collision_check.cpp" />
     <ClCompile Include="directional_light.cpp" />
     <ClCompile Include="editor.cpp" />
     <ClCompile Include="hud.cpp" />
@@ -345,6 +346,8 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="chunk.h" />
     <ClInclude Include="chunk_load_manager.h" />
     <ClInclude Include="chunk_manager.h" />
+    <ClInclude Include="collision_check.h" />
+    <ClInclude Include="collision_shapes.h" />
     <ClInclude Include="component.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="directional_light.h" />

@@ -22,6 +22,8 @@
 #include <functional>
 #include "editor.h"
 
+#include "collision_shapes.h"
+
 using namespace std::chrono;
 
 Level::Level(std::string name)
@@ -53,7 +55,7 @@ void Level::Init()
 	PrefabManager::InitPrefabs();
 	BiomeManager::InitializeBiomes();
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(200.f);
+	chunkManager_.SetLoadDistance(100.f);
 	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(1);
 	renderer_.Init();
@@ -87,6 +89,8 @@ void Level::Update(float dt)
 	Editor::Update();
 	hud_.Update();
 	DrawImGui();
+
+	CheckCollision();
 }
 
 void Level::DrawImGui()
@@ -241,8 +245,28 @@ void Level::DrawImGui()
 	}
 }
 
+// TODO: fix this
 void Level::CheckCollision()
 {
+	auto cam = Render::GetCamera();
+	constexpr glm::vec3 dirs[] = 
+	{
+		{ 0, 0, 0 }
+		//{ 1, 0, 0 },
+		//{ 1, 1, 0 },
+		//{ 1, 0, 1 },
+		//{ 1, 1, 1 },
+		//{ 0, 1, 0 },
+		//{ 0, 1, 1 },
+		//{ 0, 0, 1 },
+		//{ 1, 0, 1 }
+	};
+	for (const auto& dir : dirs)
+	{
+		auto pos = glm::ivec3(glm::iround(cam->GetPos() + dir - .0f)) ;
+		if (GetBlockAt(pos).GetType() != Block::bAir)
+			std::cout << Box(*cam).IsColliding(Box(pos));
+	}
 }
 
 void Level::CheckInteraction()
