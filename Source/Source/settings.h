@@ -5,6 +5,7 @@
 //#include "GameObject.h"
 //#include "SoundEvent.h"
 
+// TODO: refactor this
 namespace Settings
 {
 	struct CTL
