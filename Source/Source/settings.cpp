@@ -1,16 +1,3 @@
-/******************************************************************************/
-/*!
-\file   Settings.cpp
-\author Jake Ryan
-\par    email: jake.ryan\@digipen.edu
-\par    DigiPen login: jake.ryan
-\par    Course: GAM250
-\par    Copyright © 2018 DigiPen (USA) Corporation.
-\brief	Contains function to re-initialize glfw window context.
-*/
-/******************************************************************************/
-
-
 #include "stdafx.h"
 #include "input.h"
 
