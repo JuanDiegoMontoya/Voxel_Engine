@@ -17,14 +17,16 @@ struct Box
 	{
 		min = wpos - .5f;
 		max = wpos + .5f;
+		min += .5f;
+		max += .5f;
 	}
 
 	// .5 x .5 x .5 camera
 	Box(const Camera& c)
 	{
 		const auto& p = c.GetPos();
-		min = p - .25f;
-		max = p + .25f;
+		min = p - .5f;
+		max = p + .5f;
 	}
 
 	bool IsColliding(const Box& b)

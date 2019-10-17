@@ -43,7 +43,8 @@ Level::~Level()
 // for now this function is where we declare objects
 void Level::Init()
 {
-	cameras_.push_back(new Camera(kControlCam));
+	//cameras_.push_back(new Camera(kControlCam));
+	cameras_.push_back(new Camera(kPhysicsCam));
 	Render::SetCamera(cameras_[0]);
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
@@ -249,24 +250,51 @@ void Level::DrawImGui()
 void Level::CheckCollision()
 {
 	auto cam = Render::GetCamera();
-	constexpr glm::vec3 dirs[] = 
+	constexpr glm::vec3 dirs[] =
 	{
-		{ 0, 0, 0 }
-		//{ 1, 0, 0 },
-		//{ 1, 1, 0 },
-		//{ 1, 0, 1 },
-		//{ 1, 1, 1 },
-		//{ 0, 1, 0 },
-		//{ 0, 1, 1 },
-		//{ 0, 0, 1 },
-		//{ 1, 0, 1 }
+		// cardinal directions
+		{ 0, 0, 0 }, // center
+		{ 0, 0, 1 }, // front
+		{ 0, 0,-1 }, // back
+		{ 1, 0, 0 }, // right
+		{-1, 0, 0 }, // left
+		{ 0, 1, 0 }, // up
+		{ 0,-1, 0 }, // down
+		// +y corners
+		{-1, 1, 1 }, // left top front
+		{ 1, 1, 1 }, // right top front
+		{-1, 1,-1 }, // left top back
+		{ 1, 1,-1 }, // right top back
+		// -y corners
+		{-1,-1, 1 }, // left bottom front
+		{ 1,-1, 1 }, // right bottom front
+		{-1,-1,-1 }, // left bottom back
+		{ 1,-1,-1 }, // right bottom back
+		// neutral y corners
+		{-1, 0, 1 }, // left middle front
+		{ 1, 0, 1 }, // right middle front
+		{-1, 0,-1 }, // left middle back
+		{ 1, 0,-1 }, // right middle back
 	};
+	ImGui::Begin("Colliding?");
+	bool isreallycolliding = false;
 	for (const auto& dir : dirs)
 	{
-		auto pos = glm::ivec3(glm::iround(cam->GetPos() + dir - .0f)) ;
+		bool iscolliding = false;
+		auto pos = glm::ivec3(glm::round(cam->GetPos() + dir - 0.5f)) ;
+		//auto pos = glm::ivec3((cam->GetPos() + dir + .5f)) ;
 		if (GetBlockAt(pos).GetType() != Block::bAir)
-			std::cout << Box(*cam).IsColliding(Box(pos));
+			iscolliding = Box(*cam).IsColliding(Box(pos));
+		if (iscolliding)
+			isreallycolliding = true;
+		//ImGui::Text("Dir: (%d, %d, %d)", dir.x, dir.y, dir.z);
+		ImGui::Text("iPos: (%d, %d, %d)", pos.x, pos.y, pos.z);
+		//ImGui::Text("c = %s", iscolliding ? "true" : "false");
+		//ImGui::NewLine();
 	}
+	ImGui::Text("fPos: (%.2f, %.2f, %.2f)", cam->GetPos().x, cam->GetPos().y, cam->GetPos().z);
+	ImGui::Text("%d", isreallycolliding);
+	ImGui::End();
 }
 
 void Level::CheckInteraction()

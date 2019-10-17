@@ -215,17 +215,11 @@
     <ClInclude Include="biome.h">
       <Filter>Game\Voxel Engine</Filter>
     </ClInclude>
-    <ClInclude Include="superchunk.h">
-      <Filter>Game\Voxel Engine</Filter>
-    </ClInclude>
     <ClInclude Include="chunk_manager.h">
       <Filter>Game\Voxel Engine</Filter>
     </ClInclude>
     <ClInclude Include="directional_light.h">
       <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="water_manager.h">
-      <Filter>Game\Voxel Engine</Filter>
     </ClInclude>
     <ClInclude Include="prefab.h">
       <Filter>Game\Voxel Engine</Filter>
@@ -382,9 +376,6 @@
     <ClCompile Include="biome.cpp">
       <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
-    <ClCompile Include="superchunk.cpp">
-      <Filter>Game\Voxel Engine</Filter>
-    </ClCompile>
     <ClCompile Include="march_cubes.cpp">
       <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
@@ -393,9 +384,6 @@
     </ClCompile>
     <ClCompile Include="directional_light.cpp">
       <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="water_manager.cpp">
-      <Filter>Game\Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="prefab.cpp">
       <Filter>Game\Voxel Engine</Filter>

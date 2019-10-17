@@ -245,7 +245,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="prefab.cpp" />
     <ClCompile Include="render_data.cpp" />
     <ClCompile Include="sun.cpp" />
-    <ClCompile Include="superchunk.cpp" />
     <ClCompile Include="transform.cpp" />
     <ClCompile Include="unlit_mesh.cpp" />
     <ClCompile Include="camera.cpp" />
@@ -337,7 +336,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="water_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="biome.h" />
@@ -362,7 +360,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="prefab.h" />
     <ClInclude Include="render_data.h" />
     <ClInclude Include="sun.h" />
-    <ClInclude Include="superchunk.h" />
     <ClInclude Include="transform.h" />
     <ClInclude Include="unlit_mesh.h" />
     <ClInclude Include="engine_assert.h" />
@@ -404,7 +401,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="vendor\imgui\stb_textedit.h" />
     <ClInclude Include="vendor\imgui\stb_truetype.h" />
     <ClInclude Include="vendor\noiseutils.h" />
-    <ClInclude Include="water_manager.h" />
     <ClInclude Include="xoroshiro.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

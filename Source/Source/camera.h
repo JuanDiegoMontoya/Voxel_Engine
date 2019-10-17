@@ -4,6 +4,7 @@ class Frustum;
 
 enum CameraType : int
 {
+	kPhysicsCam, // uses movement keys to affect velocity and/or acceleration
 	kControlCam, // use movement keys to fly around
 	kAffixedCam, // parented to some object
 	kImmobileCam // cannot move
@@ -27,6 +28,11 @@ public:
 
 	glm::vec3 up = glm::vec3(0, 1.f, 0);
 	glm::vec3 front = glm::vec3(0, 0, -1.f);
+
+	// physics (temp)
+	glm::vec3 velocity_;
+	glm::vec3 acceleration_;
+	float maxspeed_ = 5.0f;
 private:
 	CameraType type_;
 	glm::vec3 worldpos_ = glm::vec3(0, 0, 0);
