@@ -43,8 +43,8 @@ Level::~Level()
 // for now this function is where we declare objects
 void Level::Init()
 {
-	//cameras_.push_back(new Camera(kControlCam));
-	cameras_.push_back(new Camera(kPhysicsCam));
+	cameras_.push_back(new Camera(kControlCam));
+	//cameras_.push_back(new Camera(kPhysicsCam));
 	Render::SetCamera(cameras_[0]);
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
@@ -250,50 +250,85 @@ void Level::DrawImGui()
 void Level::CheckCollision()
 {
 	auto cam = Render::GetCamera();
-	constexpr glm::vec3 dirs[] =
+	//constexpr glm::vec3 dirs[] =
+	//{
+	//	// cardinal directions
+	//	{ 0, 0, 0 }, // center
+	//	{ 0, 0, 1 }, // front
+	//	{ 0, 0,-1 }, // back
+	//	{ 1, 0, 0 }, // right
+	//	{-1, 0, 0 }, // left
+	//	{ 0, 1, 0 }, // up
+	//	{ 0,-1, 0 }, // down
+	//	// +y corners
+	//	{-1, 1, 1 }, // left top front
+	//	{ 1, 1, 1 }, // right top front
+	//	{-1, 1,-1 }, // left top back
+	//	{ 1, 1,-1 }, // right top back
+	//	// -y corners
+	//	{-1,-1, 1 }, // left bottom front
+	//	{ 1,-1, 1 }, // right bottom front
+	//	{-1,-1,-1 }, // left bottom back
+	//	{ 1,-1,-1 }, // right bottom back
+	//	// neutral y corners
+	//	{-1, 0, 1 }, // left middle front
+	//	{ 1, 0, 1 }, // right middle front
+	//	{-1, 0,-1 }, // left middle back
+	//	{ 1, 0,-1 }, // right middle back
+	//};
+	//ImGui::Begin("Colliding?");
+	//bool isreallycolliding = false;
+	//for (const auto& dir : dirs)
+	//{
+	//	bool iscolliding = false;
+	//	auto pos = glm::ivec3(glm::round(cam->GetPos() + dir - 0.5f)) ;
+	//	//auto pos = glm::ivec3((cam->GetPos() + dir + .5f)) ;
+	//	if (GetBlockAt(pos).GetType() != Block::bAir)
+	//		iscolliding = Box(*cam).IsColliding(Box(pos));
+	//	if (iscolliding)
+	//		isreallycolliding = true;
+	//	//ImGui::Text("Dir: (%d, %d, %d)", dir.x, dir.y, dir.z);
+	//	ImGui::Text("iPos: (%d, %d, %d)", pos.x, pos.y, pos.z);
+	//	//ImGui::Text("c = %s", iscolliding ? "true" : "false");
+	//	//ImGui::NewLine();
+	//}
+	//ImGui::Text("fPos: (%.2f, %.2f, %.2f)", cam->GetPos().x, cam->GetPos().y, cam->GetPos().z);
+	//ImGui::Text("%d", isreallycolliding);
+	//ImGui::End();
+
+	ImGui::Begin("Collision");
+	Box camBox(*cam);
+	auto min = glm::ivec3(glm::floor(camBox.min));
+	auto max = glm::ivec3(glm::ceil(camBox.max));
+	for (int x = min.x; x < max.x; x++)
 	{
-		// cardinal directions
-		{ 0, 0, 0 }, // center
-		{ 0, 0, 1 }, // front
-		{ 0, 0,-1 }, // back
-		{ 1, 0, 0 }, // right
-		{-1, 0, 0 }, // left
-		{ 0, 1, 0 }, // up
-		{ 0,-1, 0 }, // down
-		// +y corners
-		{-1, 1, 1 }, // left top front
-		{ 1, 1, 1 }, // right top front
-		{-1, 1,-1 }, // left top back
-		{ 1, 1,-1 }, // right top back
-		// -y corners
-		{-1,-1, 1 }, // left bottom front
-		{ 1,-1, 1 }, // right bottom front
-		{-1,-1,-1 }, // left bottom back
-		{ 1,-1,-1 }, // right bottom back
-		// neutral y corners
-		{-1, 0, 1 }, // left middle front
-		{ 1, 0, 1 }, // right middle front
-		{-1, 0,-1 }, // left middle back
-		{ 1, 0,-1 }, // right middle back
-	};
-	ImGui::Begin("Colliding?");
-	bool isreallycolliding = false;
-	for (const auto& dir : dirs)
-	{
-		bool iscolliding = false;
-		auto pos = glm::ivec3(glm::round(cam->GetPos() + dir - 0.5f)) ;
-		//auto pos = glm::ivec3((cam->GetPos() + dir + .5f)) ;
-		if (GetBlockAt(pos).GetType() != Block::bAir)
-			iscolliding = Box(*cam).IsColliding(Box(pos));
-		if (iscolliding)
-			isreallycolliding = true;
-		//ImGui::Text("Dir: (%d, %d, %d)", dir.x, dir.y, dir.z);
-		ImGui::Text("iPos: (%d, %d, %d)", pos.x, pos.y, pos.z);
-		//ImGui::Text("c = %s", iscolliding ? "true" : "false");
-		//ImGui::NewLine();
+		for (int y = min.y; y < max.y; y++)
+		{
+			for (int z = min.z; z < max.z; z++)
+			{
+				glm::ivec3 pos(x, y, z);
+				ImGui::Text("Checking (%d, %d, %d)", x, y, z);
+				if (GetBlockAt(pos).GetType() != Block::bAir)
+				{
+					Box blockBox(pos);
+					if (camBox.IsColliding(blockBox))
+					{
+						ImGui::Text("Colliding with (%d, %d, %d)", x, y, z);
+						auto diff = (camBox.GetPosition() - blockBox.GetPosition());
+						auto newPos = cam->GetPos();
+						//if (diff.x > diff.y && diff.x > diff.z)
+						//	newPos.x -= diff.x - .5f;
+						//else if (diff.y > diff.z)
+						//	newPos.y -= diff.y - .5f;
+						//else
+						//	newPos.z -= diff.z - .5f;
+						//cam->SetPos(newPos);
+					}
+				}
+				//ImGui::NewLine();
+			}
+		}
 	}
-	ImGui::Text("fPos: (%.2f, %.2f, %.2f)", cam->GetPos().x, cam->GetPos().y, cam->GetPos().z);
-	ImGui::Text("%d", isreallycolliding);
 	ImGui::End();
 }
 
