@@ -55,6 +55,7 @@ private:
 	
 	Sun sun_;
 	bool activeCursor = false;
+	bool doCollisionTick = false;
 
 	void checkBlockPlacement();
 	void checkBlockDestruction();

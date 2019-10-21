@@ -44,8 +44,8 @@ Level::~Level()
 // for now this function is where we declare objects
 void Level::Init()
 {
-	//cameras_.push_back(new Camera(kControlCam));
-	cameras_.push_back(new Camera(kPhysicsCam));
+	cameras_.push_back(new Camera(kControlCam));
+	//cameras_.push_back(new Camera(kPhysicsCam));
 	Render::SetCamera(cameras_[0]);
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
@@ -92,7 +92,8 @@ void Level::Update(float dt)
 	hud_.Update();
 	DrawImGui();
 
-	CheckCollision();
+	if (doCollisionTick)
+		CheckCollision();
 }
 
 void Level::DrawImGui()
@@ -115,6 +116,7 @@ void Level::DrawImGui()
 		ImGui::DragFloat3("##Orbitee", &sun_.orbitPos[0], 2.f, -500, 500, "%.0f");
 		ImGui::Checkbox("Follow Cam", &sun_.followCam);
 		ImGui::SliderFloat("Follow Distance", &sun_.followDist, 0, 500, "%.0f");
+		ImGui::Checkbox("Collision Enabled", &doCollisionTick);
 
 		//int shadow = sun_.GetShadowSize().x;
 		//if (ImGui::InputInt("Shadow Scale", &shadow, 1024, 1024))
