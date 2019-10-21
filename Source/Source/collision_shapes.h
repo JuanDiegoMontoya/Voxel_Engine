@@ -27,6 +27,8 @@ struct Box
 		const auto& p = c.GetPos();
 		min = p - .25f;
 		max = p + .25f;
+		//max.y *= 2;
+		min.y -= 1.5f;
 	}
 
 	bool IsColliding(const Box& b)
@@ -38,7 +40,12 @@ struct Box
 
 	glm::vec3 GetPosition()
 	{
-		return (min + max) / 2.f;
+		return (max + min) / 2.f;
+	}
+
+	glm::vec3 GetScale()
+	{
+		return (max - min) / 2.f;
 	}
 
 	//glm::vec3 size;

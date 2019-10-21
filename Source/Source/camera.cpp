@@ -14,6 +14,7 @@ Camera::Camera(CameraType type) : type_(type)
 // update movement and generate view matrix
 void Camera::Update(float dt)
 {
+	oldPos = worldpos_;
 	//view_ = glm::translate(glm::mat4(1.0f), worldpos_);
 	float currSpeed = speed_ * dt;
 	switch (type_)
@@ -103,6 +104,7 @@ void Camera::Update(float dt)
 		temp.z = cos(glm::radians(pitch_)) * sin(glm::radians(yaw_));
 		front = glm::normalize(temp);
 		dir_ = front;
+		velocity_ = worldpos_ - oldPos;
 		break;
 	case kAffixedCam: // attached to an object, possibly follows directionality
 		// TODO: add behavior to follow object

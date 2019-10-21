@@ -33,6 +33,7 @@ public:
 	glm::vec3 velocity_;
 	glm::vec3 acceleration_;
 	float maxspeed_ = 5.0f;
+	glm::vec3 oldPos;
 private:
 	CameraType type_;
 	glm::vec3 worldpos_ = glm::vec3(0, 0, 0);
