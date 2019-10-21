@@ -23,7 +23,7 @@
 #include "editor.h"
 
 #include "collision_shapes.h"
-//#include <reactphysics3d.h>
+#include <btBulletCollisionCommon.h>
 
 using namespace std::chrono;
 
@@ -47,6 +47,9 @@ void Level::Init()
 	cameras_.push_back(new Camera(kControlCam));
 	//cameras_.push_back(new Camera(kPhysicsCam));
 	Render::SetCamera(cameras_[0]);
+
+	int j = btAcos(69);
+	
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
