@@ -76,15 +76,19 @@ Prefab PrefabManager::LoadPrefabFromFile(std::string name)
 	try
 	{
 		std::ifstream is(("./resources/Prefabs/" + std::string(name) + ".bin").c_str(), std::ios::binary);
-		cereal::BinaryInputArchive archive(is);
-		Prefab pfb;
-		archive(pfb);
-		return pfb;
+		if (is.is_open())
+		{
+			cereal::BinaryInputArchive archive(is);
+			Prefab pfb;
+			archive(pfb);
+			return pfb;
+		}
 	}
 	catch (...)
 	{
-		return prefabs_[Prefab::Error];
+		//return prefabs_[Prefab::Error];
 	}
+	return prefabs_[Prefab::Error];
 }
 
 void PrefabManager::LoadAllPrefabs()

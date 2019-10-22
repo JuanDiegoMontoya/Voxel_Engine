@@ -22,8 +22,10 @@
 #include <functional>
 #include "editor.h"
 
+#include <memory>
 #include "collision_shapes.h"
 #include <btBulletCollisionCommon.h>
+#include <btBulletDynamicsCommon.h>
 
 using namespace std::chrono;
 
@@ -41,6 +43,11 @@ Level::~Level()
 		delete cam;
 }
 
+std::shared_ptr<btCollisionWorld> world;
+std::shared_ptr<btCollisionDispatcher> dispatcher;
+std::shared_ptr<btSimpleBroadphase> btInterface;
+std::shared_ptr<btDefaultCollisionConfiguration> config;
+
 // for now this function is where we declare objects
 void Level::Init()
 {
@@ -48,8 +55,12 @@ void Level::Init()
 	//cameras_.push_back(new Camera(kPhysicsCam));
 	Render::SetCamera(cameras_[0]);
 
-	int j = btAcos(69);
-	
+	//config = std::make_shared<btDefaultCollisionConfiguration>();
+	//dispatcher = std::make_shared<btCollisionDispatcher>(config.get());
+	//btInterface = std::make_shared<btSimpleBroadphase>();
+
+	// TODO: figure out why this makes everything crash (not even immediately!)
+	//world = std::make_shared<btCollisionWorld>(dispatcher.get(), btInterface.get(), config.get());
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
@@ -376,6 +387,19 @@ void Level::CheckCollision()
 
 						cam->velocity_[normalComp] = 0;
 						cam->SetPos(newPos);
+
+						//btCollisionObject boxObj;
+						//btTransform boxTran;
+						//boxTran.setOrigin(btVector3(x, y, z));
+						//boxObj.setWorldTransform(boxTran);
+						//world->addCollisionObject(&boxObj);
+
+						//btCollisionObject camObj;
+						//btTransform camTran;
+						//auto p = cam->GetPos();
+						//camTran.setOrigin({ p.x, p.y, p.z });
+						//camObj.setWorldTransform(camTran);
+						//world->addCollisionObject(&camObj);
 					}
 				}
 				//ImGui::NewLine();
