@@ -25,7 +25,7 @@ void Camera::Update(float dt)
 	{
 	case kPhysicsCam:
 	{
-		acceleration_ = glm::vec3(0, -3.5, 0); // "gravity"
+		acceleration_ = glm::vec3(0, -10, 0); // "gravity"
 		// "friction"
 		velocity_.x *= .9f;
 		velocity_.z *= .9f;
@@ -53,7 +53,7 @@ void Camera::Update(float dt)
 		// jump impulse
 		if (Input::Keyboard().pressed[GLFW_KEY_SPACE])
 		{
-			velocity_.y = 4;
+			velocity_.y = 5;
 		}
 
 		// cap xz speed, but not y speed

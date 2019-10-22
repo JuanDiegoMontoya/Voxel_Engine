@@ -22,6 +22,7 @@
 #include <functional>
 #include "editor.h"
 
+#include <set>
 #include <memory>
 #include "collision_shapes.h"
 #include <btBulletCollisionCommon.h>
@@ -51,15 +52,15 @@ std::shared_ptr<btDefaultCollisionConfiguration> config;
 // for now this function is where we declare objects
 void Level::Init()
 {
-	cameras_.push_back(new Camera(kControlCam));
-	//cameras_.push_back(new Camera(kPhysicsCam));
+	//cameras_.push_back(new Camera(kControlCam));
+	cameras_.push_back(new Camera(kPhysicsCam));
 	Render::SetCamera(cameras_[0]);
-
+	
 	//config = std::make_shared<btDefaultCollisionConfiguration>();
 	//dispatcher = std::make_shared<btCollisionDispatcher>(config.get());
 	//btInterface = std::make_shared<btSimpleBroadphase>();
 
-	// TODO: figure out why this makes everything crash (not even immediately!)
+	//// TODO: figure out why this makes everything crash (not even immediately!)
 	//world = std::make_shared<btCollisionWorld>(dispatcher.get(), btInterface.get(), config.get());
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
@@ -101,13 +102,13 @@ void Level::Update(float dt)
 	renderer_.SetDirLight(&sun_.GetDirLight());
 	renderer_.SetSun(&sun_);
 
+	if (doCollisionTick)
+		CheckCollision();
+
 	renderer_.DrawAll();
 	Editor::Update();
 	hud_.Update();
 	DrawImGui();
-
-	if (doCollisionTick)
-		CheckCollision();
 }
 
 void Level::DrawImGui()
@@ -263,149 +264,102 @@ void Level::DrawImGui()
 	}
 }
 
+
 // TODO: fix this
 void Level::CheckCollision()
 {
 	auto cam = Render::GetCamera();
-	//constexpr glm::vec3 dirs[] =
-	//{
-	//	// cardinal directions
-	//	{ 0, 0, 0 }, // center
-	//	{ 0, 0, 1 }, // front
-	//	{ 0, 0,-1 }, // back
-	//	{ 1, 0, 0 }, // right
-	//	{-1, 0, 0 }, // left
-	//	{ 0, 1, 0 }, // up
-	//	{ 0,-1, 0 }, // down
-	//	// +y corners
-	//	{-1, 1, 1 }, // left top front
-	//	{ 1, 1, 1 }, // right top front
-	//	{-1, 1,-1 }, // left top back
-	//	{ 1, 1,-1 }, // right top back
-	//	// -y corners
-	//	{-1,-1, 1 }, // left bottom front
-	//	{ 1,-1, 1 }, // right bottom front
-	//	{-1,-1,-1 }, // left bottom back
-	//	{ 1,-1,-1 }, // right bottom back
-	//	// neutral y corners
-	//	{-1, 0, 1 }, // left middle front
-	//	{ 1, 0, 1 }, // right middle front
-	//	{-1, 0,-1 }, // left middle back
-	//	{ 1, 0,-1 }, // right middle back
-	//};
-	//ImGui::Begin("Colliding?");
-	//bool isreallycolliding = false;
-	//for (const auto& dir : dirs)
-	//{
-	//	bool iscolliding = false;
-	//	auto pos = glm::ivec3(glm::round(cam->GetPos() + dir - 0.5f)) ;
-	//	//auto pos = glm::ivec3((cam->GetPos() + dir + .5f)) ;
-	//	if (GetBlockAt(pos).GetType() != Block::bAir)
-	//		iscolliding = Box(*cam).IsColliding(Box(pos));
-	//	if (iscolliding)
-	//		isreallycolliding = true;
-	//	//ImGui::Text("Dir: (%d, %d, %d)", dir.x, dir.y, dir.z);
-	//	ImGui::Text("iPos: (%d, %d, %d)", pos.x, pos.y, pos.z);
-	//	//ImGui::Text("c = %s", iscolliding ? "true" : "false");
-	//	//ImGui::NewLine();
-	//}
-	//ImGui::Text("fPos: (%.2f, %.2f, %.2f)", cam->GetPos().x, cam->GetPos().y, cam->GetPos().z);
-	//ImGui::Text("%d", isreallycolliding);
-	//ImGui::End();
-
 	ImGui::Begin("Collision");
 	Box camBox(*cam);
 	auto min = glm::ivec3(glm::floor(camBox.min));
 	auto max = glm::ivec3(glm::ceil(camBox.max));
+	auto mapcomp = [&camBox](const Box& a, const Box& b)->bool
+	{
+		return glm::distance(camBox.GetPosition(), a.GetPosition()) < glm::distance(camBox.GetPosition(), b.GetPosition());
+	};
+	std::set<Box, decltype(mapcomp)> blocks(mapcomp);
 	for (int x = min.x; x < max.x; x++)
 	{
 		for (int y = min.y; y < max.y; y++)
 		{
 			for (int z = min.z; z < max.z; z++)
 			{
-				glm::ivec3 pos(x, y, z);
+				Box block({ x, y, z });
+				blocks.insert(block);
 				ImGui::Text("Checking (%d, %d, %d)", x, y, z);
-				if (GetBlockAt(pos).GetType() != Block::bAir)
-				{
-					Box blockBox(pos);
-					if (camBox.IsColliding(blockBox))
-					{
-						ImGui::Text("Colliding with (%d, %d, %d)", x, y, z);
-						glm::vec3 w = .5f * (camBox.GetScale() + blockBox.GetScale()); // collision width
-						auto d = (camBox.GetPosition() - blockBox.GetPosition());
-						glm::vec3 wd = w * d;
-
-						// the normal of each face.
-						constexpr glm::vec3 faces[6] =
-						{
-							{-1, 0, 0 }, // 'left' face normal (-x direction)
-							{ 1, 0, 0 }, // 'right' face normal (+x direction)
-							{ 0,-1, 0 }, // 'bottom' face normal (-y direction)
-							{ 0, 1, 0 }, // 'top' face normal (+y direction)
-							{ 0, 0,-1 }, // 'far' face normal (-z direction)
-							{ 0, 0, 1 }  // 'near' face normal (+x direction)
-						};
-
-						// distance of collided box to the face.
-						float distances[6] =
-						{
-							(blockBox.max.x - camBox.min.x), // distance of box 'b' to face on 'left' side of 'a'.
-							(camBox.max.x - blockBox.min.x), // distance of box 'b' to face on 'right' side of 'a'.
-							(blockBox.max.y - camBox.min.y), // distance of box 'b' to face on 'bottom' side of 'a'.
-							(camBox.max.y - blockBox.min.y), // distance of box 'b' to face on 'top' side of 'a'.
-							(blockBox.max.z - camBox.min.z), // distance of box 'b' to face on 'far' side of 'a'.
-							(camBox.max.z - blockBox.min.z), // distance of box 'b' to face on 'near' side of 'a'.
-						};
-
-						//https://www.gamedev.net/forums/topic/567310-platform-game-collision-detection/
-						int collidedFace;
-						float collisionDepth = std::numeric_limits<float>::max();
-						glm::vec3 collisionNormal;
-						// scan each face, make sure the box intersects,
-						// and take the face with least amount of intersection
-						// as the collided face.
-						for (int i = 0; i < 6; i++)
-						{
-							//// box does not intersect face. So boxes don't intersect at all.
-							//if (distances[i] < 0.0f)
-							//	return false;
-
-							// face of least intersection depth. That's our candidate.
-							if ((i == 0) || (distances[i] < collisionDepth))
-							{
-								collidedFace = i;
-								collisionNormal = faces[i];
-								collisionDepth = distances[i];
-							}
-						}
-						int normalComp = collisionNormal.x ? 0 : collisionNormal.y ? 1 : 2;
-						//auto newPos = cam->oldPos;
-						auto newPos = 
-							cam->GetPos() + 
-							collisionDepth * 
-							glm::normalize(glm::reflect(glm::normalize(cam->GetPos() - cam->oldPos + .000001f), -collisionNormal));
-
-						cam->velocity_[normalComp] = 0;
-						cam->SetPos(newPos);
-
-						//btCollisionObject boxObj;
-						//btTransform boxTran;
-						//boxTran.setOrigin(btVector3(x, y, z));
-						//boxObj.setWorldTransform(boxTran);
-						//world->addCollisionObject(&boxObj);
-
-						//btCollisionObject camObj;
-						//btTransform camTran;
-						//auto p = cam->GetPos();
-						//camTran.setOrigin({ p.x, p.y, p.z });
-						//camObj.setWorldTransform(camTran);
-						//world->addCollisionObject(&camObj);
-					}
-				}
-				//ImGui::NewLine();
 			}
 		}
 	}
+	for (auto& blockBox : blocks)
+	{
+		auto pos = blockBox.blockpos;
+		if (GetBlockAt(pos).GetType() != Block::bAir)
+		{
+			// the normal of each face.
+			constexpr glm::vec3 faces[6] =
+			{
+				{-1, 0, 0 }, // 'left' face normal (-x direction)
+				{ 1, 0, 0 }, // 'right' face normal (+x direction)
+				{ 0, 1, 0 }, // 'bottom' face normal (-y direction)
+				{ 0,-1, 0 }, // 'top' face normal (+y direction)
+				{ 0, 0,-1 }, // 'far' face normal (-z direction)
+				{ 0, 0, 1 }  // 'near' face normal (+x direction)
+			};
+
+			// distance of collided box to the face.
+			float distances[6] =
+			{
+				(blockBox.max.x - camBox.min.x), // distance of box 'b' to face on 'left' side of 'a'.
+				(camBox.max.x - blockBox.min.x), // distance of box 'b' to face on 'right' side of 'a'.
+				(camBox.max.y - blockBox.min.y), // distance of box 'b' to face on 'bottom' side of 'a'.
+				(blockBox.max.y - camBox.min.y), // distance of box 'b' to face on 'top' side of 'a'.
+				(blockBox.max.z - camBox.min.z), // distance of box 'b' to face on 'far' side of 'a'.
+				(camBox.max.z - blockBox.min.z), // distance of box 'b' to face on 'near' side of 'a'.
+			};
+
+			//https://www.gamedev.net/forums/topic/567310-platform-game-collision-detection/
+			int collidedFace;
+			float collisionDepth = std::numeric_limits<float>::max();
+			glm::vec3 collisionNormal(0);
+			// scan each face, make sure the box intersects,
+			// and take the face with least amount of intersection
+			// as the collided face.
+			std::string sfaces[] = { "left", "right", "bottom", "top", "far", "near" };
+			for (int i = 0; i < 6; i++)
+			{
+				//// box does not intersect face. So boxes don't intersect at all.
+				//if (distances[i] < 0.0f)
+				//	return false;
+
+				// face of least intersection depth. That's our candidate.
+				if ((i == 0) || (distances[i] < collisionDepth))
+				{
+					collidedFace = i;
+					collisionNormal = faces[i];
+					collisionDepth = distances[i];
+				}
+			}
+			int normalComp = collisionNormal.x ? 0 : collisionNormal.y ? 1 : 2;
+			//auto newPos = cam->oldPos;
+			auto refl = glm::normalize(glm::reflect(glm::normalize(cam->GetPos() - cam->oldPos + .000001f), -collisionNormal));
+			//refl[normalComp] /= 2;
+			glm::vec3 newPos = cam->GetPos();
+			if (GetBlockAt(pos).GetType() == Block::bWater)
+			{
+				cam->velocity_.y = 2;
+			}
+			else
+			{
+				newPos = cam->GetPos() + collisionDepth * -collisionNormal * 1.001f;
+				ImGui::Text("%s", sfaces[collidedFace].c_str());
+				ImGui::Text("Reflection: (%.2f, %.2f, %.2f)", refl.x, refl.y, refl.z);
+				cam->velocity_[normalComp] = 0;
+			}
+			cam->SetPos(newPos);
+			camBox = Box(*cam);
+		}
+	}
+		//ImGui::NewLine();
 	ImGui::End();
 }
 
