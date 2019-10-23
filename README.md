@@ -19,6 +19,7 @@ Performance was tested on this system for reference:
 - Block picking (destroying and placing)
 - A prefab editor
 - Marching cubes implementation for smooth voxels (in worlds defined by a density field):
+- Basic movement with terrain collision
 
 ### Graphics
 - Phong illumination model
@@ -33,7 +34,7 @@ Performance was tested on this system for reference:
 
 ### Other
 - Portability. Uses (to my knowledge) no platform dependent libraries or headers. (Certain libraries would have to be rebuilt for platforms other than x64 Windows)
-- Multithreaded mesh building and (*WIP*) terrain generation.
+- Multithreaded mesh building and (*WIP*) terrain generation (which can be enabled via a preprocessor flag in chunk.h).
 - Graphics effects can be toggled dynamically by the user.
 
 
