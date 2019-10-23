@@ -19,7 +19,7 @@ Performance was tested on this system for reference:
 - Block picking (destroying and placing)
 - A prefab editor
 - Marching cubes implementation for smooth voxels (in worlds defined by a density field):
-- Basic movement with terrain collision
+- Movement physics and terrain collision
 
 ### Graphics
 - Phong illumination model
