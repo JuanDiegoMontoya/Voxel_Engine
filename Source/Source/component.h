@@ -7,12 +7,10 @@ typedef class GameObject* GameObjectPtr;
 enum ComponentType : unsigned
 {
 	cTransform,
-	cCollider,
+	cAABBCollider, // requires physics component
 	cLight,
-	cButton,
-	cMesh, // encapsulates vertices and texture information theoretically
-	cDynamicPhysics,
-	cKinematicPhysics,
+	cMesh,
+	cPhysics,
 	cText,
 	cScripts,
 	cRenderData,
@@ -20,17 +18,18 @@ enum ComponentType : unsigned
 	cCount
 };
 
+
 // augments game objects
 typedef class Component
 {
 public:
-	inline void SetType(ComponentType t) { type_ = t; }
-	inline void SetParent(GameObjectPtr p) { parent_ = p; }
-	inline void SetEnabled(bool e) { enabled_ = e; }
+	void SetType(ComponentType t) { type_ = t; }
+	void SetParent(GameObjectPtr p) { parent_ = p; }
+	void SetEnabled(bool e) { enabled_ = e; }
 
-	inline ComponentType GetType() const { return type_; }
-	inline GameObjectPtr GetParent() const { return parent_; }
-	inline bool GetEnabled() const { return enabled_; }
+	ComponentType GetType() const { return type_; }
+	GameObjectPtr GetParent() const { return parent_; }
+	bool GetEnabled() const { return enabled_; }
 
 	virtual void Update(float dt) {}
 	virtual ~Component() {}

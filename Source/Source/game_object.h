@@ -1,6 +1,7 @@
 #pragma once
 #include "component.h"
 
+
 typedef class GameObject
 {
 public:
@@ -21,21 +22,19 @@ public:
 	GameObjectPtr Clone() const;
 
 	void AddComponent(Component* component);
-	inline void SetName(std::string name) { name_ = name; }
-	inline void SetEnabled(bool b) { enabled_ = b; }
-	void SetChildren(); // sets all components' parent to this object
+	void SetName(std::string name) { name_ = name; }
+	void SetEnabled(bool b) { enabled_ = b; }
 
-	inline bool GetEnabled() const { return enabled_; }
-	inline Component* GetComponent(unsigned t) { return components_[t]; }
-	inline Component* const * GetComponentList() { return components_; }
-	inline const std::string& GetName() { return name_; }
+	bool GetEnabled() const { return enabled_; }
+	Component* GetComponent(unsigned t) { return components_[t]; }
+	Component* const * GetAllComponents() { return components_; }
+	const std::string& GetName() const { return name_; }
 
 private:
-	float life_; // time (in ms) before setting this object for deletion
-	bool temporary_ = false;
 	Component* components_[cCount];
-	bool toDestroy_ = false; // destroy this object at the end of the game loop
 	bool enabled_; // user var
 	std::string name_;
 
 }GameObject, *GameObjectPtr;
+
+//using GameObjectPtr = std::shared_ptr<GameObject>;

@@ -15,6 +15,7 @@ Camera::Camera(CameraType type) : type_(type)
 	//rigid = std::make_shared<btRigidBody>()
 }
 
+
 // update movement and generate view matrix
 void Camera::Update(float dt)
 {
@@ -25,35 +26,35 @@ void Camera::Update(float dt)
 	{
 	case kPhysicsCam:
 	{
-		acceleration_ = glm::vec3(0, -10, 0); // "gravity"
+		acceleration_ = glm::vec3(0, -20, 0); // "gravity"
 		// "friction"
-		velocity_.x *= .9f;
-		velocity_.z *= .9f;
+		velocity_.x *= .97f;
+		velocity_.z *= .97f;
 		if (Input::Keyboard().down[GLFW_KEY_W])
 		{
-			velocity_.x += cos(glm::radians(yaw_));
-			velocity_.z += sin(glm::radians(yaw_));
+			velocity_.x += cos(glm::radians(yaw_)) * .1;
+			velocity_.z += sin(glm::radians(yaw_)) * .1;
 		}
 		if (Input::Keyboard().down[GLFW_KEY_S])
 		{
-			velocity_.x -= cos(glm::radians(yaw_));
-			velocity_.z -= sin(glm::radians(yaw_));
+			velocity_.x -= cos(glm::radians(yaw_)) * .1;
+			velocity_.z -= sin(glm::radians(yaw_)) * .1;
 		}
 		if (Input::Keyboard().down[GLFW_KEY_A])
 		{
-			velocity_.x += cos(glm::radians(yaw_ - 90));
-			velocity_.z += sin(glm::radians(yaw_ - 90));
+			velocity_.x += cos(glm::radians(yaw_ - 90)) * .1;
+			velocity_.z += sin(glm::radians(yaw_ - 90)) * .1;
 		}
 		if (Input::Keyboard().down[GLFW_KEY_D])
 		{
-			velocity_.x -= cos(glm::radians(yaw_ - 90));
-			velocity_.z -= sin(glm::radians(yaw_ - 90));
+			velocity_.x -= cos(glm::radians(yaw_ - 90)) * .1;
+			velocity_.z -= sin(glm::radians(yaw_ - 90)) * .1;
 		}
 
 		// jump impulse
 		if (Input::Keyboard().pressed[GLFW_KEY_SPACE])
 		{
-			velocity_.y = 5;
+			velocity_.y = 8;
 		}
 
 		// cap xz speed, but not y speed

@@ -25,8 +25,6 @@
 #include <set>
 #include <memory>
 #include "collision_shapes.h"
-#include <btBulletCollisionCommon.h>
-#include <btBulletDynamicsCommon.h>
 
 using namespace std::chrono;
 
@@ -34,6 +32,7 @@ Level::Level(std::string name)
 {
 	name_ = name;
 }
+
 
 Level::~Level()
 {
@@ -44,10 +43,6 @@ Level::~Level()
 		delete cam;
 }
 
-std::shared_ptr<btCollisionWorld> world;
-std::shared_ptr<btCollisionDispatcher> dispatcher;
-std::shared_ptr<btSimpleBroadphase> btInterface;
-std::shared_ptr<btDefaultCollisionConfiguration> config;
 
 // for now this function is where we declare objects
 void Level::Init()
@@ -82,6 +77,7 @@ void Level::Init()
 	std::cout << benchmark_duration_.count() << std::endl;
 }
 
+
 // update every object in the level
 void Level::Update(float dt)
 {
@@ -110,6 +106,7 @@ void Level::Update(float dt)
 	hud_.Update();
 	DrawImGui();
 }
+
 
 void Level::DrawImGui()
 {
@@ -350,7 +347,7 @@ void Level::CheckCollision()
 			}
 			else
 			{
-				newPos = cam->GetPos() + collisionDepth * -collisionNormal * 1.001f;
+				newPos = cam->GetPos() + collisionDepth * -collisionNormal * 1.000f;
 				ImGui::Text("%s", sfaces[collidedFace].c_str());
 				ImGui::Text("Reflection: (%.2f, %.2f, %.2f)", refl.x, refl.y, refl.z);
 				cam->velocity_[normalComp] = 0;
@@ -363,11 +360,13 @@ void Level::CheckCollision()
 	ImGui::End();
 }
 
+
 void Level::CheckInteraction()
 {
 	checkBlockPlacement();
 	checkBlockDestruction();
 }
+
 
 // force updates a block in a location
 void Level::UpdateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
@@ -375,26 +374,31 @@ void Level::UpdateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
 	chunkManager_.UpdateBlock(wpos, ty, std::numeric_limits<unsigned char>::max() / 2);
 }
 
+
 // updates a block in a location IFF the new block has a sufficiently high write strength
 void Level::GenerateBlockAt(glm::ivec3 wpos, Block b)
 {
 	chunkManager_.UpdateBlock(wpos, b.GetType(), b.WriteStrength());
 }
 
+
 void Level::GenerateBlockAtCheap(glm::ivec3 wpos, Block b)
 {
 	chunkManager_.UpdateBlockCheap(wpos, b);
 }
+
 
 void Level::UpdatedChunk(ChunkPtr chunk)
 {
 	chunkManager_.UpdatedChunk(chunk);
 }
 
+
 Block Level::GetBlockAt(glm::ivec3 wpos)
 {
 	return chunkManager_.GetBlock(wpos);
 }
+
 
 void Level::checkBlockPlacement()
 {
@@ -425,6 +429,7 @@ void Level::checkBlockPlacement()
 		));
 	}
 }
+
 
 void Level::checkBlockDestruction()
 {

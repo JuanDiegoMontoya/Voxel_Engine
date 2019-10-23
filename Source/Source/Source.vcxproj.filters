@@ -140,9 +140,6 @@
     <ClInclude Include="level.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="camera.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="mesh.h">
       <Filter>Graphics\Meshes</Filter>
     </ClInclude>
@@ -245,6 +242,12 @@
     <ClInclude Include="collision_shapes.h">
       <Filter>Game\Collision</Filter>
     </ClInclude>
+    <ClInclude Include="physics_comp.h">
+      <Filter>Game\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Game\ECS\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -306,9 +309,6 @@
     </ClCompile>
     <ClCompile Include="level.cpp">
       <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="camera.cpp">
-      <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="mesh.cpp">
       <Filter>Graphics\Meshes</Filter>
@@ -402,6 +402,12 @@
     </ClCompile>
     <ClCompile Include="collision_check.cpp">
       <Filter>Game\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="physics_comp.cpp">
+      <Filter>Game\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Game\ECS\Components</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,6 +1,5 @@
 #pragma once
-#include <btBulletCollisionCommon.h>
-#include <btBulletDynamicsCommon.h>
+#include "component.h"
 
 class Frustum;
 
@@ -12,7 +11,7 @@ enum CameraType : int
 	kImmobileCam // cannot move
 };
 
-class Camera
+class Camera : public Component
 {
 public:
 	Camera(CameraType type);
