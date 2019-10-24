@@ -27,28 +27,28 @@ void Camera::Update(float dt)
 	case kPhysicsCam:
 	{
 		acceleration_ = glm::vec3(0, -20, 0); // "gravity"
-		// "friction"
-		velocity_.x *= .97f;
-		velocity_.z *= .97f;
+		// "friction" (multiply dt by big num so the friction constant isn't stupidly small)
+		velocity_.x *= glm::pow(.90, dt * 100);
+		velocity_.z *= glm::pow(.90, dt * 100);
 		if (Input::Keyboard().down[GLFW_KEY_W])
 		{
-			velocity_.x += cos(glm::radians(yaw_)) * .1;
-			velocity_.z += sin(glm::radians(yaw_)) * .1;
+			velocity_.x += 60 * cos(glm::radians(yaw_)) * dt;
+			velocity_.z += 60 * sin(glm::radians(yaw_)) * dt;
 		}
 		if (Input::Keyboard().down[GLFW_KEY_S])
 		{
-			velocity_.x -= cos(glm::radians(yaw_)) * .1;
-			velocity_.z -= sin(glm::radians(yaw_)) * .1;
+			velocity_.x -= 60 * cos(glm::radians(yaw_)) * dt;
+			velocity_.z -= 60 * sin(glm::radians(yaw_)) * dt;
 		}
 		if (Input::Keyboard().down[GLFW_KEY_A])
 		{
-			velocity_.x += cos(glm::radians(yaw_ - 90)) * .1;
-			velocity_.z += sin(glm::radians(yaw_ - 90)) * .1;
+			velocity_.x += 60 * cos(glm::radians(yaw_ - 90)) * dt;
+			velocity_.z += 60 * sin(glm::radians(yaw_ - 90)) * dt;
 		}
 		if (Input::Keyboard().down[GLFW_KEY_D])
 		{
-			velocity_.x -= cos(glm::radians(yaw_ - 90)) * .1;
-			velocity_.z -= sin(glm::radians(yaw_ - 90)) * .1;
+			velocity_.x -= 60 * cos(glm::radians(yaw_ - 90)) * dt;
+			velocity_.z -= 60 * sin(glm::radians(yaw_ - 90)) * dt;
 		}
 
 		// jump impulse
@@ -62,7 +62,6 @@ void Camera::Update(float dt)
 		if (speed > maxspeed_)
 		{
 			auto norm = glm::normalize(glm::vec2(velocity_.x, velocity_.z));
-			//velocity_.xz = norm.xy * maxspeed_;
 			velocity_.x = norm.x * maxspeed_;
 			velocity_.z = norm.y * maxspeed_;
 			
