@@ -29,7 +29,7 @@ struct Box
 		min = p - .25f;
 		max = p + .25f;
 		//max.y *= 2;
-		min.y -= 1.5f;
+		min.y -= 1.25f;
 	}
 
 	bool IsColliding(const Box& b) const
