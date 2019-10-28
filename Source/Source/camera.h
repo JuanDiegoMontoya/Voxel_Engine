@@ -37,7 +37,7 @@ public:
 	glm::vec3 oldPos;
 private:
 	CameraType type_;
-	glm::vec3 worldpos_ = glm::vec3(0, 0, 0);
+	glm::vec3 worldpos_ = glm::vec3(0, 10, 0);
 	glm::vec3 dir_ = glm::vec3(0, 0, 0);
 	glm::mat4 view_ = glm::mat4(1);
 	glm::mat4 proj_;
