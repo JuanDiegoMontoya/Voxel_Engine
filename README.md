@@ -1,5 +1,5 @@
 # 3D_Voxel_Engine
-Yet another voxel engine.
+Yet another voxel engine. Gallery at the bottom.
 
 This is a tech demo designed to demonstrate the implementation of various rendering and procedural techniques in a large and dynamic environment.
 (*WIP*) indicates that a feature is basically complete but has a few bugs that need to be smoothed out. 
