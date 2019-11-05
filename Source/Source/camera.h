@@ -16,16 +16,18 @@ class Camera : public Component
 public:
 	Camera(CameraType type);
 	void Update(float dt);
-	inline const glm::mat4& GetView() const { return view_; }
-	inline const glm::mat4& GetProj() const { return proj_; }
-	inline const glm::vec3& GetPos() const { return worldpos_; }
-	inline const glm::vec3& GetDir() const { return dir_; }
-	inline const Frustum* GetFrustum() const { return frustum_; }
-	inline const float GetFov() const { return fov_; }
-	inline const float GetNear() const { return near_; }
-	inline const float GetFar() const { return far_; }
+	const glm::mat4& GetView() const { return view_; }
+	const glm::mat4& GetProj() const { return proj_; }
+	const glm::vec3& GetPos() const { return worldpos_; }
+	const glm::vec3& GetDir() const { return dir_; }
+	const Frustum* GetFrustum() const { return frustum_; }
+	const float GetFov() const { return fov_; }
+	const float GetNear() const { return near_; }
+	const float GetFar() const { return far_; }
+	const CameraType GetType() const { return type_; }
 
-	inline void SetPos(const glm::vec3& v) { worldpos_ = v; }
+	void SetPos(const glm::vec3& v) { worldpos_ = v; }
+	void SetType(CameraType t) { type_ = t; }
 
 	glm::vec3 up = glm::vec3(0, 1.f, 0);
 	glm::vec3 front = glm::vec3(0, 0, -1.f);

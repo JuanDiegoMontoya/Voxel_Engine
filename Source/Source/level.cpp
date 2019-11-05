@@ -48,7 +48,7 @@ Level::~Level()
 void Level::Init()
 {
 	//cameras_.push_back(new Camera(kControlCam));
-	cameras_.push_back(new Camera(kPhysicsCam));
+	cameras_.push_back(new Camera(kControlCam));
 	Render::SetCamera(cameras_[0]);
 	
 	//config = std::make_shared<btDefaultCollisionConfiguration>();
@@ -67,7 +67,7 @@ void Level::Init()
 	PrefabManager::InitPrefabs();
 	BiomeManager::InitializeBiomes();
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(500.f);
+	chunkManager_.SetLoadDistance(300.f);
 	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(1);
 	renderer_.Init();
@@ -111,8 +111,6 @@ void Level::Update(float dt)
 void Level::DrawImGui()
 {
 	{
-		ImGui::SetNextWindowPos(ImVec2(20, 20));
-		ImGui::SetNextWindowSize(ImVec2(350, 600));
 		ImGui::Begin("Sun");
 
 		glm::vec3 pos = sun_.GetPos();
@@ -129,6 +127,12 @@ void Level::DrawImGui()
 		ImGui::Checkbox("Follow Cam", &sun_.followCam);
 		ImGui::SliderFloat("Follow Distance", &sun_.followDist, 0, 500, "%.0f");
 		ImGui::Checkbox("Collision Enabled", &doCollisionTick);
+
+		bool val = Render::GetCamera()->GetType() == kPhysicsCam;
+		if (ImGui::Checkbox("Camera Gravity", &val))
+		{
+			Render::GetCamera()->SetType(val ? kPhysicsCam : kControlCam);
+		}
 
 		//int shadow = sun_.GetShadowSize().x;
 		//if (ImGui::InputInt("Shadow Scale", &shadow, 1024, 1024))
@@ -156,8 +160,6 @@ void Level::DrawImGui()
 	}
 
 	{
-		ImGui::SetNextWindowPos(ImVec2(1500, 20));
-		ImGui::SetNextWindowSize(ImVec2(300, 600));
 		ImGui::Begin("Info");
 
 		ImGui::Text("FPS: %.0f (%.1f ms)", 1.f / game_->GetDT(), 1000 * game_->GetDT());
