@@ -61,7 +61,7 @@ void Chunk::Update()
 void Chunk::Render()
 {
 	//ASSERT(vao_ && positions_ && normals_ && colors_);
-	if (vao_ && loaded_)
+	if (vao_)// && loaded_)
 	{
 		vao_->Bind();
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
@@ -70,7 +70,7 @@ void Chunk::Render()
 
 void Chunk::RenderWater()
 {
-	if (wvao_ && loaded_)
+	if (wvao_)// && loaded_)
 	{
 		wvao_->Bind();
 		glDrawArrays(GL_TRIANGLES, 0, wvertexCount_);
@@ -182,7 +182,7 @@ void Chunk::BuildMesh()
 	//if (loaded_)
 	{
 		//Camera* cam = Render::GetCamera();
-		meshed_ = true;
+		//meshed_ = true;
 
 		//vertices.reserve(CHUNK_SIZE * CHUNK_SIZE * 6 * 3); // one entire side of a chunk (assumed flat)
 		for (int x = 0; x < CHUNK_SIZE; x++)

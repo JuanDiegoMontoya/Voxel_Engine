@@ -32,6 +32,8 @@ void Renderer::DrawAll()
   PERF_BENCHMARK_START;
 	glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
+	//std::cout << "RENDER" << std::endl;
+
 	//glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
 	if (doGeometryPass)
 		geometryPass();

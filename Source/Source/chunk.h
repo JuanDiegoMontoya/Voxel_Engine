@@ -64,13 +64,7 @@ public:
 	inline bool IsActive() { return active_; }
 	inline bool IsVisible() const { return visible_; }
 	inline void SetVisible(bool b) { visible_ = b; }
-	inline bool IsRenderable() const { return active_ && !generate_ && loaded_; }
-	inline bool NeedsLoading() const { return !loaded_; }
-	inline void SetLoaded(bool b) { loaded_ = b; }
-	inline void SetGenerate(bool b) { generate_ = b; }
-	inline bool IsMeshBuilt() { return meshed_; }
-	inline bool InLoadQueue() { return inLoadQueue_; }
-	inline void SetIsLoading(bool b) { inLoadQueue_ = b; }
+
 
 	// may need to upgrade to glm::i64vec3 if worldgen at far distances is fug'd
 	// "origin" chunk goes from 0-CHUNK_SIZE rather than -CHUNK_SIZE/2-CHUNK_SIZE/2
@@ -157,7 +151,7 @@ private:
 	void buildBlockVertices_marched_cubes(
 		const glm::ivec3& pos,
 		const Block& block);
-	int polygonize(const glm::ivec3& pos, const Block&);
+	size_t polygonize(const glm::ivec3& pos, const Block&);
 	glm::vec3 VertexInterp(double isolevel, glm::vec3 p1, glm::vec3 p2, double valp1, double valp2);
 	//glm::vec3 VertexInterp2(glm::vec3 p1, glm::vec3 p2, double value);
 
@@ -171,11 +165,6 @@ private:
 	glm::ivec3 pos_;			 // position relative to other chunks (1 chunk = 1 index)
 	bool active_;					 // unused
 	bool visible_;				 // used in frustum culling
-
-	bool generate_ = true; // if the chunks needs to be generated
-	bool loaded_ = false;  // true if chunk has been loaded
-	bool meshed_ = false;  // always true after buildMesh is called
-	bool inLoadQueue_ = false;
 
 	// rendering stuff
 	VAO* vao_ = nullptr;

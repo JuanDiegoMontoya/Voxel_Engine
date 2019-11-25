@@ -8,32 +8,37 @@
 #include <execution>
 #include "level.h"
 
+
 void ChunkLoadManager::Update()
 {
 	//cull();
 	//sort();
 }
 
+
 void ChunkLoadManager::Push(ChunkPtr c)
 {
-	if (c->NeedsLoading())
+	//if (c->NeedsLoading())
 	{
-		c->SetIsLoading(true); // this may cause problems in the future
+		//c->SetIsLoading(true); // this may cause problems in the future
 		//genList_.push_back(c);
 		pool_.push([this](int id, ChunkPtr c) { this->task(id, c); }, c);
 	}
 }
+
 
 void ChunkLoadManager::SetCurrentLevel(LevelPtr level)
 {
 	level_ = level;
 }
 
+
 void ChunkLoadManager::init()
 {
 	// single thread for this task, as more will likely crash everything
 	pool_.resize(1);
 }
+
 
 void ChunkLoadManager::sort()
 {
@@ -55,6 +60,7 @@ void ChunkLoadManager::sort()
 	}
 }
 
+
 void ChunkLoadManager::cull()
 {
 	// if the chunk doesn't need to be loaded, remove it from the genList
@@ -64,9 +70,11 @@ void ChunkLoadManager::cull()
 		genList_.end(),
 		[](auto& c)->bool
 	{
-		return !c->NeedsLoading();
+		//return !c->NeedsLoading();
+		return true;
 	});
 }
+
 
 // loading task given to thread pool
 void ChunkLoadManager::task(int id, ChunkPtr c)
@@ -79,13 +87,14 @@ void ChunkLoadManager::task(int id, ChunkPtr c)
 #else
 		WorldGen::GenerateChunk(c->GetPos(), level_);
 #endif
-		c->SetGenerate(false);
-		c->SetLoaded(true);
-		c->SetIsLoading(false);
+		//c->SetGenerate(false);
+		//c->SetLoaded(true);
+		//c->SetIsLoading(false);
 		level_->UpdatedChunk(c); // this will cause crashes if loading too many chunks at once
 	}
 	c->Update();
 }
+
 
 bool ChunkLoadManager::greater(ChunkPtr a, ChunkPtr b, const glm::vec3& camPos)
 {

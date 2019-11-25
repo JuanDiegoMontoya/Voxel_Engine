@@ -43,6 +43,7 @@ void WorldGen::GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse
 	}
 }
 
+
 void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 {
 	module::DEFAULT_PERLIN_FREQUENCY;
@@ -219,6 +220,7 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 
 }
 
+
 static module::Perlin snowCover;
 static module::Const canvas0;
 static module::Const gray;
@@ -374,14 +376,10 @@ void WorldGen::InitNoiseFuncs()
 	}
 }
 
+
 void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 {
-	//heightMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z , cpos.z + 1);
-	//heightMapBuilder.Build();
-	//riverMapBuilder.SetBounds(cpos.x, cpos.x + 1, cpos.z, cpos.z + 1);
-	//riverMapBuilder.Build();
-
-	// generate EVERYTHING
+	// generate everything
 	for (int i = 0; i < Chunk::CHUNK_SIZE; i++)			// x
 	{
 		int worldX = cpos.x * Chunk::CHUNK_SIZE + i;
@@ -394,6 +392,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 			double humidity = GetHumidity(worldX, worldZ);
 			float slope = getSlope(heightMapBuilder, worldX, worldZ);
 
+			// iterate over all of Y because there may be
+			// aerial features like floating islands, etc.
 			for (int j = 0; j < Chunk::CHUNK_SIZE; j++)	// y
 			{
 				int worldY = cpos.y * Chunk::CHUNK_SIZE + j;
@@ -434,22 +434,18 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				if (worldY >= actualHeight - 3 && worldY < actualHeight)
 					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bDirt);
 
-				// generate subsurface
+				// generate subsurface layer (rocks)
 				if (worldY >= -30 && worldY < actualHeight - 3)
 				{
 					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
 					if (Utils::get_random(0, 1) > .99999f)
 						GeneratePrefab(PrefabManager::GetPrefab(Prefab::DungeonSmall), wpos, level);
 				}
-				//if (val > .9)
-				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::bAir);
-				//if (val > .87 && worldY >= actualHeight - 3 && worldY <= actualHeight + 2)
-				//	level->UpdateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bAir);
 			}
 		}
 	}
 
-	// generate dummy tunnels
+	// generate simple tunnels
 	for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
 	{
 		for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
@@ -464,14 +460,9 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		}
 	}
 
-	// lastly, check if chunk needs its mesh generated
-	//if (!Chunk::chunks[cpos]->IsMeshBuilt())
-	//{
-	//	Chunk::chunks[cpos]->BuildMesh();
-	//	Chunk::chunks[cpos]->BuildBuffers();
-	//}
-	//level->UpdatedChunk(Chunk::chunks[cpos]);
+
 }
+
 
 WorldGen::TerrainType WorldGen::GetTerrainType(glm::ivec3 wpos)
 {
@@ -487,15 +478,18 @@ WorldGen::TerrainType WorldGen::GetTerrainType(glm::ivec3 wpos)
 	return TerrainType::tOcean; // anywhere no biome has been generated will be this
 }
 
+
 double WorldGen::GetTemperature(double x, double y, double z)
 {
 	return temperature.GetValue(x, z) - y * .007;
 }
 
+
 double WorldGen::GetHumidity(double x, double z)
 {
 	return humidity.GetValue(x, z);
 }
+
 
 void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos, LevelPtr level)
 {
@@ -505,6 +499,7 @@ void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos, LevelPtr le
 		level->GenerateBlockAt(wpos + pair.first, pair.second);
 	}
 }
+
 
 static double magic = .2; // increase isolevel by this amount (makes it somewhat accurate)
 void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
@@ -526,18 +521,13 @@ void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
 						level->GenerateBlockAt(glm::ivec3(pos), Block::bGrass); // replace by grass
 						continue;
 					}
-
-				// method 1
-				//double dens = GetDensity(pos);
-				//if (Utils::mapToRange(dens, -1.f, 1.f, 0.f, 1.f) + .0501 > Chunk::isolevel)
-				//	level->GenerateBlockAt(glm::ivec3(pos), Block::bGrass);
-				//else
-				//	level->GenerateBlockAt(glm::ivec3(pos), Block::bAir);
 			}
 		}
 	}
 }
 
+
+// density value of point for cube marched worlds
 double WorldGen::GetDensity(const glm::vec3& wpos)
 {
 	static bool init = true;
@@ -569,22 +559,11 @@ double WorldGen::GetDensity(const glm::vec3& wpos)
 
   double densidee = dense.GetValue(wpos.x, wpos.y, wpos.z);
 
-  //double bruh = 0;
-  //if (Utils::mapToRange(densidee, -1.f, 1.f, 0.f, 1.f) < Chunk::isolevel + magic)
-  //{
-  //  for (auto& v : positions)
-  //  {
-  //    glm::ivec3 tp = wpos + v;
-  //    BlockPtr b = Chunk::AtWorld(tp);
-  //    if (b && b->GetType() != Block::bAir)
-  //      bruh += .2;
-  //  }
-  //  return bruh;
-  //}
-
 	return densidee;
 }
 
+
+// slope of point for determining if certain features (e.g. water) can be placed there
 float WorldGen::getSlope(model::Plane& pl, int x, int z)
 {
 	//float height = *heightmap.GetConstSlabPtr(x, z);

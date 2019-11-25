@@ -60,6 +60,7 @@ void Level::Init()
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
+	chunkManager_.Init();
 	WorldGen::InitNoiseFuncs();
 	Editor::level = this;
 	Editor::chunkManager = &chunkManager_;
@@ -67,8 +68,8 @@ void Level::Init()
 	PrefabManager::InitPrefabs();
 	BiomeManager::InitializeBiomes();
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(300.f);
-	chunkManager_.SetUnloadLeniency(100.f);
+	chunkManager_.SetLoadDistance(100.f);
+	chunkManager_.SetUnloadLeniency(50.f);
 	chunkManager_.SetMaxLoadPerFrame(1);
 	renderer_.Init();
 	renderer_.chunkManager_ = &chunkManager_;

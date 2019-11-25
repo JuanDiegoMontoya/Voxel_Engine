@@ -8,7 +8,7 @@ void Chunk::buildBlockVertices_marched_cubes(
 	const Block& block)
 {
 	// polygonize will add vertex positions
-	int tris = polygonize(pos, block);
+	size_t tris = polygonize(pos, block);
 	vertexCount_ = tris * 3;
 
 	glm::vec4 clr = Block::PropertiesTable[block.GetType()].color;
@@ -29,7 +29,9 @@ void Chunk::buildBlockVertices_marched_cubes(
 	}
 }
 
-int Chunk::polygonize(const glm::ivec3& pos, const Block& block)
+// http://paulbourke.net/geometry/polygonise/
+// modified to produce normals and be more concise
+size_t Chunk::polygonize(const glm::ivec3& pos, const Block& block)
 {
 	static int edgeTable[256] = {
 	0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -322,65 +324,45 @@ int Chunk::polygonize(const glm::ivec3& pos, const Block& block)
 	{0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 	{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1} };
 
-	/*
-		 Determine the index into the edge table which
-		 tells us which vertices are inside of the surface
-	*/
+	// Determine the index into the edge table which
+	// tells us which vertices are inside of the surface
 	glm::vec3 vertlist[12];
 	cell grid = buildCellFromVoxel(glm::vec3(chunkBlockToWorldPos(pos)));
 	int cubeindex = 0;
-	if (grid.val[0] < isolevel) cubeindex |= 1;
-	if (grid.val[1] < isolevel) cubeindex |= 2;
-	if (grid.val[2] < isolevel) cubeindex |= 4;
-	if (grid.val[3] < isolevel) cubeindex |= 8;
-	if (grid.val[4] < isolevel) cubeindex |= 16;
-	if (grid.val[5] < isolevel) cubeindex |= 32;
-	if (grid.val[6] < isolevel) cubeindex |= 64;
-	if (grid.val[7] < isolevel) cubeindex |= 128;
+	for (int i = 0; i < 8; i++)
+		if (grid.val[i] < isolevel) cubeindex |= (1 << i);
 
 	// Cube is entirely in/out of the surface
 	if (edgeTable[cubeindex] == 0)
 		return 0;
 
-	// Find the vertices where the surface intersects the cube
-	if (edgeTable[cubeindex] & 1)
-		vertlist[0] =
-		VertexInterp(isolevel, grid.p[0], grid.p[1], grid.val[0], grid.val[1]);
-	if (edgeTable[cubeindex] & 2)
-		vertlist[1] =
-		VertexInterp(isolevel, grid.p[1], grid.p[2], grid.val[1], grid.val[2]);
-	if (edgeTable[cubeindex] & 4)
-		vertlist[2] =
-		VertexInterp(isolevel, grid.p[2], grid.p[3], grid.val[2], grid.val[3]);
-	if (edgeTable[cubeindex] & 8)
-		vertlist[3] =
-		VertexInterp(isolevel, grid.p[3], grid.p[0], grid.val[3], grid.val[0]);
-	if (edgeTable[cubeindex] & 16)
-		vertlist[4] =
-		VertexInterp(isolevel, grid.p[4], grid.p[5], grid.val[4], grid.val[5]);
-	if (edgeTable[cubeindex] & 32)
-		vertlist[5] =
-		VertexInterp(isolevel, grid.p[5], grid.p[6], grid.val[5], grid.val[6]);
-	if (edgeTable[cubeindex] & 64)
-		vertlist[6] =
-		VertexInterp(isolevel, grid.p[6], grid.p[7], grid.val[6], grid.val[7]);
-	if (edgeTable[cubeindex] & 128)
-		vertlist[7] =
-		VertexInterp(isolevel, grid.p[7], grid.p[4], grid.val[7], grid.val[4]);
-	if (edgeTable[cubeindex] & 256)
-		vertlist[8] =
-		VertexInterp(isolevel, grid.p[0], grid.p[4], grid.val[0], grid.val[4]);
-	if (edgeTable[cubeindex] & 512)
-		vertlist[9] =
-		VertexInterp(isolevel, grid.p[1], grid.p[5], grid.val[1], grid.val[5]);
-	if (edgeTable[cubeindex] & 1024)
-		vertlist[10] =
-		VertexInterp(isolevel, grid.p[2], grid.p[6], grid.val[2], grid.val[6]);
-	if (edgeTable[cubeindex] & 2048)
-		vertlist[11] =
-		VertexInterp(isolevel, grid.p[3], grid.p[7], grid.val[3], grid.val[7]);
 
-	/* Create the triangle */
+	// Find the vertices where the surface intersects the cube
+	const std::vector<std::tuple<int, int, int, int>> corns =
+	{
+		{ 0, 1, 0, 1 },
+		{ 1, 2, 1, 2 },
+		{ 2, 3, 2, 3 },
+		{ 3, 0, 3, 0 },
+		{ 4, 5, 4, 5 },
+		{ 5, 6, 5, 6 },
+		{ 6, 7, 6, 7 },
+		{ 7, 4, 7, 4 },
+		{ 0, 4, 0, 4 },
+		{ 1, 5, 1, 5 },
+		{ 2, 6, 2, 6 },
+		{ 3, 7, 3, 7 }
+	};
+	for (int i = 0; i < 12; i++)
+	{
+		auto [first, second, third, fourth] = corns[i];
+		if (edgeTable[cubeindex] & (1 << i))
+			vertlist[i] =
+			VertexInterp(isolevel, grid.p[first], grid.p[second], 
+				grid.val[third], grid.val[fourth]);
+	}
+
+	// Create the triangle
 	int ntriang = 0;
 	glm::mat4 localTransform = 
 		glm::translate(glm::mat4(1.f), glm::vec3(pos) + .5f);

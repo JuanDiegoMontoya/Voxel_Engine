@@ -1,6 +1,7 @@
 #pragma once
 #include "chunk_load_manager.h"
 #include "block.h"
+#include <set>
 
 typedef struct Chunk* ChunkPtr;
 typedef class Level* LevelPtr;
@@ -10,6 +11,8 @@ class ChunkManager
 {
 public:
 	ChunkManager();
+	~ChunkManager();
+	void Init();
 
 	// interaction
 	void Update(LevelPtr level);
@@ -40,13 +43,32 @@ private:
 	void createNearbyChunks(); // and delete far away chunks
 	void generateNewChunks();
 
+	// generates
+	void chunk_generator_thread_task();
+	std::set<ChunkPtr> generation_queue_;
+	std::recursive_mutex chunk_generation_mutex_;
+	std::thread* chunk_generator_thread_;
+
+	// generates meshes for ANY UPDATED chunk
+	void chunk_mesher_thread_task();
+	std::set<ChunkPtr> mesher_queue_;
+	std::recursive_mutex chunk_mesher_mutex_;
+	std::thread* chunk_mesher_thread_;
+
+
+	// NOT multithreaded
+	void chunk_buffer_task();
+	std::set<ChunkPtr> buffer_queue_;
+	std::mutex chunk_buffer_mutex_;
+
+
 	// vars
 	float loadDistance_;
 	float unloadLeniency_;
 	unsigned maxLoadPerFrame_;
 	std::vector<ChunkPtr> updatedChunks_;
 	std::vector<ChunkPtr> genChunkList_;
-	LevelPtr level_;
+	LevelPtr level_ = nullptr;
 
 	ChunkLoadManager* loadManager_;
 };
