@@ -2,6 +2,7 @@
 #include "block.h"
 #include "biome.h"
 #include "misc_utils.h"
+#include <concurrent_unordered_map.h> // temp solution to concurrent chunk access
 
 #define MARCHED_CUBES 0
 
@@ -123,7 +124,9 @@ public:
 	friend class WorldGen;
 	friend class ChunkManager;
 	friend class Renderer;
-	static std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
+	//static std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
+	static inline Concurrency::concurrent_unordered_map
+		<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 
 	static cell buildCellFromVoxel(const glm::vec3& wpos);
 private:

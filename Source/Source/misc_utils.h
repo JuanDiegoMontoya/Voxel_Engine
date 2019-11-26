@@ -14,6 +14,7 @@ namespace Utils
 		}
 	};
 
+
 	struct charPtrKeyEq
 	{
 		bool operator()(const char* first, const char* second) const
@@ -21,6 +22,7 @@ namespace Utils
 			return !strcmp(first, second);
 		}
 	};
+
 
 	struct ivec3Hash
 	{
@@ -35,6 +37,7 @@ namespace Utils
 		}
 	};
 
+
 	struct ivec3KeyEq
 	{
 		bool operator()(const glm::ivec3& first, const glm::ivec3& second) const
@@ -42,6 +45,7 @@ namespace Utils
 			return first == second;
 		}
 	};
+
 
 	/**
 	 * Converts an RGB color value to HSL. Conversion formula
@@ -56,6 +60,7 @@ namespace Utils
 	 */
 	glm::vec3 RGBtoHSL(glm::vec3 rgb);
 
+
 	/**
 	 * Converts an HSL color value to RGB. Conversion formula
 	 * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
@@ -68,6 +73,7 @@ namespace Utils
 	 * @return  {Array}           The RGB representation
 	 */
 	glm::vec3 HSLtoRGB(glm::vec3 hsl);
+
 
 	template< typename ContainerT, typename PredicateT >
 	void erase_if(ContainerT& items, const PredicateT& predicate)

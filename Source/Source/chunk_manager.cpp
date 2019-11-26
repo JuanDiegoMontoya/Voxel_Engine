@@ -78,7 +78,7 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned ch
 	{
 		Chunk::chunks[p.chunk_pos] = chunk = new Chunk(true);
 		chunk->SetPos(p.chunk_pos);
-		std::lock_guard<std::recursive_mutex> lock1(chunk_generation_mutex_);
+		std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
 		generation_queue_.insert(chunk); // TODO: fix the recursive interaction when GenerateChunk() calls this function (the caller is iterating through generation_queue as well)
 		//chunk->generate_ = true;
 	}
@@ -91,7 +91,7 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned ch
 	//if (!isChunkInUpdateList(chunk))
 	//	updatedChunks_.push_back(chunk);
 	{ // scoped, otherwise deadlock will occur in 'checkUpdateChunkNearBlock'
-		std::lock_guard<std::recursive_mutex> lock(chunk_mesher_mutex_);
+		std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 		mesher_queue_.insert(chunk);
 	}
 
@@ -137,7 +137,7 @@ void ChunkManager::UpdatedChunk(ChunkPtr chunk)
 	//if (isChunkInUpdateList(chunk))
 	//	updatedChunks_.push_back(chunk);
 	//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
-	std::lock_guard<std::recursive_mutex> lock(chunk_mesher_mutex_);
+	std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 	mesher_queue_.insert(chunk);
 }
 
@@ -149,7 +149,7 @@ void ChunkManager::ReloadAllChunks()
 		if (p.second)
 		{
 			//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
-			std::lock_guard<std::recursive_mutex> lock(chunk_mesher_mutex_);
+			std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 			mesher_queue_.insert(p.second);
 		}
 			//if (!isChunkInUpdateList(p.second))
@@ -211,7 +211,7 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 	if (cb && nb && nb->GetType() != Block::bAir)
 	{
 		//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
-		std::lock_guard<std::recursive_mutex> lock(chunk_mesher_mutex_);
+		std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 		mesher_queue_.insert(Chunk::chunks[p2.chunk_pos]);
 	}
 		//if (!isChunkInUpdateList(Chunk::chunks[p2.chunk_pos]))
@@ -221,22 +221,22 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 
 void ChunkManager::createNearbyChunks() // and delete ones outside of leniency distance
 {
-	std::vector<ChunkPtr> deleteList;
-	Utils::erase_if(
-		Chunk::chunks,
-		[&](auto& p)->bool
-	{
-		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
-		if (p.second && dist > loadDistance_ + unloadLeniency_)
-		{
-			deleteList.push_back(p.second);
-			return true;
-		}
-		return false;
-	});
+	//std::vector<ChunkPtr> deleteList;
+	//Utils::erase_if(
+	//	Chunk::chunks,
+	//	[&](auto& p)->bool
+	//{
+	//	float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
+	//	if (p.second && dist > loadDistance_ + unloadLeniency_)
+	//	{
+	//		deleteList.push_back(p.second);
+	//		return true;
+	//	}
+	//	return false;
+	//});
 
-	for (ChunkPtr p : deleteList)
-		delete p;
+	//for (ChunkPtr p : deleteList)
+	//	delete p;
 
 	// delete far away chunks, then create chunks that are close
 	std::for_each(
@@ -252,7 +252,7 @@ void ChunkManager::createNearbyChunks() // and delete ones outside of leniency d
 			p.second = new Chunk(true);
 			p.second->SetPos(p.first);
 //			p.second->generate_ = true;
-			std::lock_guard<std::recursive_mutex> lock1(chunk_generation_mutex_);
+			std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
 			generation_queue_.insert(p.second);
 		}
 	});
@@ -331,23 +331,35 @@ void ChunkManager::chunk_generator_thread_task()
 {
 	while (1)
 	{
-		std::this_thread::sleep_for(2ms);
-		std::lock_guard<std::recursive_mutex> lock2(chunk_mesher_mutex_);
-		std::lock_guard<std::recursive_mutex> lock1(chunk_generation_mutex_);
+		//std::this_thread::sleep_for(2ms);
 		// generate blocks, then pass to mesher queue
-		for (ChunkPtr chunk : generation_queue_)
-		{
-			WorldGen::GenerateChunk(chunk->GetPos(), level_);
-			mesher_queue_.insert(chunk);
-		}
-		generation_queue_.clear();
-		//if (generation_queue_.size() > 0)
+		//for (ChunkPtr chunk : generation_queue_)
 		//{
-		//	ChunkPtr chunk = generation_queue_.begin().operator*();
 		//	WorldGen::GenerateChunk(chunk->GetPos(), level_);
 		//	mesher_queue_.insert(chunk);
-		//	generation_queue_.erase(chunk);
 		//}
+		//generation_queue_.clear();
+
+
+		//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
+		std::unordered_set<ChunkPtr> temp;
+		{
+			std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
+			temp.swap(generation_queue_);
+			//temp.insert(generation_queue_.begin(), generation_queue_.begin()++++++++++);
+			//generation_queue_.erase(generation_queue_.begin(), generation_queue_.begin()++++++++++);
+		}
+
+		//for (auto chunk : temp)
+		std::for_each(std::execution::par, temp.begin(), temp.end(), [this](ChunkPtr chunk)
+		{
+			WorldGen::GenerateChunk(chunk->GetPos(), level_);
+			std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
+			mesher_queue_.insert(chunk);
+		});
+
+		//std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
+		//mesher_queue_.insert(temp.begin(), temp.end());
 	}
 }
 
@@ -356,39 +368,38 @@ void ChunkManager::chunk_mesher_thread_task()
 {
 	while (1)
 	{
-		std::this_thread::sleep_for(2ms);
-		//std::lock_guard<std::mutex> lock1(chunk_mesher_mutex_);
-		std::lock_guard<std::mutex> lock2(chunk_buffer_mutex_);
-		std::lock_guard<std::recursive_mutex> lock1(chunk_mesher_mutex_);
-		// generate meshes, then pass to buffer queue
-		for (ChunkPtr chunk : mesher_queue_)
+		//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
+		std::unordered_set<ChunkPtr> temp;
+		{
+			std::lock_guard<std::mutex> lock1(chunk_mesher_mutex_);
+			temp.swap(mesher_queue_);
+			//temp.insert(mesher_queue_.begin(), ++mesher_queue_.begin());
+			//mesher_queue_.erase(mesher_queue_.begin(), ++mesher_queue_.begin());
+		}
+
+		//for ()
+		//for (auto chunk : temp)
+		std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
 		{
 			chunk->BuildMesh();
+			std::lock_guard<std::mutex> lock2(chunk_buffer_mutex_);
 			buffer_queue_.insert(chunk);
-		}
-		mesher_queue_.clear();
-		//if (mesher_queue_.size() > 0)
-		//{
-		//	ChunkPtr chunk = mesher_queue_.begin().operator*();
-		//	chunk->BuildMesh();
-		//	buffer_queue_.insert(chunk);
-		//	mesher_queue_.erase(chunk);
-		//}
+		});
+
+		//std::lock_guard<std::mutex> lock2(chunk_buffer_mutex_);
+		//buffer_queue_.insert(temp.begin(), temp.end());
 	}
 }
 
 
 void ChunkManager::chunk_buffer_task()
 {
-	std::lock_guard<std::mutex> lock(chunk_buffer_mutex_);
-	for (ChunkPtr chunk : buffer_queue_)
+	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
+	std::unordered_set<ChunkPtr> temp;
+	{
+		std::lock_guard<std::mutex> lock(chunk_buffer_mutex_);
+		temp.swap(buffer_queue_);
+	}
+	for (ChunkPtr chunk : temp)
 		chunk->BuildBuffers();
-	buffer_queue_.clear();
-
-	//if (buffer_queue_.size() > 0)
-	//{
-	//	ChunkPtr chunk = buffer_queue_.begin().operator*();
-	//	chunk->BuildBuffers();
-	//	buffer_queue_.erase(chunk);
-	//}
 }

@@ -3,10 +3,27 @@
 #include "block.h"
 #include <set>
 #include <unordered_set>
+#include "camera.h"
+#include "pipeline.h"
+#include "chunk.h"
 
 typedef struct Chunk* ChunkPtr;
 typedef class Level* LevelPtr;
 //class ChunkLoadManager;
+
+namespace Utils
+{
+	struct ChunkPtrKeyEq
+	{
+		bool operator()(const ChunkPtr& first, const ChunkPtr& second) const
+		{
+
+			return
+				glm::distance(glm::vec3(first->GetPos() * Chunk::GetChunkSize()), Render::GetCamera()->GetPos()) >
+				glm::distance(glm::vec3(second->GetPos() * Chunk::GetChunkSize()), Render::GetCamera()->GetPos());
+		}
+	};
+}
 
 class ChunkManager
 {
@@ -46,21 +63,24 @@ private:
 
 	// generates
 	void chunk_generator_thread_task();
+	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> generation_queue_;
 	std::unordered_set<ChunkPtr> generation_queue_;
-	std::recursive_mutex chunk_generation_mutex_;
+	std::mutex chunk_generation_mutex_;
 	std::thread* chunk_generator_thread_;
 	std::condition_variable generation_ready_;
 
 	// generates meshes for ANY UPDATED chunk
 	void chunk_mesher_thread_task();
+	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> mesher_queue_;
 	std::unordered_set<ChunkPtr> mesher_queue_;
-	std::recursive_mutex chunk_mesher_mutex_;
+	std::mutex chunk_mesher_mutex_;
 	std::thread* chunk_mesher_thread_;
 	std::condition_variable mesher_ready_;
 
 
 	// NOT multithreaded
 	void chunk_buffer_task();
+	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> buffer_queue_;
 	std::unordered_set<ChunkPtr> buffer_queue_;
 	std::mutex chunk_buffer_mutex_;
 
