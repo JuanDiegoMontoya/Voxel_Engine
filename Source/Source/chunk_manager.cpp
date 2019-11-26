@@ -331,7 +331,7 @@ void ChunkManager::chunk_generator_thread_task()
 {
 	while (1)
 	{
-		std::this_thread::sleep_for(5ms);
+		std::this_thread::sleep_for(2ms);
 		std::lock_guard<std::recursive_mutex> lock2(chunk_mesher_mutex_);
 		std::lock_guard<std::recursive_mutex> lock1(chunk_generation_mutex_);
 		// generate blocks, then pass to mesher queue
@@ -341,6 +341,13 @@ void ChunkManager::chunk_generator_thread_task()
 			mesher_queue_.insert(chunk);
 		}
 		generation_queue_.clear();
+		//if (generation_queue_.size() > 0)
+		//{
+		//	ChunkPtr chunk = generation_queue_.begin().operator*();
+		//	WorldGen::GenerateChunk(chunk->GetPos(), level_);
+		//	mesher_queue_.insert(chunk);
+		//	generation_queue_.erase(chunk);
+		//}
 	}
 }
 
@@ -349,7 +356,7 @@ void ChunkManager::chunk_mesher_thread_task()
 {
 	while (1)
 	{
-		std::this_thread::sleep_for(5ms);
+		std::this_thread::sleep_for(2ms);
 		//std::lock_guard<std::mutex> lock1(chunk_mesher_mutex_);
 		std::lock_guard<std::mutex> lock2(chunk_buffer_mutex_);
 		std::lock_guard<std::recursive_mutex> lock1(chunk_mesher_mutex_);
@@ -360,6 +367,13 @@ void ChunkManager::chunk_mesher_thread_task()
 			buffer_queue_.insert(chunk);
 		}
 		mesher_queue_.clear();
+		//if (mesher_queue_.size() > 0)
+		//{
+		//	ChunkPtr chunk = mesher_queue_.begin().operator*();
+		//	chunk->BuildMesh();
+		//	buffer_queue_.insert(chunk);
+		//	mesher_queue_.erase(chunk);
+		//}
 	}
 }
 
@@ -370,4 +384,11 @@ void ChunkManager::chunk_buffer_task()
 	for (ChunkPtr chunk : buffer_queue_)
 		chunk->BuildBuffers();
 	buffer_queue_.clear();
+
+	//if (buffer_queue_.size() > 0)
+	//{
+	//	ChunkPtr chunk = buffer_queue_.begin().operator*();
+	//	chunk->BuildBuffers();
+	//	buffer_queue_.erase(chunk);
+	//}
 }

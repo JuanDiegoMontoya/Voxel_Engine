@@ -2,6 +2,7 @@
 #include "chunk_load_manager.h"
 #include "block.h"
 #include <set>
+#include <unordered_set>
 
 typedef struct Chunk* ChunkPtr;
 typedef class Level* LevelPtr;
@@ -45,20 +46,22 @@ private:
 
 	// generates
 	void chunk_generator_thread_task();
-	std::set<ChunkPtr> generation_queue_;
+	std::unordered_set<ChunkPtr> generation_queue_;
 	std::recursive_mutex chunk_generation_mutex_;
 	std::thread* chunk_generator_thread_;
+	std::condition_variable generation_ready_;
 
 	// generates meshes for ANY UPDATED chunk
 	void chunk_mesher_thread_task();
-	std::set<ChunkPtr> mesher_queue_;
+	std::unordered_set<ChunkPtr> mesher_queue_;
 	std::recursive_mutex chunk_mesher_mutex_;
 	std::thread* chunk_mesher_thread_;
+	std::condition_variable mesher_ready_;
 
 
 	// NOT multithreaded
 	void chunk_buffer_task();
-	std::set<ChunkPtr> buffer_queue_;
+	std::unordered_set<ChunkPtr> buffer_queue_;
 	std::mutex chunk_buffer_mutex_;
 
 
