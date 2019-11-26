@@ -221,24 +221,31 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 
 void ChunkManager::createNearbyChunks() // and delete ones outside of leniency distance
 {
-	//std::vector<ChunkPtr> deleteList;
-	//Utils::erase_if(
-	//	Chunk::chunks,
-	//	[&](auto& p)->bool
+	// delete chunks far from the camera (past leniency range)
 	//{
-	//	float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
-	//	if (p.second && dist > loadDistance_ + unloadLeniency_)
-	//	{
-	//		deleteList.push_back(p.second);
-	//		return true;
-	//	}
-	//	return false;
-	//});
+	//	std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
+	//	std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
+	//	std::lock_guard<std::mutex> lock3(chunk_buffer_mutex_);
+	//	std::vector<ChunkPtr> deleteList;
+	//	Utils::erase_if(
+	//		Chunk::chunks,
+	//		[&](auto& p)->bool
+	//		{
+	//			float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
+	//			if (p.second && dist > loadDistance_ + unloadLeniency_)
+	//			{
+	//				deleteList.push_back(p.second);
+	//				return true;
+	//			}
+	//			return false;
+	//		});
 
-	//for (ChunkPtr p : deleteList)
-	//	delete p;
+	//	for (ChunkPtr p : deleteList)
+	//		delete p;
+	//}
 
-	// delete far away chunks, then create chunks that are close
+
+	// generate new chunks that are close to the camera
 	std::for_each(
 		std::execution::seq,
 		Chunk::chunks.begin(),
@@ -331,16 +338,6 @@ void ChunkManager::chunk_generator_thread_task()
 {
 	while (1)
 	{
-		//std::this_thread::sleep_for(2ms);
-		// generate blocks, then pass to mesher queue
-		//for (ChunkPtr chunk : generation_queue_)
-		//{
-		//	WorldGen::GenerateChunk(chunk->GetPos(), level_);
-		//	mesher_queue_.insert(chunk);
-		//}
-		//generation_queue_.clear();
-
-
 		//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
 		std::unordered_set<ChunkPtr> temp;
 		{
@@ -351,7 +348,7 @@ void ChunkManager::chunk_generator_thread_task()
 		}
 
 		//for (auto chunk : temp)
-		std::for_each(std::execution::par, temp.begin(), temp.end(), [this](ChunkPtr chunk)
+		std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
 		{
 			WorldGen::GenerateChunk(chunk->GetPos(), level_);
 			std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);

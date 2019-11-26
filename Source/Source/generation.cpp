@@ -455,7 +455,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
 				if (val > .9 && level->GetBlockAt(pos).GetType() != Block::bWater)
-					level->GenerateBlockAtCheap(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
+					//level->GenerateBlockAtCheap(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
+					level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
 			}
 		}
 	}

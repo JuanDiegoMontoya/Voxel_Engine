@@ -80,7 +80,7 @@ namespace Utils
 	{
 		for (auto it = items.begin(); it != items.end(); )
 		{
-			if (predicate(*it)) it = items.erase(it);
+			if (predicate(*it)) it = items.unsafe_erase(it);
 			else ++it;
 		}
 	}
