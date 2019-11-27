@@ -376,6 +376,7 @@ void ChunkManager::chunk_mesher_thread_task()
 
 		//for ()
 		//for (auto chunk : temp)
+		// TODO: see if this can be par_unseq execution mode
 		std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
 		{
 			chunk->BuildMesh();
