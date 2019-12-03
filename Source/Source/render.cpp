@@ -157,7 +157,6 @@ void Renderer::drawShadows()
 	//https://github.com/niley1nov/cascaded-exponential-shadow-mapping/blob/master/src/main8.cpp#L363
 	// CSM stuff
 	view = Render::GetCamera()->GetView();
-	vView[3];
 	LitDir = glm::normalize(-activeDirLight_->GetPos());
 	right = glm::normalize(glm::cross(LitDir, glm::vec3(0.0f, 1.0f, 0.0f)));
 	up = glm::normalize(glm::cross(right, LitDir));

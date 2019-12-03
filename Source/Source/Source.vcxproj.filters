@@ -10,10 +10,6 @@
     <Filter Include="Serialization">
       <UniqueIdentifier>{b27ac33c-c992-4e4a-8965-98bbf0408ace}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="System">
       <UniqueIdentifier>{8137757d-606b-4537-8a34-13d31d176996}</UniqueIdentifier>
     </Filter>
@@ -41,9 +37,6 @@
     <Filter Include="Graphics\Meshes">
       <UniqueIdentifier>{7f6f16ea-4562-4608-8caa-0f7db3051a4c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game\Voxel Engine">
-      <UniqueIdentifier>{e7fc491d-c7a6-4f8b-8aa9-1011aa517004}</UniqueIdentifier>
-    </Filter>
     <Filter Include="vendor\ctpl">
       <UniqueIdentifier>{d94d4b42-3a18-475f-a15a-e49c0985918a}</UniqueIdentifier>
     </Filter>
@@ -52,6 +45,9 @@
     </Filter>
     <Filter Include="Game\Collision">
       <UniqueIdentifier>{835847b9-3fbb-4edf-a2ae-7dd8a4cbe504}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Voxel Engine">
+      <UniqueIdentifier>{e7fc491d-c7a6-4f8b-8aa9-1011aa517004}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -186,10 +182,10 @@
       <Filter>Graphics</Filter>
     </ClInclude>
     <ClInclude Include="block.h">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClInclude>
     <ClInclude Include="chunk.h">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClInclude>
     <ClInclude Include="frustum.h">
       <Filter>Graphics</Filter>
@@ -204,25 +200,25 @@
       <Filter>Debug</Filter>
     </ClInclude>
     <ClInclude Include="generation.h">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClInclude>
     <ClInclude Include="vendor\noiseutils.h">
       <Filter>vendor</Filter>
     </ClInclude>
     <ClInclude Include="biome.h">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClInclude>
     <ClInclude Include="chunk_manager.h">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClInclude>
     <ClInclude Include="directional_light.h">
       <Filter>Graphics</Filter>
     </ClInclude>
     <ClInclude Include="prefab.h">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClInclude>
     <ClInclude Include="chunk_load_manager.h">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClInclude>
     <ClInclude Include="editor.h">
       <Filter>Game\Editor</Filter>
@@ -353,10 +349,10 @@
       <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="block.cpp">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="chunk.cpp">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="frustum.cpp">
       <Filter>Graphics</Filter>
@@ -368,28 +364,28 @@
       <Filter>Debug</Filter>
     </ClCompile>
     <ClCompile Include="generation.cpp">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="vendor\noiseutils.cpp">
       <Filter>vendor</Filter>
     </ClCompile>
     <ClCompile Include="biome.cpp">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="march_cubes.cpp">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="chunk_manager.cpp">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="directional_light.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="prefab.cpp">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="chunk_load_manager.cpp">
-      <Filter>Game\Voxel Engine</Filter>
+      <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="editor.cpp">
       <Filter>Game\Editor</Filter>

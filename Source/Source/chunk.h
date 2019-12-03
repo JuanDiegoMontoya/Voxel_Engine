@@ -46,31 +46,46 @@ public:
 	Chunk(bool active = true);
 	~Chunk();
 
+	/*################################
+						Global Chunk Info
+	################################*/
+	static constexpr int GetChunkSize() { return CHUNK_SIZE; }
+	static constexpr int CHUNK_SIZE = 32;
+
+	/*################################
+						Draw Functions
+	################################*/
 	void Update();
 	void Render();
 	void RenderWater();
 	void BuildBuffers();
 	void BuildMesh();
 
-	inline const glm::mat4& GetModel() const { return model_; }
+	/*################################
+					Status Functions
+	################################*/
+	const glm::mat4& GetModel() const { return model_; }
 
-	inline void SetPos(const glm::ivec3& pos)
+	void SetPos(const glm::ivec3& pos)
 	{
 		pos_ = pos;
 		model_ = glm::translate(glm::mat4(1.f), glm::vec3(pos_) * (float)CHUNK_SIZE);
 	}
 
-	inline const glm::ivec3& GetPos() { return pos_; }
-	inline void SetActive(bool e) { active_ = e; }
-	inline bool IsActive() { return active_; }
-	inline bool IsVisible() const { return visible_; }
-	inline void SetVisible(bool b) { visible_ = b; }
+	const glm::ivec3& GetPos() { return pos_; }
+	void SetActive(bool e) { active_ = e; }
+	bool IsActive() { return active_; }
+	bool IsVisible() const { return visible_; }
+	void SetVisible(bool b) { visible_ = b; }
 
 
+	/*################################
+					Coordinate Functions
+	################################*/
 	// may need to upgrade to glm::i64vec3 if worldgen at far distances is fug'd
 	// "origin" chunk goes from 0-CHUNK_SIZE rather than -CHUNK_SIZE/2-CHUNK_SIZE/2
 	// chunk at (0,0,0) spans 0-CHUNK_SIZE
-	inline static localpos worldBlockToLocalPos(const glm::ivec3 worldPos)
+	static localpos worldBlockToLocalPos(const glm::ivec3 worldPos)
 	{
 		glm::ivec3 chk = glm::floor(glm::vec3(worldPos) / (float)CHUNK_SIZE);// *(float)CHUNK_SIZE;
 		glm::ivec3 mod(worldPos % CHUNK_SIZE);
@@ -82,23 +97,23 @@ public:
 	}
 
 	// gives the true world position of a block within a chunk
-	inline glm::ivec3 chunkBlockToWorldPos(const glm::ivec3 local)
+	glm::ivec3 chunkBlockToWorldPos(const glm::ivec3 local)
 	{
 		return glm::ivec3(local + (pos_ * CHUNK_SIZE));
 	}
 
-	inline Block& At(const glm::ivec3 p)
+	Block& At(const glm::ivec3 p)
 	{
 		return blocks[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
 	}
 
-	inline Block& At(int x, int y, int z)
+	Block& At(int x, int y, int z)
 	{
 		return blocks[ID3D(x, y, z, CHUNK_SIZE, CHUNK_SIZE)];
 	}
 
 	// block at a position in world space
-	inline static BlockPtr AtWorld(const glm::ivec3 p)
+	static BlockPtr AtWorld(const glm::ivec3 p)
 	{
 		localpos w = worldBlockToLocalPos(p);
 		ChunkPtr cnk = chunks[w.chunk_pos];
@@ -107,26 +122,26 @@ public:
 		return nullptr;
 	}
 
-	inline glm::vec3 GetMin() const
+	glm::vec3 GetMin() const
 	{
 		return glm::vec3(pos_ * CHUNK_SIZE);
 	}
 
-	inline glm::vec3 GetMax() const
+	glm::vec3 GetMax() const
 	{
 		return glm::vec3(pos_ * CHUNK_SIZE + CHUNK_SIZE - 0);
 	}
 
-	static constexpr int GetChunkSize() { return CHUNK_SIZE; }
-	static constexpr int CHUNK_SIZE = 32;
-
+	/*################################
+						Raw Block Data
+	################################*/
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
-	friend class WorldGen;
-	friend class ChunkManager;
-	friend class Renderer;
 	//static std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 	static inline Concurrency::concurrent_unordered_map
 		<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
+	friend class WorldGen;
+	friend class ChunkManager;
+	friend class Renderer;
 
 	static cell buildCellFromVoxel(const glm::vec3& wpos);
 private:
