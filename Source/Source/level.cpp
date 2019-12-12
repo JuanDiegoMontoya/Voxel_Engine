@@ -55,8 +55,6 @@ void Level::Init()
 	//dispatcher = std::make_shared<btCollisionDispatcher>(config.get());
 	//btInterface = std::make_shared<btSimpleBroadphase>();
 
-	//// TODO: figure out why this makes everything crash (not even immediately!)
-	//world = std::make_shared<btCollisionWorld>(dispatcher.get(), btInterface.get(), config.get());
 
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
@@ -68,7 +66,7 @@ void Level::Init()
 	PrefabManager::InitPrefabs();
 	BiomeManager::InitializeBiomes();
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(300.f);
+	chunkManager_.SetLoadDistance(100.f);
 	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(1);
 	renderer_.Init();
@@ -180,12 +178,18 @@ void Level::DrawImGui()
 		ImGui::Text("In block pos: (%d, %d, %d)", local.block_pos.x, local.block_pos.y, local.block_pos.z);
 
 		ImGui::NewLine();
-		ImGui::Text("Chunk count: %d", Chunk::chunks.size());
 		ImGui::Text("Chunk size: %d", Chunk::CHUNK_SIZE);
 		int cnt = 0;
 		for (auto& p : Chunk::chunks)
 			if (p.second) cnt++;
+		ImGui::Text("Total chunks: %d", Chunk::chunks.size());
 		ImGui::Text("Non-null chunks: %d", cnt);
+
+		ImGui::NewLine();
+		// displaying zero just means the queue was taken, not finished!
+		ImGui::Text("Gen    queue: %d", chunkManager_.generation_queue_.size());
+		ImGui::Text("Mesh   queue: %d", chunkManager_.mesher_queue_.size());
+		ImGui::Text("Buffer queue: %d", chunkManager_.buffer_queue_.size());
 
 		ImGui::NewLine();
 		ImGui::Text("Flying: %s", activeCursor ? "False" : "True");
@@ -265,7 +269,7 @@ void Level::DrawImGui()
 }
 
 
-// TODO: fix this
+// TODO: move this into own file for physics/collision or something, just don't have it here
 void Level::CheckCollision()
 {
 	auto cam = Render::GetCamera();

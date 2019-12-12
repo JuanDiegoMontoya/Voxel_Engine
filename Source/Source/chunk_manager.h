@@ -52,6 +52,8 @@ public:
 	void SetLoadDistance(float d) { loadDistance_ = d; }
 	void SetUnloadLeniency(float d) { unloadLeniency_ = d; }
 	void SetMaxLoadPerFrame(unsigned n) { maxLoadPerFrame_ = n; }
+
+	friend class Level; // so level can display debug info
 private:
 	// functions
 	void ProcessUpdatedChunks();
@@ -67,7 +69,6 @@ private:
 	std::unordered_set<ChunkPtr> generation_queue_;
 	std::mutex chunk_generation_mutex_;
 	std::thread* chunk_generator_thread_;
-	std::condition_variable generation_ready_;
 
 	// generates meshes for ANY UPDATED chunk
 	void chunk_mesher_thread_task();
@@ -75,7 +76,6 @@ private:
 	std::unordered_set<ChunkPtr> mesher_queue_;
 	std::mutex chunk_mesher_mutex_;
 	std::thread* chunk_mesher_thread_;
-	std::condition_variable mesher_ready_;
 
 
 	// NOT multithreaded

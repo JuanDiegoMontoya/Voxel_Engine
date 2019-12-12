@@ -334,6 +334,7 @@ void ChunkManager::generateNewChunks()
 }
 
 
+// perpetual thread task to generate blocks in new chunks
 void ChunkManager::chunk_generator_thread_task()
 {
 	while (1)
@@ -361,6 +362,7 @@ void ChunkManager::chunk_generator_thread_task()
 }
 
 
+// perpetual thread task to generate meshes for updated chunks
 void ChunkManager::chunk_mesher_thread_task()
 {
 	while (1)
@@ -390,6 +392,7 @@ void ChunkManager::chunk_mesher_thread_task()
 }
 
 
+// sends vertex data of fully-updated chunks to GPU from main thread (fast and simple)
 void ChunkManager::chunk_buffer_task()
 {
 	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
@@ -398,6 +401,8 @@ void ChunkManager::chunk_buffer_task()
 		std::lock_guard<std::mutex> lock(chunk_buffer_mutex_);
 		temp.swap(buffer_queue_);
 	}
+	// normally, there will only be a few items in here per frame
+	// ironically, low FPS will cause this buffer to accumulate, lowering FPS further
 	for (ChunkPtr chunk : temp)
 		chunk->BuildBuffers();
 }
