@@ -6,8 +6,9 @@
 // visual properties (for now)
 struct BlockProperties
 {
-	BlockProperties(float s, glm::vec4 c)
-	: color(c), specular(s), invisible(c.a == 0) {}
+	BlockProperties(const char* n, float s, glm::vec4 c)
+	: name(n), color(c), specular(s), invisible(c.a == 0) {}
+	const char* name;
 	float specular; // shininess
 	glm::vec4 color; // diffuse color
 	bool invisible; // skip rendering if true
@@ -47,6 +48,7 @@ public:
 
 	// Getters
 	BlockType GetType() const { return type_; }
+	const char* GetName() const { return Block::PropertiesTable[unsigned(type_)].name; }
 	unsigned char WriteStrength() const { return (wlValues_ & 0xF0) >> 4; }
 	unsigned char LightValue() const { return wlValues_ & 0x0F; }
 

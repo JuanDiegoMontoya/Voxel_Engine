@@ -66,7 +66,7 @@ void Level::Init()
 	PrefabManager::InitPrefabs();
 	BiomeManager::InitializeBiomes();
 	chunkManager_.SetCurrentLevel(this);
-	chunkManager_.SetLoadDistance(100.f);
+	chunkManager_.SetLoadDistance(300.f);
 	chunkManager_.SetUnloadLeniency(100.f);
 	chunkManager_.SetMaxLoadPerFrame(1);
 	renderer_.Init();
@@ -224,7 +224,7 @@ void Level::DrawImGui()
 			if (!block || block->GetType() == Block::bAir)
 				return false;
 
-			ImGui::Text("Block Type: %d", (unsigned)block->GetType());
+			ImGui::Text("Block Type: %d (%s)", (unsigned)block->GetType(), block->GetName());
 			ImGui::Text("Write Strength: %d", block->WriteStrength());
 			ImGui::Text("Light Value: %d", block->LightValue());
 			ImGui::Text("Block pos:  (%.2f, %.2f, %.2f)", x, y, z);
