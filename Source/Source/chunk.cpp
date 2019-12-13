@@ -22,6 +22,7 @@ double Chunk::isolevel = 0.60;
 
 Chunk::Chunk(bool active) : active_(active) {}
 
+
 Chunk::~Chunk()
 {
 	if (vao_)
@@ -47,6 +48,7 @@ Chunk::~Chunk()
 		delete wspeculars_;
 }
 
+
 void Chunk::Update()
 {
 	// cull chunks that are invisible
@@ -54,28 +56,32 @@ void Chunk::Update()
 		visible_ = true;
 	else
 		visible_ = false;
-	//visible_ = true;
-	// build mesh after ensuring culled blocks are culled
+
+	// in the future, make this function perform other tick update actions,
+	// such as updating N random blocks (like in Minecraft)
 }
+
 
 void Chunk::Render()
 {
 	//ASSERT(vao_ && positions_ && normals_ && colors_);
-	if (vao_)// && loaded_)
+	if (vao_)
 	{
 		vao_->Bind();
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
 	}
 }
 
+
 void Chunk::RenderWater()
 {
-	if (wvao_)// && loaded_)
+	if (wvao_)
 	{
 		wvao_->Bind();
 		glDrawArrays(GL_TRIANGLES, 0, wvertexCount_);
 	}
 }
+
 
 void Chunk::BuildBuffers()
 {
@@ -177,6 +183,7 @@ void Chunk::BuildBuffers()
 	}
 }
 
+
 void Chunk::BuildMesh()
 {
 	//if (loaded_)
@@ -212,6 +219,7 @@ void Chunk::BuildMesh()
 	}
 }
 
+
 void Chunk::buildBlockVertices_normal(const glm::ivec3 & pos, const float * data, int quadStride, const Block& block)
 {
 	int x = pos.x;
@@ -237,6 +245,7 @@ void Chunk::buildBlockVertices_normal(const glm::ivec3 & pos, const float * data
 	buildSingleBlockFace(glm::ivec3(x, y + 1, z), quadStride, 5, data, pos, block);
 	
 }
+
 
 //std::vector<float> Chunk::buildSingleBlockFace(glm::ivec3 near, int low, int high, int x, int y, int z)
 void Chunk::buildSingleBlockFace(
@@ -325,6 +334,7 @@ GenQuad:
 	}
 }
 
+
 // computes how many of the two adjacent faces to the corner (that aren't this block) are solid
 // returns a brightness scalar
 float Chunk::computeBlockAO(
@@ -393,6 +403,7 @@ BAO_END:
 	return occlusion;
 }
 
+
 static std::ostream& operator<<(std::ostream& o, glm::ivec3 v)
 {
 	return o << '('
@@ -400,6 +411,7 @@ static std::ostream& operator<<(std::ostream& o, glm::ivec3 v)
 		<< v.y << ", "
 		<< v.z << ')';
 }
+
 
 // prints to console if errors are found
 void TestCoordinateStuff()

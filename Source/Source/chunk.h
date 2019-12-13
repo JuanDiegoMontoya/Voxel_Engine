@@ -2,6 +2,7 @@
 #include "block.h"
 #include "biome.h"
 #include "misc_utils.h"
+#include <mutex>
 #include <concurrent_unordered_map.h> // temp solution to concurrent chunk access
 
 #define MARCHED_CUBES 0
@@ -52,6 +53,7 @@ public:
 	static constexpr int GetChunkSize() { return CHUNK_SIZE; }
 	static constexpr int CHUNK_SIZE = 32;
 
+
 	/*################################
 						Draw Functions
 	################################*/
@@ -60,6 +62,7 @@ public:
 	void RenderWater();
 	void BuildBuffers();
 	void BuildMesh();
+
 
 	/*################################
 					Status Functions
@@ -132,18 +135,21 @@ public:
 		return glm::vec3(pos_ * CHUNK_SIZE + CHUNK_SIZE - 0);
 	}
 
+
 	/*################################
 						Raw Block Data
 	################################*/
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
-	//static std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
-	static inline Concurrency::concurrent_unordered_map
+	//static inline std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
+	static inline Concurrency::concurrent_unordered_map // TODO: make CustomGrow(tm) concurrent map solution to be more portable
 		<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
+
 	friend class WorldGen;
 	friend class ChunkManager;
 	friend class Renderer;
 
 	static cell buildCellFromVoxel(const glm::vec3& wpos);
+
 private:
 	//static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 
@@ -183,6 +189,7 @@ private:
 	glm::ivec3 pos_;			 // position relative to other chunks (1 chunk = 1 index)
 	bool active_;					 // unused
 	bool visible_;				 // used in frustum culling
+	std::mutex mutex_;     // used for safe concurrent access
 
 	// rendering stuff
 	VAO* vao_ = nullptr;
