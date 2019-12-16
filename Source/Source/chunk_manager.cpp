@@ -9,6 +9,11 @@
 #include "generation.h"
 #include "pipeline.h"
 
+// Windows-specific thread affinity
+#ifdef _WIN32
+#include <Windows.h>
+#undef near
+#endif
 
 
 ChunkManager::ChunkManager()
@@ -18,6 +23,7 @@ ChunkManager::ChunkManager()
 	unloadLeniency_ = 0;
 	maxLoadPerFrame_ = 0;
 	loadManager_ = new ChunkLoadManager();
+	debug_cur_pool_left = 0;
 }
 
 
@@ -34,8 +40,19 @@ void ChunkManager::Init()
 	chunk_generator_thread_ =
 		new std::thread([this]() { chunk_generator_thread_task(); });
 
+	SetThreadAffinityMask(GetCurrentThread(), 1);
+	for (int i = 0; i < 2; i++)
+	{
+		auto temp1 = new std::thread([this]() { chunk_generator_thread_task(); });
+		//auto temp2 = new std::thread([this]() { chunk_mesher_thread_task(); });
+		SetThreadAffinityMask(temp1->native_handle(), ~1);
+		//SetThreadAffinityMask(temp2->native_handle(), ~1);
+	}
+
 	chunk_mesher_thread_ =
 		new std::thread([this]() { chunk_mesher_thread_task(); });
+	SetThreadAffinityMask(chunk_mesher_thread_->native_handle(), ~1);
+	SetThreadAffinityMask(chunk_generator_thread_->native_handle(), ~1);
 }
 
 
@@ -79,7 +96,7 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned ch
 		Chunk::chunks[p.chunk_pos] = chunk = new Chunk(true);
 		chunk->SetPos(p.chunk_pos);
 		std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
-		generation_queue_.insert(chunk); // TODO: fix the recursive interaction when GenerateChunk() calls this function (the caller is iterating through generation_queue as well)
+		generation_queue_.insert(chunk);
 		//chunk->generate_ = true;
 	}
 
@@ -344,8 +361,6 @@ void ChunkManager::chunk_generator_thread_task()
 		{
 			std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
 			temp.swap(generation_queue_);
-			//temp.insert(generation_queue_.begin(), generation_queue_.begin()++++++++++);
-			//generation_queue_.erase(generation_queue_.begin(), generation_queue_.begin()++++++++++);
 		}
 
 		//for (auto chunk : temp)
@@ -368,26 +383,28 @@ void ChunkManager::chunk_mesher_thread_task()
 	while (1)
 	{
 		//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
+		//std::set<ChunkPtr> temp;
 		std::unordered_set<ChunkPtr> temp;
+		std::vector<ChunkPtr> yeet;
 		{
 			std::lock_guard<std::mutex> lock1(chunk_mesher_mutex_);
+			//temp.swap(mesher_queue_);
 			temp.swap(mesher_queue_);
-			//temp.insert(mesher_queue_.begin(), ++mesher_queue_.begin());
-			//mesher_queue_.erase(mesher_queue_.begin(), ++mesher_queue_.begin());
+			yeet.insert(yeet.begin(), temp.begin(), temp.end());
+			debug_cur_pool_left += temp.size();
 		}
 
-		//for ()
-		//for (auto chunk : temp)
-		// TODO: see if this can be par_unseq execution mode
+		// TODO: this is temp solution to load near chunks to camera first
+		std::sort(yeet.begin(), yeet.end(), Utils::ChunkPtrKeyEq());
 		std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
 		{
+			//SetThreadAffinityMask(GetCurrentThread(), ~1);
+			// send each mesh to GPU immediately after building it
 			chunk->BuildMesh();
+			debug_cur_pool_left--;
 			std::lock_guard<std::mutex> lock2(chunk_buffer_mutex_);
 			buffer_queue_.insert(chunk);
 		});
-
-		//std::lock_guard<std::mutex> lock2(chunk_buffer_mutex_);
-		//buffer_queue_.insert(temp.begin(), temp.end());
 	}
 }
 
@@ -401,8 +418,10 @@ void ChunkManager::chunk_buffer_task()
 		std::lock_guard<std::mutex> lock(chunk_buffer_mutex_);
 		temp.swap(buffer_queue_);
 	}
+	//chunk_buffer_mutex_.
 	// normally, there will only be a few items in here per frame
 	// ironically, low FPS will cause this buffer to accumulate, lowering FPS further
+	// however, this is a very fast task so that is highly unlikely
 	for (ChunkPtr chunk : temp)
 		chunk->BuildBuffers();
 }

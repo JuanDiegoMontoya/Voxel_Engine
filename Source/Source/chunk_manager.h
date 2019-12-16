@@ -6,6 +6,8 @@
 #include "camera.h"
 #include "pipeline.h"
 #include "chunk.h"
+#include <atomic>
+#include <stack>
 
 typedef struct Chunk* ChunkPtr;
 typedef class Level* LevelPtr;
@@ -17,10 +19,15 @@ namespace Utils
 	{
 		bool operator()(const ChunkPtr& first, const ChunkPtr& second) const
 		{
-
+			//ASSERT(first != second);
+			if (first == second)
+				return false;
+			glm::vec3 wposA = glm::vec3(first->GetPos() * Chunk::GetChunkSize());
+			glm::vec3 wposB = glm::vec3(second->GetPos() * Chunk::GetChunkSize());
+			glm::vec3 cam = Render::GetCamera()->GetPos();
 			return
-				glm::distance(glm::vec3(first->GetPos() * Chunk::GetChunkSize()), Render::GetCamera()->GetPos()) >
-				glm::distance(glm::vec3(second->GetPos() * Chunk::GetChunkSize()), Render::GetCamera()->GetPos());
+				glm::distance(wposA, cam) <
+				glm::distance(wposB, cam);
 		}
 	};
 }
@@ -73,9 +80,11 @@ private:
 	// generates meshes for ANY UPDATED chunk
 	void chunk_mesher_thread_task();
 	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> mesher_queue_;
+	//std::set<ChunkPtr> mesher_queue_;
 	std::unordered_set<ChunkPtr> mesher_queue_;
 	std::mutex chunk_mesher_mutex_;
 	std::thread* chunk_mesher_thread_;
+	std::atomic_int debug_cur_pool_left = { 0 };
 
 
 	// NOT multithreaded

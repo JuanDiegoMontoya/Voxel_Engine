@@ -193,6 +193,7 @@ private:
 	//IBO* ibo_ = nullptr;
 
 	// temporary buffer(s)
+	std::mutex vertex_buffer_mutex_;
 	std::vector<glm::vec3> tPositions;
 	std::vector<glm::vec3> tNormals;
 	std::vector<glm::vec4> tColors;

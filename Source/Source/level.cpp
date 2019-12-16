@@ -187,8 +187,8 @@ void Level::DrawImGui()
 
 		ImGui::NewLine();
 		// displaying zero just means the queue was taken, not finished!
-		ImGui::Text("Gen    queue: %d", chunkManager_.generation_queue_.size());
-		ImGui::Text("Mesh   queue: %d", chunkManager_.mesher_queue_.size());
+		ImGui::Text("Gen queue:    %d", chunkManager_.generation_queue_.size());
+		ImGui::Text("Mesh queue:   %-4d (%d)", chunkManager_.mesher_queue_.size(), chunkManager_.debug_cur_pool_left.load());
 		ImGui::Text("Buffer queue: %d", chunkManager_.buffer_queue_.size());
 
 		ImGui::NewLine();
