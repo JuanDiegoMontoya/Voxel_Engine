@@ -5,7 +5,7 @@
 VBO::VBO(const void * data, unsigned int size, GLenum drawmode)
 {
 	glGenBuffers(1, &rendererID_);
-	std::cout << rendererID_ << " : " << data << std::endl;
+	//std::cout << rendererID_ << " : " << data << std::endl;
 	glBindBuffer(GL_ARRAY_BUFFER, rendererID_);
 	glBufferData(GL_ARRAY_BUFFER, size, data, drawmode);
 	//ASSERT(rendererID_ < 10'000);

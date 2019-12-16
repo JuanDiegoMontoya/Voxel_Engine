@@ -396,7 +396,7 @@ void ChunkManager::chunk_mesher_thread_task()
 
 		// TODO: this is temp solution to load near chunks to camera first
 		std::sort(yeet.begin(), yeet.end(), Utils::ChunkPtrKeyEq());
-		std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
+		std::for_each(std::execution::seq, yeet.begin(), yeet.end(), [this](ChunkPtr chunk)
 		{
 			//SetThreadAffinityMask(GetCurrentThread(), ~1);
 			// send each mesh to GPU immediately after building it
