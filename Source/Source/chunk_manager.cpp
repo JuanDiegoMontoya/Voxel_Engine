@@ -29,30 +29,34 @@ ChunkManager::ChunkManager()
 
 ChunkManager::~ChunkManager()
 {
-	delete chunk_generator_thread_;
-	delete chunk_mesher_thread_;
+	for (auto t_ptr : chunk_generator_threads_)
+		delete t_ptr;
+	for (auto t_ptr : chunk_mesher_threads_)
+		delete t_ptr;
 }
 
 
 // TODO: find a way to put this into constructor without crashes
 void ChunkManager::Init()
 {
-	chunk_generator_thread_ =
-		new std::thread([this]() { chunk_generator_thread_task(); });
-
+	// run main thread on core 1
 	SetThreadAffinityMask(GetCurrentThread(), 1);
+
+	// spawn chunk block generator threads
 	for (int i = 0; i < 2; i++)
 	{
-		auto temp1 = new std::thread([this]() { chunk_generator_thread_task(); });
-		//auto temp2 = new std::thread([this]() { chunk_mesher_thread_task(); });
-		SetThreadAffinityMask(temp1->native_handle(), ~1);
-		//SetThreadAffinityMask(temp2->native_handle(), ~1);
+		chunk_generator_threads_.push_back(
+			new std::thread([this]() { chunk_generator_thread_task(); }));
+		SetThreadAffinityMask(chunk_generator_threads_[i]->native_handle(), ~1);
 	}
 
-	chunk_mesher_thread_ =
-		new std::thread([this]() { chunk_mesher_thread_task(); });
-	SetThreadAffinityMask(chunk_mesher_thread_->native_handle(), ~1);
-	SetThreadAffinityMask(chunk_generator_thread_->native_handle(), ~1);
+	// spawn chunk mesh generator threads
+	for (int i = 0; i < 1; i++)
+	{
+		chunk_mesher_threads_.push_back(
+			new std::thread([this]() { chunk_mesher_thread_task(); }));
+		SetThreadAffinityMask(chunk_mesher_threads_[i]->native_handle(), ~1);
+	}
 }
 
 
@@ -390,9 +394,9 @@ void ChunkManager::chunk_mesher_thread_task()
 			std::lock_guard<std::mutex> lock1(chunk_mesher_mutex_);
 			//temp.swap(mesher_queue_);
 			temp.swap(mesher_queue_);
-			yeet.insert(yeet.begin(), temp.begin(), temp.end());
 			debug_cur_pool_left += temp.size();
 		}
+		yeet.insert(yeet.begin(), temp.begin(), temp.end());
 
 		// TODO: this is temp solution to load near chunks to camera first
 		std::sort(yeet.begin(), yeet.end(), Utils::ChunkPtrKeyEq());

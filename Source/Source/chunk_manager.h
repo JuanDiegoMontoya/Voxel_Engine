@@ -75,7 +75,7 @@ private:
 	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> generation_queue_;
 	std::unordered_set<ChunkPtr> generation_queue_;
 	std::mutex chunk_generation_mutex_;
-	std::thread* chunk_generator_thread_;
+	std::vector<std::thread*> chunk_generator_threads_;
 
 	// generates meshes for ANY UPDATED chunk
 	void chunk_mesher_thread_task();
@@ -83,7 +83,7 @@ private:
 	//std::set<ChunkPtr> mesher_queue_;
 	std::unordered_set<ChunkPtr> mesher_queue_;
 	std::mutex chunk_mesher_mutex_;
-	std::thread* chunk_mesher_thread_;
+	std::vector<std::thread*> chunk_mesher_threads_;
 	std::atomic_int debug_cur_pool_left = { 0 };
 
 
