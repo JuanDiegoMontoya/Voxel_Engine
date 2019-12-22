@@ -265,10 +265,25 @@ void ChunkManager::createNearbyChunks() // and delete ones outside of leniency d
 	//		delete p;
 	//}
 
+	std::for_each(
+		std::execution::par,
+		Chunk::chunks.begin(),
+		Chunk::chunks.end(),
+		[&](auto& p)
+	{
+		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
+		if (p.second)
+		{
+			if (dist > loadDistance_ + unloadLeniency_)
+				p.second->SetActive(false);
+			else
+				p.second->SetActive(true);
+		}
+	});
 
 	// generate new chunks that are close to the camera
 	std::for_each(
-		std::execution::seq,
+		std::execution::par,
 		Chunk::chunks.begin(),
 		Chunk::chunks.end(),
 		[&](auto& p)
@@ -410,6 +425,8 @@ void ChunkManager::chunk_mesher_thread_task()
 			buffer_queue_.insert(chunk);
 		});
 	}
+	std::shared_ptr<void> fdsa;
+	fdsa.use_count();
 }
 
 

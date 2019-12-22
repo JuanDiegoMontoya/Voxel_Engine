@@ -179,11 +179,20 @@ void Level::DrawImGui()
 
 		ImGui::NewLine();
 		ImGui::Text("Chunk size: %d", Chunk::CHUNK_SIZE);
-		int cnt = 0;
+		int nonNull = 0;
+		int active = 0;
 		for (auto& p : Chunk::chunks)
-			if (p.second) cnt++;
-		ImGui::Text("Total chunks: %d", Chunk::chunks.size());
-		ImGui::Text("Non-null chunks: %d", cnt);
+		{
+			if (p.second)
+			{
+				nonNull++;
+				if (p.second->IsActive())
+					active++;
+			}
+		}
+		ImGui::Text("Total chunks:    %d", Chunk::chunks.size());
+		ImGui::Text("Non-null chunks: %d", nonNull);
+		ImGui::Text("Active chunks:   %d", active);
 
 		ImGui::NewLine();
 		// displaying zero just means the queue was taken, not finished!

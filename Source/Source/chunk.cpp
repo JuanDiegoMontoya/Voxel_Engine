@@ -52,10 +52,13 @@ Chunk::~Chunk()
 void Chunk::Update()
 {
 	// cull chunks that are invisible
-	if (Render::GetCamera()->GetFrustum()->IsInside(*this) >= Frustum::Visibility::Partial)
-		visible_ = true;
-	else
-		visible_ = false;
+	if (active_)
+	{
+		if (Render::GetCamera()->GetFrustum()->IsInside(*this) >= Frustum::Visibility::Partial)
+			visible_ = true;
+		else
+			visible_ = false;
+	}
 
 	// in the future, make this function perform other tick update actions,
 	// such as updating N random blocks (like in Minecraft)
@@ -65,7 +68,7 @@ void Chunk::Update()
 void Chunk::Render()
 {
 	//ASSERT(vao_ && positions_ && normals_ && colors_);
-	if (vao_)
+	if (active_ && vao_)
 	{
 		vao_->Bind();
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
@@ -75,7 +78,7 @@ void Chunk::Render()
 
 void Chunk::RenderWater()
 {
-	if (wvao_)
+	if (active_ && wvao_)
 	{
 		wvao_->Bind();
 		glDrawArrays(GL_TRIANGLES, 0, wvertexCount_);
