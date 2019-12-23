@@ -92,7 +92,17 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block bl)
 		// write policy: skip if new block is WEAKER than current block (same strength WILL overwrite)
 		if (bl.WriteStrength() < block->WriteStrength())
 			return;
+
+		// check if removed block emitted light
+		glm::uvec3 emit1 = Block::PropertiesTable[block->GetType()].emittance;
+		if (emit1 != glm::uvec3(0))
+			lightPropagateRemove(wpos, block->GetType());
 	}
+
+	// check if added block emits light
+	glm::uvec3 emit2 = Block::PropertiesTable[bl.GetType()].emittance;
+	if (emit2 != glm::uvec3(0))
+		lightPropagateAdd(wpos, bl.GetType());
 
 	// create empty chunk if it's null
 	if (!chunk)
@@ -158,6 +168,12 @@ Block ChunkManager::GetBlock(glm::ivec3 wpos)
 	if (!block)
 		return Block();
 	return *block;
+}
+
+
+BlockPtr ChunkManager::GetBlockPtr(glm::ivec3 wpos)
+{
+	return Chunk::AtWorld(wpos);
 }
 
 
@@ -468,7 +484,10 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Block::BlockType bt)
 	//std::queue<LightNode> lightQueue;
 	//lightQueue.emplace(pos,)
 
-	UpdateBlockLight(wpos, Block::PropertiesTable[bt].emmittance);
+	//UpdateBlockLight(wpos, Block::PropertiesTable[bt].emittance);
+	BlockPtr b = GetBlockPtr(wpos);
+	if (b)
+		b->SetLightValue(Block::PropertiesTable[bt].emittance.r);
 	std::queue<glm::ivec3> lightQueue;
 	lightQueue.push(wpos);
 	while (!lightQueue.empty())
@@ -494,9 +513,12 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Block::BlockType bt)
 			// if solid block or too bright of a block, skip dat boi
 			if (Block::PropertiesTable[block.GetType()].color.a == 1)
 				continue;
-			if (block.LightValue() > 2 + lightLevel.r)
+			if (block.LightValue() + 2 > lightLevel.r)
 				continue;
-			UpdateBlockLight(lightp + dir, glm::uvec3(lightLevel.r - 1));
+			//UpdateBlockLight(lightp + dir, glm::uvec3(lightLevel.r - 1));
+			BlockPtr b = GetBlockPtr(lightp + dir);
+			if (b)
+				b->SetLightValue(lightLevel.r - 1);
 			lightQueue.push(lightp + dir);
 		}
 	}

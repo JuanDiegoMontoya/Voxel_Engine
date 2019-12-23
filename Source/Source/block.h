@@ -7,12 +7,12 @@
 struct BlockProperties
 {
 	BlockProperties(const char* n, float s, glm::vec4 c, glm::uvec3 e)
-	: name(n), color(c), specular(s), invisible(c.a == 0), emmittance(e) {}
+	: name(n), color(c), specular(s), invisible(c.a == 0), emittance(e) {}
 	const char* name;
 	float specular;					// shininess
 	glm::vec4 color;				// diffuse color
 	bool invisible;					// skip rendering if true
-	glm::uvec3 emmittance;	// light
+	glm::uvec3 emittance;	// light
 };
 
 // a 1x1x1 cube

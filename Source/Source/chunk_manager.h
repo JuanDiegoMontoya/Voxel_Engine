@@ -45,6 +45,7 @@ public:
 	void UpdateBlockCheap(glm::ivec3& wpos, Block block);
 	void UpdateBlockLight(glm::ivec3 wpos, glm::uvec3 light);
 	Block GetBlock(glm::ivec3 wpos); // wrapper function
+	BlockPtr GetBlockPtr(glm::ivec3 wpos);
 	void UpdatedChunk(ChunkPtr chunk);
 	void ReloadAllChunks(); // for when big things change
 
@@ -97,10 +98,10 @@ private:
 
 
 	// new light intensity to add
-	void lightPropagateAdd(glm::ivec3 pos, Block::BlockType bt);
+	void lightPropagateAdd(glm::ivec3 wpos, Block::BlockType bt);
 
 	// removed light intensity
-	void lightPropagateRemove(glm::ivec3 pos, Block::BlockType bt);
+	void lightPropagateRemove(glm::ivec3 wpos, Block::BlockType bt);
 
 
 	// vars

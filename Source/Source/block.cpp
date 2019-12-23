@@ -16,5 +16,5 @@ const std::vector<BlockProperties> Block::PropertiesTable =
 	{BlockProperties("oak leaves", 2,		{.322f, .42f, .18f, 1},		{0, 0, 0})},
 	{BlockProperties("error",      64,	{1, 0, 0, 1},							{0, 0, 0})},
 	{BlockProperties("dry grass",  8,		{.75, 1, 0, 1},						{0, 0, 0})},
-	{BlockProperties("light",			 8,		{1, 1, 1, 1},							{32, 32, 32})},
+	{BlockProperties("light",			 8,		{1, 1, 1, 1},							{15, 15, 15})},
 };
