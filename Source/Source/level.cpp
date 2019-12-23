@@ -154,6 +154,23 @@ void Level::DrawImGui()
 			//delete Shader::shaders["postprocess"];
 			Shader::shaders["postprocess"] = new Shader("postprocess.vs", "postprocess.fs");
 		}
+		if (ImGui::Button("Delete far chunks (unsafe)"))
+		{
+			std::vector<ChunkPtr> deleteList;
+			std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
+				[&](auto& p)
+			{
+				float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
+				if (p.second && dist > chunkManager_.loadDistance_ + chunkManager_.unloadLeniency_)
+				{
+					deleteList.push_back(p.second);
+					p.second = nullptr;
+				}
+			});
+
+			for (ChunkPtr p : deleteList)
+				delete p;
+		}
 
 		ImGui::End();
 	}
@@ -165,6 +182,11 @@ void Level::DrawImGui()
 		ImGui::NewLine();
 		glm::vec3 pos = Render::GetCamera()->GetPos();
 		//ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
+		ImGui::SliderFloat("Render distance", &chunkManager_.loadDistance_, 0, 1000, "%.0f");
+		ImGui::SliderFloat("Leniency distance", &chunkManager_.unloadLeniency_, 0, 1000, "%.0f");
+		float far = Render::GetCamera()->GetFar();
+		if (ImGui::SliderFloat("Far plane", &far, 0, 1000, "%.0f"))
+			Render::GetCamera()->SetFar(far);
 		if (ImGui::InputFloat3("Camera Position", &pos[0], 2))
 			Render::GetCamera()->SetPos(pos);
 		pos = Render::GetCamera()->front;

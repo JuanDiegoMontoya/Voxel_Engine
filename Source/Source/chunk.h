@@ -4,6 +4,7 @@
 #include "misc_utils.h"
 #include <mutex>
 #include <concurrent_unordered_map.h> // temp solution to concurrent chunk access
+#include <atomic>
 
 #define MARCHED_CUBES 0
 
@@ -222,6 +223,8 @@ private:
 	//std::vector<glm::vec3> vtxTanBuffer; // tangents
 	//std::vector<glm::vec3> vtxBitBuffer; // bitangents
 	size_t vertexCount_ = 0; // number of vertices composing the mesh of the chunk
+
+	//std::atomic_int useCount
 }Chunk, *ChunkPtr;
 
 void TestCoordinateStuff();

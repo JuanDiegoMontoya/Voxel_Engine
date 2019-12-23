@@ -28,6 +28,11 @@ public:
 
 	void SetPos(const glm::vec3& v) { worldpos_ = v; }
 	void SetType(CameraType t) { type_ = t; }
+	void SetFar(float f) { far_ = f; GenProjection();  }
+	void GenProjection()
+	{
+		proj_ = glm::perspective(glm::radians(fov_), 1920.f / 1080.f, near_, far_);
+	}
 
 	glm::vec3 up = glm::vec3(0, 1.f, 0);
 	glm::vec3 front = glm::vec3(0, 0, -1.f);

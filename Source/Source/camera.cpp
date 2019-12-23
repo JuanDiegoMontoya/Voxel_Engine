@@ -8,7 +8,8 @@
 Camera::Camera(CameraType type) : type_(type) 
 {
 	frustum_ = new Frustum;
-	proj_ = glm::perspective(glm::radians(fov_), 1920.f / 1080.f, near_, far_);
+	GenProjection();
+	//proj_ = glm::perspective(glm::radians(fov_), 1920.f / 1080.f, near_, far_);
 
 	
 	//btRigidBody::btRigidBodyConstructionInfo info(;
@@ -26,7 +27,7 @@ void Camera::Update(float dt)
 	{
 	case kPhysicsCam:
 	{
-		acceleration_ = glm::vec3(0, -20, 0); // "gravity"
+		acceleration_ = glm::vec3(0, -25, 0); // "gravity"
 		// "friction" (multiply dt by big num so the friction constant isn't stupidly small)
 		velocity_.x *= glm::pow(.90, dt * 100);
 		velocity_.z *= glm::pow(.90, dt * 100);

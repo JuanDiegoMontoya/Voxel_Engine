@@ -67,6 +67,7 @@ private:
 	bool isChunkInUpdateList(ChunkPtr chunk);
 	void checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::ivec3& near);
 
+	void removeFarChunks();
 	void createNearbyChunks(); // and delete far away chunks
 	void generateNewChunks();
 
