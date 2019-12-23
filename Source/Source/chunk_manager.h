@@ -43,6 +43,7 @@ public:
 	void Update(LevelPtr level);
 	void UpdateBlock(glm::ivec3& wpos, Block bl);
 	void UpdateBlockCheap(glm::ivec3& wpos, Block block);
+	void UpdateBlockLight(glm::ivec3 wpos, glm::uvec3 light);
 	Block GetBlock(glm::ivec3 wpos); // wrapper function
 	void UpdatedChunk(ChunkPtr chunk);
 	void ReloadAllChunks(); // for when big things change
@@ -88,11 +89,18 @@ private:
 	std::atomic_int debug_cur_pool_left = { 0 };
 
 
-	// NOT multithreaded
+	// NOT multithreaded task
 	void chunk_buffer_task();
 	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> buffer_queue_;
 	std::unordered_set<ChunkPtr> buffer_queue_;
 	std::mutex chunk_buffer_mutex_;
+
+
+	// new light intensity to add
+	void lightPropagateAdd(glm::ivec3 pos, Block::BlockType bt);
+
+	// removed light intensity
+	void lightPropagateRemove(glm::ivec3 pos, Block::BlockType bt);
 
 
 	// vars

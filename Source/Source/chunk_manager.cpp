@@ -144,6 +144,14 @@ void ChunkManager::UpdateBlockCheap(glm::ivec3& wpos, Block block)
 }
 
 
+void ChunkManager::UpdateBlockLight(glm::ivec3 wpos, glm::uvec3 light)
+{
+	Block block = GetBlock(wpos);
+	block.SetLightValue(light.r);
+	UpdateBlock(wpos, block);
+}
+
+
 Block ChunkManager::GetBlock(glm::ivec3 wpos)
 {
 	BlockPtr block = Chunk::AtWorld(wpos);
@@ -447,3 +455,57 @@ void ChunkManager::chunk_buffer_task()
 	for (ChunkPtr chunk : temp)
 		chunk->BuildBuffers();
 }
+
+
+void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Block::BlockType bt)
+{
+	//struct LightNode
+	//{
+	//	LightNode(glm::ivec3 p, ChunkPtr c) : pos(p), chunk(c) {}
+	//	glm::ivec3 pos;
+	//	ChunkPtr chunk;
+	//};
+	//std::queue<LightNode> lightQueue;
+	//lightQueue.emplace(pos,)
+
+	UpdateBlockLight(wpos, Block::PropertiesTable[bt].emmittance);
+	std::queue<glm::ivec3> lightQueue;
+	lightQueue.push(wpos);
+	while (!lightQueue.empty())
+	{
+		glm::ivec3 lightp = lightQueue.front();
+		lightQueue.pop();
+
+		glm::uvec3 lightLevel = glm::uvec3(GetBlock(lightp).LightValue()); // TODO: split into color components
+
+		constexpr glm::ivec3 dirs[] =
+		{
+			{ 1, 0, 0 },
+			{-1, 0, 0 },
+			{ 0, 1, 0 },
+			{ 0,-1, 0 },
+			{ 0, 0, 1 },
+			{ 0, 0,-1 },
+		};
+
+		for (auto& dir : dirs)
+		{
+			Block block = GetBlock(lightp + dir);
+			// if solid block or too bright of a block, skip dat boi
+			if (Block::PropertiesTable[block.GetType()].color.a == 1)
+				continue;
+			if (block.LightValue() > 2 + lightLevel.r)
+				continue;
+			UpdateBlockLight(lightp + dir, glm::uvec3(lightLevel.r - 1));
+			lightQueue.push(lightp + dir);
+		}
+	}
+}
+
+
+void ChunkManager::lightPropagateRemove(glm::ivec3 pos, Block::BlockType bt)
+{
+
+}
+
+
