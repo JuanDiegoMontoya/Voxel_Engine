@@ -48,7 +48,7 @@ void BiomeManager::InitializeBiomes()
 	{
 		Biome woodlands(0, 0, WorldGen::tPlains, Block::bGrass);
 		woodlands.name = "woodlands";
-		woodlands.surfaceFeatures.push_back({ .05f, Prefab::OakTree });
+		woodlands.surfaceFeatures.push_back({ .05f, PrefabName::OakTree });
 		registerBiome(woodlands);
 	}
 
@@ -63,9 +63,9 @@ void BiomeManager::InitializeBiomes()
 	{
 		Biome tundra(0, -.5f, WorldGen::tPlains, Block::bSnow);
 		tundra.name = "tundra";
-		tundra.surfaceFeatures.push_back({ .0001, Prefab::BoulderA });
-		tundra.surfaceFeatures.push_back({ .0001, Prefab::BoulderB });
-		tundra.surfaceFeatures.push_back({ .0001, Prefab::BoulderC });
+		tundra.surfaceFeatures.push_back({ .0001, PrefabName::BoulderA });
+		tundra.surfaceFeatures.push_back({ .0001, PrefabName::BoulderB });
+		tundra.surfaceFeatures.push_back({ .0001, PrefabName::BoulderC });
 		//tundra.surfaceFeatures.push_back({ .001f, Prefab::BorealTree });
 		registerBiome(tundra);
 	}
@@ -74,14 +74,14 @@ void BiomeManager::InitializeBiomes()
 	{
 		Biome snowH(.2f, -.5f, WorldGen::tHills, Block::bSnow);
 		snowH.name = "snow hills";
-		snowH.surfaceFeatures.push_back({ .002f, Prefab::BorealTree });
+		snowH.surfaceFeatures.push_back({ .002f, PrefabName::BorealTree });
 		registerBiome(snowH);
 	}
 
 	// desert hills
 	{
 		Biome desertH(-.5f, .5f, WorldGen::tHills, Block::bSand);
-		desertH.surfaceFeatures.push_back({ .005, Prefab::Cactus });
+		desertH.surfaceFeatures.push_back({ .005, PrefabName::Cactus });
 		desertH.name = "desert hills";
 		registerBiome(desertH);
 	}
@@ -90,9 +90,9 @@ void BiomeManager::InitializeBiomes()
 	{
 		Biome highland(.3f, 0.f, WorldGen::tHills, Block::bDryGrass);
 		highland.name = "highland";
-		highland.surfaceFeatures.push_back({ .0005, Prefab::BoulderA });
-		highland.surfaceFeatures.push_back({ .0005, Prefab::BoulderB });
-		highland.surfaceFeatures.push_back({ .0001, Prefab::BoulderC });
+		highland.surfaceFeatures.push_back({ .0005, PrefabName::BoulderA });
+		highland.surfaceFeatures.push_back({ .0005, PrefabName::BoulderB });
+		highland.surfaceFeatures.push_back({ .0001, PrefabName::BoulderC });
 		registerBiome(highland);
 	}
 

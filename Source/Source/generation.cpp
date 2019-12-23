@@ -439,7 +439,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				{
 					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
 					if (Utils::get_random(0, 1) > .99999f)
-						GeneratePrefab(PrefabManager::GetPrefab(Prefab::DungeonSmall), wpos, level);
+						GeneratePrefab(PrefabManager::GetPrefab(PrefabName::DungeonSmall), wpos, level);
 				}
 			}
 		}

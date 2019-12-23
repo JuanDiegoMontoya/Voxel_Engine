@@ -36,14 +36,13 @@ ChunkManager::~ChunkManager()
 }
 
 
-// TODO: find a way to put this into constructor without crashes
 void ChunkManager::Init()
 {
 	// run main thread on core 1
 	SetThreadAffinityMask(GetCurrentThread(), 1);
 
 	// spawn chunk block generator threads
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		chunk_generator_threads_.push_back(
 			new std::thread([this]() { chunk_generator_thread_task(); }));
@@ -82,7 +81,7 @@ void ChunkManager::Update(LevelPtr level)
 }
 
 
-void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned char writeStrength)
+void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block bl)
 {
 	localpos p = Chunk::worldBlockToLocalPos(wpos);
 	BlockPtr block = Chunk::AtWorld(wpos);
@@ -91,7 +90,7 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned ch
 	if (block)
 	{
 		// write policy: skip if new block is WEAKER than current block (same strength WILL overwrite)
-		if (writeStrength < block->WriteStrength())
+		if (bl.WriteStrength() < block->WriteStrength())
 			return;
 	}
 
@@ -107,7 +106,7 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned ch
 
 	if (!block) // reset block if it's invalid
 		block = &chunk->At(p.block_pos);
-	block->SetType(t, writeStrength);
+	block->SetType(bl.GetType(), bl.WriteStrength());
 
 	// add to update list if it ain't
 	//if (!isChunkInUpdateList(chunk))
@@ -443,9 +442,8 @@ void ChunkManager::chunk_buffer_task()
 		temp.swap(buffer_queue_);
 	}
 	//chunk_buffer_mutex_.
+
 	// normally, there will only be a few items in here per frame
-	// ironically, low FPS will cause this buffer to accumulate, lowering FPS further
-	// however, this is a very fast task so that is highly unlikely
 	for (ChunkPtr chunk : temp)
 		chunk->BuildBuffers();
 }

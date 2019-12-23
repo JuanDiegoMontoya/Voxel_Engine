@@ -41,7 +41,7 @@ public:
 
 	// interaction
 	void Update(LevelPtr level);
-	void UpdateBlock(glm::ivec3& wpos, Block::BlockType t, unsigned char writeStrength);
+	void UpdateBlock(glm::ivec3& wpos, Block bl);
 	void UpdateBlockCheap(glm::ivec3& wpos, Block block);
 	Block GetBlock(glm::ivec3 wpos); // wrapper function
 	void UpdatedChunk(ChunkPtr chunk);

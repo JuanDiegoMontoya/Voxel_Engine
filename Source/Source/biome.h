@@ -20,9 +20,9 @@ struct Biome
 
 	// % chance and name of prefab to spawn
 	Block::BlockType surfaceCover; // sand, dirt, snow, etc.
-	std::vector<std::pair<float, Prefab::PrefabName>> surfaceFeatures;	// per block
-	std::vector<std::pair<float, Prefab::PrefabName>> subFeatures;			// per chunk
-	std::vector<std::pair<float, Prefab::PrefabName>> skyFeatures;			// per chunk
+	std::vector<std::pair<float, PrefabName>> surfaceFeatures;	// per block
+	std::vector<std::pair<float, PrefabName>> subFeatures;			// per chunk
+	std::vector<std::pair<float, PrefabName>> skyFeatures;			// per chunk
 
 	// deletes these biomes when added (for custom biomes)
 	std::vector<std::string> biomeOverride;

@@ -1,24 +1,24 @@
 #pragma once
 #include "block.h"
 
+enum struct PrefabName : int
+{
+	OakTree,
+	OakTreeBig,
+	Error,
+	DungeonSmall,
+	BorealTree,
+	Cactus,
+	BoulderA,
+	BoulderB,
+	BoulderC,
+
+	pfCount
+};
+
 // an object designed to be pasted into the world
 struct Prefab
 {
-	enum PrefabName : int
-	{
-		OakTree,
-		OakTreeBig,
-		Error,
-		DungeonSmall,
-		BorealTree,
-		Cactus,
-		BoulderA,
-		BoulderB,
-		BoulderC,
-
-		pfCount
-	};
-
 	void Add(glm::ivec3 pos, Block block)
 	{
 		blocks.push_back(std::pair<glm::ivec3, Block>(pos, block));
@@ -38,11 +38,11 @@ class PrefabManager
 {
 public:
 	static void InitPrefabs();
-	static const Prefab& GetPrefab(Prefab::PrefabName p) { return prefabs_[p]; }
+	static const Prefab& GetPrefab(PrefabName p) { return prefabs_[p]; }
 
 private:
 	static Prefab LoadPrefabFromFile(std::string name);
 	static void LoadAllPrefabs();
 
-	static std::map<Prefab::PrefabName, Prefab> prefabs_;
+	static std::map<PrefabName, Prefab> prefabs_;
 };

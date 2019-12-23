@@ -7,7 +7,7 @@
 #include <cereal/types/utility.hpp>
 #include <cereal/archives/binary.hpp>
 
-std::map<Prefab::PrefabName, Prefab> PrefabManager::prefabs_;
+std::map<PrefabName, Prefab> PrefabManager::prefabs_;
 
 void PrefabManager::InitPrefabs()
 {
@@ -28,7 +28,7 @@ void PrefabManager::InitPrefabs()
 		if (i == 4)
 			tree.Add({ 0, i + 1, 0 }, Block(Block::bOakLeaves, 1));
 	}
-	prefabs_[Prefab::OakTree] = tree;
+	prefabs_[PrefabName::OakTree] = tree;
 
 	Prefab bTree;
 	for (int i = 0; i < 8; i++)
@@ -51,7 +51,7 @@ void PrefabManager::InitPrefabs()
 			bTree.Add({ -1, i, +1 }, Block(Block::bOakLeaves, 1));
 		}
 	}
-	prefabs_[Prefab::OakTreeBig] = bTree;
+	prefabs_[PrefabName::OakTreeBig] = bTree;
 
 	// error prefab to be generated when an error occurs
 	Prefab error;
@@ -65,7 +65,7 @@ void PrefabManager::InitPrefabs()
 			}
 		}
 	}
-	prefabs_[Prefab::Error] = error;
+	prefabs_[PrefabName::Error] = error;
 
 	LoadAllPrefabs();
 }
@@ -88,15 +88,15 @@ Prefab PrefabManager::LoadPrefabFromFile(std::string name)
 	{
 		//return prefabs_[Prefab::Error];
 	}
-	return prefabs_[Prefab::Error];
+	return prefabs_[PrefabName::Error];
 }
 
 void PrefabManager::LoadAllPrefabs()
 {
-	prefabs_[Prefab::DungeonSmall] = LoadPrefabFromFile("dungeon");
-	prefabs_[Prefab::BorealTree] = LoadPrefabFromFile("borealTree");
-	prefabs_[Prefab::Cactus] = LoadPrefabFromFile("cactus");
-	prefabs_[Prefab::BoulderA] = LoadPrefabFromFile("boulderA");
-	prefabs_[Prefab::BoulderB] = LoadPrefabFromFile("boulderB");
-	prefabs_[Prefab::BoulderC] = LoadPrefabFromFile("boulderC");
+	prefabs_[PrefabName::DungeonSmall] = LoadPrefabFromFile("dungeon");
+	prefabs_[PrefabName::BorealTree] = LoadPrefabFromFile("borealTree");
+	prefabs_[PrefabName::Cactus] = LoadPrefabFromFile("cactus");
+	prefabs_[PrefabName::BoulderA] = LoadPrefabFromFile("boulderA");
+	prefabs_[PrefabName::BoulderB] = LoadPrefabFromFile("boulderB");
+	prefabs_[PrefabName::BoulderC] = LoadPrefabFromFile("boulderC");
 }

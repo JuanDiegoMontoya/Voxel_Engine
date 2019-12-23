@@ -407,16 +407,18 @@ void Level::CheckInteraction()
 
 
 // force updates a block in a location
-void Level::UpdateBlockAt(glm::ivec3 wpos, Block::BlockType ty)
+void Level::UpdateBlockAt(glm::ivec3 wpos, Block bl)
 {
-	chunkManager_.UpdateBlock(wpos, ty, std::numeric_limits<unsigned char>::max() / 2);
+	Block block = bl;
+	block.SetWriteStrength(std::numeric_limits<unsigned char>::max() / 2);
+	chunkManager_.UpdateBlock(wpos, block);
 }
 
 
 // updates a block in a location IFF the new block has a sufficiently high write strength
 void Level::GenerateBlockAt(glm::ivec3 wpos, Block b)
 {
-	chunkManager_.UpdateBlock(wpos, b.GetType(), b.WriteStrength());
+	chunkManager_.UpdateBlock(wpos, b);
 }
 
 
