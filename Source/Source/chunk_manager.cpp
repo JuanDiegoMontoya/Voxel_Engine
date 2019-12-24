@@ -127,15 +127,14 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block bl)
 	}
 
 	// check if adjacent to opaque blocks in nearby chunks, then update those chunks if it is
-	glm::ivec3 dirs[] =
+	constexpr glm::ivec3 dirs[] =
 	{
-		{ -1,  0,  0 },
-		{  1,  0,  0 },
-		{  0, -1,  0 },
-		{  0,  1,  0 },
-		{  0,  0, -1 },
-		{  0,  0,  1 }
-
+		{-1, 0, 0 },
+		{ 1, 0, 0 },
+		{ 0,-1, 0 },
+		{ 0, 1, 0 },
+		{ 0, 0,-1 },
+		{ 0, 0, 1 }
 		// TODO: add 8 more cases for diagonals (AO)
 	};
 	for (const auto& dir : dirs)
@@ -408,7 +407,6 @@ void ChunkManager::chunk_generator_thread_task()
 			temp.swap(generation_queue_);
 		}
 
-		//for (auto chunk : temp)
 		std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
 		{
 			WorldGen::GenerateChunk(chunk->GetPos(), level_);
@@ -430,10 +428,9 @@ void ChunkManager::chunk_mesher_thread_task()
 		//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
 		//std::set<ChunkPtr> temp;
 		std::unordered_set<ChunkPtr> temp;
-		std::vector<ChunkPtr> yeet;
+		std::vector<ChunkPtr> yeet; // to-be ordered set containing temp's items
 		{
 			std::lock_guard<std::mutex> lock1(chunk_mesher_mutex_);
-			//temp.swap(mesher_queue_);
 			temp.swap(mesher_queue_);
 			debug_cur_pool_left += temp.size();
 		}
@@ -465,7 +462,6 @@ void ChunkManager::chunk_buffer_task()
 		std::lock_guard<std::mutex> lock(chunk_buffer_mutex_);
 		temp.swap(buffer_queue_);
 	}
-	//chunk_buffer_mutex_.
 
 	// normally, there will only be a few items in here per frame
 	for (ChunkPtr chunk : temp)
@@ -494,7 +490,9 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Block::BlockType bt)
 	{
 		glm::ivec3 lightp = lightQueue.front();
 		lightQueue.pop();
-
+		sizeof(unsigned);
+		sizeof(glm::ucvec4);
+		sizeof(Block);
 		glm::uvec3 lightLevel = glm::uvec3(GetBlock(lightp).LightValue()); // TODO: split into color components
 
 		constexpr glm::ivec3 dirs[] =

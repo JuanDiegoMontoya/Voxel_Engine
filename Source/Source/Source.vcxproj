@@ -235,6 +235,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="directional_light.cpp" />
     <ClCompile Include="editor.cpp" />
     <ClCompile Include="hud.cpp" />
+    <ClCompile Include="light.cpp" />
     <ClCompile Include="march_cubes.cpp" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="frustum.cpp" />
@@ -357,6 +358,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="frustum.h" />
     <ClInclude Include="generation.h" />
     <ClInclude Include="hud.h" />
+    <ClInclude Include="light.h" />
     <ClInclude Include="lit_mesh.h" />
     <ClInclude Include="mesh_comp.h" />
     <ClInclude Include="physics_comp.h" />

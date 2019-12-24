@@ -12,7 +12,7 @@ struct BlockProperties
 	float specular;					// shininess
 	glm::vec4 color;				// diffuse color
 	bool invisible;					// skip rendering if true
-	glm::uvec3 emittance;	// light
+	glm::uvec3 emittance;	  // light
 };
 
 // a 1x1x1 cube
@@ -22,7 +22,7 @@ typedef class Block
 public:
 
 	// defines various block properties and behaviors
-	enum BlockType : unsigned char // upgrade when over 256 block types
+	enum BlockType : uint8_t // upgrade when over 256 block types
 	{
 		bAir = 0, // default type
 		bStone,
@@ -82,6 +82,6 @@ private:
 	// left 4 bits = writeStrength; right 4 bits = lightValue
 	// the lighting information can be derived at runtime, but
 	// the write strength should be serialized in the future
-	unsigned char wlValues_;
+	uint8_t wlValues_;
 }Block, *BlockPtr;
 //#pragma pack(pop)

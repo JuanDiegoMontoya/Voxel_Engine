@@ -1,14 +1,16 @@
 #pragma once
 #include "block.h"
+#include "light.h"
 #include "biome.h"
 #include "misc_utils.h"
 #include <mutex>
-#include <concurrent_unordered_map.h> // temp solution to concurrent chunk access
+#include <concurrent_unordered_map.h> // TODO: temp solution to concurrent chunk access
 #include <atomic>
 
 #define MARCHED_CUBES 0
 
 //typedef class Block;
+
 class VAO;
 class VBO;
 
@@ -116,6 +118,11 @@ public:
 		return blocks[ID3D(x, y, z, CHUNK_SIZE, CHUNK_SIZE)];
 	}
 
+	Light& LightAt(const glm::ivec3 p)
+	{
+		return lightMap[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+	}
+
 	// block at a position in world space
 	static BlockPtr AtWorld(const glm::ivec3 p)
 	{
@@ -125,6 +132,16 @@ public:
 			return &cnk->At(w.block_pos);
 		return nullptr;
 	}
+
+	static LightPtr LightAtWorld(const glm::ivec3 p)
+	{
+		localpos w = worldBlockToLocalPos(p);
+		ChunkPtr cnk = chunks[w.chunk_pos];
+		if (cnk)
+			return &cnk->LightAt(w.block_pos);
+		return nullptr;
+	}
+
 
 	glm::vec3 GetMin() const
 	{
@@ -141,6 +158,7 @@ public:
 						Raw Block Data
 	################################*/
 	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+	Light lightMap[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 	//static inline std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 	static inline Concurrency::concurrent_unordered_map // TODO: make CustomGrow(tm) concurrent map solution to be more portable
 		<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;

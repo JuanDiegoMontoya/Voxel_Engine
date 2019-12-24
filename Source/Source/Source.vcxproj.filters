@@ -244,6 +244,9 @@
     <ClInclude Include="camera.h">
       <Filter>Game\ECS\Components</Filter>
     </ClInclude>
+    <ClInclude Include="light.h">
+      <Filter>Voxel Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -404,6 +407,9 @@
     </ClCompile>
     <ClCompile Include="camera.cpp">
       <Filter>Game\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="light.cpp">
+      <Filter>Voxel Engine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
