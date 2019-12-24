@@ -20,7 +20,10 @@
 
 double Chunk::isolevel = 0.60;
 
-Chunk::Chunk(bool active) : active_(active) {}
+Chunk::Chunk(bool active) : active_(active)
+{
+	std::memset(lightMap, 0, sizeof(lightMap));
+}
 
 
 Chunk::~Chunk()
@@ -251,7 +254,8 @@ void Chunk::buildSingleBlockFace(
 	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
 	bool isWater = block.GetType() == Block::bWater;
 	ChunkPtr near = chunks[nearblock.chunk_pos];
-	Block block2;
+	Block block2; // near block
+	Light light2; // near light
 	if (force)
 		goto GenQuad;
 	if (!near)
@@ -262,6 +266,7 @@ void Chunk::buildSingleBlockFace(
 
 	{
 		block2 = near->At(nearblock.block_pos);
+		light2 = near->LightAt(nearblock.block_pos);
 		if (block2.GetType() != Block::bWater && block.GetType() == Block::bWater && (nearFace - blockPos).y > 0)
 			goto GenQuad;
 		if (block2.GetType() != Block::bAir && block2.GetType() != Block::bWater)
@@ -279,9 +284,9 @@ GenQuad:
 
 	float shiny = Block::PropertiesTable[block.GetType()].specular;
 	glm::vec4 color = Block::PropertiesTable[block.GetType()].color;
-	color.r *= (1 + float(block2.LightValue())) / 16.f;
-	color.g *= (1 + float(block2.LightValue())) / 16.f;
-	color.b *= (1 + float(block2.LightValue())) / 16.f;
+	color.r *= (1 + float(light2.GetR())) / 16.f;
+	color.g *= (1 + float(light2.GetG())) / 16.f;
+	color.b *= (1 + float(light2.GetB())) / 16.f;
 
 	// slightly randomize color for each block to make them more visible (temporary solution)
 	float clrBias = Utils::get_random_r(-.03, .03);

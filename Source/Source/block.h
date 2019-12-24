@@ -2,17 +2,18 @@
 //#include "level.h"
 //#include "pipeline.h"
 #include "serialize.h"
+#include "utilities.h"
 
 // visual properties (for now)
 struct BlockProperties
 {
-	BlockProperties(const char* n, float s, glm::vec4 c, glm::uvec3 e)
+	BlockProperties(const char* n, float s, glm::vec4 c, glm::uvec4 e)
 	: name(n), color(c), specular(s), invisible(c.a == 0), emittance(e) {}
 	const char* name;
 	float specular;					// shininess
 	glm::vec4 color;				// diffuse color
 	bool invisible;					// skip rendering if true
-	glm::uvec3 emittance;	  // light
+	glm::ucvec4 emittance;	// light
 };
 
 // a 1x1x1 cube
@@ -36,7 +37,11 @@ public:
 		bOakLeaves,
 		bError,
 		bDryGrass,
-		bLight,
+		bOLight,
+		bRLight,
+		bGLight,
+		bBLight,
+		bSmLight,
 
 		bCount
 	};

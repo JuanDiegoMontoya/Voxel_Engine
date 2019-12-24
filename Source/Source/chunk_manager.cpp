@@ -4,6 +4,7 @@
 #include <mutex>
 #include "chunk_load_manager.h"
 #include "chunk.h"
+#include "block.h"
 #include "level.h"
 #include "chunk_manager.h"
 #include "generation.h"
@@ -81,7 +82,7 @@ void ChunkManager::Update(LevelPtr level)
 }
 
 
-void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block bl)
+void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 {
 	localpos p = Chunk::worldBlockToLocalPos(wpos);
 	BlockPtr block = Chunk::AtWorld(wpos);
@@ -146,22 +147,22 @@ void ChunkManager::UpdateBlock(glm::ivec3& wpos, Block bl)
 
 
 // perform no checks, therefore the chunk must be known prior to placing the block
-void ChunkManager::UpdateBlockCheap(glm::ivec3& wpos, Block block)
+void ChunkManager::UpdateBlockCheap(const glm::ivec3& wpos, Block block)
 {
 	*Chunk::AtWorld(wpos) = block;
 	//UpdatedChunk(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
 }
 
 
-void ChunkManager::UpdateBlockLight(glm::ivec3 wpos, glm::uvec3 light)
+void ChunkManager::UpdateBlockLight(const glm::ivec3 wpos, const Light light)
 {
 	Block block = GetBlock(wpos);
-	block.SetLightValue(light.r);
-	UpdateBlock(wpos, block);
+	//block.SetLightValue(light.r);
+	//UpdateBlock(wpos, block);
 }
 
 
-Block ChunkManager::GetBlock(glm::ivec3 wpos)
+Block ChunkManager::GetBlock(const glm::ivec3 wpos)
 {
 	BlockPtr block = Chunk::AtWorld(wpos);
 	if (!block)
@@ -170,9 +171,24 @@ Block ChunkManager::GetBlock(glm::ivec3 wpos)
 }
 
 
-BlockPtr ChunkManager::GetBlockPtr(glm::ivec3 wpos)
+Light ChunkManager::GetLight(const glm::ivec3 wpos)
+{
+	LightPtr light = Chunk::LightAtWorld(wpos);
+	if (!light)
+		return Light();
+	return *light;
+}
+
+
+BlockPtr ChunkManager::GetBlockPtr(const glm::ivec3 wpos)
 {
 	return Chunk::AtWorld(wpos);
+}
+
+
+LightPtr ChunkManager::GetLightPtr(const glm::ivec3 wpos)
+{
+	return Chunk::LightAtWorld(wpos);
 }
 
 
@@ -481,20 +497,16 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Block::BlockType bt)
 	//lightQueue.emplace(pos,)
 
 	//UpdateBlockLight(wpos, Block::PropertiesTable[bt].emittance);
-	BlockPtr b = GetBlockPtr(wpos);
-	if (b)
-		b->SetLightValue(Block::PropertiesTable[bt].emittance.r);
+	LightPtr L = GetLightPtr(wpos);
+	if (L)
+		L->Set(Block::PropertiesTable[bt].emittance);
 	std::queue<glm::ivec3> lightQueue;
 	lightQueue.push(wpos);
 	while (!lightQueue.empty())
 	{
 		glm::ivec3 lightp = lightQueue.front();
 		lightQueue.pop();
-		sizeof(unsigned);
-		sizeof(glm::ucvec4);
-		sizeof(Block);
-		glm::uvec3 lightLevel = glm::uvec3(GetBlock(lightp).LightValue()); // TODO: split into color components
-
+		Light lightLevel = GetLight(lightp);
 		constexpr glm::ivec3 dirs[] =
 		{
 			{ 1, 0, 0 },
@@ -505,19 +517,26 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Block::BlockType bt)
 			{ 0, 0,-1 },
 		};
 
+		// iterate for R, G, and B
 		for (auto& dir : dirs)
 		{
 			Block block = GetBlock(lightp + dir);
+			LightPtr light = GetLightPtr(lightp + dir);
+			if (!light) continue;
 			// if solid block or too bright of a block, skip dat boi
 			if (Block::PropertiesTable[block.GetType()].color.a == 1)
 				continue;
-			if (block.LightValue() + 2 > lightLevel.r)
-				continue;
-			//UpdateBlockLight(lightp + dir, glm::uvec3(lightLevel.r - 1));
-			BlockPtr b = GetBlockPtr(lightp + dir);
-			if (b)
-				b->SetLightValue(lightLevel.r - 1);
-			lightQueue.push(lightp + dir);
+			for (int ci = 0; ci < 4; ci++) // iterate color index
+			{
+				// skip blocks that are too bright to be affected by this light
+				if (light->Get()[ci] + 2 > lightLevel.Get()[ci])
+					continue;
+				//UpdateBlockLight(lightp + dir, glm::uvec3(lightLevel.r - 1));
+				auto val = light->Get();
+				val[ci] = lightLevel.Get()[ci] - 1;
+				light->Set(val);
+				lightQueue.push(lightp + dir);
+			}
 		}
 	}
 }

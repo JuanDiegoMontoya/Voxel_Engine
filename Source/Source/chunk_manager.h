@@ -1,11 +1,12 @@
 #pragma once
 #include "chunk_load_manager.h"
+#include "chunk.h"
 #include "block.h"
-#include <set>
-#include <unordered_set>
 #include "camera.h"
 #include "pipeline.h"
-#include "chunk.h"
+
+#include <set>
+#include <unordered_set>
 #include <atomic>
 #include <stack>
 
@@ -41,11 +42,13 @@ public:
 
 	// interaction
 	void Update(LevelPtr level);
-	void UpdateBlock(glm::ivec3& wpos, Block bl);
-	void UpdateBlockCheap(glm::ivec3& wpos, Block block);
-	void UpdateBlockLight(glm::ivec3 wpos, glm::uvec3 light);
-	Block GetBlock(glm::ivec3 wpos); // wrapper function
-	BlockPtr GetBlockPtr(glm::ivec3 wpos);
+	void UpdateBlock(const glm::ivec3& wpos, Block bl);
+	void UpdateBlockCheap(const glm::ivec3& wpos, Block block);
+	void UpdateBlockLight(const glm::ivec3 wpos, const Light light);
+	Block GetBlock(glm::ivec3 wpos); // wrapper
+	Light GetLight(glm::ivec3 wpos); // wrapper
+	BlockPtr GetBlockPtr(const glm::ivec3 wpos);
+	LightPtr GetLightPtr(const glm::ivec3 wpos);
 	void UpdatedChunk(ChunkPtr chunk);
 	void ReloadAllChunks(); // for when big things change
 
