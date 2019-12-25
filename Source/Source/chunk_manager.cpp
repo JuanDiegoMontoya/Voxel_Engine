@@ -9,6 +9,7 @@
 #include "chunk_manager.h"
 #include "generation.h"
 #include "pipeline.h"
+#include "utilities.h"
 
 // Windows-specific thread affinity
 #ifdef _WIN32
@@ -97,13 +98,13 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 		// check if removed block emitted light
 		glm::uvec3 emit1 = Block::PropertiesTable[block->GetType()].emittance;
 		if (emit1 != glm::uvec3(0))
-			lightPropagateRemove(wpos, block->GetType());
+			lightPropagateRemove(wpos);
 	}
 
 	// check if added block emits light
 	glm::uvec3 emit2 = Block::PropertiesTable[bl.GetType()].emittance;
 	if (emit2 != glm::uvec3(0))
-		lightPropagateAdd(wpos, bl.GetType());
+		lightPropagateAdd(wpos, Light(Block::PropertiesTable[bl.GetType()].emittance));
 
 	// create empty chunk if it's null
 	if (!chunk)
@@ -485,21 +486,13 @@ void ChunkManager::chunk_buffer_task()
 }
 
 
-void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Block::BlockType bt)
+// ref https://www.seedofandromeda.com/blogs/29-fast-flood-fill-lighting-in-a-blocky-voxel-game-pt-1
+void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight)
 {
-	//struct LightNode
-	//{
-	//	LightNode(glm::ivec3 p, ChunkPtr c) : pos(p), chunk(c) {}
-	//	glm::ivec3 pos;
-	//	ChunkPtr chunk;
-	//};
-	//std::queue<LightNode> lightQueue;
-	//lightQueue.emplace(pos,)
-
 	//UpdateBlockLight(wpos, Block::PropertiesTable[bt].emittance);
 	LightPtr L = GetLightPtr(wpos);
 	if (L)
-		L->Set(Block::PropertiesTable[bt].emittance);
+		*L = nLight;
 	std::queue<glm::ivec3> lightQueue;
 	lightQueue.push(wpos);
 	while (!lightQueue.empty())
@@ -517,8 +510,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Block::BlockType bt)
 			{ 0, 0,-1 },
 		};
 
-		// iterate for R, G, and B
-		for (auto& dir : dirs)
+		for (const auto& dir : dirs)
 		{
 			Block block = GetBlock(lightp + dir);
 			LightPtr light = GetLightPtr(lightp + dir);
@@ -526,6 +518,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Block::BlockType bt)
 			// if solid block or too bright of a block, skip dat boi
 			if (Block::PropertiesTable[block.GetType()].color.a == 1)
 				continue;
+			// iterate for R, G, B, and sunlight
 			for (int ci = 0; ci < 4; ci++) // iterate color index
 			{
 				// skip blocks that are too bright to be affected by this light
@@ -542,9 +535,76 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Block::BlockType bt)
 }
 
 
-void ChunkManager::lightPropagateRemove(glm::ivec3 pos, Block::BlockType bt)
+void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 {
+	std::queue<std::pair<glm::ivec3, Light>> lightRemovalQueue;
+	Light light = GetLight(wpos);
+	lightRemovalQueue.push({ wpos, light });
+	GetLightPtr(wpos)->Set({ 0, 0, 0, light.GetS() });
 
+	std::queue<std::pair<glm::ivec3, Light>> lightReadditionQueue;
+	std::unordered_map<glm::ivec3, Light, Utils::ivec3Hash, Utils::ivec3KeyEq> lightsToReadd;
+
+	//return;
+
+	while (!lightRemovalQueue.empty())
+	{
+		auto [ plight, lite ] = lightRemovalQueue.front();
+		auto lightv = lite.Get();
+		lightRemovalQueue.pop();
+
+		constexpr glm::ivec3 dirs[] =
+		{
+			{ 1, 0, 0 },
+			{-1, 0, 0 },
+			{ 0, 1, 0 },
+			{ 0,-1, 0 },
+			{ 0, 0, 1 },
+			{ 0, 0,-1 },
+		};
+
+		for (const auto& dir : dirs)
+		{
+			LightPtr nearLight = GetLightPtr(plight + dir);
+			if (!nearLight)
+				continue;
+			auto nlightv = nearLight->Get();
+
+			for (int ci = 0; ci < 3; ci++) // iterate 3 color components (not sunlight)
+			{
+				// skip updates when light is 0
+				// remove light if there is any and if it is weaker than this node's light value
+				if (nlightv[ci] != 0 && nlightv[ci] < lightv[ci])
+				{
+					lightRemovalQueue.push({ plight + dir, *nearLight });
+					auto tmp = nearLight->Get();
+					tmp[ci] = 0;
+					nearLight->Set(tmp);
+				}
+				// re-propagate near light that is equal to or brighter than this after setting it all to 0
+				else if (nlightv[ci] != 0 && nlightv[ci] >= lightv[ci])
+				{
+					glm::ucvec4 nue(0);
+					nue[ci] = nlightv[ci];
+					//lightReadditionQueue.push({ plight + dir, nue });
+					if (!lightsToReadd[plight + dir].Get()[ci])
+					{
+						nue += lightsToReadd[plight + dir].Get();
+						lightsToReadd[plight + dir].Set(nue);
+					}
+				}
+			}
+		}
+	}
+
+	// commence re-propogation of light unrelated to the deleted one
+	//while (!lightReadditionQueue.empty())
+	//{
+	//	const auto& p = lightReadditionQueue.front();
+	//	lightReadditionQueue.pop();
+	//	lightPropagateAdd(p.first, p.second);
+	//}
+
+	for (const auto& p : lightsToReadd)
+		lightPropagateAdd(p.first, p.second);
 }
-
-

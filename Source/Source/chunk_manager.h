@@ -101,10 +101,10 @@ private:
 
 
 	// new light intensity to add
-	void lightPropagateAdd(glm::ivec3 wpos, Block::BlockType bt);
+	void lightPropagateAdd(glm::ivec3 wpos, Light nLight);
 
 	// removed light intensity
-	void lightPropagateRemove(glm::ivec3 wpos, Block::BlockType bt);
+	void lightPropagateRemove(glm::ivec3 wpos);
 
 
 	// vars

@@ -281,6 +281,8 @@ void Renderer::drawNormal()
 void Renderer::drawWater()
 {
 	glDisable(GL_CULL_FACE);
+	//glDisable(GL_BLEND); // TODO: only skip blending between other water blocks (prolly just use another framebuffer)
+	
 	ShaderPtr currShader = Shader::shaders["chunk_water"];
 	currShader->Use();
 	std::vector<int> values = { 0, 1, 2 };
@@ -375,6 +377,7 @@ void Renderer::drawWater()
 			chunk.second->RenderWater();
 		}
 	});
+	glEnable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
 }
 

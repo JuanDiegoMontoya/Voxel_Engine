@@ -259,7 +259,9 @@ void Level::DrawImGui()
 			ImGui::Text("Write Strength: %d", block->WriteStrength());
 			ImGui::Text("Light Value: %d", block->LightValue());
 			LightPtr lit = Chunk::LightAtWorld({ x, y, z });
+			LightPtr lit2 = Chunk::LightAtWorld(glm::vec3(x, y, z) + side);
 			ImGui::Text("Light: (%d, %d, %d, %d)", lit->GetR(), lit->GetG(), lit->GetB(), lit->GetS());
+			ImGui::Text("FLight: (%d, %d, %d, %d)", lit2->GetR(), lit2->GetG(), lit2->GetB(), lit2->GetS());
 			ImGui::Text("Block pos:  (%.2f, %.2f, %.2f)", x, y, z);
 			ImGui::Text("Block side: (%.2f, %.2f, %.2f)", side.x, side.y, side.z);
 			//glm::vec3 color = Block::PropertiesTable[block->GetType()].color;
