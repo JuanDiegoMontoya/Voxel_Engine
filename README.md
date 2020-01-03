@@ -15,7 +15,8 @@ Performance was tested on this system for reference:
 ## Features
 (*WIP*) indicates that a feature is mostly complete but has some bugs that need to be sorted out. 
 ### Voxels
-- Capable of rendering 10+ million voxels at 500+ FPS
+- Renders 10+ million voxels at 500+ FPS
+  - Capable of rendering over 270 million voxels (8000 chunks \* 32<sup>3</sup> cubes) with ~30 FPS.
 - Infinite size world
 - Movement physics and terrain collision
 - Procedurally generated terrain including hills, mountains, plains, rivers, etc.
@@ -70,3 +71,4 @@ Hover to see detail:
 ![Image of snowy cave.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/snow_cave.png "Snow cave.")
 ![Image showing marched cubes example.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/marched01.png "Marching cubes implementation with scalar field.")
 ![Image of differently colored lights interacting.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/lights_v01.png "Colored lighting.")
+![Image of long render distance.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/long_render01.png "31 FPS rendering over 270 million voxels (8504*32^3 blocks).")
