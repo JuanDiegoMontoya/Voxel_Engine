@@ -176,7 +176,7 @@ void DirLight::calcPersProjs()
 	float near_ = .1f;
 	float far_ = 500.f;
 	*/
-	for (int i = 0; i < shadowCascades_; i++)
+	for (unsigned i = 0; i < shadowCascades_; i++)
 	{
 		shadowOrthoProjMtxs_[i] = glm::perspective(glm::radians(80.f), 1920.f / 1080.f, cascadeEnds_[i], cascadeEnds_[i + 1]) * Render::GetCamera()->GetView();
 	}

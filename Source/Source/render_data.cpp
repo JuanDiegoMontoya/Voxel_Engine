@@ -12,7 +12,7 @@
 Component * RenderData::Clone() const
 {
 	RenderDataPtr rend = new RenderData(*this);
-	rend->SetType(cRenderData);
+	rend->SetType(ComponentType::cRenderData);
 	return rend;
 }
 

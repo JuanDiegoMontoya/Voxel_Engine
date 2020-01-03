@@ -34,7 +34,7 @@ void WorldGen::GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse
 						{
 							if (Utils::get_random(0, 1) > sparse)
 								continue;
-							init->At(x, y, z).SetType(static_cast<Block::BlockType>(static_cast<int>(Utils::get_random(1, Block::bCount))), false);
+							init->At(x, y, z).SetType(BlockType(int(Utils::get_random(1.f, float(BlockType::bCount)))), false);
 						}
 					}
 				}
@@ -172,16 +172,16 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 					height = height < -1 ? -1 : height;
 
 					int y = (int)Utils::mapToRange(height, -1.f, 1.f, -0.f, 100.f);
-					level->UpdateBlockAt(glm::ivec3(worldX, y, worldZ), Block::BlockType::bGrass);
+					level->UpdateBlockAt(glm::ivec3(worldX, y, worldZ), BlockType::bGrass);
 
 					// generate subsurface
 					for (int j = -10; j < y; j++)
-						level->UpdateBlockAt(glm::ivec3(worldX, j, worldZ), Block::BlockType::bStone);
+						level->UpdateBlockAt(glm::ivec3(worldX, j, worldZ), BlockType::bStone);
 
 					// extra layer(s) of grass on the top
-					level->UpdateBlockAt(glm::ivec3(worldX, y - 1, worldZ), Block::BlockType::bDirt);
-					level->UpdateBlockAt(glm::ivec3(worldX, y - 2, worldZ), Block::BlockType::bDirt);
-					level->UpdateBlockAt(glm::ivec3(worldX, y - 3, worldZ), Block::BlockType::bDirt);
+					level->UpdateBlockAt(glm::ivec3(worldX, y - 1, worldZ), BlockType::bDirt);
+					level->UpdateBlockAt(glm::ivec3(worldX, y - 2, worldZ), BlockType::bDirt);
+					level->UpdateBlockAt(glm::ivec3(worldX, y - 3, worldZ), BlockType::bDirt);
 				}
 			}
 
@@ -387,9 +387,9 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 		{
 			// height-based values that don't care about y
 			int worldZ = cpos.z * Chunk::CHUNK_SIZE + k;
-			float height = heightMapBuilder.GetValue(worldX, worldZ);
-			float riverVal = riverMapBuilder.GetValue(worldX, worldZ);
-			double humidity = GetHumidity(worldX, worldZ);
+			float height = float(heightMapBuilder.GetValue(worldX, worldZ));
+			float riverVal = float(riverMapBuilder.GetValue(worldX, worldZ));
+			double humid = GetHumidity(worldX, worldZ);
 			float slope = getSlope(heightMapBuilder, worldX, worldZ);
 
 			// iterate over all of Y because there may be
@@ -401,18 +401,18 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				int y = (int)Utils::mapToRange(height, -1.f, 1.f, 0.f, 150.f);
 				if (worldY > y && worldY > 0) // early skip
 					continue;
-				const Biome& curBiome = BiomeManager::GetBiome(GetTemperature(worldX, worldY, worldZ), humidity, GetTerrainType(wpos));
+				const Biome& curBiome = BiomeManager::GetBiome(GetTemperature(worldX, worldY, worldZ), humid, GetTerrainType(wpos));
 
 				int riverModifier = 0;
 				if (riverVal > 0 && slope < 0.004f)
-					riverModifier = glm::clamp(Utils::mapToRange(riverVal, -.35f, .35f, -4.f, 5.f), 0.f, 30.f);
+					riverModifier = int(glm::clamp(Utils::mapToRange(riverVal, -.35f, .35f, -4.f, 5.f), 0.f, 30.f));
 				int actualHeight = y - riverModifier;
 
 				// TODO: make rivers have sand around/under them
 				if (worldY > actualHeight && worldY < y - 1)
-					level->GenerateBlockAt(wpos, Block::BlockType::bWater);
+					level->GenerateBlockAt(wpos, BlockType::bWater);
 				if (worldY < 0 && worldY > actualHeight) // make ocean
-					level->GenerateBlockAt(wpos, Block::BlockType::bWater);
+					level->GenerateBlockAt(wpos, BlockType::bWater);
 
 				// top cover
 				if (worldY == actualHeight)
@@ -432,12 +432,12 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				}
 				// just under top cover
 				if (worldY >= actualHeight - 3 && worldY < actualHeight)
-					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bDirt);
+					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), BlockType::bDirt);
 
 				// generate subsurface layer (rocks)
 				if (worldY >= -30 && worldY < actualHeight - 3)
 				{
-					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), Block::BlockType::bStone);
+					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), BlockType::bStone);
 					if (Utils::get_random(0, 1) > .99999f)
 						GeneratePrefab(PrefabManager::GetPrefab(PrefabName::DungeonSmall), wpos, level);
 				}
@@ -454,8 +454,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 			{
 				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
-				if (val > .9 && level->GetBlockAt(pos).GetType() != Block::bWater)
-					level->GenerateBlockAtCheap(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
+				if (val > .9 && level->GetBlockAt(pos).GetType() != BlockType::bWater)
+					level->GenerateBlockAtCheap(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
 					//level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
 			}
 		}
@@ -465,7 +465,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 }
 
 
-WorldGen::TerrainType WorldGen::GetTerrainType(glm::ivec3 wpos)
+TerrainType WorldGen::GetTerrainType(glm::ivec3 wpos)
 {
 	// TODO: special cases of height e.g. being very deep (underworld, etc.) or being high (sky islands)
 
@@ -514,12 +514,12 @@ void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
 				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 
 				// method 2
-				level->GenerateBlockAt(glm::ivec3(pos), Block::bAir); // air by default
+				level->GenerateBlockAt(glm::ivec3(pos), BlockType::bAir); // air by default
 				cell Cell = Chunk::buildCellFromVoxel(pos);
 				for (double& density : Cell.val)
 					if (Utils::mapToRange(density, -1.f, 1.f, 0.f, 1.f) > Chunk::isolevel + magic)
 					{
-						level->GenerateBlockAt(glm::ivec3(pos), Block::bGrass); // replace by grass
+						level->GenerateBlockAt(glm::ivec3(pos), BlockType::bGrass); // replace by grass
 						continue;
 					}
 			}
@@ -568,18 +568,18 @@ double WorldGen::GetDensity(const glm::vec3& wpos)
 float WorldGen::getSlope(model::Plane& pl, int x, int z)
 {
 	//float height = *heightmap.GetConstSlabPtr(x, z);
-	float height = pl.GetValue(x, z);
+	auto height = pl.GetValue(x, z);
 
 	// Compute the differentials by stepping over 1 in both directions.
-	float val1 = pl.GetValue(x + 1, z);
-	float val2 = pl.GetValue(x, z + 1);
+	auto val1 = pl.GetValue(x + 1, z);
+	auto val2 = pl.GetValue(x, z + 1);
 	
 	//if (val1 == 0 || val2 == 0)
 	//	return 0;
-	float dx = val1 - height;
-	float dz = val2 - height;
+	auto dx = val1 - height;
+	auto dz = val2 - height;
 	
 	// The "steepness" is the magnitude of the gradient vector
 	// For a faster but less accurate computation, you can just use abs(dx) + abs(dy)
-	return glm::sqrt(dx * dx + dz * dz);
+	return float(glm::sqrt(dx * dx + dz * dz));
 }

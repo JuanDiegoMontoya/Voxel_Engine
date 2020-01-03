@@ -3,13 +3,14 @@
 
 class Frustum;
 
-enum CameraType : int
+enum class CameraType : int
 {
 	kPhysicsCam, // uses movement keys to affect velocity and/or acceleration
 	kControlCam, // use movement keys to fly around
 	kAffixedCam, // parented to some object
 	kImmobileCam // cannot move
 };
+
 
 class Camera : public Component
 {

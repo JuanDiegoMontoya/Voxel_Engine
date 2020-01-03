@@ -7,19 +7,22 @@
 struct Biome
 {
 	Biome(float humid, float temp,
-		WorldGen::TerrainType tt, Block::BlockType bt)
-		: humidity_avg(humid), temp_avg(temp), terrain(tt), surfaceCover(bt) {}
-	Biome() {}
+		TerrainType tt, BlockType bt)
+		: humidity_avg(humid), temp_avg(temp), terrain(tt), surfaceCover(bt),
+	surfaceFeatures(), subFeatures(), skyFeatures() {}
+
+	Biome() : humidity_avg(), temp_avg(), terrain(), surfaceCover(), 
+		surfaceFeatures(), subFeatures(), skyFeatures() {}
 
 	std::string name; // identifier
 
 	// when to spawn this biome
 	float humidity_avg; // -1 to 1
 	float temp_avg;			// -1 to 1
-	WorldGen::TerrainType terrain;
+	TerrainType terrain;
 
 	// % chance and name of prefab to spawn
-	Block::BlockType surfaceCover; // sand, dirt, snow, etc.
+	BlockType surfaceCover; // sand, dirt, snow, etc.
 	std::vector<std::pair<float, PrefabName>> surfaceFeatures;	// per block
 	std::vector<std::pair<float, PrefabName>> subFeatures;			// per chunk
 	std::vector<std::pair<float, PrefabName>> skyFeatures;			// per chunk
@@ -57,7 +60,7 @@ public:
 
 	inline static std::unordered_map<std::string, Biome> biomes;
 
-	const static Biome& GetBiome(float temp, float humid, WorldGen::TerrainType terrain);
+	const static Biome& GetBiome(float temp, float humid, TerrainType terrain);
 	static void InitializeBiomes();
 private:
 	static void registerBiome(const Biome& biome);

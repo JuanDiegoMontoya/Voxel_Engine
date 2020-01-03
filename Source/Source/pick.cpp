@@ -63,9 +63,9 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 	// tMaxX, tMaxY, and tMaxZ.
 
 	// Cube containing origin point.
-	int x = glm::floor(origin[0]);
-	int y = glm::floor(origin[1]);
-	int z = glm::floor(origin[2]);
+	int x = int(glm::floor(origin[0]));
+	int y = int(glm::floor(origin[1]));
+	int z = int(glm::floor(origin[2]));
 	// Break out direction vector.
 	float dx = direction[0];
 	float dy = direction[1];
@@ -101,7 +101,7 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 
 		// Invoke the callback, unless we are not *yet* within the bounds of the
 		// world.
-		if (callback(x, y, z, Chunk::AtWorld(glm::ivec3(x, y, z)), face))
+		if (callback(float(x), float(y), float(z), Chunk::AtWorld(glm::ivec3(x, y, z)), face))
 			break;
 
 		// tMaxX stores the t-value at which we cross a cube boundary along the
@@ -118,7 +118,7 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 				// Adjust tMaxX to the next X-oriented boundary crossing.
 				tMaxX += tDeltaX;
 				// Record the normal vector of the cube face we entered.
-				face[0] = -stepX;
+				face[0] = float(-stepX);
 				face[1] = 0;
 				face[2] = 0;
 			}
@@ -129,7 +129,7 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 				tMaxZ += tDeltaZ;
 				face[0] = 0;
 				face[1] = 0;
-				face[2] = -stepZ;
+				face[2] = float(-stepZ);
 			}
 		}
 		else
@@ -140,7 +140,7 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 				y += stepY;
 				tMaxY += tDeltaY;
 				face[0] = 0;
-				face[1] = -stepY;
+				face[1] = float(-stepY);
 				face[2] = 0;
 			}
 			else
@@ -152,7 +152,7 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 				tMaxZ += tDeltaZ;
 				face[0] = 0;
 				face[1] = 0;
-				face[2] = -stepZ;
+				face[2] = float(-stepZ);
 			}
 		}
 	}

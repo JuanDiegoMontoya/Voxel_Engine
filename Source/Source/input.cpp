@@ -45,23 +45,25 @@ namespace Input
 	static bool firstMouse = true;
 	static void mouse_pos_cb(GLFWwindow* window, double xpos, double ypos)
 	{
+		float xp = float(xpos);
+		float yp = float(ypos);
 		if (firstMouse)
 		{
-			mouse.screenOffset.x = xpos;
-			mouse.screenOffset.y = ypos;
+			mouse.screenOffset.x = xp;
+			mouse.screenOffset.y = yp;
 			firstMouse = false;
 		}
 
-		mouse.screenPos.x = (float)xpos;
-		mouse.screenPos.y = (float)ypos;
+		mouse.screenPos.x = xp;
+		mouse.screenPos.y = yp;
 
 		//Render::convertScreenToWorld(&x, &y);
-		mouse.worldPos.x = (float)xpos;
-		mouse.worldPos.y = (float)ypos;
+		mouse.worldPos.x = xp;
+		mouse.worldPos.y = yp;
 
-		mouse.screenOffset.x = xpos - mouse.prevScreenPos.x;
-		mouse.screenOffset.y = mouse.prevScreenPos.y - ypos;
-		mouse.prevScreenPos = glm::vec2(xpos, ypos);
+		mouse.screenOffset.x = xp - mouse.prevScreenPos.x;
+		mouse.screenOffset.y = mouse.prevScreenPos.y - yp;
+		mouse.prevScreenPos = glm::vec2(xp, yp);
 		mouse.screenOffset *= mouse.sensitivity;
 		//cout << "Mouse pos: " << "(" << xpos << ", " << ypos << ")" << endl;
 	}

@@ -2,7 +2,7 @@
 #include "block.h"
 #include "biome.h"
 
-const Biome& BiomeManager::GetBiome(float temp, float humid, WorldGen::TerrainType terrain)
+const Biome& BiomeManager::GetBiome(float temp, float humid, TerrainType terrain)
 {
 	// track nearest biome to conditions at current block
 	std::string currID("error");
@@ -32,21 +32,21 @@ void BiomeManager::InitializeBiomes()
 		error.name = "error";
 		error.humidity_avg = 9001;
 		error.temp_avg = 9001;
-		error.terrain = WorldGen::tNone;
-		error.surfaceCover = Block::bError;
+		error.terrain = TerrainType::tNone;
+		error.surfaceCover = BlockType::bError;
 		registerBiome(error);
 	}
 
 	// ocean
 	{
-		Biome ocean(0, 0, WorldGen::tOcean, Block::bSand);
+		Biome ocean(0, 0, TerrainType::tOcean, BlockType::bSand);
 		ocean.name = "ocean";
 		registerBiome(ocean);
 	}
 
 	// woodlands
 	{
-		Biome woodlands(0, 0, WorldGen::tPlains, Block::bGrass);
+		Biome woodlands(0, 0, TerrainType::tPlains, BlockType::bGrass);
 		woodlands.name = "woodlands";
 		woodlands.surfaceFeatures.push_back({ .05f, PrefabName::OakTree });
 		registerBiome(woodlands);
@@ -54,14 +54,14 @@ void BiomeManager::InitializeBiomes()
 
 	// flat desert
 	{
-		Biome desertF(-.5f, .5f, WorldGen::tPlains, Block::bSand);
+		Biome desertF(-.5f, .5f, TerrainType::tPlains, BlockType::bSand);
 		desertF.name = "flat desert";
 		registerBiome(desertF);
 	}
 
 	// tundra
 	{
-		Biome tundra(0, -.5f, WorldGen::tPlains, Block::bSnow);
+		Biome tundra(0, -.5f, TerrainType::tPlains, BlockType::bSnow);
 		tundra.name = "tundra";
 		tundra.surfaceFeatures.push_back({ .0001, PrefabName::BoulderA });
 		tundra.surfaceFeatures.push_back({ .0001, PrefabName::BoulderB });
@@ -72,7 +72,7 @@ void BiomeManager::InitializeBiomes()
 
 	// snow hills
 	{
-		Biome snowH(.2f, -.5f, WorldGen::tHills, Block::bSnow);
+		Biome snowH(.2f, -.5f, TerrainType::tHills, BlockType::bSnow);
 		snowH.name = "snow hills";
 		snowH.surfaceFeatures.push_back({ .002f, PrefabName::BorealTree });
 		registerBiome(snowH);
@@ -80,7 +80,7 @@ void BiomeManager::InitializeBiomes()
 
 	// desert hills
 	{
-		Biome desertH(-.5f, .5f, WorldGen::tHills, Block::bSand);
+		Biome desertH(-.5f, .5f, TerrainType::tHills, BlockType::bSand);
 		desertH.surfaceFeatures.push_back({ .005, PrefabName::Cactus });
 		desertH.name = "desert hills";
 		registerBiome(desertH);
@@ -88,7 +88,7 @@ void BiomeManager::InitializeBiomes()
 
 	// highlands
 	{
-		Biome highland(.3f, 0.f, WorldGen::tHills, Block::bDryGrass);
+		Biome highland(.3f, 0.f, TerrainType::tHills, BlockType::bDryGrass);
 		highland.name = "highland";
 		highland.surfaceFeatures.push_back({ .0005, PrefabName::BoulderA });
 		highland.surfaceFeatures.push_back({ .0005, PrefabName::BoulderB });

@@ -96,15 +96,15 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 			return;
 
 		// check if removed block emitted light
-		glm::uvec3 emit1 = Block::PropertiesTable[block->GetType()].emittance;
+		glm::uvec3 emit1 = Block::PropertiesTable[int(block->GetType())].emittance;
 		if (emit1 != glm::uvec3(0))
 			lightPropagateRemove(wpos);
 	}
 
 	// check if added block emits light
-	glm::uvec3 emit2 = Block::PropertiesTable[bl.GetType()].emittance;
+	glm::uvec3 emit2 = Block::PropertiesTable[int(bl.GetType())].emittance;
 	if (emit2 != glm::uvec3(0))
-		lightPropagateAdd(wpos, Light(Block::PropertiesTable[bl.GetType()].emittance));
+		lightPropagateAdd(wpos, Light(Block::PropertiesTable[int(bl.GetType())].emittance));
 
 	// create empty chunk if it's null
 	if (!chunk)
@@ -269,7 +269,7 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 	// update chunk if near block is NOT air/invisible
 	BlockPtr cb = Chunk::AtWorld(pos);
 	BlockPtr nb = Chunk::AtWorld(pos + near);
-	if (cb && nb && nb->GetType() != Block::bAir)
+	if (cb && nb && nb->GetType() != BlockType::bAir)
 	{
 		//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 		std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
@@ -465,8 +465,8 @@ void ChunkManager::chunk_mesher_thread_task()
 			buffer_queue_.insert(chunk);
 		});
 	}
-	std::shared_ptr<void> fdsa;
-	fdsa.use_count();
+	//std::shared_ptr<void> fdsa;
+	//fdsa.use_count();
 }
 
 
@@ -516,7 +516,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight)
 			LightPtr light = GetLightPtr(lightp + dir);
 			if (!light) continue;
 			// if solid block or too bright of a block, skip dat boi
-			if (Block::PropertiesTable[block.GetType()].color.a == 1)
+			if (Block::PropertiesTable[int(block.GetType())].color.a == 1)
 				continue;
 			// iterate for R, G, B, and sunlight
 			for (int ci = 0; ci < 4; ci++) // iterate color index

@@ -31,7 +31,7 @@ public:
 	const std::string& GetName() const { return name_; }
 
 private:
-	Component* components_[cCount];
+	Component* components_[int(ComponentType::cCount)];
 	bool enabled_; // user var
 	std::string name_;
 

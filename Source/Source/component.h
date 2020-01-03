@@ -4,7 +4,7 @@
 typedef class GameObject* GameObjectPtr;
 
 // defines all of the component types, and in which order they are updated
-enum ComponentType : unsigned
+enum class ComponentType : unsigned
 {
 	cTransform,
 	cAABBCollider, // requires physics component
@@ -28,6 +28,7 @@ public:
 	void SetEnabled(bool e) { enabled_ = e; }
 
 	ComponentType GetType() const { return type_; }
+	int GetTypei() const { return int(type_); }
 	GameObjectPtr GetParent() const { return parent_; }
 	bool GetEnabled() const { return enabled_; }
 

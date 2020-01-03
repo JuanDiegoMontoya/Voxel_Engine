@@ -5,7 +5,7 @@
 class VBO
 {
 public:
-	VBO(const void* data, unsigned int size, GLenum drawmode = GL_STATIC_DRAW);
+	VBO(const void* data, size_t size, GLenum drawmode = GL_STATIC_DRAW);
 	~VBO();
 
 	// will probably cause epic errors if called multiple times

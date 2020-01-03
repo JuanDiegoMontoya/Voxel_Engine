@@ -198,7 +198,7 @@ void Chunk::BuildMesh()
 			for (int z = 0; z < CHUNK_SIZE; z++)
 			{
 				// skip fully transparent blocks
-				if (At(x, y, z).GetType() == Block::bAir)
+				if (At(x, y, z).GetType() == BlockType::bAir)
 					continue;
 
 				// check if each face would be obscured, and adds the ones that aren't to the vbo
@@ -252,7 +252,7 @@ void Chunk::buildSingleBlockFace(
 	bool force)																			// force building of this block, if it exists
 {
 	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
-	bool isWater = block.GetType() == Block::bWater;
+	bool isWater = block.GetType() == BlockType::bWater;
 	ChunkPtr near = chunks[nearblock.chunk_pos];
 	Block block2; // near block
 	Light light2; // near light
@@ -267,13 +267,13 @@ void Chunk::buildSingleBlockFace(
 	{
 		block2 = near->At(nearblock.block_pos);
 		light2 = near->LightAt(nearblock.block_pos);
-		if (block2.GetType() != Block::bWater && block.GetType() == Block::bWater && (nearFace - blockPos).y > 0)
+		if (block2.GetType() != BlockType::bWater && block.GetType() == BlockType::bWater && (nearFace - blockPos).y > 0)
 			goto GenQuad;
-		if (block2.GetType() != Block::bAir && block2.GetType() != Block::bWater)
+		if (block2.GetType() != BlockType::bAir && block2.GetType() != BlockType::bWater)
 			return;
-		if (block2.GetType() == Block::bWater && block.GetType() == Block::bWater)
+		if (block2.GetType() == BlockType::bWater && block.GetType() == BlockType::bWater)
 			return;
-		if (Block::PropertiesTable[block.GetType()].invisible)
+		if (Block::PropertiesTable[int(block.GetType())].invisible)
 			return;
 	}
 
@@ -282,14 +282,14 @@ GenQuad:
 	// (the full world transformation will be completed in a shader)
 	glm::mat4 localTransform = glm::translate(glm::mat4(1.f), glm::vec3(blockPos) + .5f); // non-scaled
 
-	float shiny = Block::PropertiesTable[block.GetType()].specular;
-	glm::vec4 color = Block::PropertiesTable[block.GetType()].color;
+	float shiny = Block::PropertiesTable[int(block.GetType())].specular;
+	glm::vec4 color = Block::PropertiesTable[int(block.GetType())].color;
 	color.r *= (1 + float(light2.GetR())) / 16.f;
 	color.g *= (1 + float(light2.GetG())) / 16.f;
 	color.b *= (1 + float(light2.GetB())) / 16.f;
 
 	// slightly randomize color for each block to make them more visible (temporary solution)
-	float clrBias = Utils::get_random_r(-.03, .03);
+	float clrBias = Utils::get_random_r(-.03f, .03f);
 
 	// sadly we gotta copy all this stuff 6 times
 	for (int i = 0; i < 6; i++)
@@ -370,7 +370,7 @@ float Chunk::computeBlockAO(
 		goto B2AO;
 	if (!near1->active_)
 		goto B2AO;
-	if (near1->At(nearblock1.block_pos).GetType() != Block::bAir && near1->At(nearblock1.block_pos).GetType() != Block::bWater)
+	if (near1->At(nearblock1.block_pos).GetType() != BlockType::bAir && near1->At(nearblock1.block_pos).GetType() != BlockType::bWater)
 		occlusion -= occAmt;
 
 B2AO:
@@ -382,7 +382,7 @@ B2AO:
 		goto BAO_END;
 	if (!near2->active_)
 		goto BAO_END;
-	if (near2->At(nearblock2.block_pos).GetType() != Block::bAir && near2->At(nearblock2.block_pos).GetType() != Block::bWater)
+	if (near2->At(nearblock2.block_pos).GetType() != BlockType::bAir && near2->At(nearblock2.block_pos).GetType() != BlockType::bWater)
 		occlusion -= occAmt;
 
 	// check diagonal if not 'fully' occluded
@@ -396,7 +396,7 @@ B2AO:
 			goto BAO_END;
 		if (!near3->active_)
 			goto BAO_END;
-		if (near3->At(nearblock3.block_pos).GetType() != Block::bAir && near3->At(nearblock3.block_pos).GetType() != Block::bWater)
+		if (near3->At(nearblock3.block_pos).GetType() != BlockType::bAir && near3->At(nearblock3.block_pos).GetType() != BlockType::bWater)
 			occlusion -= occAmt;
 	}
 

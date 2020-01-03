@@ -2,7 +2,7 @@
 
 #include "vbo.h"
 
-VBO::VBO(const void * data, unsigned int size, GLenum drawmode)
+VBO::VBO(const void * data, size_t size, GLenum drawmode)
 {
 	glGenBuffers(1, &rendererID_);
 	//std::cout << rendererID_ << " : " << data << std::endl;

@@ -25,12 +25,12 @@ void Camera::Update(float dt)
 	float currSpeed = speed_ * dt;
 	switch (type_)
 	{
-	case kPhysicsCam:
+	case CameraType::kPhysicsCam:
 	{
 		acceleration_ = glm::vec3(0, -25, 0); // "gravity"
 		// "friction" (multiply dt by big num so the friction constant isn't stupidly small)
-		velocity_.x *= glm::pow(.90, dt * 100);
-		velocity_.z *= glm::pow(.90, dt * 100);
+		velocity_.x *= glm::pow(.90f, dt * 100);
+		velocity_.z *= glm::pow(.90f, dt * 100);
 		if (Input::Keyboard().down[GLFW_KEY_W])
 		{
 			velocity_.x += 60 * cos(glm::radians(yaw_)) * dt;
@@ -83,7 +83,7 @@ void Camera::Update(float dt)
 		dir_ = front;
 		break;
 	}
-	case kControlCam:
+	case CameraType::kControlCam:
 		if (Input::Keyboard().down[GLFW_KEY_LEFT_SHIFT])
 			currSpeed *= 10;
 		if (Input::Keyboard().down[GLFW_KEY_LEFT_CONTROL])
@@ -111,10 +111,10 @@ void Camera::Update(float dt)
 		dir_ = front;
 		velocity_ = worldpos_ - oldPos;
 		break;
-	case kAffixedCam: // attached to an object, possibly follows directionality
+	case CameraType::kAffixedCam: // attached to an object, possibly follows directionality
 		// TODO: add behavior to follow object
 		break;
-	case kImmobileCam: // do nothing
+	case CameraType::kImmobileCam: // do nothing
 	default:
 		break;
 	}

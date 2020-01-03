@@ -5,7 +5,7 @@
 
 GameObject::GameObject()
 {
-	for (size_t i = 0; i < cCount; i++)
+	for (size_t i = 0; i < size_t(ComponentType::cCount); i++)
 	{
 		components_[i] = nullptr;
 	}
@@ -15,7 +15,7 @@ GameObject::GameObject()
 
 GameObject::~GameObject()
 {
-	for (int i = 0; i < cCount; i++)
+	for (int i = 0; i < size_t(ComponentType::cCount); i++)
 	{
 		if (components_[i])
 		{
@@ -28,7 +28,7 @@ GameObject::~GameObject()
 GameObjectPtr GameObject::Clone() const
 {
 	GameObjectPtr newobj = new GameObject();
-	for (size_t i = 0; i < cCount; i++)
+	for (size_t i = 0; i < size_t(ComponentType::cCount); i++)
 	{
 		if (components_[i])
 			newobj->AddComponent(components_[i]->Clone());
@@ -47,6 +47,6 @@ void GameObject::AddComponent(Component* component)
 	if (component)
 	{
 		component->SetParent(this);
-		components_[component->GetType()] = component;
+		components_[component->GetTypei()] = component;
 	}
 }

@@ -16,37 +16,39 @@ struct BlockProperties
 	glm::ucvec4 emittance;	// light
 };
 
+
+// defines various block properties and behaviors
+enum class BlockType : uint8_t // upgrade when over 256 block types
+{
+	bAir = 0, // default type
+	bStone,
+	bDirt,
+	bMetal,
+	bGrass,
+	bSand,
+	bSnow,
+	bWater,
+	bOakWood,
+	bOakLeaves,
+	bError,
+	bDryGrass,
+	bOLight,
+	bRLight,
+	bGLight,
+	bBLight,
+	bSmLight,
+
+	bCount
+};
+
+
 // a 1x1x1 cube
 //#pragma pack(push, 1)
 typedef class Block
 {
 public:
-
-	// defines various block properties and behaviors
-	enum BlockType : uint8_t // upgrade when over 256 block types
-	{
-		bAir = 0, // default type
-		bStone,
-		bDirt,
-		bMetal,
-		bGrass,
-		bSand,
-		bSnow,
-		bWater,
-		bOakWood,
-		bOakLeaves,
-		bError,
-		bDryGrass,
-		bOLight,
-		bRLight,
-		bGLight,
-		bBLight,
-		bSmLight,
-
-		bCount
-	};
 	
-	Block(BlockType t = bAir, unsigned char w = 0, unsigned char l = 0)
+	Block(BlockType t = BlockType::bAir, unsigned char w = 0, unsigned char l = 0)
 		: type_(t)
 	{
 		SetWriteStrength(w);
@@ -55,6 +57,7 @@ public:
 
 	// Getters
 	BlockType GetType() const { return type_; }
+	int GetTypei() const { return int(type_); }
 	const char* GetName() const { return Block::PropertiesTable[unsigned(type_)].name; }
 	unsigned char WriteStrength() const { return (wlValues_ & 0xF0) >> 4; }
 	unsigned char LightValue() const { return wlValues_ & 0x0F; }

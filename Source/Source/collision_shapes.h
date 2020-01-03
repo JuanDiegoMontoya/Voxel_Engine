@@ -14,6 +14,7 @@ struct Box
 {
 	// 1x1x1 block
 	Box(const glm::vec3& wpos)
+		: min(), max(), blockpos()
 	{
 		min = wpos - .5f;
 		max = wpos + .5f;
@@ -22,8 +23,10 @@ struct Box
 		blockpos = wpos;
 	}
 
+
 	// .5 x .5 x .5 camera
 	Box(const Camera& c)
+		: min(), max(), blockpos(0)
 	{
 		const auto& p = c.GetPos();
 		min = p - .25f;
@@ -32,6 +35,7 @@ struct Box
 		min.y -= 1.25f;
 	}
 
+
 	bool IsColliding(const Box& b) const
 	{
 		return	(this->min.x <= b.max.x && this->max.x >= b.min.x) &&
@@ -39,15 +43,18 @@ struct Box
 						(this->min.z <= b.max.z && this->max.z >= b.min.z);
 	}
 
+
 	glm::vec3 GetPosition() const
 	{
 		return (max + min) / 2.f;
 	}
 
+
 	glm::vec3 GetScale() const
 	{
 		return (max - min) / 2.f;
 	}
+
 
 	//glm::vec3 size;
 	//glm::vec3 position;

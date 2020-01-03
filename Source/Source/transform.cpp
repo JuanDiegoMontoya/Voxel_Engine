@@ -8,19 +8,19 @@ Transform::Transform(const glm::vec3& pos, const glm::vec3& scale)
 	scale_ = scale;
 	model_ = glm::mat4(1.0f);
 	dirty_ = true;
-	SetType(cTransform);
+	SetType(ComponentType::cTransform);
 }
 
 Transform::Transform(const Transform& other)
 {
 	*this = other;
-	SetType(cTransform);
+	SetType(ComponentType::cTransform);
 }
 
 Component* Transform::Clone() const
 {
 	Transform* tran = new Transform(*this);
-	tran->SetType(cTransform);
+	tran->SetType(ComponentType::cTransform);
 	return tran;
 }
 

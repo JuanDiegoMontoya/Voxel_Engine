@@ -48,7 +48,7 @@ Level::~Level()
 void Level::Init()
 {
 	//cameras_.push_back(new Camera(kControlCam));
-	cameras_.push_back(new Camera(kControlCam));
+	cameras_.push_back(new Camera(CameraType::kControlCam));
 	Render::SetCamera(cameras_[0]);
 	
 	//config = std::make_shared<btDefaultCollisionConfiguration>();
@@ -127,10 +127,10 @@ void Level::DrawImGui()
 		ImGui::SliderFloat("Follow Distance", &sun_.followDist, 0, 500, "%.0f");
 		ImGui::Checkbox("Collision Enabled", &doCollisionTick);
 
-		bool val = Render::GetCamera()->GetType() == kPhysicsCam;
+		bool val = Render::GetCamera()->GetType() == CameraType::kPhysicsCam;
 		if (ImGui::Checkbox("Camera Gravity", &val))
 		{
-			Render::GetCamera()->SetType(val ? kPhysicsCam : kControlCam);
+			Render::GetCamera()->SetType(val ? CameraType::kPhysicsCam : CameraType::kControlCam);
 		}
 
 		//int shadow = sun_.GetShadowSize().x;
@@ -178,7 +178,7 @@ void Level::DrawImGui()
 	{
 		ImGui::Begin("Info");
 
-		ImGui::Text("FPS: %.0f (%.1f ms)", 1.f / game_->GetDT(), 1000 * game_->GetDT());
+		ImGui::Text("FPS: %.0f (%.1f ms)", 1.f / game_->GetDT(), game_->GetDT() * 1000);
 		ImGui::NewLine();
 		glm::vec3 pos = Render::GetCamera()->GetPos();
 		//ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
@@ -230,9 +230,9 @@ void Level::DrawImGui()
 		{
 			ImGui::NewLine();
 			const glm::vec3 camPos = Render::GetCamera()->GetPos();
-			float t = WorldGen::GetTemperature(camPos.x, camPos.y, camPos.z);
-			float h = WorldGen::GetHumidity(camPos.x, camPos.z);
-			WorldGen::TerrainType tt = WorldGen::GetTerrainType(camPos);
+			float t = float(WorldGen::GetTemperature(camPos.x, camPos.y, camPos.z));
+			float h = float(WorldGen::GetHumidity(camPos.x, camPos.z));
+			TerrainType tt = WorldGen::GetTerrainType(camPos);
 			ImGui::Text("Biome info: ");
 			ImGui::Text("Temperature: %.2f", t);
 			ImGui::Text("Humidity: %.2f", h);
@@ -242,9 +242,9 @@ void Level::DrawImGui()
 		}
 		init = false;
 
-		int dist = 5;
+		float dist = 5.f;
 		ImGui::Text("Voxel raycast information:");
-		ImGui::Text("Ray length: %d", dist);
+		ImGui::Text("Ray length: %f.0", dist);
 		raycast(
 			Render::GetCamera()->GetPos(),
 			Render::GetCamera()->front,
@@ -252,7 +252,7 @@ void Level::DrawImGui()
 			std::function<bool(float, float, float, BlockPtr, glm::vec3)>
 			([&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
 		{
-			if (!block || block->GetType() == Block::bAir)
+			if (!block || block->GetType() == BlockType::bAir)
 				return false;
 
 			ImGui::Text("Block Type: %d (%s)", (unsigned)block->GetType(), block->GetName());
@@ -332,7 +332,7 @@ void Level::CheckCollision()
 	for (auto& blockBox : blocks)
 	{
 		auto pos = blockBox.blockpos;
-		if (GetBlockAt(pos).GetType() != Block::bAir)
+		if (GetBlockAt(pos).GetType() != BlockType::bAir)
 		{
 			// the normal of each face.
 			constexpr glm::vec3 faces[6] =
@@ -383,7 +383,7 @@ void Level::CheckCollision()
 			auto refl = glm::normalize(glm::reflect(glm::normalize(cam->GetPos() - cam->oldPos + .000001f), -collisionNormal));
 			//refl[normalComp] /= 2;
 			glm::vec3 newPos = cam->GetPos();
-			if (GetBlockAt(pos).GetType() == Block::bWater)
+			if (GetBlockAt(pos).GetType() == BlockType::bWater)
 			{
 				cam->velocity_.y = 2;
 			}
@@ -455,7 +455,7 @@ void Level::checkBlockPlacement()
 			std::function<bool(float, float, float, BlockPtr, glm::vec3)>
 			([&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
 		{
-			if (!block || block->GetType() == Block::bAir)
+			if (!block || block->GetType() == BlockType::bAir)
 				return false;
 
 			UpdateBlockAt(glm::ivec3(x, y, z) + glm::ivec3(side), hud_.selected_);
@@ -489,10 +489,10 @@ void Level::checkBlockDestruction()
 			std::function<bool(float, float, float, BlockPtr, glm::vec3)>
 			([&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
 		{
-			if (!block || block->GetType() == Block::bAir)
+			if (!block || block->GetType() == BlockType::bAir)
 				return false;
 
-			UpdateBlockAt(glm::ivec3(x, y, z), Block::bAir);
+			UpdateBlockAt(glm::ivec3(x, y, z), BlockType::bAir);
 
 			//block->SetType(Block::bAir);
 			//for (auto& chunk : updatedChunks_)

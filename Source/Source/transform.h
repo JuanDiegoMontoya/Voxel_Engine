@@ -19,7 +19,7 @@ public:
 	const glm::mat4& GetModel() const;
 	Component* Clone() const override;
 
-	static const ComponentType ctype = cTransform;
+	static const ComponentType ctype = ComponentType::cTransform;
 
 private:
 	glm::vec3	translation_;

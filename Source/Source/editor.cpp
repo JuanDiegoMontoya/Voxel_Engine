@@ -22,7 +22,7 @@ namespace Editor
 	namespace RegionSelect
 	{
 		const int pickLength = 5;// ray cast distance
-		size_t selectedPositions;	// how many positions have been selected
+		int selectedPositions;	// how many positions have been selected
 		glm::vec3 wpositions[3];	// selected positions (0-3)
 		glm::vec3 hposition;			// hovered position (others are locked)
 		bool open = false;
@@ -50,7 +50,7 @@ namespace Editor
 					{
 						// TODO: make bottom-middle of prefab be the origin
 						Block b = chunkManager->GetBlock(glm::ivec3(x, y, z));
-						if (skipAir && b.GetType() == Block::bAir)
+						if (skipAir && b.GetType() == BlockType::bAir)
 							continue;
 						b.SetWriteStrength(UCHAR_MAX / 2);
 						newPfb.Add(
@@ -85,7 +85,7 @@ namespace Editor
 			if (Input::Keyboard().pressed[GLFW_KEY_F])
 			{
 				ASSERT(selectedPositions >= 0 && selectedPositions <= 3);
-				wpositions[selectedPositions] = hposition;
+				wpositions[glm::clamp(selectedPositions, 0, 3)] = hposition;
 				if (selectedPositions < 3)
 					selectedPositions++;
 			}
@@ -202,7 +202,7 @@ namespace Editor
 					pickLength,
 					[&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
 				{
-					if (!block || block->GetType() == Block::bAir)
+					if (!block || block->GetType() == BlockType::bAir)
 						return false;
 					if (selectedPositions == 0)
 						hposition = glm::vec3(x, y, z);

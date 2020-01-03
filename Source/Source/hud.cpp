@@ -9,8 +9,8 @@
 void HUD::Update()
 {
 	int ofs = Input::Mouse().scrollOffset.y;
-	int num = selected_ + ofs;
-	if (num >= Block::bCount || num < 0)
+	int num = int(selected_) + ofs;
+	if (num >= int(BlockType::bCount) || num < 0)
 		ofs = 0;
 	reinterpret_cast<unsigned char&>(selected_) += ofs;
 
@@ -29,7 +29,7 @@ void HUD::Update()
 	curr->setMat4("u_model", model);
 	curr->setMat4("u_proj", cam->GetProj());
 	curr->setMat4("u_view", glm::mat4(1));
-	curr->setVec4("u_color", Block::PropertiesTable[selected_].color);
+	curr->setVec4("u_color", Block::PropertiesTable[int(selected_)].color);
 	Renderer::DrawCube();
 	curr->setVec4("u_color", glm::vec4(1));
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

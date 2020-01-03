@@ -5,18 +5,21 @@
 typedef struct Chunk* ChunkPtr;
 typedef class Level* LevelPtr;
 
+
+enum class TerrainType : unsigned
+{
+	tNone,  // unfilled terrain (replaced with ocean or something)
+	tPlains,
+	tHills,
+	tOcean,
+
+	tCount
+};
+
+
 class WorldGen
 {
 public:
-	enum TerrainType : unsigned
-	{
-		tNone,  // unfilled terrain (replaced with ocean or something)
-		tPlains,
-		tHills,
-		tOcean,
-
-		tCount
-	};
 
 	/* 
 		Generates a rectangular world of the given dimensions

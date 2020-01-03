@@ -30,37 +30,37 @@ void Frustum::Transform(const glm::mat4& proj, const glm::mat4& view)
 	data_[Right][B] = clip[1][3] - clip[1][0];
 	data_[Right][C] = clip[2][3] - clip[2][0];
 	data_[Right][D] = clip[3][3] - clip[3][0];
-	Normalize(Right);
+	Normalize(Plane::Right);
 
 	data_[Left][A] = clip[0][3] + clip[0][0];
 	data_[Left][B] = clip[1][3] + clip[1][0];
 	data_[Left][C] = clip[2][3] + clip[2][0];
 	data_[Left][D] = clip[3][3] + clip[3][0];
-	Normalize(Left);
+	Normalize(Plane::Left);
 
 	data_[Bottom][A] = clip[0][3] + clip[0][1];
 	data_[Bottom][B] = clip[1][3] + clip[1][1];
 	data_[Bottom][C] = clip[2][3] + clip[2][1];
 	data_[Bottom][D] = clip[3][3] + clip[3][1];
-	Normalize(Bottom);
+	Normalize(Plane::Bottom);
 
 	data_[Top][A] = clip[0][3] - clip[0][1];
 	data_[Top][B] = clip[1][3] - clip[1][1];
 	data_[Top][C] = clip[2][3] - clip[2][1];
 	data_[Top][D] = clip[3][3] - clip[3][1];
-	Normalize(Top);
+	Normalize(Plane::Top);
 
 	data_[Front][A] = clip[0][3] - clip[0][2];
 	data_[Front][B] = clip[1][3] - clip[1][2];
 	data_[Front][C] = clip[2][3] - clip[2][2];
 	data_[Front][D] = clip[3][3] - clip[3][2];
-	Normalize(Front);
+	Normalize(Plane::Front);
 
 	data_[Back][A] = clip[0][3] + clip[0][2];
 	data_[Back][B] = clip[1][3] + clip[1][2];
 	data_[Back][C] = clip[2][3] + clip[2][2];
 	data_[Back][D] = clip[3][3] + clip[3][2];
-	Normalize(Back);
+	Normalize(Plane::Back);
 }
 
 void Frustum::Normalize(Plane plane)
@@ -86,11 +86,11 @@ Frustum::Visibility Frustum::IsInside(const glm::vec3& point) const
 			data_[i][C] * point.z +
 			data_[i][D] <= 0)
 		{
-			return Invisible;
+			return Visibility::Invisible;
 		}
 	}
 
-	return Full;
+	return Visibility::Full;
 }
 
 Frustum::Visibility Frustum::IsInside(const Chunk& box) const
@@ -114,52 +114,52 @@ Frustum::Visibility Frustum::IsInside(const Chunk& box) const
 
 		if (p1 <= 0 && p2 <= 0 && p3 <= 0 && p4 <= 0 && p5 <= 0 && p6 <= 0 && p7 <= 0 && p8 <= 0)
 		{
-			return Invisible;
+			return Visibility::Invisible;
 		}
 		if (p1 > 0 && p2 > 0 && p3 > 0 && p4 > 0 && p5 > 0 && p6 > 0 && p7 > 0 && p8 > 0)
 		{
-			return Full;
+			return Visibility::Full;
 		}
 
-		return Partial;
+		return Visibility::Partial;
 	};
 
 	Visibility v0 = GetVisibility(GetPlane(Right), box);
-	if (v0 == Invisible)
+	if (v0 == Visibility::Invisible)
 	{
-		return Invisible;
+		return Visibility::Invisible;
 	}
 
 	Visibility v1 = GetVisibility(GetPlane(Left), box);
-	if (v1 == Invisible)
+	if (v1 == Visibility::Invisible)
 	{
-		return Invisible;
+		return Visibility::Invisible;
 	}
 
 	Visibility v2 = GetVisibility(GetPlane(Bottom), box);
-	if (v2 == Invisible)
+	if (v2 == Visibility::Invisible)
 	{
-		return Invisible;
+		return Visibility::Invisible;
 	}
 
 	Visibility v3 = GetVisibility(GetPlane(Top), box);
-	if (v3 == Invisible)
+	if (v3 == Visibility::Invisible)
 	{
-		return Invisible;
+		return Visibility::Invisible;
 	}
 
 	Visibility v4 = GetVisibility(GetPlane(Front), box);
-	if (v4 == Invisible)
+	if (v4 == Visibility::Invisible)
 	{
-		return Invisible;
+		return Visibility::Invisible;
 	}
 
-	if (v0 == Full && v1 == Full &&
-		v2 == Full && v3 == Full &&
-		v4 == Full)
+	if (v0 == Visibility::Full && v1 == Visibility::Full &&
+		v2 == Visibility::Full && v3 == Visibility::Full &&
+		v4 == Visibility::Full)
 	{
-		return Full;
+		return Visibility::Full;
 	}
 
-	return Partial;
+	return Visibility::Partial;
 }

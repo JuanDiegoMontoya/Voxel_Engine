@@ -16,7 +16,12 @@
 
 #define VISUALIZE_MAPS 0
 
-Renderer::Renderer(){}
+Renderer::Renderer()
+ : activeDirLight_(), activeSun_(), 
+	gBuffer(), gPosition(), gNormal(), gAlbedoSpec(), gDepth(), rboDepth(),
+	pBuffer(), pColor(), pDepth(),
+	view(), projection(), vView(), LitDir(), right(), up(),
+	LitViewFam(), ratios(), cascadEnds(), cascadeEndsClipSpace() {}
 
 // initializes the gBuffer and its attached textures
 void Renderer::Init()

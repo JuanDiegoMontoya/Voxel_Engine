@@ -235,12 +235,12 @@ private:
 	std::vector<glm::vec3> wtNormals;
 	std::vector<glm::vec4> wtColors;
 	std::vector<float>		 wtSpeculars;
-	size_t wvertexCount_ = 0;
+	GLsizei wvertexCount_ = 0;
 
 	std::vector<GLubyte> indices; // probably finna be unused
 	//std::vector<glm::vec3> vtxTanBuffer; // tangents
 	//std::vector<glm::vec3> vtxBitBuffer; // bitangents
-	size_t vertexCount_ = 0; // number of vertices composing the mesh of the chunk
+	GLsizei vertexCount_ = 0; // number of vertices composing the mesh of the chunk
 
 	//std::atomic_int useCount
 }Chunk, *ChunkPtr;

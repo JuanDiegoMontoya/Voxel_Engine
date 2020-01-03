@@ -46,7 +46,7 @@ void ChunkLoadManager::sort()
 
 	// insertion sort chunks in list by distance from camera
 	// (to load nearer chunks first)
-	for (size_t i = 1; i < genList_.size(); i++)
+	for (int i = 1; i < int(genList_.size()); i++)
 	{
 		ChunkPtr key = genList_[i];
 		int j = i - 1;

@@ -3,7 +3,7 @@
 typedef class RenderData : public Component
 {
 public:
-	RenderData() { SetType(cRenderData); }
+	RenderData() { SetType(ComponentType::cRenderData); }
 	~RenderData() {}
 	Component* Clone() const override;
 
@@ -20,7 +20,7 @@ public:
 	inline const IBO& GetIbo() { return *ibo_; }
 	inline ShaderPtr GetShader() { return shader_; } // not const so we can modify it
 
-	static const ComponentType ctype = cRenderData;
+	static const ComponentType ctype = ComponentType::cRenderData;
 
 private:
 	// do NOT delete these upon destruction of this object

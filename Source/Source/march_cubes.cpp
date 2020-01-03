@@ -11,12 +11,12 @@ void Chunk::buildBlockVertices_marched_cubes(
 	size_t tris = polygonize(pos, block);
 	vertexCount_ = tris * 3;
 
-	glm::vec4 clr = Block::PropertiesTable[block.GetType()].color;
-	float spec = Block::PropertiesTable[block.GetType()].specular;
+	glm::vec4 clr = Block::PropertiesTable[block.GetTypei()].color;
+	float spec = Block::PropertiesTable[block.GetTypei()].specular;
 	for (int i = 0; i < tris * 3; i++)
 	{
 		//tNormals.push_back(glm::vec3(0)); // temporary
-		if (block.GetType() == Block::bWater)
+		if (block.GetType() == BlockType::bWater)
 		{
 			wtColors.push_back(clr);
 			wtSpeculars.push_back(spec);
@@ -377,7 +377,7 @@ size_t Chunk::polygonize(const glm::ivec3& pos, const Block& block)
 		vert2 = localTransform * vert2;
 		vert3 = localTransform * vert3;
 
-		if (block.GetType() == Block::bWater)
+		if (block.GetType() == BlockType::bWater)
 		{
 			wtPositions.push_back(vert1);
 			wtPositions.push_back(vert2);
@@ -396,7 +396,7 @@ size_t Chunk::polygonize(const glm::ivec3& pos, const Block& block)
 			(vertlist[triTable[cubeindex][i + 2]] - vertlist[triTable[cubeindex][i]]));
 		glm::vec3 norm = glm::normalize(dir);
 
-		if (block.GetType() == Block::bWater)
+		if (block.GetType() == BlockType::bWater)
 		{
 			wtNormals.push_back(norm);
 			wtNormals.push_back(norm);
@@ -421,7 +421,7 @@ size_t Chunk::polygonize(const glm::ivec3& pos, const Block& block)
 */
 glm::vec3 Chunk::VertexInterp(double isolevel, glm::vec3 p1, glm::vec3 p2, double valp1, double valp2)
 {
-	double mu;
+	float mu;
 	glm::vec3 p;
 
 	if (glm::abs(isolevel - valp1) < 0.00001)

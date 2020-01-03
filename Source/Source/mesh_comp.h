@@ -13,7 +13,7 @@ public:
 
 	Component* Clone() const;
 
-	static const ComponentType ctype = cMesh;
+	static const ComponentType ctype = ComponentType::cMesh;
 private:
 	MeshComp() = delete;
 	Mesh* mesh;

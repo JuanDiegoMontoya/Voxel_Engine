@@ -97,7 +97,7 @@ std::string Shader::loadShader(const char* path)
 // compiles a shader source and returns its ID
 GLint Shader::compileShader(shadertype type, const GLchar* src)
 {
-	GLuint shader;
+	GLuint shader = 1001; // init to debug value
 	GLchar infoLog[512];
 	std::string* path;
 	GLint success;
@@ -126,7 +126,7 @@ GLint Shader::compileShader(shadertype type, const GLchar* src)
 	glCompileShader(shader);
 
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-	if (!success)
+	if (!success && path)
 	{
 		glGetShaderInfoLog(shader, 512, NULL, infoLog);
 		std::cout << "File: " << *path << std::endl;

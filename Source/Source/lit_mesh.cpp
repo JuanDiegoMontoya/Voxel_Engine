@@ -18,7 +18,7 @@ void Lit_Mesh::Draw(ShaderPtr shader)
 		else if (name == "texture_specular")
 			number = std::to_string(specularNr++);
 
-		shader->setFloat(("material." + name + number).c_str(), i);
+		shader->setFloat(("material." + name + number).c_str(), float(i));
 		glBindTexture(GL_TEXTURE_2D, textures[i].GetID());
 	}
 	glActiveTexture(GL_TEXTURE0);
