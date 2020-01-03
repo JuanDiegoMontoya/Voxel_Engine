@@ -289,6 +289,8 @@ void Level::DrawImGui()
 		ImGui::Begin("Global Settings");
 		if (ImGui::Checkbox("Compute baked AO", &Settings::GFX::blockAO))
 			chunkManager_.ReloadAllChunks();
+		if (ImGui::Checkbox("Skip lighting", &Chunk::debug_ignore_light_level))
+			chunkManager_.ReloadAllChunks();
 		if (ImGui::Checkbox("Shadows", &renderer_.renderShadows))
 			renderer_.ClearCSM();
 		if (ImGui::Checkbox("Reflections", &renderer_.doGeometryPass))

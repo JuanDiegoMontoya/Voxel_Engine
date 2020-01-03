@@ -284,9 +284,13 @@ GenQuad:
 
 	float shiny = Block::PropertiesTable[int(block.GetType())].specular;
 	glm::vec4 color = Block::PropertiesTable[int(block.GetType())].color;
-	color.r *= (1 + float(light2.GetR())) / 16.f;
-	color.g *= (1 + float(light2.GetG())) / 16.f;
-	color.b *= (1 + float(light2.GetB())) / 16.f;
+
+	if (!debug_ignore_light_level)
+	{
+		color.r *= (1 + float(light2.GetR())) / 16.f;
+		color.g *= (1 + float(light2.GetG())) / 16.f;
+		color.b *= (1 + float(light2.GetB())) / 16.f;
+	}
 
 	// slightly randomize color for each block to make them more visible (temporary solution)
 	float clrBias = Utils::get_random_r(-.03f, .03f);

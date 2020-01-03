@@ -162,6 +162,9 @@ public:
 	//static inline std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 	static inline Concurrency::concurrent_unordered_map // TODO: make CustomGrow(tm) concurrent map solution to be more portable
 		<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
+	
+	// debug
+	static inline bool debug_ignore_light_level = false;
 
 	friend class WorldGen;
 	friend class ChunkManager;
