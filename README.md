@@ -5,7 +5,7 @@ This is (currently) a tech demo designed to demonstrate the implementation of va
 
 ## Tech
 The project is written in C++ and GLSL. The project also uses OpenGL, GLM, GLFW for window handling, cereal for serialization, and libnoise for procedural noise.  
-The project may, in the future, utilize FMOD for audio, freetype for text rendering, Lua for scripting, and stb for loading textures.
+The project may, in the future, utilize FMOD, freetype, Lua, and stb for various purposes.
 
 Performance was tested on this system for reference:
 - AMD Ryzen 5 2600X CPU
@@ -15,7 +15,7 @@ Performance was tested on this system for reference:
 ## Features
 (*WIP*) indicates that a feature is mostly complete but has some bugs that need to be sorted out. 
 ### Voxels
-- Capable of rendering 10+ million blocks at 500+ FPS (when not generating chunks)
+- Capable of rendering 10+ million voxels at 500+ FPS
 - Infinite size world
 - Movement physics and terrain collision
 - Procedurally generated terrain including hills, mountains, plains, rivers, etc.
@@ -23,7 +23,8 @@ Performance was tested on this system for reference:
 - Meandering natural tunnels and caves
 - Block destroying and placing
 - A prefab editor
-- Marching cubes implementation for smooth voxels (in worlds defined by a density field, enabled via preprocessor flag in chunk.h)
+- (*WIP*) Lighting, including colored lights
+- (*Temp. removed*) Marching cubes implementation for smooth voxels (in worlds defined by a density field, enabled via preprocessor flag in chunk.h)
 
 ### Graphics
 - Phong illumination model
@@ -37,8 +38,8 @@ Performance was tested on this system for reference:
 - (*WIP*) Cascaded shadow maps
 
 ### Other
-- Portability. Uses (to my knowledge) no platform dependent libraries or headers. (Certain libraries would have to be rebuilt for platforms other than x64 Windows)
-- Multithreaded mesh building and (*WIP*) terrain generation
+- Portability. Uses (to my knowledge) no platform dependent libraries or headers. (Certain libraries would have to be rebuilt for platforms other than x64 Windows) Note: this is untrue for the near future as I am currently using Microsoft's concurrent map to support multithreading more easily
+- Multithreaded mesh building and terrain generation
 - Graphics effects can be toggled dynamically by the user
 
 
@@ -68,3 +69,4 @@ Hover to see detail:
 ![Image of distant and near terrain.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/distance02.png "Distant and near terrain showcasing shading and shadows.")
 ![Image of snowy cave.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/snow_cave.png "Snow cave.")
 ![Image showing marched cubes example.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/marched01.png "Marching cubes implementation with scalar field.")
+![Image of differently colored lights interacting.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/lights_v01.png "Colored lighting.")
