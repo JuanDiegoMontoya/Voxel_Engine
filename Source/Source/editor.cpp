@@ -177,6 +177,8 @@ namespace Editor
 				glm::mat4 tPos = glm::translate(glm::mat4(1), pos + .5f);
 				glm::mat4 tScale = glm::scale(glm::mat4(1), scale + 1.f);
 
+				GLint polygonMode;
+				glGetIntegerv(GL_POLYGON_MODE, &polygonMode);
 				glDisable(GL_CULL_FACE);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				ShaderPtr curr = Shader::shaders["flat_color"];
@@ -186,6 +188,7 @@ namespace Editor
 				curr->setMat4("u_proj", Render::GetCamera()->GetProj());
 				curr->setVec4("u_color", glm::vec4(1.f, .3f, 1.f, 1.f));
 				renderer->DrawCube();
+				glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 				glEnable(GL_CULL_FACE);
 			}
 		}

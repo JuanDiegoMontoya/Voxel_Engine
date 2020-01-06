@@ -32,7 +32,10 @@ void HUD::Update()
 	curr->setVec4("u_color", Block::PropertiesTable[int(selected_)].color);
 	Renderer::DrawCube();
 	curr->setVec4("u_color", glm::vec4(1));
+	GLint polygonMode;
+	glGetIntegerv(GL_POLYGON_MODE, &polygonMode);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	Renderer::DrawCube();
+	glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 }

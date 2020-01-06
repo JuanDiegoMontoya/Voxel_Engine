@@ -274,8 +274,11 @@ void Level::DrawImGui()
 			curr->setMat4("u_proj", Render::GetCamera()->GetProj());
 			curr->setVec4("u_color", glm::vec4(1, 1, 1, .4f));
 			glLineWidth(2);
+			GLint polygonMode;
+			glGetIntegerv(GL_POLYGON_MODE, &polygonMode);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			renderer_.DrawCube();
+			glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 
 			return true;
 		}

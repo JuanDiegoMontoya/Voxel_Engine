@@ -166,15 +166,13 @@ public:
 	// debug
 	static inline bool debug_ignore_light_level = false;
 
+	static cell buildCellFromVoxel(const glm::vec3& wpos);
+
 	friend class WorldGen;
 	friend class ChunkManager;
 	friend class Renderer;
 
-	static cell buildCellFromVoxel(const glm::vec3& wpos);
-
 private:
-	//static Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
-
 	void buildBlockVertices_normal(
 		const glm::ivec3& pos,
 		const float* data,
@@ -208,44 +206,36 @@ private:
 	static double isolevel; // between 0 and 1
 
 	glm::mat4 model_;
-	glm::ivec3 pos_;			 // position relative to other chunks (1 chunk = 1 index)
-	bool active_;					 // unused
-	bool visible_;				 // used in frustum culling
-	std::mutex mutex_;     // used for safe concurrent access
+	glm::ivec3 pos_;	// position relative to other chunks (1 chunk = 1 index)
+	bool active_;			// unused
+	bool visible_;		// used in frustum culling
+	std::mutex mutex_;// used for safe concurrent access
 
-	// rendering stuff
+	std::mutex vertex_buffer_mutex_;
+
+	// buffers
 	VAO* vao_ = nullptr;
 	VBO* positions_ = nullptr;
 	VBO* normals_ = nullptr;
 	VBO* colors_ = nullptr;
 	VBO* speculars_ = nullptr;
-	//IBO* ibo_ = nullptr;
-
-	// temporary buffer(s)
-	std::mutex vertex_buffer_mutex_;
-	std::vector<glm::vec3> tPositions;
-	std::vector<glm::vec3> tNormals;
-	std::vector<glm::vec4> tColors;
-	std::vector<float> tSpeculars;
-
-	// water rendering stuff
 	VAO* wvao_ = nullptr;
 	VBO* wpositions_ = nullptr;
 	VBO* wnormals_ = nullptr;
 	VBO* wcolors_ = nullptr;
 	VBO* wspeculars_ = nullptr;
+	// vertex data (held until buffers are sent to GPU)
+	std::vector<glm::vec3> tPositions;
+	std::vector<glm::vec3> tNormals;
+	std::vector<glm::vec4> tColors;
+	std::vector<float> tSpeculars;
 	std::vector<glm::vec3> wtPositions;
 	std::vector<glm::vec3> wtNormals;
 	std::vector<glm::vec4> wtColors;
 	std::vector<float>		 wtSpeculars;
-	GLsizei wvertexCount_ = 0;
+	GLsizei wvertexCount_ = 0;// number of transparent block vertices
+	GLsizei vertexCount_ = 0; // number of opaque block vertices
 
-	std::vector<GLubyte> indices; // probably finna be unused
-	//std::vector<glm::vec3> vtxTanBuffer; // tangents
-	//std::vector<glm::vec3> vtxBitBuffer; // bitangents
-	GLsizei vertexCount_ = 0; // number of vertices composing the mesh of the chunk
-
-	//std::atomic_int useCount
 }Chunk, *ChunkPtr;
 
 void TestCoordinateStuff();

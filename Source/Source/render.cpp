@@ -111,7 +111,7 @@ void Renderer::DrawCube()
 	//glDisable(GL_CULL_FACE);
 	blockHoverVao->Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	//glEnable(GL_CULL_FACE);
 }
 
@@ -422,30 +422,23 @@ void Renderer::drawChunks(
 {
 	predraw_cb();
 
-	if (cullFrustum)
+	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
+		[&](std::pair<glm::ivec3, Chunk*> chunk)
 	{
-		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
-			[&](std::pair<glm::ivec3, Chunk*> chunk)
+		if (chunk.second && (cullFrustum ? chunk.second->IsVisible() : true))
 		{
-			if (chunk.second && chunk.second->IsVisible())
-			{
-				draw_cb(chunk.second->GetModel());
-				chunk.second->Render();
-			}
-		});
-	}
-	else
-	{
-		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
-			[&](std::pair<glm::ivec3, Chunk*> chunk)
-		{
-			if (chunk.second)// && chunk.second->IsVisible())
-			{
-				draw_cb(chunk.second->GetModel());
-				chunk.second->Render();
-			}
-		});
-	}
+			auto model = chunk.second->GetModel();
+			draw_cb(model);
+			chunk.second->Render();
+
+			//glDisable(GL_CULL_FACE);
+			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
+			//draw_cb(glm::scale(model, { 32, 32, 32 }));
+			//DrawCube();
+			//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			//glEnable(GL_CULL_FACE);
+		}
+	});
 
 	postdraw_cb();
 }
