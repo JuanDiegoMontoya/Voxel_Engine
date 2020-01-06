@@ -42,6 +42,8 @@ public:
 
 	// interaction
 	void Update(LevelPtr level);
+	void UpdateChunk(ChunkPtr chunk);
+	void UpdateChunk(const glm::ivec3 wpos); // update chunk at block position
 	void UpdateBlock(const glm::ivec3& wpos, Block bl);
 	void UpdateBlockCheap(const glm::ivec3& wpos, Block block);
 	void UpdateBlockLight(const glm::ivec3 wpos, const Light light);

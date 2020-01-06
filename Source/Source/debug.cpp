@@ -12,15 +12,15 @@ namespace Debug
 	{
 		PERF_BENCHMARK_START;
 
-		//function performance window
-		if (initSysPerf)
-		{
-			ImVec2 Pos(1650.0f, 650.0f);
-			ImVec2 Size(230.0f, 225.0f);
-			ImGui::SetNextWindowPos(Pos);
-			ImGui::SetNextWindowSize(Size);
-			ImGui::SetNextWindowCollapsed(false);
-		}
+		////function performance window
+		//if (initSysPerf)
+		//{
+		//	ImVec2 Pos(1650.0f, 650.0f);
+		//	ImVec2 Size(230.0f, 225.0f);
+		//	ImGui::SetNextWindowPos(Pos);
+		//	ImGui::SetNextWindowSize(Size);
+		//	ImGui::SetNextWindowCollapsed(false);
+		//}
 
 		ImGui::Begin("Function Performance (ms)");
 

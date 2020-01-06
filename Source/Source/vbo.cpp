@@ -12,10 +12,12 @@ VBO::VBO(const void * data, size_t size, GLenum drawmode)
 	//Create(data, size);
 }
 
+
 VBO::~VBO()
 {
 	glDeleteBuffers(1, &rendererID_);
 }
+
 
 //void VBO::Create(const void* data, unsigned int size)
 //{
@@ -24,10 +26,12 @@ VBO::~VBO()
 //	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
 //}
 
+
 void VBO::Bind() const
 {
 	glBindBuffer(GL_ARRAY_BUFFER, rendererID_);
 }
+
 
 void VBO::Unbind() const
 {
