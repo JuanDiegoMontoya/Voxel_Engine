@@ -47,6 +47,7 @@ private:
 	void drawNormal();	// draw what we see
 	void drawWater();
 	void drawPostProcessing(); // apply post processing effects
+	void drawDebug();
 
 	// narrow-phase rendering
 	void drawChunks(bool cullFrustum, 

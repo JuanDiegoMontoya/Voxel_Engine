@@ -25,7 +25,7 @@ GLerrorCB(GLenum source,
 	const GLchar *message,
 	const void *userParam)
 {
-	return; // UNCOMMENT WHEN DEBUGGING GRAPHICS
+	//return; // UNCOMMENT WHEN DEBUGGING GRAPHICS
 
 	// ignore non-significant error/warning codes
 	if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;

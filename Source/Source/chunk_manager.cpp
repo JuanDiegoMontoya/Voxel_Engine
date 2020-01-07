@@ -531,7 +531,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight)
 			//UpdateChunk(lightp + dir);
 			if (!light) continue;
 			// if solid block or too bright of a block, skip dat boi
-			if (Block::PropertiesTable[int(block.GetType())].color.a == 1)
+			if (Block::PropertiesTable[block.GetTypei()].color.a == 1)
 				continue;
 			// iterate for R, G, B, and sunlight
 			for (int ci = 0; ci < 4; ci++) // iterate color index
@@ -541,7 +541,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight)
 					continue;
 				//UpdateBlockLight(lightp + dir, glm::uvec3(lightLevel.r - 1));
 				auto val = light->Get();
-				val[ci] = lightLevel.Get()[ci] - 1;
+				val[ci] = (lightLevel.Get()[ci] - 1) * Block::PropertiesTable[block.GetTypei()].color[ci];
 				light->Set(val);
 				lightQueue.push(lightp + dir);
 			}
@@ -591,9 +591,9 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 
 				// skip updates when light is 0
 				// remove light if there is any and if it is weaker than this node's light value
-				if (nlightv[ci] != 0)
+				//if (nlightv[ci] != 0)
 				{
-					if (nlightv[ci] < lightv[ci])
+					if (nlightv[ci] != 0 && nlightv[ci] == lightv[ci] - 1)
 					{
 						lightRemovalQueue.push({ plight + dir, *nearLight });
 						//UpdateChunk(plight + dir);
@@ -602,7 +602,7 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 						nearLight->Set(tmp);
 					}
 					// re-propagate near light that is equal to or brighter than this after setting it all to 0
-					else if (nlightv[ci] >= lightv[ci])
+					else if (nlightv[ci] > lightv[ci])
 					{
 						glm::ucvec4 nue(0);
 						nue[ci] = nlightv[ci];

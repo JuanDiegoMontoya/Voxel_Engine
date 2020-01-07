@@ -24,8 +24,8 @@ void HUD::Update()
 	glm::vec3 scl(1, 1, 1);
 	glm::mat4 model =
 		glm::translate(glm::mat4(1), pos) *
-		glm::rotate(glm::mat4(1), (float)glfwGetTime(), rot);
-		//glm::scale(glm::mat4(1), scl);
+		glm::rotate(glm::mat4(1), (float)glfwGetTime(), rot) *
+		glm::scale(glm::mat4(1), scl);
 	curr->setMat4("u_model", model);
 	curr->setMat4("u_proj", cam->GetProj());
 	curr->setMat4("u_view", glm::mat4(1));
@@ -36,6 +36,8 @@ void HUD::Update()
 	glGetIntegerv(GL_POLYGON_MODE, &polygonMode);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glClear(GL_DEPTH_BUFFER_BIT);
+	model = glm::scale(model, { 1.1, 1.1, 1.1 });
+	curr->setMat4("u_model", model);
 	Renderer::DrawCube();
 	glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 }

@@ -414,6 +414,27 @@ void Renderer::drawPostProcessing()
 	glEnable(GL_DEPTH_TEST);
 }
 
+
+//void Renderer::drawDebug()
+//{
+//	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
+//		[&](std::pair<glm::ivec3, Chunk*> chunk)
+//		{
+//			if (chunk.second && (cullFrustum ? chunk.second->IsVisible() : true))
+//			{
+//				auto model = chunk.second->GetModel();
+//				glDisable(GL_CULL_FACE);
+//				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//				model = glm::translate(model, { 1,1,1 });
+//				draw_cb(glm::scale(model, { 32, 32, 32 }));
+//				DrawCube();
+//				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//				glEnable(GL_CULL_FACE);
+//			}
+//		});
+//}
+
+
 void Renderer::drawChunks(
 	bool cullFrustum,
 	DrawCB predraw_cb, 
@@ -430,13 +451,6 @@ void Renderer::drawChunks(
 			auto model = chunk.second->GetModel();
 			draw_cb(model);
 			chunk.second->Render();
-
-			//glDisable(GL_CULL_FACE);
-			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);
-			//draw_cb(glm::scale(model, { 32, 32, 32 }));
-			//DrawCube();
-			//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			//glEnable(GL_CULL_FACE);
 		}
 	});
 

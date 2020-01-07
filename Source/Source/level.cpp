@@ -91,14 +91,14 @@ void Level::Update(float dt)
 		for (auto& cam : cameras_)
 			cam->Update(dt);
 
+	if (doCollisionTick)
+		CheckCollision();
+
 	chunkManager_.Update(this);
 	CheckInteraction();
 	sun_.Update();
 	renderer_.SetDirLight(&sun_.GetDirLight());
 	renderer_.SetSun(&sun_);
-
-	if (doCollisionTick)
-		CheckCollision();
 
 	renderer_.DrawAll();
 	Editor::Update();
@@ -244,7 +244,7 @@ void Level::DrawImGui()
 
 		float dist = 5.f;
 		ImGui::Text("Voxel raycast information:");
-		ImGui::Text("Ray length: %f.0", dist);
+		ImGui::Text("Ray length: %0.f", dist);
 		raycast(
 			Render::GetCamera()->GetPos(),
 			Render::GetCamera()->front,
@@ -390,7 +390,12 @@ void Level::CheckCollision()
 			glm::vec3 newPos = cam->GetPos();
 			if (GetBlockAt(pos).GetType() == BlockType::bWater)
 			{
-				cam->velocity_.y = 2;
+				cam->velocity_.y *= glm::pow(.987f, game_->GetDT() * 100);
+				if (Input::Keyboard().down[GLFW_KEY_SPACE])
+					cam->velocity_.y += 8.f * game_->GetDT();
+				else
+					cam->velocity_.y += 1.5f * game_->GetDT();
+				cam->velocity_.y = glm::clamp(cam->velocity_.y, -2000.f, 5.f);
 			}
 			else
 			{
@@ -412,6 +417,7 @@ void Level::CheckInteraction()
 {
 	checkBlockPlacement();
 	checkBlockDestruction();
+	checkBlockPick();
 }
 
 
@@ -465,14 +471,6 @@ void Level::checkBlockPlacement()
 
 			UpdateBlockAt(glm::ivec3(x, y, z) + glm::ivec3(side), hud_.selected_);
 
-			//Chunk::AtWorld(glm::ivec3(x, y, z) + glm::ivec3(side))->SetType(Block::bStone);
-			//for (auto& chunk : updatedChunks_)
-			//{
-			//	if (chunk == Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos])
-			//		return false;
-			//}
-			//updatedChunks_.push_back(Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos]);
-			
 			return true;
 		}
 		));
@@ -499,16 +497,34 @@ void Level::checkBlockDestruction()
 
 			UpdateBlockAt(glm::ivec3(x, y, z), BlockType::bAir);
 
-			//block->SetType(Block::bAir);
-			//for (auto& chunk : updatedChunks_)
-			//{
-			//	if (chunk == Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos])
-			//		return false;
-			//}
-			//updatedChunks_.push_back(Chunk::chunks[Chunk::worldBlockToLocalPos(glm::ivec3(x, y, z)).chunk_pos]);
-			
 			return true;
 		}
+		));
+	}
+}
+
+
+void Level::checkBlockPick()
+{
+	if (Input::Mouse().pressed[GLFW_MOUSE_BUTTON_3] &&
+		!ImGui::IsAnyItemHovered() &&
+		!ImGui::IsAnyItemActive() &&
+		!ImGui::IsAnyItemFocused())
+	{
+		raycast(
+			Render::GetCamera()->GetPos(),
+			Render::GetCamera()->front,
+			5,
+			std::function<bool(float, float, float, BlockPtr, glm::vec3)>
+			([&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
+				{
+					if (!block || block->GetType() == BlockType::bAir)
+						return false;
+
+					hud_.selected_ = block->GetType();
+
+					return true;
+				}
 		));
 	}
 }

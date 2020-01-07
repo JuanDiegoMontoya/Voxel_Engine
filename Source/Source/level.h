@@ -59,6 +59,7 @@ private:
 
 	void checkBlockPlacement();
 	void checkBlockDestruction();
+	void checkBlockPick();
 
 	// debug
 	int debugCascadeQuad = 0;

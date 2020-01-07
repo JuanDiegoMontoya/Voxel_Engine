@@ -4,7 +4,7 @@
 
 const std::vector<BlockProperties> Block::PropertiesTable =
 {
-	{BlockProperties("air",        0,		{0, 0, 0, 0},							{0, 0, 0, 0})},
+	{BlockProperties("air",        0,		{1, 1, 1, 0},							{0, 0, 0, 0})},
 	{BlockProperties("stone",      32,	{.4f, .4f, .4f, 1},				{0, 0, 0, 0})},
 	{BlockProperties("dirt",       16,	{.6f, .3f, .1f, 1},				{0, 0, 0, 0})},
 	{BlockProperties("metal",      128,	{.9f, .9f, 1.f, 1},				{0, 0, 0, 0})},
@@ -21,4 +21,5 @@ const std::vector<BlockProperties> Block::PropertiesTable =
 	{BlockProperties("Glight",		 8,		{0, 1, 0, 1},							{0, 15, 0, 0})},
 	{BlockProperties("Blight",		 8,		{0, 0, 1, 1},							{0, 0, 15, 0})},
 	{BlockProperties("Smlight",		 8,		{.5, .5, .5, 1},					{15, 15, 15, 0})},
+	{BlockProperties("BGlass",		 8,		{0.1, 0.1, 1, .5},				{0, 0, 0, 0})},
 };

@@ -37,6 +37,7 @@ enum class BlockType : uint8_t // upgrade when over 256 block types
 	bGLight,
 	bBLight,
 	bSmLight,
+	bBglass,
 
 	bCount
 };
