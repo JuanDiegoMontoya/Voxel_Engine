@@ -233,6 +233,39 @@ void ChunkManager::ReloadAllChunks()
 }
 
 
+#include <cereal/types/vector.hpp>
+#include <cereal/types/utility.hpp>
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/unordered_map.hpp>
+#include <fstream>
+void ChunkManager::SaveWorld(std::string fname)
+{
+	std::ofstream of("./resources/Maps/" + fname + ".bin", std::ios::binary);
+	cereal::BinaryOutputArchive archive(of);
+	std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> tempChunks;
+	tempChunks.insert(Chunk::chunks.begin(), Chunk::chunks.end());
+	archive(tempChunks);
+}
+
+
+void ChunkManager::LoadWorld(std::string fname)
+{
+	for_each(Chunk::chunks.begin(), Chunk::chunks.end(), [](auto pair)
+	{
+		if (pair.second)
+			delete pair.second;
+	});
+	Chunk::chunks.clear();
+
+	// TODO: fix this (doesn't call serialize functions for some reason)
+	std::ifstream is("./resources/Maps/" + fname + ".bin", std::ios::binary);
+	cereal::BinaryInputArchive archive(is);
+	std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> tempChunks;
+	archive(tempChunks);
+	Chunk::chunks.insert(tempChunks.begin(), tempChunks.end());
+}
+
+
 // theoretically deprecated
 void ChunkManager::ProcessUpdatedChunks()
 {

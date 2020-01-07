@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "chunk_manager.h"
-#include <functional>
 #include "input.h"
 #include "block.h"
 #include "camera.h"
@@ -10,8 +9,10 @@
 #include "shader.h"
 #include "render.h"
 #include "prefab.h"
-#include <fstream>
 #include "generation.h"
+
+#include <fstream>
+#include <functional>
 
 #include <cereal/types/vector.hpp>
 #include <cereal/types/utility.hpp>
@@ -60,7 +61,7 @@ namespace Editor
 			}
 			
 			// append the prefab to some file
-			std::ofstream os(("./resources/Prefabs/"+ std::string(sName) + ".bin"), std::ios::binary);
+			std::ofstream os(("./resources/Prefabs/" + std::string(sName) + ".bin"), std::ios::binary);
 			cereal::BinaryOutputArchive archive(os);
 			archive(newPfb);
 		}

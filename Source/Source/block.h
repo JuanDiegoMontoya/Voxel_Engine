@@ -80,7 +80,6 @@ public:
 	template <class Archive>
 	void serialize(Archive& ar)
 	{
-		// TODO: serialize wlValues as well
 		ar(type_, wlValues_);
 	}
 

@@ -172,6 +172,17 @@ void Level::DrawImGui()
 				delete p;
 		}
 
+		static char fileName[256];
+		ImGui::InputText("Map path", fileName, 256u);
+		if (ImGui::Button("Save Map"))
+		{
+			chunkManager_.SaveWorld(fileName);
+		}
+		if (ImGui::Button("Load Map"))
+		{
+			chunkManager_.LoadWorld(fileName);
+		}
+
 		ImGui::End();
 	}
 

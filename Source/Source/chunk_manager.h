@@ -67,6 +67,9 @@ public:
 	void SetUnloadLeniency(float d) { unloadLeniency_ = d; }
 	void SetMaxLoadPerFrame(unsigned n) { maxLoadPerFrame_ = n; }
 
+	void SaveWorld(std::string fname);
+	void LoadWorld(std::string fname);
+
 	friend class Level; // so level can display debug info
 private:
 	// functions

@@ -7,6 +7,8 @@
 #include <concurrent_unordered_map.h> // TODO: temp solution to concurrent chunk access
 #include <atomic>
 
+#include <cereal/archives/binary.hpp>
+
 #define MARCHED_CUBES 0
 
 //typedef class Block;
@@ -167,6 +169,14 @@ public:
 	static inline bool debug_ignore_light_level = false;
 
 	static cell buildCellFromVoxel(const glm::vec3& wpos);
+
+	// Serialization
+	template <class Archive>
+	void serialize(Archive& ar)
+	{
+		// save position, block, and lighting data
+		ar(pos_, cereal::binary_data(blocks, sizeof(blocks)) );// , cereal::binary_data(lightMap, sizeof(lightMap)));
+	}
 
 	friend class WorldGen;
 	friend class ChunkManager;
