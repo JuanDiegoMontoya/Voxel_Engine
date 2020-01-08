@@ -51,6 +51,8 @@ private:
 public:
 	Chunk(bool active = true);
 	~Chunk();
+	Chunk(const Chunk& other);
+	Chunk& operator=(const Chunk& rhs);
 
 	/*################################
 						Global Chunk Info

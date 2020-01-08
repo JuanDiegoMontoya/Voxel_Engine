@@ -242,8 +242,13 @@ void ChunkManager::SaveWorld(std::string fname)
 {
 	std::ofstream of("./resources/Maps/" + fname + ".bin", std::ios::binary);
 	cereal::BinaryOutputArchive archive(of);
-	std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> tempChunks;
-	tempChunks.insert(Chunk::chunks.begin(), Chunk::chunks.end());
+	std::vector<Chunk*> tempChunks;
+	//tempChunks.insert(tempChunks.begin(), Chunk::chunks.begin(), Chunk::chunks.end());
+	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(), [&](auto& p)
+		{
+			if (p.second)
+				tempChunks.push_back(p.second);
+		});
 	archive(tempChunks);
 }
 
@@ -260,9 +265,12 @@ void ChunkManager::LoadWorld(std::string fname)
 	// TODO: fix this (doesn't call serialize functions for some reason)
 	std::ifstream is("./resources/Maps/" + fname + ".bin", std::ios::binary);
 	cereal::BinaryInputArchive archive(is);
-	std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> tempChunks;
+	std::vector<Chunk> tempChunks;
 	archive(tempChunks);
-	Chunk::chunks.insert(tempChunks.begin(), tempChunks.end());
+	std::for_each(tempChunks.begin(), tempChunks.end(), [&](Chunk& c)
+		{
+			Chunk::chunks[c.GetPos()] = new Chunk(c);
+		});
 }
 
 

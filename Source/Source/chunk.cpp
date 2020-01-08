@@ -22,7 +22,7 @@ double Chunk::isolevel = 0.60;
 
 Chunk::Chunk(bool active) : active_(active)
 {
-	std::memset(lightMap, 0, sizeof(lightMap));
+	//std::memset(lightMap, 0, sizeof(lightMap));
 }
 
 
@@ -49,6 +49,23 @@ Chunk::~Chunk()
 		delete wcolors_;
 	if (wspeculars_)
 		delete wspeculars_;
+}
+
+
+Chunk::Chunk(const Chunk& other)
+{
+	*this = other;
+}
+
+
+// copy assignment operator for serialization
+Chunk& Chunk::operator=(const Chunk& rhs)
+{
+	//this->pos_ = rhs.pos_;
+	this->SetPos(rhs.pos_);
+	std::copy(std::begin(rhs.blocks), std::end(rhs.blocks), std::begin(this->blocks));
+	std::copy(std::begin(rhs.lightMap), std::end(rhs.lightMap), std::begin(this->lightMap));
+	return *this;
 }
 
 
