@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <execution>
 #include <mutex>
-#include "chunk_load_manager.h"
 #include "chunk.h"
 #include "block.h"
 #include "level.h"
@@ -15,16 +14,14 @@
 #ifdef _WIN32
 #include <Windows.h>
 #undef near
+#else
 #endif
 
 
 ChunkManager::ChunkManager()
 {
-	Chunk::chunks.max_load_factor(0.7f);
 	loadDistance_ = 0;
 	unloadLeniency_ = 0;
-	maxLoadPerFrame_ = 0;
-	loadManager_ = new ChunkLoadManager();
 	debug_cur_pool_left = 0;
 }
 
@@ -74,11 +71,9 @@ void ChunkManager::Update(LevelPtr level)
 			p.second->Update();
 	});
 
-	//ProcessUpdatedChunks();
 	chunk_buffer_task();
 	removeFarChunks();
 	createNearbyChunks();
-	//generateNewChunks();
   PERF_BENCHMARK_END;
 }
 
@@ -275,47 +270,8 @@ void ChunkManager::LoadWorld(std::string fname)
 			Chunk::chunks[c.GetPos()] = new Chunk(c);
 		});
 
+	ReloadAllChunks();
 	std::cout << "Loaded " << fname << "!\n";
-}
-
-
-// theoretically deprecated
-void ChunkManager::ProcessUpdatedChunks()
-{
-	std::for_each(
-		std::execution::par,
-		updatedChunks_.begin(),
-		updatedChunks_.end(),
-		[](ChunkPtr& chunk)
-	{
-		//if (chunk && !chunk->NeedsLoading())
-			chunk->BuildMesh();
-	});
-
-	// this operation cannot be parallelized
-	std::for_each(
-		std::execution::seq,
-		updatedChunks_.begin(),
-		updatedChunks_.end(),
-		[](ChunkPtr& chunk)
-	{
-		//if (chunk && !chunk->NeedsLoading())
-			chunk->BuildBuffers();
-	});
-
-	updatedChunks_.clear();
-}
-
-
-// theoretically deprecated
-bool ChunkManager::isChunkInUpdateList(ChunkPtr c)
-{
-	for (auto& chunk : updatedChunks_)
-	{
-		if (chunk == c)
-			return true;
-	}
-	return false;
 }
 
 
@@ -401,74 +357,6 @@ void ChunkManager::createNearbyChunks() // and delete ones outside of leniency d
 			generation_queue_.insert(p.second);
 		}
 	});
-}
-
-
-void ChunkManager::generateNewChunks()
-{
-//	std::for_each(
-//	Chunk::chunks.begin(),
-//	Chunk::chunks.end(),
-//	[&](auto& p)
-//{
-//	float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
-//	if (p.second && dist <= loadDistance_)
-//		if (p.second->generate_)
-//			genChunkList_.push_back(p.second);
-//});
-//
-//	// sort chunks to update by distance from camera
-//	std::sort(
-//	std::execution::par,
-//	genChunkList_.begin(),
-//	genChunkList_.end(),
-//	[&](ChunkPtr& a, ChunkPtr& b)->bool
-//{
-//	return glm::distance(Render::GetCamera()->GetPos(), glm::vec3(a->GetPos() * Chunk::CHUNK_SIZE)) <
-//				 glm::distance(Render::GetCamera()->GetPos(), glm::vec3(b->GetPos() * Chunk::CHUNK_SIZE));
-//});
-
-	//genChunkList_.erase(genChunkList_.begin(), genChunkList_.begin() + maxLoadPerFrame_);
-	//genChunkList_.clear();
-
-#if USE_MULTITHREADED_CHUNK_LOADER
-	// version 2.0
-	for (auto& p : Chunk::chunks)
-	{
-		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
-		if (p.second && !p.second->InLoadQueue() && p.second->NeedsLoading())
-			if (dist <= loadDistance_)
-				loadManager_->Push(p.second);
-	}
-#else
-	// generate each chunk that needs to be generated
-	unsigned maxgen = maxLoadPerFrame_;
-	std::for_each(
-		std::execution::seq,
-		Chunk::chunks.begin(),
-		Chunk::chunks.end(),
-		[&](auto& p)
-	{
-		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
-		ChunkPtr chunk = p.second;
-		if (chunk && maxgen > 0 && dist <= loadDistance_)
-		{
-//			if (chunk->generate_)
-			{
-#if MARCHED_CUBES
-				WorldGen::Generate3DNoiseChunk(glm::vec3(chunk->GetPos()), level_);
-#else
-				WorldGen::GenerateChunk(chunk->GetPos(), level_);
-#endif
-//				chunk->SetGenerate(false);
-//				chunk->SetLoaded(true);
-				//chunk->SetIsLoading(false);
-				maxgen--;
-			}
-			chunk->Update();
-		}
-			});
-#endif
 }
 
 

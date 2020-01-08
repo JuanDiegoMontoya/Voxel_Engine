@@ -229,7 +229,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="biome.cpp" />
     <ClCompile Include="block.cpp" />
     <ClCompile Include="chunk.cpp" />
-    <ClCompile Include="chunk_load_manager.cpp" />
     <ClCompile Include="chunk_manager.cpp" />
     <ClCompile Include="collision_check.cpp" />
     <ClCompile Include="directional_light.cpp" />
@@ -347,7 +346,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="block.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="chunk.h" />
-    <ClInclude Include="chunk_load_manager.h" />
     <ClInclude Include="chunk_manager.h" />
     <ClInclude Include="collision_check.h" />
     <ClInclude Include="collision_shapes.h" />

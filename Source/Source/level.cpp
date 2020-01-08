@@ -68,7 +68,6 @@ void Level::Init()
 	chunkManager_.SetCurrentLevel(this);
 	chunkManager_.SetLoadDistance(100.f);
 	chunkManager_.SetUnloadLeniency(100.f);
-	chunkManager_.SetMaxLoadPerFrame(1);
 	renderer_.Init();
 	renderer_.chunkManager_ = &chunkManager_;
 	
