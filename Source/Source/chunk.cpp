@@ -22,7 +22,8 @@ double Chunk::isolevel = 0.60;
 
 Chunk::Chunk(bool active) : active_(active)
 {
-	//std::memset(lightMap, 0, sizeof(lightMap));
+	std::fill(std::begin(blocks), std::end(blocks), Block(BlockType::bAir));
+	std::memset(lightMap, 0, sizeof(lightMap));
 }
 
 

@@ -8,6 +8,8 @@ public:
 	Light(glm::ucvec4 L = { 0, 0, 0, 0 }) { Set(L); }
 	Light& operator=(const Light& rhs) { this->raw_ = rhs.raw_; return *this; }
 
+	uint16_t& Raw() { return raw_; }
+
 	glm::ucvec4 Get() { return { GetR(), GetG(), GetB(), GetS() }; }
 	uint8_t GetR() { return raw_ >> 12; }
 	uint8_t GetG() { return (raw_ >> 8) & 0b1111; }

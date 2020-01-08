@@ -127,6 +127,7 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 	//glm::uvec3 emit1 = Block::PropertiesTable[int(remBlock.GetType())].emittance;
 	//auto emit1 = Chunk::LightAtWorld(wpos)->Get();
 	//if (emit1 != glm::uvec3(0))
+	//if (Chunk::LightAtWorld(wpos)->Raw() != 0)
 		lightPropagateRemove(wpos);
 
 	// check if added block emits light
@@ -250,6 +251,8 @@ void ChunkManager::SaveWorld(std::string fname)
 				tempChunks.push_back(p.second);
 		});
 	archive(tempChunks);
+
+	std::cout << "Saved to " << fname << "!\n";
 }
 
 
@@ -271,6 +274,8 @@ void ChunkManager::LoadWorld(std::string fname)
 		{
 			Chunk::chunks[c.GetPos()] = new Chunk(c);
 		});
+
+	std::cout << "Loaded " << fname << "!\n";
 }
 
 
@@ -528,6 +533,49 @@ void ChunkManager::chunk_mesher_thread_task()
 // sends vertex data of fully-updated chunks to GPU from main thread (fast and simple)
 void ChunkManager::chunk_buffer_task()
 {
+	//{
+	//	std::unordered_set<ChunkPtr> temp;
+	//	{
+	//		std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
+	//		temp.swap(generation_queue_);
+	//	}
+
+	//	std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
+	//		{
+	//			WorldGen::GenerateChunk(chunk->GetPos(), level_);
+	//			std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
+	//			mesher_queue_.insert(chunk);
+	//		});
+	//}
+	//{
+	//	std::unordered_set<ChunkPtr> temp;
+	//	std::vector<ChunkPtr> yeet; // to-be ordered set containing temp's items
+	//	{
+	//		std::lock_guard<std::mutex> lock1(chunk_mesher_mutex_);
+	//		temp.swap(mesher_queue_);
+	//		debug_cur_pool_left += temp.size();
+	//	}
+	//	yeet.insert(yeet.begin(), temp.begin(), temp.end());
+
+	//	// TODO: this is temp solution to load near chunks to camera first
+	//	std::sort(yeet.begin(), yeet.end(), Utils::ChunkPtrKeyEq());
+	//	std::for_each(std::execution::seq, yeet.begin(), yeet.end(), [this](ChunkPtr chunk)
+	//		{
+	//			//SetThreadAffinityMask(GetCurrentThread(), ~1);
+	//			// send each mesh to GPU immediately after building it
+	//			chunk->BuildMesh();
+	//			debug_cur_pool_left--;
+	//			std::lock_guard<std::mutex> lock2(chunk_buffer_mutex_);
+	//			buffer_queue_.insert(chunk);
+	//		});
+	//}
+
+
+
+
+
+
+
 	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
 	std::unordered_set<ChunkPtr> temp;
 	{
