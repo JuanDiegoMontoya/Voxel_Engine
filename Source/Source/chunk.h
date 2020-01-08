@@ -177,7 +177,7 @@ public:
 	void serialize(Archive& ar)
 	{
 		// save position, block, and lighting data
-		ar(pos_, cereal::binary_data(blocks, sizeof(blocks)) );// , cereal::binary_data(lightMap, sizeof(lightMap)));
+		ar(pos_, cereal::binary_data(blocks, sizeof(blocks)), cereal::binary_data(lightMap, sizeof(lightMap)));
 	}
 
 	friend class WorldGen;
