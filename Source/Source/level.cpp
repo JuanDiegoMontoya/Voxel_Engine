@@ -435,7 +435,7 @@ void Level::CheckInteraction()
 void Level::UpdateBlockAt(glm::ivec3 wpos, Block bl)
 {
 	Block block = bl;
-	block.SetWriteStrength(std::numeric_limits<unsigned char>::max() / 2);
+	block.SetWriteStrength(0xf);
 	chunkManager_.UpdateBlock(wpos, block);
 }
 

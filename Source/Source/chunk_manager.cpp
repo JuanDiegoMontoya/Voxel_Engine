@@ -14,6 +14,8 @@
 #ifdef _WIN32
 #include <Windows.h>
 #undef near
+#undef max
+#undef min
 #else
 #endif
 
@@ -483,7 +485,11 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight)
 	//UpdateBlockLight(wpos, Block::PropertiesTable[bt].emittance);
 	LightPtr L = GetLightPtr(wpos);
 	if (L)
-		*L = nLight;
+	{
+		// combine the two lights by taking the max values only
+		glm::ucvec4 t = glm::max(L->Get(), nLight.Get());
+		*L = t;
+	}
 	std::queue<glm::ivec3> lightQueue;
 	lightQueue.push(wpos);
 	while (!lightQueue.empty())
