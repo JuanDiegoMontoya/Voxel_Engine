@@ -67,12 +67,12 @@ public:
 	void SetType(BlockType ty, unsigned char write) { type_ = ty; SetWriteStrength(write); }
 	void SetWriteStrength(unsigned char w)
 	{
-		ASSERT(w <= UCHAR_MAX / 2);
+		ASSERT(w <= 0xf);
 		wlValues_ = (wlValues_ & 0x0F) | (w << 4);
 	}
 	void SetLightValue(unsigned char l)
 	{
-		ASSERT(l <= UCHAR_MAX / 2);
+		ASSERT(l <= 0xf);
 		wlValues_ = (wlValues_ & 0xF0) | (l);
 	}
 

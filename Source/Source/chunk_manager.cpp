@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <execution>
 #include <mutex>
-#include "chunk_load_manager.h"
 #include "chunk.h"
 #include "block.h"
 #include "level.h"
@@ -15,16 +14,16 @@
 #ifdef _WIN32
 #include <Windows.h>
 #undef near
+#undef max
+#undef min
+#else
 #endif
 
 
 ChunkManager::ChunkManager()
 {
-	Chunk::chunks.max_load_factor(0.7f);
 	loadDistance_ = 0;
 	unloadLeniency_ = 0;
-	maxLoadPerFrame_ = 0;
-	loadManager_ = new ChunkLoadManager();
 	debug_cur_pool_left = 0;
 }
 
@@ -74,12 +73,21 @@ void ChunkManager::Update(LevelPtr level)
 			p.second->Update();
 	});
 
-	//ProcessUpdatedChunks();
 	chunk_buffer_task();
 	removeFarChunks();
 	createNearbyChunks();
-	//generateNewChunks();
+
+	for (ChunkPtr chunk : delayed_update_queue_)
+		UpdateChunk(chunk);
+	delayed_update_queue_.clear();
   PERF_BENCHMARK_END;
+}
+
+
+void ChunkManager::UpdateChunk(ChunkPtr chunk)
+{
+	std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
+	mesher_queue_.insert(chunk);
 }
 
 
@@ -127,6 +135,7 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 	//glm::uvec3 emit1 = Block::PropertiesTable[int(remBlock.GetType())].emittance;
 	//auto emit1 = Chunk::LightAtWorld(wpos)->Get();
 	//if (emit1 != glm::uvec3(0))
+	//if (Chunk::LightAtWorld(wpos)->Raw() != 0)
 		lightPropagateRemove(wpos);
 
 	// check if added block emits light
@@ -158,6 +167,7 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 		checkUpdateChunkNearBlock(wpos, dir);
 	}
 
+	delayed_update_queue_.erase(chunk);
 }
 
 
@@ -250,6 +260,8 @@ void ChunkManager::SaveWorld(std::string fname)
 				tempChunks.push_back(p.second);
 		});
 	archive(tempChunks);
+
+	std::cout << "Saved to " << fname << "!\n";
 }
 
 
@@ -262,6 +274,7 @@ void ChunkManager::LoadWorld(std::string fname)
 	});
 	Chunk::chunks.clear();
 
+	// TODO: fix this (doesn't call serialize functions for some reason)
 	std::ifstream is("./resources/Maps/" + fname + ".bin", std::ios::binary);
 	cereal::BinaryInputArchive archive(is);
 	std::vector<Chunk> tempChunks;
@@ -271,55 +284,8 @@ void ChunkManager::LoadWorld(std::string fname)
 			Chunk::chunks[c.GetPos()] = new Chunk(c);
 		});
 
-	//std::vector<std::pair<glm::ivec3, Chunk*>> t;
-	//t.insert(t.begin(), Chunk::chunks.begin(), Chunk::chunks.end());
-
-	for (auto p : Chunk::chunks)
-	{
-		std::cout << p.first << '-' << std::boolalpha << (p.second != nullptr) << '\n';
-	}
-
 	ReloadAllChunks();
-}
-
-
-// theoretically deprecated
-void ChunkManager::ProcessUpdatedChunks()
-{
-	std::for_each(
-		std::execution::par,
-		updatedChunks_.begin(),
-		updatedChunks_.end(),
-		[](ChunkPtr& chunk)
-	{
-		//if (chunk && !chunk->NeedsLoading())
-			chunk->BuildMesh();
-	});
-
-	// this operation cannot be parallelized
-	std::for_each(
-		std::execution::seq,
-		updatedChunks_.begin(),
-		updatedChunks_.end(),
-		[](ChunkPtr& chunk)
-	{
-		//if (chunk && !chunk->NeedsLoading())
-			chunk->BuildBuffers();
-	});
-
-	updatedChunks_.clear();
-}
-
-
-// theoretically deprecated
-bool ChunkManager::isChunkInUpdateList(ChunkPtr c)
-{
-	for (auto& chunk : updatedChunks_)
-	{
-		if (chunk == c)
-			return true;
-	}
-	return false;
+	std::cout << "Loaded " << fname << "!\n";
 }
 
 
@@ -338,6 +304,7 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 	{
 		std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 		mesher_queue_.insert(Chunk::chunks[p2.chunk_pos]);
+		delayed_update_queue_.erase(Chunk::chunks[p2.chunk_pos]);
 	}
 		//if (!isChunkInUpdateList(Chunk::chunks[p2.chunk_pos]))
 		//	updatedChunks_.push_back(Chunk::chunks[p2.chunk_pos]);
@@ -408,74 +375,6 @@ void ChunkManager::createNearbyChunks() // and delete ones outside of leniency d
 }
 
 
-void ChunkManager::generateNewChunks()
-{
-//	std::for_each(
-//	Chunk::chunks.begin(),
-//	Chunk::chunks.end(),
-//	[&](auto& p)
-//{
-//	float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
-//	if (p.second && dist <= loadDistance_)
-//		if (p.second->generate_)
-//			genChunkList_.push_back(p.second);
-//});
-//
-//	// sort chunks to update by distance from camera
-//	std::sort(
-//	std::execution::par,
-//	genChunkList_.begin(),
-//	genChunkList_.end(),
-//	[&](ChunkPtr& a, ChunkPtr& b)->bool
-//{
-//	return glm::distance(Render::GetCamera()->GetPos(), glm::vec3(a->GetPos() * Chunk::CHUNK_SIZE)) <
-//				 glm::distance(Render::GetCamera()->GetPos(), glm::vec3(b->GetPos() * Chunk::CHUNK_SIZE));
-//});
-
-	//genChunkList_.erase(genChunkList_.begin(), genChunkList_.begin() + maxLoadPerFrame_);
-	//genChunkList_.clear();
-
-#if USE_MULTITHREADED_CHUNK_LOADER
-	// version 2.0
-	for (auto& p : Chunk::chunks)
-	{
-		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
-		if (p.second && !p.second->InLoadQueue() && p.second->NeedsLoading())
-			if (dist <= loadDistance_)
-				loadManager_->Push(p.second);
-	}
-#else
-	// generate each chunk that needs to be generated
-	unsigned maxgen = maxLoadPerFrame_;
-	std::for_each(
-		std::execution::seq,
-		Chunk::chunks.begin(),
-		Chunk::chunks.end(),
-		[&](auto& p)
-	{
-		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
-		ChunkPtr chunk = p.second;
-		if (chunk && maxgen > 0 && dist <= loadDistance_)
-		{
-//			if (chunk->generate_)
-			{
-#if MARCHED_CUBES
-				WorldGen::Generate3DNoiseChunk(glm::vec3(chunk->GetPos()), level_);
-#else
-				WorldGen::GenerateChunk(chunk->GetPos(), level_);
-#endif
-//				chunk->SetGenerate(false);
-//				chunk->SetLoaded(true);
-				//chunk->SetIsLoading(false);
-				maxgen--;
-			}
-			chunk->Update();
-		}
-			});
-#endif
-}
-
-
 // perpetual thread task to generate blocks in new chunks
 void ChunkManager::chunk_generator_thread_task()
 {
@@ -537,6 +436,49 @@ void ChunkManager::chunk_mesher_thread_task()
 // sends vertex data of fully-updated chunks to GPU from main thread (fast and simple)
 void ChunkManager::chunk_buffer_task()
 {
+	//{
+	//	std::unordered_set<ChunkPtr> temp;
+	//	{
+	//		std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
+	//		temp.swap(generation_queue_);
+	//	}
+
+	//	std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
+	//		{
+	//			WorldGen::GenerateChunk(chunk->GetPos(), level_);
+	//			std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
+	//			mesher_queue_.insert(chunk);
+	//		});
+	//}
+	//{
+	//	std::unordered_set<ChunkPtr> temp;
+	//	std::vector<ChunkPtr> yeet; // to-be ordered set containing temp's items
+	//	{
+	//		std::lock_guard<std::mutex> lock1(chunk_mesher_mutex_);
+	//		temp.swap(mesher_queue_);
+	//		debug_cur_pool_left += temp.size();
+	//	}
+	//	yeet.insert(yeet.begin(), temp.begin(), temp.end());
+
+	//	// TODO: this is temp solution to load near chunks to camera first
+	//	std::sort(yeet.begin(), yeet.end(), Utils::ChunkPtrKeyEq());
+	//	std::for_each(std::execution::seq, yeet.begin(), yeet.end(), [this](ChunkPtr chunk)
+	//		{
+	//			//SetThreadAffinityMask(GetCurrentThread(), ~1);
+	//			// send each mesh to GPU immediately after building it
+	//			chunk->BuildMesh();
+	//			debug_cur_pool_left--;
+	//			std::lock_guard<std::mutex> lock2(chunk_buffer_mutex_);
+	//			buffer_queue_.insert(chunk);
+	//		});
+	//}
+
+
+
+
+
+
+
 	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
 	std::unordered_set<ChunkPtr> temp;
 	{
@@ -551,12 +493,16 @@ void ChunkManager::chunk_buffer_task()
 
 
 // ref https://www.seedofandromeda.com/blogs/29-fast-flood-fill-lighting-in-a-blocky-voxel-game-pt-1
-void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight)
+void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself)
 {
 	//UpdateBlockLight(wpos, Block::PropertiesTable[bt].emittance);
 	LightPtr L = GetLightPtr(wpos);
 	if (L)
-		*L = nLight;
+	{
+		// combine the two lights by taking the max values only
+		glm::ucvec4 t = glm::max(L->Get(), nLight.Get());
+		*L = t;
+	}
 	std::queue<glm::ivec3> lightQueue;
 	lightQueue.push(wpos);
 	while (!lightQueue.empty())
@@ -579,6 +525,8 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight)
 			Block block = GetBlock(lightp + dir);
 			LightPtr light = GetLightPtr(lightp + dir);
 			//UpdateChunk(lightp + dir);
+			if (Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos])
+				delayed_update_queue_.insert(Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos]);
 			if (!light) continue;
 			// if solid block or too bright of a block, skip dat boi
 			if (Block::PropertiesTable[block.GetTypei()].color.a == 1)
@@ -591,17 +539,22 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight)
 					continue;
 				//UpdateBlockLight(lightp + dir, glm::uvec3(lightLevel.r - 1));
 				auto val = light->Get();
-				val[ci] = (lightLevel.Get()[ci] - 1) * Block::PropertiesTable[block.GetTypei()].color[ci];
+				// TODO: fix light propagation to make light filtering work properly
+				val[ci] = (lightLevel.Get()[ci] - 1);// *Block::PropertiesTable[block.GetTypei()].color[ci];
 				light->Set(val);
 				lightQueue.push(lightp + dir);
 			}
 		}
 	}
+
+	if (skipself)
+		delayed_update_queue_.erase(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
 }
 
 
 void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 {
+	std::set<glm::ivec3, Utils::ivec3Hash> modifiedBlocks; // used to tell which chunks to update
 	std::queue<std::pair<glm::ivec3, Light>> lightRemovalQueue;
 	Light light = GetLight(wpos);
 	lightRemovalQueue.push({ wpos, light });
@@ -646,7 +599,8 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 					if (nlightv[ci] != 0 && nlightv[ci] == lightv[ci] - 1)
 					{
 						lightRemovalQueue.push({ plight + dir, *nearLight });
-						//UpdateChunk(plight + dir);
+						if (Chunk::chunks[Chunk::worldBlockToLocalPos(plight + dir).chunk_pos])
+							delayed_update_queue_.insert(Chunk::chunks[Chunk::worldBlockToLocalPos(plight + dir).chunk_pos]);
 						auto tmp = nearLight->Get();
 						tmp[ci] = 0;
 						nearLight->Set(tmp);
@@ -656,7 +610,7 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 					{
 						glm::ucvec4 nue(0);
 						nue[ci] = nlightv[ci];
-						//lightReadditionQueue.push({ plight + dir, nue });
+						lightReadditionQueue.push({ plight + dir, nue });
 						if (!lightsToReadd[plight + dir].Get()[ci])
 						{
 							nue += lightsToReadd[plight + dir].Get();
@@ -668,14 +622,17 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 		}
 	}
 
-	// commence re-propogation of light unrelated to the deleted one
-	//while (!lightReadditionQueue.empty())
-	//{
-	//	const auto& p = lightReadditionQueue.front();
-	//	lightReadditionQueue.pop();
-	//	lightPropagateAdd(p.first, p.second);
-	//}
 
-	for (const auto& p : lightsToReadd)
-		lightPropagateAdd(p.first, p.second);
+	// commence re-propogation of light unrelated to the deleted one
+	while (!lightReadditionQueue.empty())
+	{
+		const auto& p = lightReadditionQueue.front();
+		lightReadditionQueue.pop();
+		lightPropagateAdd(p.first, p.second, false);
+	}
+
+	delayed_update_queue_.erase(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
+
+	//for (const auto& p : lightsToReadd)
+	//	lightPropagateAdd(p.first, p.second);
 }

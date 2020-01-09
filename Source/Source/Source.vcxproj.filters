@@ -217,9 +217,6 @@
     <ClInclude Include="prefab.h">
       <Filter>Voxel Engine</Filter>
     </ClInclude>
-    <ClInclude Include="chunk_load_manager.h">
-      <Filter>Voxel Engine</Filter>
-    </ClInclude>
     <ClInclude Include="editor.h">
       <Filter>Game\Editor</Filter>
     </ClInclude>
@@ -385,9 +382,6 @@
       <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="prefab.cpp">
-      <Filter>Voxel Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="chunk_load_manager.cpp">
       <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="editor.cpp">

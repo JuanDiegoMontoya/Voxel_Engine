@@ -68,7 +68,6 @@ void Level::Init()
 	chunkManager_.SetCurrentLevel(this);
 	chunkManager_.SetLoadDistance(100.f);
 	chunkManager_.SetUnloadLeniency(100.f);
-	chunkManager_.SetMaxLoadPerFrame(1);
 	renderer_.Init();
 	renderer_.chunkManager_ = &chunkManager_;
 	
@@ -436,7 +435,7 @@ void Level::CheckInteraction()
 void Level::UpdateBlockAt(glm::ivec3 wpos, Block bl)
 {
 	Block block = bl;
-	block.SetWriteStrength(std::numeric_limits<unsigned char>::max() / 2);
+	block.SetWriteStrength(0xf);
 	chunkManager_.UpdateBlock(wpos, block);
 }
 

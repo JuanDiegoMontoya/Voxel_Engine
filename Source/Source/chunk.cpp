@@ -23,7 +23,8 @@ double Chunk::isolevel = 0.60;
 
 Chunk::Chunk(bool active) : active_(active)
 {
-	//std::memset(lightMap, 0, sizeof(lightMap));
+	std::fill(std::begin(blocks), std::end(blocks), Block(BlockType::bAir));
+	std::memset(lightMap, 0, sizeof(lightMap));
 }
 
 
@@ -270,8 +271,8 @@ void Chunk::buildSingleBlockFace(
 	bool force)																			// force building of this block, if it exists
 {
 	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
-	//bool isWater = block.GetType() == BlockType::bWater;
-	bool isWater = Block::PropertiesTable[block.GetTypei()].color.a < 1;
+	bool isWater = block.GetType() == BlockType::bWater;
+	//bool isWater = Block::PropertiesTable[block.GetTypei()].color.a < 1;
 	ChunkPtr near = chunks[nearblock.chunk_pos];
 	Block block2; // near block
 	Light light2; // near light

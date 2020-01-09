@@ -61,7 +61,7 @@ void PrefabManager::InitPrefabs()
 		{
 			for (int z = 0; z < 3; z++)
 			{
-				error.Add({ x, y, z }, Block(BlockType::bError, UCHAR_MAX / 2));
+				error.Add({ x, y, z }, Block(BlockType::bError, 0xf));
 			}
 		}
 	}

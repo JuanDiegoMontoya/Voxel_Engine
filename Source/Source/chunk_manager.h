@@ -1,5 +1,4 @@
 #pragma once
-#include "chunk_load_manager.h"
 #include "chunk.h"
 #include "block.h"
 #include "camera.h"
@@ -57,15 +56,11 @@ public:
 	// getters
 	float GetLoadDistance() const { return loadDistance_; }
 	float GetUnloadLeniency() const { return unloadLeniency_; }
-	unsigned GetMaxLoadPerFrame() const { return maxLoadPerFrame_; }
 
 	// setters
-	void SetCurrentLevel(LevelPtr level) { 
-		level_ = level; 
-		loadManager_->SetCurrentLevel(level); }
+	void SetCurrentLevel(LevelPtr level) { level_ = level; }
 	void SetLoadDistance(float d) { loadDistance_ = d; }
 	void SetUnloadLeniency(float d) { unloadLeniency_ = d; }
-	void SetMaxLoadPerFrame(unsigned n) { maxLoadPerFrame_ = n; }
 
 	void SaveWorld(std::string fname);
 	void LoadWorld(std::string fname);
@@ -73,15 +68,12 @@ public:
 	friend class Level; // so level can display debug info
 private:
 	// functions
-	void ProcessUpdatedChunks();
-	bool isChunkInUpdateList(ChunkPtr chunk);
 	void checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::ivec3& near);
 
 	void removeFarChunks();
-	void createNearbyChunks(); // and delete far away chunks
-	void generateNewChunks();
+	void createNearbyChunks();
 
-	// generates
+	// generates actual blocks
 	void chunk_generator_thread_task();
 	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> generation_queue_;
 	std::unordered_set<ChunkPtr> generation_queue_;
@@ -97,7 +89,6 @@ private:
 	std::vector<std::thread*> chunk_mesher_threads_;
 	std::atomic_int debug_cur_pool_left = { 0 };
 
-
 	// NOT multithreaded task
 	void chunk_buffer_task();
 	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> buffer_queue_;
@@ -105,8 +96,10 @@ private:
 	std::mutex chunk_buffer_mutex_;
 
 
+	std::unordered_set<ChunkPtr> delayed_update_queue_;
+
 	// new light intensity to add
-	void lightPropagateAdd(glm::ivec3 wpos, Light nLight);
+	void lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself = true);
 
 	// removed light intensity
 	void lightPropagateRemove(glm::ivec3 wpos);
@@ -115,10 +108,7 @@ private:
 	// vars
 	float loadDistance_;
 	float unloadLeniency_;
-	unsigned maxLoadPerFrame_;
 	std::vector<ChunkPtr> updatedChunks_;
 	std::vector<ChunkPtr> genChunkList_;
 	LevelPtr level_ = nullptr;
-
-	ChunkLoadManager* loadManager_;
 };

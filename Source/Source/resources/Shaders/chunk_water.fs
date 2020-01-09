@@ -57,7 +57,7 @@ float LinearizeDepth(float depth)
   return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
 }
 
-// calculate view position of current fragment (current fragment)
+// calculate view position of current fragment
 vec3 calcViewPosition(in vec2 texCoord)
 {
   // Combine UV & depth into XY & Z (NDC)
@@ -325,7 +325,16 @@ void main()
   if (computeSSR == true)
     lighting += ssr() * 0.200;
   lighting = mix(lighting, fogColor, FogCalculation());
-  fragColor = vec4(lighting, vColor.a + waterVis);
+
+
+  float depthDiff = distance(calcViewPosition(ssTexCoords), calcViewPositionDepthTex(ssTexCoords));
+  depthDiff = clamp(depthDiff * 1.5, 0, 1);
+  //depthDiff = 1 - depthDiff;
+  //depthDiff *= clamp(perlinNoise(vPos.xz * 15.0 + 2.0 * u_time) / 5.0, 0, 1);
+  vec3 foam = vec3(mix(1.0, clamp(perlinNoise(vPos.xz * 15.0 + 2.0 * u_time) / 5.0, 0, 1), depthDiff));
+  //fragColor = vec4(mix(lighting, vec3(clamp(perlinNoise(vPos.xz * 30.0),0,1)), depthDiff / 1), vColor.a + waterVis);
+  fragColor = vec4(mix(lighting, foam, 1-depthDiff), vColor.a + waterVis);
+
   //fragColor = vec4(ssr(), 1.0) + fragColor * .0001;
   //fragColor = vec4(vNormal * .5 + .5, 1.0) + fragColor * ssr().rrrr * .00001;
   //fragColor = vec4(ssTexCoords, 0.0, 1.0) + (fragColor + vec4(ssr(), 0)) * .00001;
