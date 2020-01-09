@@ -10,6 +10,7 @@
 #include "frustum.h"
 #include <sstream>
 #include "settings.h"
+#include "misc_utils.h"
 
 /*
 	TODO: use IBOs to save GPU memory
@@ -424,15 +425,6 @@ B2AO:
 
 BAO_END:
 	return occlusion;
-}
-
-
-static std::ostream& operator<<(std::ostream& o, glm::ivec3 v)
-{
-	return o << '('
-		<< v.x << ", "
-		<< v.y << ", "
-		<< v.z << ')';
 }
 
 

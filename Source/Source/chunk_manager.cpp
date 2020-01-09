@@ -262,7 +262,6 @@ void ChunkManager::LoadWorld(std::string fname)
 	});
 	Chunk::chunks.clear();
 
-	// TODO: fix this (doesn't call serialize functions for some reason)
 	std::ifstream is("./resources/Maps/" + fname + ".bin", std::ios::binary);
 	cereal::BinaryInputArchive archive(is);
 	std::vector<Chunk> tempChunks;
@@ -271,6 +270,16 @@ void ChunkManager::LoadWorld(std::string fname)
 		{
 			Chunk::chunks[c.GetPos()] = new Chunk(c);
 		});
+
+	//std::vector<std::pair<glm::ivec3, Chunk*>> t;
+	//t.insert(t.begin(), Chunk::chunks.begin(), Chunk::chunks.end());
+
+	for (auto p : Chunk::chunks)
+	{
+		std::cout << p.first << '-' << std::boolalpha << (p.second != nullptr) << '\n';
+	}
+
+	ReloadAllChunks();
 }
 
 
