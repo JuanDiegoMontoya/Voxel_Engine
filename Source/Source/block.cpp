@@ -21,5 +21,5 @@ const std::vector<BlockProperties> Block::PropertiesTable =
 	{BlockProperties("Glight",		 8,		{0, 1, 0, 1},							{0, 15, 0, 0})},
 	{BlockProperties("Blight",		 8,		{0, 0, 1, 1},							{0, 0, 15, 0})},
 	{BlockProperties("Smlight",		 8,		{.5, .5, .5, 1},					{15, 15, 15, 0})},
-	{BlockProperties("BGlass",		 8,		{0.1, 0.1, 1, .5},				{0, 0, 0, 0})},
+	{BlockProperties("BGlass",		 8,		{0.0, 0.0, 1, .5},				{0, 0, 0, 0})},
 };

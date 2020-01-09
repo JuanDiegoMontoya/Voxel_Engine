@@ -76,7 +76,18 @@ void ChunkManager::Update(LevelPtr level)
 	chunk_buffer_task();
 	removeFarChunks();
 	createNearbyChunks();
+
+	for (ChunkPtr chunk : delayed_update_queue_)
+		UpdateChunk(chunk);
+	delayed_update_queue_.clear();
   PERF_BENCHMARK_END;
+}
+
+
+void ChunkManager::UpdateChunk(ChunkPtr chunk)
+{
+	std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
+	mesher_queue_.insert(chunk);
 }
 
 
@@ -156,6 +167,7 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 		checkUpdateChunkNearBlock(wpos, dir);
 	}
 
+	delayed_update_queue_.erase(chunk);
 }
 
 
@@ -292,6 +304,7 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 	{
 		std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 		mesher_queue_.insert(Chunk::chunks[p2.chunk_pos]);
+		delayed_update_queue_.erase(Chunk::chunks[p2.chunk_pos]);
 	}
 		//if (!isChunkInUpdateList(Chunk::chunks[p2.chunk_pos]))
 		//	updatedChunks_.push_back(Chunk::chunks[p2.chunk_pos]);
@@ -480,7 +493,7 @@ void ChunkManager::chunk_buffer_task()
 
 
 // ref https://www.seedofandromeda.com/blogs/29-fast-flood-fill-lighting-in-a-blocky-voxel-game-pt-1
-void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight)
+void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself)
 {
 	//UpdateBlockLight(wpos, Block::PropertiesTable[bt].emittance);
 	LightPtr L = GetLightPtr(wpos);
@@ -512,6 +525,8 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight)
 			Block block = GetBlock(lightp + dir);
 			LightPtr light = GetLightPtr(lightp + dir);
 			//UpdateChunk(lightp + dir);
+			if (Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos])
+				delayed_update_queue_.insert(Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos]);
 			if (!light) continue;
 			// if solid block or too bright of a block, skip dat boi
 			if (Block::PropertiesTable[block.GetTypei()].color.a == 1)
@@ -524,17 +539,22 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight)
 					continue;
 				//UpdateBlockLight(lightp + dir, glm::uvec3(lightLevel.r - 1));
 				auto val = light->Get();
-				val[ci] = (lightLevel.Get()[ci] - 1) * Block::PropertiesTable[block.GetTypei()].color[ci];
+				// TODO: fix light propagation to make light filtering work properly
+				val[ci] = (lightLevel.Get()[ci] - 1);// *Block::PropertiesTable[block.GetTypei()].color[ci];
 				light->Set(val);
 				lightQueue.push(lightp + dir);
 			}
 		}
 	}
+
+	if (skipself)
+		delayed_update_queue_.erase(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
 }
 
 
 void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 {
+	std::set<glm::ivec3, Utils::ivec3Hash> modifiedBlocks; // used to tell which chunks to update
 	std::queue<std::pair<glm::ivec3, Light>> lightRemovalQueue;
 	Light light = GetLight(wpos);
 	lightRemovalQueue.push({ wpos, light });
@@ -579,7 +599,8 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 					if (nlightv[ci] != 0 && nlightv[ci] == lightv[ci] - 1)
 					{
 						lightRemovalQueue.push({ plight + dir, *nearLight });
-						//UpdateChunk(plight + dir);
+						if (Chunk::chunks[Chunk::worldBlockToLocalPos(plight + dir).chunk_pos])
+							delayed_update_queue_.insert(Chunk::chunks[Chunk::worldBlockToLocalPos(plight + dir).chunk_pos]);
 						auto tmp = nearLight->Get();
 						tmp[ci] = 0;
 						nearLight->Set(tmp);
@@ -589,7 +610,7 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 					{
 						glm::ucvec4 nue(0);
 						nue[ci] = nlightv[ci];
-						//lightReadditionQueue.push({ plight + dir, nue });
+						lightReadditionQueue.push({ plight + dir, nue });
 						if (!lightsToReadd[plight + dir].Get()[ci])
 						{
 							nue += lightsToReadd[plight + dir].Get();
@@ -601,14 +622,17 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 		}
 	}
 
-	// commence re-propogation of light unrelated to the deleted one
-	//while (!lightReadditionQueue.empty())
-	//{
-	//	const auto& p = lightReadditionQueue.front();
-	//	lightReadditionQueue.pop();
-	//	lightPropagateAdd(p.first, p.second);
-	//}
 
-	for (const auto& p : lightsToReadd)
-		lightPropagateAdd(p.first, p.second);
+	// commence re-propogation of light unrelated to the deleted one
+	while (!lightReadditionQueue.empty())
+	{
+		const auto& p = lightReadditionQueue.front();
+		lightReadditionQueue.pop();
+		lightPropagateAdd(p.first, p.second, false);
+	}
+
+	delayed_update_queue_.erase(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
+
+	//for (const auto& p : lightsToReadd)
+	//	lightPropagateAdd(p.first, p.second);
 }

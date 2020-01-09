@@ -96,8 +96,10 @@ private:
 	std::mutex chunk_buffer_mutex_;
 
 
+	std::unordered_set<ChunkPtr> delayed_update_queue_;
+
 	// new light intensity to add
-	void lightPropagateAdd(glm::ivec3 wpos, Light nLight);
+	void lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself = true);
 
 	// removed light intensity
 	void lightPropagateRemove(glm::ivec3 wpos);

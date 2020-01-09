@@ -270,8 +270,8 @@ void Chunk::buildSingleBlockFace(
 	bool force)																			// force building of this block, if it exists
 {
 	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
-	//bool isWater = block.GetType() == BlockType::bWater;
-	bool isWater = Block::PropertiesTable[block.GetTypei()].color.a < 1;
+	bool isWater = block.GetType() == BlockType::bWater;
+	//bool isWater = Block::PropertiesTable[block.GetTypei()].color.a < 1;
 	ChunkPtr near = chunks[nearblock.chunk_pos];
 	Block block2; // near block
 	Light light2; // near light
