@@ -85,3 +85,12 @@ namespace Utils
 		}
 	}
 }
+
+
+static std::ostream& operator<<(std::ostream& o, glm::ivec3 v)
+{
+	return o << '('
+		<< v.x << ", "
+		<< v.y << ", "
+		<< v.z << ')';
+}
