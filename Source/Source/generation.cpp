@@ -14,6 +14,9 @@ int maxHeight = 255;
 
 using namespace noise;
 
+int WorldGen::global_seed_ = -20;
+
+
 void WorldGen::GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse, std::vector<ChunkPtr>& updateList)
 {	// this loop is not parallelizable (unless VAO constructor is moved)
 	for (int xc = 0; xc < xSize; xc++)
@@ -267,7 +270,7 @@ void WorldGen::InitNoiseFuncs()
 		temperatureNoise.SetSeed(0);
 		temperatureNoise.SetOctaveCount(1);
 		humidityNoise.SetFrequency(.003);
-		humidityNoise.SetSeed(1);
+		humidityNoise.SetSeed(global_seed_ + 1);
 		humidityNoise.SetOctaveCount(1);
 		temperature.SetModule(temperatureNoise);
 		humidity.SetModule(humidityNoise);
@@ -299,7 +302,7 @@ void WorldGen::InitNoiseFuncs()
 		plainsHeight.SetConstValue(-.3); // height modifier
 		plainsFinal.SetSourceModule(0, plainsHeight);
 		plainsFinal.SetSourceModule(1, plains);
-		plainsPicker.SetSeed(0);
+		plainsPicker.SetSeed(global_seed_ + 0);
 		plainsPicker.SetLacunarity(0);
 		plainsPicker.SetFrequency(.003);
 		plainsPicker.SetOctaveCount(3);
@@ -321,7 +324,7 @@ void WorldGen::InitNoiseFuncs()
 		hillsHeight.SetConstValue(0);
 		hills.SetSourceModule(0, hillsLumpy);
 		hills.SetSourceModule(1, hillsHeight);
-		hillsPicker.SetSeed(1);
+		hillsPicker.SetSeed(global_seed_ + 1);
 		hillsPicker.SetLacunarity(0);
 		hillsPicker.SetFrequency(.003);
 		hillsPicker.SetOctaveCount(3);
@@ -339,7 +342,7 @@ void WorldGen::InitNoiseFuncs()
 
 
 		// do oceans very last
-		oceans.SetSeed(2);
+		oceans.SetSeed(global_seed_ + 2);
 		oceans.SetOctaveCount(1);
 		oceans.SetFrequency(.017);
 		oceans.SetNoiseQuality(NoiseQuality::QUALITY_STD);
