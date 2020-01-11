@@ -527,12 +527,15 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 			//UpdateChunk(lightp + dir);
 			if (Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos])
 				delayed_update_queue_.insert(Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos]);
-			if (!light) continue;
+			if (!light) // skip if invalid block
+				continue;
+
 			// if solid block or too bright of a block, skip dat boi
 			if (Block::PropertiesTable[block.GetTypei()].color.a == 1)
 				continue;
-			// iterate for R, G, B, and sunlight
-			for (int ci = 0; ci < 4; ci++) // iterate color index
+
+			// iterate for R, G, B
+			for (int ci = 0; ci < 3; ci++) // iterate color index
 			{
 				// skip blocks that are too bright to be affected by this light
 				if (light->Get()[ci] + 2 > lightLevel.Get()[ci])
@@ -547,6 +550,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 		}
 	}
 
+	// do not update this chunk again if it contained the placed light
 	if (skipself)
 		delayed_update_queue_.erase(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
 }
@@ -554,16 +558,12 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 
 void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 {
-	std::set<glm::ivec3, Utils::ivec3Hash> modifiedBlocks; // used to tell which chunks to update
 	std::queue<std::pair<glm::ivec3, Light>> lightRemovalQueue;
 	Light light = GetLight(wpos);
 	lightRemovalQueue.push({ wpos, light });
 	GetLightPtr(wpos)->Set({ 0, 0, 0, light.GetS() });
 
 	std::queue<std::pair<glm::ivec3, Light>> lightReadditionQueue;
-	std::unordered_map<glm::ivec3, Light, Utils::ivec3Hash, Utils::ivec3KeyEq> lightsToReadd;
-
-	//return;
 
 	while (!lightRemovalQueue.empty())
 	{
@@ -611,11 +611,6 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 						glm::ucvec4 nue(0);
 						nue[ci] = nlightv[ci];
 						lightReadditionQueue.push({ plight + dir, nue });
-						if (!lightsToReadd[plight + dir].Get()[ci])
-						{
-							nue += lightsToReadd[plight + dir].Get();
-							lightsToReadd[plight + dir].Set(nue);
-						}
 					}
 				}
 			}
@@ -631,8 +626,6 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 		lightPropagateAdd(p.first, p.second, false);
 	}
 
+	// do not update the removed block's chunk again since the act of removing will update it
 	delayed_update_queue_.erase(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
-
-	//for (const auto& p : lightsToReadd)
-	//	lightPropagateAdd(p.first, p.second);
 }

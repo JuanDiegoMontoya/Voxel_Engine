@@ -104,6 +104,7 @@ private:
 	// removed light intensity
 	void lightPropagateRemove(glm::ivec3 wpos);
 
+	void sunlightPropagateAdd(glm::ivec3 wpos);
 
 	// vars
 	float loadDistance_;

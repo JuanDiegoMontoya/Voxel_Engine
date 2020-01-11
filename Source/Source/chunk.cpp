@@ -209,11 +209,11 @@ void Chunk::BuildBuffers()
 void Chunk::BuildMesh()
 {
 	std::lock_guard<std::mutex> lock(vertex_buffer_mutex_);
-	for (int x = 0; x < CHUNK_SIZE; x++)
+	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
 		for (int y = 0; y < CHUNK_SIZE; y++)
 		{
-			for (int z = 0; z < CHUNK_SIZE; z++)
+			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
 				// skip fully transparent blocks
 				if (At(x, y, z).GetType() == BlockType::bAir)
