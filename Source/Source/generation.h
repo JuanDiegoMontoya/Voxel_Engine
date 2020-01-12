@@ -56,4 +56,6 @@ private:
 
 	// you can't make this object
 	WorldGen() = delete;
+
+	static int global_seed_;
 };
