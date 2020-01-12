@@ -207,16 +207,21 @@ void Chunk::BuildBuffers()
 }
 
 
+#include <iomanip>
+std::atomic<double> accumtime = 0;
+std::atomic<unsigned> accumcount = 0;
 void Chunk::BuildMesh()
 {
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
+
 	std::lock_guard<std::mutex> lock(vertex_buffer_mutex_);
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
-		for (int y = 0; y < CHUNK_SIZE; y++)
+		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (int x = 0; x < CHUNK_SIZE; x++)
+				for (int y = 0; y < CHUNK_SIZE; y++)
 			{
+				//int index = x + y * CHUNK_SIZE + z * CHUNK_SIZE_SQRED;
 				// skip fully transparent blocks
 				if (At(x, y, z).GetType() == BlockType::bAir)
 					continue;
@@ -233,8 +238,15 @@ void Chunk::BuildMesh()
 			}
 		}
 	}
+
 	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
-	std::cout << benchmark_duration_.count() << std::endl;
+	double milliseconds = benchmark_duration_.count() * 1000;
+	accumtime.store(accumtime + milliseconds);
+	accumcount.store(accumcount + 1);
+	std::cout 
+		<< std::setw(-2) << std::showpoint << std::setprecision(4) << accumtime / accumcount << " ms "
+		<< "(" << milliseconds << ")"
+		<< std::endl;
 }
 
 
@@ -261,7 +273,6 @@ void Chunk::buildBlockVertices_normal(const glm::ivec3 & pos, const float * data
 
 	// top
 	buildSingleBlockFace(glm::ivec3(x, y + 1, z), quadStride, 5, data, pos, block);
-	
 }
 
 
@@ -316,7 +327,7 @@ GenQuad:
 	}
 
 	// slightly randomize color for each block to make them more visible (temporary solution)
-	float clrBias = Utils::get_random_r(-.03f, .03f);
+	//float clrBias = Utils::get_random_r(-.03f, .03f);
 
 	// sadly we gotta copy all this stuff 6 times
 	for (int i = 0; i < 6; i++)

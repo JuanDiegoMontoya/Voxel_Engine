@@ -10,6 +10,8 @@
 #include <cereal/archives/binary.hpp>
 
 #define MARCHED_CUBES 0
+#define ID3D(x, y, z, h, w) (x + h * (y + w * z))
+#define ID2D(x, y, w) (w * y + x)
 
 //typedef class Block;
 
@@ -58,7 +60,9 @@ public:
 						Global Chunk Info
 	################################*/
 	static constexpr int GetChunkSize() { return CHUNK_SIZE; }
-	static constexpr int CHUNK_SIZE = 32;
+	static constexpr int CHUNK_SIZE			  = 32;
+	static constexpr int CHUNK_SIZE_SQRED = CHUNK_SIZE * CHUNK_SIZE;
+	static constexpr int CHUNK_SIZE_CUBED = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
 
 
 	/*################################

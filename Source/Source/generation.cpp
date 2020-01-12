@@ -14,7 +14,7 @@ int maxHeight = 255;
 
 using namespace noise;
 
-int WorldGen::global_seed_ = -20;
+int WorldGen::global_seed_ = 0;
 
 
 void WorldGen::GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse, std::vector<ChunkPtr>& updateList)
