@@ -209,6 +209,7 @@ void Chunk::BuildBuffers()
 
 void Chunk::BuildMesh()
 {
+	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 	std::lock_guard<std::mutex> lock(vertex_buffer_mutex_);
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
@@ -232,6 +233,8 @@ void Chunk::BuildMesh()
 			}
 		}
 	}
+	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
+	std::cout << benchmark_duration_.count() << std::endl;
 }
 
 
