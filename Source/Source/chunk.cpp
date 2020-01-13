@@ -297,9 +297,7 @@ void Chunk::buildSingleBlockFace(
 	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
 	bool isWater = block.GetType() == BlockType::bWater;
 	ChunkPtr near = this;
-	auto& pp = nearblock.block_pos;
-	if (pp.x < 0 || pp.y < 0 || pp.z < 0 ||
-		pp.x > CHUNK_SIZE || pp.y > CHUNK_SIZE || pp.z > CHUNK_SIZE)
+	if (this->pos_ != nearblock.chunk_pos)
 	{
 		near = chunks[nearblock.chunk_pos];
 		ASSERT(this != near);
@@ -456,6 +454,13 @@ B2AO:
 
 BAO_END:
 	return occlusion;
+}
+
+float Chunk::vertexFaceAO(const glm::vec3& corner, const glm::ivec3& faceNorm)
+{
+	Block side1, side2, corn;
+
+	return 0.0f;
 }
 
 

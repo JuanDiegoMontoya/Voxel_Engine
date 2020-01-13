@@ -20,10 +20,11 @@ class VBO;
 
 struct localpos
 {
+	localpos() : chunk_pos(0), block_pos(0) {}
 	localpos(const glm::ivec3& chunk, const glm::ivec3& block)
 		: chunk_pos(chunk), block_pos(block) {}
 	localpos(glm::ivec3&& chunk, glm::ivec3&& block)
-		: chunk_pos(chunk), block_pos(block) {}
+		: chunk_pos(std::move(chunk)), block_pos(std::move(block)) {}
 	glm::ivec3 chunk_pos; // within world
 	glm::ivec3 block_pos; // within chunk
 };
@@ -106,20 +107,23 @@ public:
 	// chunk at (0,0,0) spans 0-CHUNK_SIZE
 	static localpos worldBlockToLocalPos(const glm::ivec3 wpos)
 	{
-		//glm::ivec3 chk = glm::floor(glm::vec3(wpos) / (float)CHUNK_SIZE);
-		glm::ivec3 mod(wpos % CHUNK_SIZE);
-		glm::ivec3 chk2(wpos / CHUNK_SIZE);
-		if (wpos.x < 0 && mod.x) chk2.x--;
-		if (wpos.y < 0 && mod.y) chk2.y--;
-		if (wpos.z < 0 && mod.z) chk2.z--;
-		//mod = glm::ivec3(
-		//	mod.x >= 0 ? mod.x : CHUNK_SIZE + mod.x,
-		//	mod.y >= 0 ? mod.y : CHUNK_SIZE + mod.y,
-		//	mod.z >= 0 ? mod.z : CHUNK_SIZE + mod.z);
-		if (mod.x < 0) mod.x += CHUNK_SIZE;
-		if (mod.y < 0) mod.y += CHUNK_SIZE;
-		if (mod.z < 0) mod.z += CHUNK_SIZE;
-		return localpos(std::move(chk2), std::move(mod));
+		localpos ret;
+		// compute the modulus of wpos and chunk size (bitwise AND method only works for powers of 2)
+		// to find the relative block position in the chunk
+		ret.block_pos = {
+		wpos.x & CHUNK_SIZE - 1,
+		wpos.y & CHUNK_SIZE - 1,
+		wpos.z & CHUNK_SIZE - 1 };
+		// find the chunk position using integer floor method
+		ret.chunk_pos = { wpos / CHUNK_SIZE };
+		if (wpos.x < 0 && ret.block_pos.x) ret.chunk_pos.x--;
+		if (wpos.y < 0 && ret.block_pos.y) ret.chunk_pos.y--;
+		if (wpos.z < 0 && ret.block_pos.z) ret.chunk_pos.z--;
+		// shift local block position forward by chunk size if negative
+		if (ret.block_pos.x < 0) ret.block_pos.x += CHUNK_SIZE;
+		if (ret.block_pos.y < 0) ret.block_pos.y += CHUNK_SIZE;
+		if (ret.block_pos.z < 0) ret.block_pos.z += CHUNK_SIZE;
+		return ret;
 	}
 
 	// gives the true world position of a block within a chunk
@@ -219,6 +223,9 @@ private:
 		const glm::ivec3& blockPos,
 		const glm::vec3& corner,
 		const glm::ivec3& nearFace);
+	float vertexFaceAO(
+		const glm::vec3& corner,
+		const glm::ivec3& faceNorm);
 
 	void buildBlockVertices_marched_cubes(
 		const glm::ivec3& pos,
