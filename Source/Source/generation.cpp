@@ -380,6 +380,7 @@ void WorldGen::InitNoiseFuncs()
 }
 
 
+// TODO: use cheap generate block functions, then update all 6 adjacent chunks
 void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 {
 	// generate everything
@@ -459,7 +460,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
 				if (val > .9 && level->GetBlockAt(pos).GetType() != BlockType::bWater)
 					level->GenerateBlockAtCheap(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
-					//level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), Block::bAir);
+					//level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
 			}
 		}
 	}

@@ -217,14 +217,23 @@ void Chunk::BuildMesh()
 	std::lock_guard<std::mutex> lock(vertex_buffer_mutex_);
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
-		for (int x = 0; x < CHUNK_SIZE; x++)
+		int zcsq = z * CHUNK_SIZE_SQRED;
+		for (int y = 0; y < CHUNK_SIZE; y++)
 		{
-				for (int y = 0; y < CHUNK_SIZE; y++)
+			int yczcsq = y * CHUNK_SIZE + zcsq;
+			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
 				//int index = x + y * CHUNK_SIZE + z * CHUNK_SIZE_SQRED;
-				// skip fully transparent blocks
-				if (At(x, y, z).GetType() == BlockType::bAir)
+				int index = x + yczcsq;
+
+				const Block block = blocks[index];
+				//if (Block::PropertiesTable[block.GetTypei()].color.a != 2)
+				//	continue;
+				if (block.GetType() == BlockType::bAir)
 					continue;
+				// skip fully transparent blocks
+				//if (At(x, y, z).GetType() == BlockType::bAir)
+				//	continue;
 
 				// check if each face would be obscured, and adds the ones that aren't to the vbo
 				// obscured IF side is adjacent to opaque block
@@ -233,7 +242,8 @@ void Chunk::BuildMesh()
 #if MARCHED_CUBES
 				buildBlockVertices_marched_cubes(pos, At(x, y, z));
 #else
-				buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
+				//buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
+				buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, block);
 #endif
 			}
 		}
@@ -286,8 +296,14 @@ void Chunk::buildSingleBlockFace(
 {
 	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
 	bool isWater = block.GetType() == BlockType::bWater;
-	//bool isWater = Block::PropertiesTable[block.GetTypei()].color.a < 1;
-	ChunkPtr near = chunks[nearblock.chunk_pos];
+	ChunkPtr near = this;
+	auto& pp = nearblock.block_pos;
+	if (pp.x < 0 || pp.y < 0 || pp.z < 0 ||
+		pp.x > CHUNK_SIZE || pp.y > CHUNK_SIZE || pp.z > CHUNK_SIZE)
+	{
+		near = chunks[nearblock.chunk_pos];
+		ASSERT(this != near);
+	}
 	Block block2; // near block
 	Light light2; // near light
 	if (force)
