@@ -496,6 +496,8 @@ double WorldGen::GetHumidity(double x, double z)
 }
 
 
+// TODO: find bounding box containing the prefab and update the chunks within
+// then use fast block update function
 void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos, LevelPtr level)
 {
 	for (const auto& pair : prefab.blocks)
@@ -549,18 +551,6 @@ double WorldGen::GetDensity(const glm::vec3& wpos)
 		dense.SetFrequency(.02);
 		// init generator here
 	}
-
-  glm::vec3 positions[] =
-  {
-    { -.5f, -.5f,  .5f },
-    {  .5f, -.5f,  .5f },
-    {  .5f, -.5f, -.5f },
-    { -.5f, -.5f, -.5f },
-    { -.5f,  .5f,  .5f },
-    {  .5f,  .5f,  .5f },
-    {  .5f,  .5f, -.5f },
-    { -.5f,  .5f, -.5f }
-  };
 
   double densidee = dense.GetValue(wpos.x, wpos.y, wpos.z);
 

@@ -317,10 +317,15 @@ void ChunkManager::removeFarChunks()
 	if (generation_queue_.size() == 0 && mesher_queue_.size() == 0 && debug_cur_pool_left.load() == 0)
 	{
 		std::vector<ChunkPtr> deleteList;
+		// attempt at safety
+		std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
+		std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
+		std::lock_guard<std::mutex> lock3(chunk_buffer_mutex_);
 		Utils::erase_if(
 			Chunk::chunks,
 			[&](auto& p)->bool
 		{
+			// range is distance from camera to corner of chunk (corner is ok)
 			float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
 			if (p.second && dist > loadDistance_ + unloadLeniency_)
 			{
@@ -389,7 +394,11 @@ void ChunkManager::chunk_generator_thread_task()
 
 		std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
 		{
+#if MARCHED_CUBES
+			WorldGen::Generate3DNoiseChunk(chunk->GetPos(), level_);
+#else
 			WorldGen::GenerateChunk(chunk->GetPos(), level_);
+#endif
 			std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
 			mesher_queue_.insert(chunk);
 		});
