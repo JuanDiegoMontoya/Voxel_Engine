@@ -217,27 +217,22 @@ void Chunk::BuildMesh()
 	std::lock_guard<std::mutex> lock(vertex_buffer_mutex_);
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
+		// precompute
 		int zcsq = z * CHUNK_SIZE_SQRED;
 		for (int y = 0; y < CHUNK_SIZE; y++)
 		{
+			// precompute
 			int yczcsq = y * CHUNK_SIZE + zcsq;
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
 				//int index = x + y * CHUNK_SIZE + z * CHUNK_SIZE_SQRED;
 				int index = x + yczcsq;
 
-				const Block block = blocks[index];
-				//if (Block::PropertiesTable[block.GetTypei()].color.a != 2)
-				//	continue;
-				if (block.GetType() == BlockType::bAir)
-					continue;
 				// skip fully transparent blocks
-				//if (At(x, y, z).GetType() == BlockType::bAir)
-				//	continue;
+				const Block block = blocks[index];
+				if (Block::PropertiesTable[block.GetTypei()].invisible)
+					continue;
 
-				// check if each face would be obscured, and adds the ones that aren't to the vbo
-				// obscured IF side is adjacent to opaque block
-				// NOT obscured if side is adjacent to nothing or transparent block
 				glm::ivec3 pos(x, y, z);
 #if MARCHED_CUBES
 				//buildBlockVertices_marched_cubes(pos, At(x, y, z));
@@ -411,7 +406,7 @@ float Chunk::computeBlockAO(
 				c2[i] = combined[i];
 		}
 	}
-
+	
 	float occlusion = 1;
 	const float occAmt = .2f;
 

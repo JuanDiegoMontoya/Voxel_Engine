@@ -53,7 +53,7 @@ namespace Editor
 						Block b = chunkManager->GetBlock(glm::ivec3(x, y, z));
 						if (skipAir && b.GetType() == BlockType::bAir)
 							continue;
-						b.SetWriteStrength(UCHAR_MAX / 2);
+						b.SetWriteStrength(0x0F);
 						newPfb.Add(
 							glm::ivec3(x - min.x, y - min.y, z - min.z), b);
 					}
