@@ -4,8 +4,8 @@
 #include "generation.h"
 
 void Chunk::buildBlockVertices_marched_cubes(
-	const glm::ivec3& pos,
-	const Block& block)
+	glm::ivec3 pos,
+	Block block)
 {
 	// polygonize will add vertex positions
 	size_t tris = polygonize(pos, block);

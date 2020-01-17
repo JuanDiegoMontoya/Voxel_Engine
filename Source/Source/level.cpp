@@ -357,7 +357,7 @@ void Level::CheckCollision()
 				{ 0, 1, 0 }, // 'bottom' face normal (-y direction)
 				{ 0,-1, 0 }, // 'top' face normal (+y direction)
 				{ 0, 0,-1 }, // 'far' face normal (-z direction)
-				{ 0, 0, 1 }  // 'near' face normal (+x direction)
+				{ 0, 0, 1 }  // 'near' face normal (+z direction)
 			};
 
 			// distance of collided box to the face.

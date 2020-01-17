@@ -206,15 +206,15 @@ public:
 
 private:
 	void buildBlockVertices_normal(
-		const glm::ivec3& pos,
+		glm::ivec3 pos,
 		const float* data,
 		int quadStride,
-		const Block& block);
+		Block block);
 	void buildSingleBlockFace(
-		const glm::ivec3& nearFace,
+		glm::ivec3 nearFace,
 		int quadStride, int curQuad, const float* data,
 		const glm::ivec3& blockPos,
-		const Block& block,
+		Block block,
 		bool force = false);
 
 	// returns inverse of occludedness
@@ -228,8 +228,8 @@ private:
 		const glm::ivec3& faceNorm);
 
 	void buildBlockVertices_marched_cubes(
-		const glm::ivec3& pos,
-		const Block& block);
+		glm::ivec3 pos,
+		Block block);
 	size_t polygonize(const glm::ivec3& pos, const Block&);
 	glm::vec3 VertexInterp(double isolevel, glm::vec3 p1, glm::vec3 p2, double valp1, double valp2);
 	//glm::vec3 VertexInterp2(glm::vec3 p1, glm::vec3 p2, double value);

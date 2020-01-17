@@ -32,6 +32,17 @@ namespace Utils
 	};
 }
 
+
+// Interfaces (is this the correct term?) with the Chunk class to
+// manage how and when chunk block and mesh data is generated, and
+// when that data is sent to the GPU.
+// Also manages updates to blocks and lighting in chunks to determine
+// when a chunk needs to be remeshed.
+
+// TODO: make this an abstract class, then send its current contents to a
+// new class called "InfiniteChunkManager" or something like that,
+// then create another called "FixedChunkManager", both derived from
+// this class.
 class ChunkManager
 {
 public:

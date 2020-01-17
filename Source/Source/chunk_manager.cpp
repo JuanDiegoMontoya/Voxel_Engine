@@ -380,127 +380,8 @@ void ChunkManager::createNearbyChunks() // and delete ones outside of leniency d
 }
 
 
-// perpetual thread task to generate blocks in new chunks
-void ChunkManager::chunk_generator_thread_task()
-{
-	while (1)
-	{
-		//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
-		std::unordered_set<ChunkPtr> temp;
-		{
-			std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
-			temp.swap(generation_queue_);
-		}
-
-		std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
-		{
-#if MARCHED_CUBES
-			WorldGen::Generate3DNoiseChunk(chunk->GetPos(), level_);
-#else
-			WorldGen::GenerateChunk(chunk->GetPos(), level_);
-#endif
-			std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
-			mesher_queue_.insert(chunk);
-		});
-
-		//std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
-		//mesher_queue_.insert(temp.begin(), temp.end());
-	}
-}
-
-
-// perpetual thread task to generate meshes for updated chunks
-void ChunkManager::chunk_mesher_thread_task()
-{
-	while (1)
-	{
-		//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
-		//std::set<ChunkPtr> temp;
-		std::unordered_set<ChunkPtr> temp;
-		std::vector<ChunkPtr> yeet; // to-be ordered set containing temp's items
-		{
-			std::lock_guard<std::mutex> lock1(chunk_mesher_mutex_);
-			temp.swap(mesher_queue_);
-			debug_cur_pool_left += temp.size();
-		}
-		yeet.insert(yeet.begin(), temp.begin(), temp.end());
-
-		// TODO: this is temp solution to load near chunks to camera first
-		std::sort(yeet.begin(), yeet.end(), Utils::ChunkPtrKeyEq());
-		std::for_each(std::execution::seq, yeet.begin(), yeet.end(), [this](ChunkPtr chunk)
-		{
-			//SetThreadAffinityMask(GetCurrentThread(), ~1);
-			// send each mesh to GPU immediately after building it
-			chunk->BuildMesh();
-			debug_cur_pool_left--;
-			std::lock_guard<std::mutex> lock2(chunk_buffer_mutex_);
-			buffer_queue_.insert(chunk);
-		});
-	}
-	//std::shared_ptr<void> fdsa;
-	//fdsa.use_count();
-}
-
-
-// sends vertex data of fully-updated chunks to GPU from main thread (fast and simple)
-void ChunkManager::chunk_buffer_task()
-{
-	//{
-	//	std::unordered_set<ChunkPtr> temp;
-	//	{
-	//		std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
-	//		temp.swap(generation_queue_);
-	//	}
-
-	//	std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
-	//		{
-	//			WorldGen::GenerateChunk(chunk->GetPos(), level_);
-	//			std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
-	//			mesher_queue_.insert(chunk);
-	//		});
-	//}
-	//{
-	//	std::unordered_set<ChunkPtr> temp;
-	//	std::vector<ChunkPtr> yeet; // to-be ordered set containing temp's items
-	//	{
-	//		std::lock_guard<std::mutex> lock1(chunk_mesher_mutex_);
-	//		temp.swap(mesher_queue_);
-	//		debug_cur_pool_left += temp.size();
-	//	}
-	//	yeet.insert(yeet.begin(), temp.begin(), temp.end());
-
-	//	// TODO: this is temp solution to load near chunks to camera first
-	//	std::sort(yeet.begin(), yeet.end(), Utils::ChunkPtrKeyEq());
-	//	std::for_each(std::execution::seq, yeet.begin(), yeet.end(), [this](ChunkPtr chunk)
-	//		{
-	//			//SetThreadAffinityMask(GetCurrentThread(), ~1);
-	//			// send each mesh to GPU immediately after building it
-	//			chunk->BuildMesh();
-	//			debug_cur_pool_left--;
-	//			std::lock_guard<std::mutex> lock2(chunk_buffer_mutex_);
-	//			buffer_queue_.insert(chunk);
-	//		});
-	//}
-
-
-
-
-
-
-
-	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
-	std::unordered_set<ChunkPtr> temp;
-	{
-		std::lock_guard<std::mutex> lock(chunk_buffer_mutex_);
-		temp.swap(buffer_queue_);
-	}
-
-	// normally, there will only be a few items in here per frame
-	for (ChunkPtr chunk : temp)
-		chunk->BuildBuffers();
-}
-
-
+// TODO: make lighting updates also check chunks around the cell 
+// (because lighting affects all neighboring blocks)
 // ref https://www.seedofandromeda.com/blogs/29-fast-flood-fill-lighting-in-a-blocky-voxel-game-pt-1
 void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself)
 {
@@ -627,7 +508,7 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 	}
 
 
-	// commence re-propogation of light unrelated to the deleted one
+	// re-propogate lights in queue, otherwise we're left with hard edges
 	while (!lightReadditionQueue.empty())
 	{
 		const auto& p = lightReadditionQueue.front();

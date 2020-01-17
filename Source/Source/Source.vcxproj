@@ -230,10 +230,12 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="block.cpp" />
     <ClCompile Include="chunk.cpp" />
     <ClCompile Include="chunk_manager.cpp" />
+    <ClCompile Include="chunk_manager_base.cpp" />
     <ClCompile Include="collision_check.cpp" />
     <ClCompile Include="directional_light.cpp" />
     <ClCompile Include="editor.cpp" />
     <ClCompile Include="hud.cpp" />
+    <ClCompile Include="infinite_chunk_manager.cpp" />
     <ClCompile Include="light.cpp" />
     <ClCompile Include="march_cubes.cpp" />
     <ClCompile Include="debug.cpp" />
@@ -241,6 +243,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="generation.cpp" />
     <ClCompile Include="lit_mesh.cpp" />
     <ClCompile Include="mesh_comp.cpp" />
+    <ClCompile Include="parallel_chunks.cpp" />
     <ClCompile Include="physics_comp.cpp" />
     <ClCompile Include="pick.cpp" />
     <ClCompile Include="player.cpp" />
@@ -347,6 +350,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="camera.h" />
     <ClInclude Include="chunk.h" />
     <ClInclude Include="chunk_manager.h" />
+    <ClInclude Include="chunk_manager_base.h" />
     <ClInclude Include="collision_check.h" />
     <ClInclude Include="collision_shapes.h" />
     <ClInclude Include="component.h" />
@@ -356,9 +360,11 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="frustum.h" />
     <ClInclude Include="generation.h" />
     <ClInclude Include="hud.h" />
+    <ClInclude Include="infinite_chunk_manager.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="lit_mesh.h" />
     <ClInclude Include="mesh_comp.h" />
+    <ClInclude Include="parallel_chunks.h" />
     <ClInclude Include="physics_comp.h" />
     <ClInclude Include="pick.h" />
     <ClInclude Include="player.h" />

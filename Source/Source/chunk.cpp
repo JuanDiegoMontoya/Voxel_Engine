@@ -12,6 +12,8 @@
 #include "settings.h"
 #include "misc_utils.h"
 
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#define GLM_FORCE_SIMD_AVX2
 /*
 	TODO: use IBOs to save GPU memory
 */
@@ -217,15 +219,17 @@ void Chunk::BuildMesh()
 	std::lock_guard<std::mutex> lock(vertex_buffer_mutex_);
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
-		// precompute
+		// precompute first flat index part
 		int zcsq = z * CHUNK_SIZE_SQRED;
 		for (int y = 0; y < CHUNK_SIZE; y++)
 		{
-			// precompute
+			// precompute second flat index part
 			int yczcsq = y * CHUNK_SIZE + zcsq;
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
+				// this is what we would be doing every innermost iteration
 				//int index = x + y * CHUNK_SIZE + z * CHUNK_SIZE_SQRED;
+				// we only need to do addition
 				int index = x + yczcsq;
 
 				// skip fully transparent blocks
@@ -233,13 +237,12 @@ void Chunk::BuildMesh()
 				if (Block::PropertiesTable[block.GetTypei()].invisible)
 					continue;
 
-				glm::ivec3 pos(x, y, z);
 #if MARCHED_CUBES
 				//buildBlockVertices_marched_cubes(pos, At(x, y, z));
-				buildBlockVertices_marched_cubes(pos, block);
+				buildBlockVertices_marched_cubes({ x, y, z }, block);
 #else
 				//buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
-				buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, block);
+				buildBlockVertices_normal({ x, y, z }, Render::cube_norm_tex_vertices, 48, block);
 #endif
 			}
 		}
@@ -256,39 +259,51 @@ void Chunk::BuildMesh()
 }
 
 
-void Chunk::buildBlockVertices_normal(const glm::ivec3 & pos, const float * data, int quadStride, const Block& block)
+void Chunk::buildBlockVertices_normal(glm::ivec3 pos, const float * data, int quadStride, Block block)
 {
 	int x = pos.x;
 	int y = pos.y;
 	int z = pos.z;
 
-	// back
-	buildSingleBlockFace(glm::ivec3(x, y, z - 1), quadStride, 0, data, pos, block);
+	constexpr glm::ivec3 faces[6] =
+	{
+		{ 0, 0,-1 }, // 'far' face    (-z direction)
+		{ 0, 0, 1 }, // 'near' face   (+z direction)
+		{-1, 0, 0 }, // 'left' face   (-x direction)
+		{ 1, 0, 0 }, // 'right' face  (+x direction)
+		{ 0,-1, 0 }, // 'top' face    (+y direction)
+		{ 0, 1, 0 }, // 'bottom' face (-y direction)
+	};
+	for (int i = 0; i < 6; i++)
+		buildSingleBlockFace(pos + faces[i], quadStride, i, data, pos, block);
 
-	// front
-	buildSingleBlockFace(glm::ivec3(x, y, z + 1), quadStride, 1, data, pos, block);
+	//// back
+	//buildSingleBlockFace(glm::ivec3(x, y, z - 1), quadStride, 0, data, pos, block);
 
-	// left
-	buildSingleBlockFace(glm::ivec3(x - 1, y, z), quadStride, 2, data, pos, block);
+	//// front
+	//buildSingleBlockFace(glm::ivec3(x, y, z + 1), quadStride, 1, data, pos, block);
 
-	// right
-	buildSingleBlockFace(glm::ivec3(x + 1, y, z), quadStride, 3, data, pos, block);
+	//// left
+	//buildSingleBlockFace(glm::ivec3(x - 1, y, z), quadStride, 2, data, pos, block);
 
-	// bottom
-	buildSingleBlockFace(glm::ivec3(x, y - 1, z), quadStride, 4, data, pos, block);
+	//// right
+	//buildSingleBlockFace(glm::ivec3(x + 1, y, z), quadStride, 3, data, pos, block);
 
-	// top
-	buildSingleBlockFace(glm::ivec3(x, y + 1, z), quadStride, 5, data, pos, block);
+	//// bottom
+	//buildSingleBlockFace(glm::ivec3(x, y - 1, z), quadStride, 4, data, pos, block);
+
+	//// top
+	//buildSingleBlockFace(glm::ivec3(x, y + 1, z), quadStride, 5, data, pos, block);
 }
 
 
 //std::vector<float> Chunk::buildSingleBlockFace(glm::ivec3 near, int low, int high, int x, int y, int z)
 void Chunk::buildSingleBlockFace(
-	const glm::ivec3& nearFace,											// position of nearby block to check
+	glm::ivec3 nearFace,											// position of nearby block to check
 	int quadStride, int curQuad, const float* data, // vertex + quad data
 	const glm::ivec3& blockPos,											// position of current block
-	const Block& block,															// block-specific information
-	bool force)																			// force building of this block, if it exists
+	Block block,															// block-specific information
+	bool force)																			// force building of this block face, if it exists
 {
 	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
 	bool isWater = block.GetType() == BlockType::bWater;
@@ -452,6 +467,9 @@ BAO_END:
 	return occlusion;
 }
 
+
+// TODO: when making this function, use similar near chunk checking scheme to
+// minimize amount of searching in the global chunk map
 float Chunk::vertexFaceAO(const glm::vec3& corner, const glm::ivec3& faceNorm)
 {
 	Block side1, side2, corn;

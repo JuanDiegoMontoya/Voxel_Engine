@@ -49,6 +49,9 @@
     <Filter Include="Voxel Engine">
       <UniqueIdentifier>{e7fc491d-c7a6-4f8b-8aa9-1011aa517004}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Voxel Engine\Chunk Manager">
+      <UniqueIdentifier>{4c95e2df-6326-49ca-8141-86b2324d71b6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sys_window.h">
@@ -208,9 +211,6 @@
     <ClInclude Include="biome.h">
       <Filter>Voxel Engine</Filter>
     </ClInclude>
-    <ClInclude Include="chunk_manager.h">
-      <Filter>Voxel Engine</Filter>
-    </ClInclude>
     <ClInclude Include="directional_light.h">
       <Filter>Graphics</Filter>
     </ClInclude>
@@ -243,6 +243,18 @@
     </ClInclude>
     <ClInclude Include="light.h">
       <Filter>Voxel Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="chunk_manager.h">
+      <Filter>Voxel Engine\Chunk Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="chunk_manager_base.h">
+      <Filter>Voxel Engine\Chunk Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="infinite_chunk_manager.h">
+      <Filter>Voxel Engine\Chunk Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="parallel_chunks.h">
+      <Filter>Voxel Engine\Chunk Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -375,9 +387,6 @@
     <ClCompile Include="march_cubes.cpp">
       <Filter>Voxel Engine</Filter>
     </ClCompile>
-    <ClCompile Include="chunk_manager.cpp">
-      <Filter>Voxel Engine</Filter>
-    </ClCompile>
     <ClCompile Include="directional_light.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
@@ -404,6 +413,18 @@
     </ClCompile>
     <ClCompile Include="light.cpp">
       <Filter>Voxel Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="chunk_manager.cpp">
+      <Filter>Voxel Engine\Chunk Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="chunk_manager_base.cpp">
+      <Filter>Voxel Engine\Chunk Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="infinite_chunk_manager.cpp">
+      <Filter>Voxel Engine\Chunk Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="parallel_chunks.cpp">
+      <Filter>Voxel Engine\Chunk Manager</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
