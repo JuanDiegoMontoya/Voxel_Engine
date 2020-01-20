@@ -108,14 +108,23 @@ public:
 	static localpos worldBlockToLocalPos(const glm::ivec3 wpos)
 	{
 		localpos ret;
+		fastWorldBlockToLocalPos(wpos, ret);
+		return ret;
+	}
+
+	// improves speed by avoiding local copies and returning
+	static void fastWorldBlockToLocalPos(const glm::ivec3& wpos, localpos& ret)
+	{
 		// compute the modulus of wpos and chunk size (bitwise AND method only works for powers of 2)
 		// to find the relative block position in the chunk
-		ret.block_pos = {
-		wpos.x & CHUNK_SIZE - 1,
-		wpos.y & CHUNK_SIZE - 1,
-		wpos.z & CHUNK_SIZE - 1 };
+		ret.block_pos.x = wpos.x & CHUNK_SIZE - 1;
+		ret.block_pos.y = wpos.y & CHUNK_SIZE - 1;
+		ret.block_pos.z = wpos.z & CHUNK_SIZE - 1;
 		// find the chunk position using integer floor method
-		ret.chunk_pos = { wpos / CHUNK_SIZE };
+		ret.chunk_pos.x = wpos.x / CHUNK_SIZE;
+		ret.chunk_pos.y = wpos.y / CHUNK_SIZE;
+		ret.chunk_pos.z = wpos.z / CHUNK_SIZE;
+		// subtract (floor) if negative w/ non-zero modulus
 		if (wpos.x < 0 && ret.block_pos.x) ret.chunk_pos.x--;
 		if (wpos.y < 0 && ret.block_pos.y) ret.chunk_pos.y--;
 		if (wpos.z < 0 && ret.block_pos.z) ret.chunk_pos.z--;
@@ -123,7 +132,6 @@ public:
 		if (ret.block_pos.x < 0) ret.block_pos.x += CHUNK_SIZE;
 		if (ret.block_pos.y < 0) ret.block_pos.y += CHUNK_SIZE;
 		if (ret.block_pos.z < 0) ret.block_pos.z += CHUNK_SIZE;
-		return ret;
 	}
 
 	// gives the true world position of a block within a chunk

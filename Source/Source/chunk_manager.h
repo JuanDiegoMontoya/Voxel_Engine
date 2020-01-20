@@ -107,6 +107,11 @@ private:
 	std::mutex chunk_buffer_mutex_;
 
 
+	// DEBUG does everything in a serial fashion
+	// chunk_buffer_task must be called after this
+	void chunk_gen_mesh_nobuffer();
+
+
 	std::unordered_set<ChunkPtr> delayed_update_queue_;
 
 	// new light intensity to add

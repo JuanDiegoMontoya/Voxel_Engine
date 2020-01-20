@@ -297,7 +297,6 @@ void Chunk::buildBlockVertices_normal(glm::ivec3 pos, const float * data, int qu
 }
 
 
-//std::vector<float> Chunk::buildSingleBlockFace(glm::ivec3 near, int low, int high, int x, int y, int z)
 void Chunk::buildSingleBlockFace(
 	glm::ivec3 nearFace,											// position of nearby block to check
 	int quadStride, int curQuad, const float* data, // vertex + quad data
@@ -305,7 +304,9 @@ void Chunk::buildSingleBlockFace(
 	Block block,															// block-specific information
 	bool force)																			// force building of this block face, if it exists
 {
-	localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
+	thread_local static localpos nearblock; // avoids unnecessary construction of vec3s
+	//localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
+	fastWorldBlockToLocalPos(chunkBlockToWorldPos(nearFace), nearblock);
 	bool isWater = block.GetType() == BlockType::bWater;
 	ChunkPtr near = this;
 	if (this->pos_ != nearblock.chunk_pos)
@@ -380,11 +381,12 @@ GenQuad:
 			1.f);
 		glm::vec4 finalvert = localTransform * vert;
 
-		// pos
 		if (isWater)
 			wtPositions.push_back(finalvert);
 		else
 		{
+			// TODO: call "compute block AO" once per block or vertex way before this
+			// because shared vertices means this is called too often
 			float invOcclusion = 1;
 			if (Settings::Graphics.blockAO)
 				invOcclusion = computeBlockAO(block, blockPos, glm::vec3(vert), nearFace);
