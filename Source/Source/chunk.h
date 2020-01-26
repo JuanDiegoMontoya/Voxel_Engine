@@ -17,6 +17,7 @@
 
 class VAO;
 class VBO;
+class IBO;
 
 struct localpos
 {
@@ -27,6 +28,18 @@ struct localpos
 		: chunk_pos(std::move(chunk)), block_pos(std::move(block)) {}
 	glm::ivec3 chunk_pos; // within world
 	glm::ivec3 block_pos; // within chunk
+};
+
+enum struct Face
+{
+	Far,
+	Near,
+	Left,
+	Right,
+	Top,
+	Bottom,
+
+	Count
 };
 
 //typedef std::pair<glm::ivec3, glm::ivec3> localpos;
@@ -224,6 +237,7 @@ private:
 		const glm::ivec3& blockPos,
 		Block block,
 		bool force = false);
+	void addQuad(); // adds quad at given location
 
 	// returns inverse of occludedness
 	float computeBlockAO(
@@ -257,6 +271,7 @@ private:
 	std::mutex vertex_buffer_mutex_;
 
 	// buffers
+	IBO* ibo_ = nullptr;
 	VAO* vao_ = nullptr;
 	VBO* positions_ = nullptr;
 	VBO* normals_ = nullptr;

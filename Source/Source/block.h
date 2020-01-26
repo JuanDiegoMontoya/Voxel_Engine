@@ -1,8 +1,8 @@
 #pragma once
 //#include "level.h"
 //#include "pipeline.h"
-#include "serialize.h"
-#include "utilities.h"
+//#include "serialize.h"
+//#include "utilities.h"
 
 // visual properties (for now)
 struct BlockProperties
@@ -13,7 +13,7 @@ struct BlockProperties
 	float specular;					// shininess
 	glm::vec4 color;				// diffuse color
 	bool invisible;					// skip rendering if true
-	glm::ucvec4 emittance;	// light
+	glm::u8vec4 emittance;	// light
 };
 
 

@@ -58,11 +58,3 @@ namespace Utils
 		return glm::vec3(x, y, z);
 	}
 }
-
-
-namespace glm
-{
-	// r, g, b, and sunlight
-	typedef glm::vec<4, unsigned char> ucvec4;
-	//typedef glm::vec<3, unsigned char> ucvec3;
-}

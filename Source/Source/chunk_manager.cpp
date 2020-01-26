@@ -390,7 +390,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 	if (L)
 	{
 		// combine the two lights by taking the max values only
-		glm::ucvec4 t = glm::max(L->Get(), nLight.Get());
+		glm::u8vec4 t = glm::max(L->Get(), nLight.Get());
 		*L = t;
 	}
 	std::queue<glm::ivec3> lightQueue;
@@ -480,7 +480,7 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 				LightPtr nearLight = GetLightPtr(plight + dir);
 				if (!nearLight)
 					continue;
-				glm::ucvec4 nlightv = nearLight->Get(); // near light value
+				glm::u8vec4 nlightv = nearLight->Get(); // near light value
 
 				// skip updates when light is 0
 				// remove light if there is any and if it is weaker than this node's light value
@@ -498,7 +498,7 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 					// re-propagate near light that is equal to or brighter than this after setting it all to 0
 					else if (nlightv[ci] > lightv[ci])
 					{
-						glm::ucvec4 nue(0);
+						glm::u8vec4 nue(0);
 						nue[ci] = nlightv[ci];
 						lightReadditionQueue.push({ plight + dir, nue });
 					}

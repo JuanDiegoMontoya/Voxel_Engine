@@ -276,24 +276,6 @@ void Chunk::buildBlockVertices_normal(glm::ivec3 pos, const float * data, int qu
 	};
 	for (int i = 0; i < 6; i++)
 		buildSingleBlockFace(pos + faces[i], quadStride, i, data, pos, block);
-
-	//// back
-	//buildSingleBlockFace(glm::ivec3(x, y, z - 1), quadStride, 0, data, pos, block);
-
-	//// front
-	//buildSingleBlockFace(glm::ivec3(x, y, z + 1), quadStride, 1, data, pos, block);
-
-	//// left
-	//buildSingleBlockFace(glm::ivec3(x - 1, y, z), quadStride, 2, data, pos, block);
-
-	//// right
-	//buildSingleBlockFace(glm::ivec3(x + 1, y, z), quadStride, 3, data, pos, block);
-
-	//// bottom
-	//buildSingleBlockFace(glm::ivec3(x, y - 1, z), quadStride, 4, data, pos, block);
-
-	//// top
-	//buildSingleBlockFace(glm::ivec3(x, y + 1, z), quadStride, 5, data, pos, block);
 }
 
 
