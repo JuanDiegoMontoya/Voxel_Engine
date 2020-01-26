@@ -216,37 +216,37 @@ namespace Render
 	};
 
 	// f n l r t b
-	static const GLfloat cube_norm_vertices_light[] =
+	static const GLfloat cube_vertices_light[] =
 	{
 		// f
-		-.5f,-.5f,.5f, 0.f, 0.f, 1.f, // lbf
-		 .5f,-.5f,.5f, 0.f, 0.f, 1.f, // rbf
-		-.5f, .5f,.5f, 0.f, 0.f, 1.f, // ltf
-		 .5f, .5f,.5f, 0.f, 0.f, 1.f, // rtf
+		-.5f,-.5f,.5f, // lbf
+		 .5f,-.5f,.5f, // rbf
+		-.5f, .5f,.5f, // ltf
+		 .5f, .5f,.5f, // rtf
 
 		// n
-		-.5f,-.5f,-.5f, 0.f, 0.f, 1.f, // lbn
-		 .5f,-.5f,-.5f, 0.f, 0.f, 1.f, // rbn
-		-.5f, .5f,-.5f, 0.f, 0.f, 1.f, // ltn
-		 .5f, .5f,-.5f, 0.f, 0.f, 1.f, // rtn
+		-.5f,-.5f,-.5f, // lbn
+		 .5f,-.5f,-.5f, // rbn
+		-.5f, .5f,-.5f, // ltn
+		 .5f, .5f,-.5f, // rtn
 
 		// l
-		-.5f,-.5f,-.5f, 0.f, 0.f, 1.f, // lbn
-		-.5f,-.5f, .5f, 0.f, 0.f, 1.f, // lbf
-		-.5f, .5f,-.5f, 0.f, 0.f, 1.f, // ltn
-		-.5f, .5f, .5f, 0.f, 0.f, 1.f, // ltf
+		-.5f,-.5f,-.5f, // lbn
+		-.5f,-.5f, .5f, // lbf
+		-.5f, .5f,-.5f, // ltn
+		-.5f, .5f, .5f, // ltf
 
 		// r
-		 .5f,-.5f,-.5f, 0.f, 0.f, 1.f, // rbn
-		 .5f,-.5f, .5f, 0.f, 0.f, 1.f, // rbf
-		 .5f, .5f,-.5f, 0.f, 0.f, 1.f, // rtn
-		 .5f, .5f, .5f, 0.f, 0.f, 1.f, // rtf
+		 .5f,-.5f,-.5f, // rbn
+		 .5f,-.5f, .5f, // rbf
+		 .5f, .5f,-.5f, // rtn
+		 .5f, .5f, .5f, // rtf
 
 		// t
-		-.5f, .5f,-.5f, 0.f, 0.f, 1.f, // ltn
-		-.5f, .5f, .5f, 0.f, 0.f, 1.f, // ltf
-		 .5f, .5f,-.5f, 0.f, 0.f, 1.f, // rtn
-		 .5f, .5f, .5f, 0.f, 0.f, 1.f, // rtf
+		-.5f, .5f,-.5f, // ltn
+		-.5f, .5f, .5f, // ltf
+		 .5f, .5f,-.5f, // rtn
+		 .5f, .5f, .5f, // rtf
 
 		// b
 		-.5f,-.5f,-.5f, 0.f, 0.f, 1.f, // lbn
@@ -256,7 +256,7 @@ namespace Render
 	};
 
 	// f n l r t b
-	static const GLubyte cube_norm_indices_light[] =
+	static const GLubyte cube_indices_light[] =
 	{
 		0, 2, 1, 2, 3, 1, // f
 		0, 1, 2, 1, 3, 2, // n

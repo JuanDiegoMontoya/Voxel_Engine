@@ -30,17 +30,6 @@ struct localpos
 	glm::ivec3 block_pos; // within chunk
 };
 
-enum struct Face
-{
-	Far,
-	Near,
-	Left,
-	Right,
-	Top,
-	Bottom,
-
-	Count
-};
 
 //typedef std::pair<glm::ivec3, glm::ivec3> localpos;
 
@@ -226,18 +215,38 @@ public:
 	friend class Renderer;
 
 private:
+	enum
+	{
+		Far,
+		Near,
+		Left,
+		Right,
+		Top,
+		Bottom,
+
+		fCount
+	};
+
+	static inline const glm::ivec3 faces[6] =
+	{
+		{ 0, 0,-1 }, // 'far' face    (-z direction)
+		{ 0, 0, 1 }, // 'near' face   (+z direction)
+		{-1, 0, 0 }, // 'left' face   (-x direction)
+		{ 1, 0, 0 }, // 'right' face  (+x direction)
+		{ 0,-1, 0 }, // 'top' face    (+y direction)
+		{ 0, 1, 0 }, // 'bottom' face (-y direction)
+	};
+
 	void buildBlockVertices_normal(
-		glm::ivec3 pos,
-		const float* data,
-		int quadStride,
+		const glm::ivec3& pos,
 		Block block);
-	void buildSingleBlockFace(
-		glm::ivec3 nearFace,
-		int quadStride, int curQuad, const float* data,
+	void buildBlockFace(
+		int face,
 		const glm::ivec3& blockPos,
-		Block block,
-		bool force = false);
-	void addQuad(); // adds quad at given location
+		Block block);
+	// adds quad at given location
+	void addQuad(const glm::ivec3& lpos, Block block, 
+		int face, ChunkPtr nearChunk, Light light);
 
 	// returns inverse of occludedness
 	float computeBlockAO(
@@ -277,23 +286,25 @@ private:
 	VBO* normals_ = nullptr;
 	VBO* colors_ = nullptr;
 	VBO* speculars_ = nullptr;
+	IBO* wibo_ = nullptr;
 	VAO* wvao_ = nullptr;
 	VBO* wpositions_ = nullptr;
 	VBO* wnormals_ = nullptr;
 	VBO* wcolors_ = nullptr;
 	VBO* wspeculars_ = nullptr;
 	// vertex data (held until buffers are sent to GPU)
+	std::vector<GLubyte> tIndices;
 	std::vector<glm::vec3> tPositions;
 	std::vector<glm::vec3> tNormals;
 	std::vector<glm::vec4> tColors;
 	std::vector<float> tSpeculars;
+	std::vector<GLubyte> wtIndices;
 	std::vector<glm::vec3> wtPositions;
 	std::vector<glm::vec3> wtNormals;
 	std::vector<glm::vec4> wtColors;
 	std::vector<float>		 wtSpeculars;
 	GLsizei wvertexCount_ = 0;// number of transparent block vertices
 	GLsizei vertexCount_ = 0; // number of opaque block vertices
-
 }Chunk, *ChunkPtr;
 
 void TestCoordinateStuff();

@@ -242,7 +242,7 @@ void Chunk::BuildMesh()
 				buildBlockVertices_marched_cubes({ x, y, z }, block);
 #else
 				//buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
-				buildBlockVertices_normal({ x, y, z }, Render::cube_norm_tex_vertices, 48, block);
+				buildBlockVertices_normal({ x, y, z }, block);
 #endif
 			}
 		}
@@ -259,79 +259,70 @@ void Chunk::BuildMesh()
 }
 
 
-void Chunk::buildBlockVertices_normal(glm::ivec3 pos, const float * data, int quadStride, Block block)
+void Chunk::buildBlockVertices_normal(const glm::ivec3& pos, Block block)
 {
-	int x = pos.x;
-	int y = pos.y;
-	int z = pos.z;
-
-	constexpr glm::ivec3 faces[6] =
-	{
-		{ 0, 0,-1 }, // 'far' face    (-z direction)
-		{ 0, 0, 1 }, // 'near' face   (+z direction)
-		{-1, 0, 0 }, // 'left' face   (-x direction)
-		{ 1, 0, 0 }, // 'right' face  (+x direction)
-		{ 0,-1, 0 }, // 'top' face    (+y direction)
-		{ 0, 1, 0 }, // 'bottom' face (-y direction)
-	};
-	for (int i = 0; i < 6; i++)
-		buildSingleBlockFace(pos + faces[i], quadStride, i, data, pos, block);
+	for (int f = Far; f < fCount; f++)
+		buildBlockFace(f, pos, block);
 }
 
 
-void Chunk::buildSingleBlockFace(
-	glm::ivec3 nearFace,											// position of nearby block to check
-	int quadStride, int curQuad, const float* data, // vertex + quad data
-	const glm::ivec3& blockPos,											// position of current block
-	Block block,															// block-specific information
-	bool force)																			// force building of this block face, if it exists
+void Chunk::buildBlockFace(
+	int face,
+	const glm::ivec3& blockPos,	// position of current block
+	Block block)								// block-specific information)
 {
 	thread_local static localpos nearblock; // avoids unnecessary construction of vec3s
+	glm::ivec3 nearFace = blockPos + faces[face];
+
 	//localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
 	fastWorldBlockToLocalPos(chunkBlockToWorldPos(nearFace), nearblock);
-	bool isWater = block.GetType() == BlockType::bWater;
-	ChunkPtr near = this;
+	ChunkPtr nearChunk = this;
 	if (this->pos_ != nearblock.chunk_pos)
 	{
-		near = chunks[nearblock.chunk_pos];
-		ASSERT(this != near);
+		nearChunk = chunks[nearblock.chunk_pos];
+		ASSERT(this != nearChunk);
 	}
-	Block block2; // near block
-	Light light2; // near light
-	if (force)
-		goto GenQuad;
-	if (!near)
-		goto GenQuad;
-	if (!near->active_)
-		goto GenQuad;
 
+	// for now, we won't make a mesh for faces adjacent to NULL chunks \
+	in the future it may be wise to construct the mesh
+	if (!nearChunk || !nearChunk->active_)
+		return;
 
+	// nearby block
+	Block block2 = nearChunk->At(nearblock.block_pos);
+	Light light = nearChunk->LightAt(nearblock.block_pos);
+	if (block2.GetType() != BlockType::bWater && block.GetType() == BlockType::bWater && (nearFace - blockPos).y > 0)
 	{
-		block2 = near->At(nearblock.block_pos);
-		light2 = near->LightAt(nearblock.block_pos);
-		if (block2.GetType() != BlockType::bWater && block.GetType() == BlockType::bWater && (nearFace - blockPos).y > 0)
-			goto GenQuad;
-		if (block2.GetType() != BlockType::bAir && block2.GetType() != BlockType::bWater)
-			return;
-		if (block2.GetType() == BlockType::bWater && block.GetType() == BlockType::bWater)
-			return;
-		if (Block::PropertiesTable[int(block.GetType())].invisible)
-			return;
+		addQuad(blockPos, block, face, nearChunk, light);
+		return;
 	}
+	if (block2.GetType() != BlockType::bAir && block2.GetType() != BlockType::bWater)
+		return;
+	if (block2.GetType() == BlockType::bWater && block.GetType() == BlockType::bWater)
+		return;
+	if (Block::PropertiesTable[int(block.GetType())].invisible)
+		return;
 
-GenQuad:
+	addQuad(blockPos, block, face, nearChunk, light);
+}
+
+
+void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr nearChunk, Light light)
+{
+	bool isWater = block.GetType() == BlockType::bWater;
+
 	// transform the vertices relative to the chunk
 	// (the full world transformation will be completed in a shader)
-	glm::mat4 localTransform = glm::translate(glm::mat4(1.f), glm::vec3(blockPos) + .5f); // non-scaled
+	glm::mat4 localTransform = glm::translate(glm::mat4(1.f), glm::vec3(lpos) + .5f); // non-scaled
 
 	float shiny = Block::PropertiesTable[int(block.GetType())].specular;
 	glm::vec4 color = Block::PropertiesTable[int(block.GetType())].color;
 
 	if (!debug_ignore_light_level)
 	{
-		color.r *= (1 + float(light2.GetR())) / 16.f;
-		color.g *= (1 + float(light2.GetG())) / 16.f;
-		color.b *= (1 + float(light2.GetB())) / 16.f;
+		color.r *= (1 + float(light.GetR())) / 16.f;
+		color.g *= (1 + float(light.GetG())) / 16.f;
+		color.b *= (1 + float(light.GetB())) / 16.f;
 	}
 
 	// slightly randomize color for each block to make them more visible (temporary solution)
@@ -357,9 +348,9 @@ GenQuad:
 	for (int i = quadStride * curQuad; i < quadStride * (curQuad + 1); i += 8) // += floats per vertex
 	{
 		glm::vec4 vert(
-			data[i + 0], 
-			data[i + 1], 
-			data[i + 2], 
+			data[i + 0],
+			data[i + 1],
+			data[i + 2],
 			1.f);
 		glm::vec4 finalvert = localTransform * vert;
 
@@ -375,10 +366,6 @@ GenQuad:
 			tColors.push_back(glm::vec4((glm::vec3(color.r, color.g, color.b)) * invOcclusion, color.a));
 			tPositions.push_back(finalvert);
 		}
-
-		// texture
-		//quad.push_back(data[i + 6]);
-		//quad.push_back(data[i + 7]);
 	}
 }
 
