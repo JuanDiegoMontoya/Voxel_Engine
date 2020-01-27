@@ -2,6 +2,7 @@
 Yet another voxel engine. Gallery at the bottom.
 
 This is (currently) a tech demo designed to demonstrate the implementation of various rendering and procedural techniques in a large and dynamic environment.
+***
 
 ## Tech
 The project is written in C++ and GLSL. The project also uses OpenGL, GLM, GLFW for window handling, cereal for serialization, and libnoise for procedural noise.  
@@ -11,6 +12,7 @@ Performance was tested on this system for reference:
 - AMD Ryzen 5 2600X CPU
 - 16 GB RAM
 - NVIDIA GeForce GTX 1060 6GB
+***
 
 ## Features
 (*WIP*) indicates that a feature is mostly complete but has some bugs that need to be sorted out. 
@@ -42,7 +44,7 @@ Performance was tested on this system for reference:
 - Portability. Uses (to my knowledge) no platform dependent libraries or headers. (Certain libraries would have to be rebuilt for platforms other than x64 Windows) Note: this is untrue for the near future as I am currently using Microsoft's concurrent map to support multithreading more easily
 - Multithreaded mesh building and terrain generation
 - Graphics effects can be toggled dynamically by the user
-
+***
 
 ## In-Engine
 ### Controls
@@ -62,6 +64,13 @@ Performance was tested on this system for reference:
   - Pressing the "save" button in the prefab menu will save the current region under the name written in the adjacent text box
   - Pressing the "load" button will generate a prefab of the given name in the adjacent box at the most recent highlighted purple position
   - Toggling the prefab editor (Tab x2) will reset the current region if a mistake has been made
+***
+
+## Notes (and FAQ?)
+- The world will be dark initially. That is because sunlight is not implemented. There are blocks that produce light. To make the whole world bright, enable the "Skip lighting" option in the menu.
+- There may (will) be holes in the world. This is because the mesh for that chunk did not generate or was otherwise deleted. This is a bug related to multithreading that is being worked on.
+- There is no gameplay. That is because this is a tech demo/engine, not a game (yet).
+***
 
 ## Gallery
 Hover to see detail:
