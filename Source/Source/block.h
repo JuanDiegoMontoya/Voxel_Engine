@@ -1,7 +1,7 @@
 #pragma once
 //#include "level.h"
 //#include "pipeline.h"
-//#include "serialize.h"
+#include "serialize.h"
 //#include "utilities.h"
 
 // visual properties (for now)

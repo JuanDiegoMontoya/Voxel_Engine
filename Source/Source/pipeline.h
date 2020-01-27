@@ -249,14 +249,14 @@ namespace Render
 		 .5f, .5f, .5f, // rtf
 
 		// b
-		-.5f,-.5f,-.5f, 0.f, 0.f, 1.f, // lbn
-		-.5f,-.5f, .5f, 0.f, 0.f, 1.f, // lbf
-		 .5f,-.5f,-.5f, 0.f, 0.f, 1.f, // rbn
-		 .5f,-.5f, .5f, 0.f, 0.f, 1.f, // rbf
+		-.5f,-.5f,-.5f, // lbn
+		-.5f,-.5f, .5f, // lbf
+		 .5f,-.5f,-.5f, // rbn
+		 .5f,-.5f, .5f, // rbf
 	};
 
 	// f n l r t b
-	static const GLubyte cube_indices_light[] =
+	static const GLubyte cube_indices_light_ccw[] =
 	{
 		0, 2, 1, 2, 3, 1, // f
 		0, 1, 2, 1, 3, 2, // n
@@ -264,5 +264,15 @@ namespace Render
 		0, 1, 2, 1, 3, 2, // r
 		0, 2, 1, 2, 3, 1, // t
 		0, 1, 2, 1, 3, 2  // b
+	};
+
+	static const GLubyte cube_indices_light_cw[] =
+	{
+		1, 2, 0, 1, 3, 2, // f
+		2, 1, 0, 2, 3, 1, // n
+		1, 2, 0, 3, 2, 1, // l
+		2, 1, 0, 2, 3, 1, // r
+		1, 2, 0, 1, 3, 2, // t
+		2, 1, 0, 2, 3, 1  // b
 	};
 }

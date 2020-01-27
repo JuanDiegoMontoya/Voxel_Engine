@@ -127,7 +127,7 @@ void Level::DrawImGui()
 		ImGui::Checkbox("Collision Enabled", &doCollisionTick);
 
 		bool val = Render::GetCamera()->GetType() == CameraType::kPhysicsCam;
-		if (ImGui::Checkbox("Camera Gravity", &val))
+		if (ImGui::Checkbox("Camera Has Gravity", &val))
 		{
 			Render::GetCamera()->SetType(val ? CameraType::kPhysicsCam : CameraType::kControlCam);
 		}

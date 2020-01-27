@@ -152,7 +152,17 @@ public:
 		return blocks[ID3D(x, y, z, CHUNK_SIZE, CHUNK_SIZE)];
 	}
 
+	inline Block BlockAtCheap(const glm::ivec3 p)
+	{
+		return blocks[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+	}
+
 	Light& LightAt(const glm::ivec3 p)
+	{
+		return lightMap[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+	}
+
+	Light LightAtCheap(const glm::ivec3 p)
 	{
 		return lightMap[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
 	}
@@ -229,12 +239,12 @@ private:
 
 	static inline const glm::ivec3 faces[6] =
 	{
-		{ 0, 0,-1 }, // 'far' face    (-z direction)
-		{ 0, 0, 1 }, // 'near' face   (+z direction)
+		{ 0, 0, 1 }, // 'far' face    (-z direction)
+		{ 0, 0,-1 }, // 'near' face   (+z direction)
 		{-1, 0, 0 }, // 'left' face   (-x direction)
 		{ 1, 0, 0 }, // 'right' face  (+x direction)
-		{ 0,-1, 0 }, // 'top' face    (+y direction)
-		{ 0, 1, 0 }, // 'bottom' face (-y direction)
+		{ 0, 1, 0 }, // 'top' face    (+y direction)
+		{ 0,-1, 0 }, // 'bottom' face (-y direction)
 	};
 
 	void buildBlockVertices_normal(
@@ -293,18 +303,20 @@ private:
 	VBO* wcolors_ = nullptr;
 	VBO* wspeculars_ = nullptr;
 	// vertex data (held until buffers are sent to GPU)
-	std::vector<GLubyte> tIndices;
+	std::vector<GLuint> tIndices;
 	std::vector<glm::vec3> tPositions;
 	std::vector<glm::vec3> tNormals;
 	std::vector<glm::vec4> tColors;
 	std::vector<float> tSpeculars;
-	std::vector<GLubyte> wtIndices;
+	std::vector<GLuint> wtIndices;
 	std::vector<glm::vec3> wtPositions;
 	std::vector<glm::vec3> wtNormals;
 	std::vector<glm::vec4> wtColors;
 	std::vector<float>		 wtSpeculars;
 	GLsizei wvertexCount_ = 0;// number of transparent block vertices
 	GLsizei vertexCount_ = 0; // number of opaque block vertices
+	GLsizei windexCount_ = 0;// number of transparent block vertices
+	GLsizei indexCount_ = 0; // number of opaque block vertices
 }Chunk, *ChunkPtr;
 
 void TestCoordinateStuff();

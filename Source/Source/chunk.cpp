@@ -95,7 +95,9 @@ void Chunk::Render()
 	if (active_ && vao_)
 	{
 		vao_->Bind();
-		glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
+		//glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
+		ibo_->Bind();
+		glDrawElements(GL_TRIANGLES, indexCount_, GL_UNSIGNED_INT, (void*)0);
 	}
 }
 
@@ -105,7 +107,9 @@ void Chunk::RenderWater()
 	if (active_ && wvao_)
 	{
 		wvao_->Bind();
-		glDrawArrays(GL_TRIANGLES, 0, wvertexCount_);
+		//glDrawArrays(GL_TRIANGLES, 0, wvertexCount_);
+		wibo_->Bind();
+		glDrawElements(GL_TRIANGLES, windexCount_, GL_UNSIGNED_INT, (void*)0);
 	}
 }
 
@@ -117,8 +121,6 @@ void Chunk::BuildBuffers()
 	{
 		if (!vao_)
 			vao_ = new VAO;
-		if (!wvao_)
-			wvao_ = new VAO;
 		vao_->Bind();
 		if (positions_)
 			delete positions_;
@@ -128,6 +130,11 @@ void Chunk::BuildBuffers()
 			delete colors_;
 		if (speculars_)
 			delete speculars_;
+		if (ibo_)
+			delete ibo_;
+
+		ibo_ = new IBO(&tIndices[0], tIndices.size());
+
 		// screen positions
 		positions_ = new VBO(&tPositions[0], sizeof(glm::vec3) * tPositions.size());
 		positions_->Bind();
@@ -152,18 +159,24 @@ void Chunk::BuildBuffers()
 		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
 		glEnableVertexAttribArray(3);
 
+		// TODO: add float attribute for sunlight (0-1)
+
 		vao_->Unbind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		vertexCount_ = tPositions.size(); // divisor = number of floats per vertex
+		vertexCount_ = tPositions.size();
+		indexCount_ = tIndices.size();
 		tPositions.clear();
 		tNormals.clear();
 		tColors.clear();
 		tSpeculars.clear();
+		tIndices.clear();
 	}
 
 	// epic copypasta
 	{
+		if (!wvao_)
+			wvao_ = new VAO;
 		wvao_->Bind();
 		if (wpositions_)
 			delete wpositions_;
@@ -173,6 +186,11 @@ void Chunk::BuildBuffers()
 			delete wcolors_;
 		if (wspeculars_)
 			delete wspeculars_;
+		if (wibo_)
+			delete wibo_;
+
+		wibo_ = new IBO(&wtIndices[0], wtIndices.size());
+
 		// screen positions
 		wpositions_ = new VBO(&wtPositions[0], sizeof(glm::vec3) * wtPositions.size());
 		wpositions_->Bind();
@@ -200,11 +218,13 @@ void Chunk::BuildBuffers()
 		wvao_->Unbind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		wvertexCount_ = wtPositions.size(); // divisor = number of floats per vertex
+		wvertexCount_ = wtPositions.size();
+		windexCount_ = wtIndices.size();
 		wtPositions.clear();
 		wtNormals.clear();
 		wtColors.clear();
 		wtSpeculars.clear();
+		wtIndices.clear();
 	}
 }
 
@@ -289,8 +309,8 @@ void Chunk::buildBlockFace(
 		return;
 
 	// nearby block
-	Block block2 = nearChunk->At(nearblock.block_pos);
-	Light light = nearChunk->LightAt(nearblock.block_pos);
+	Block block2 = nearChunk->BlockAtCheap(nearblock.block_pos);
+	Light light = nearChunk->LightAtCheap(nearblock.block_pos);
 	if (block2.GetType() != BlockType::bWater && block.GetType() == BlockType::bWater && (nearFace - blockPos).y > 0)
 	{
 		addQuad(blockPos, block, face, nearChunk, light);
@@ -303,6 +323,7 @@ void Chunk::buildBlockFace(
 	if (Block::PropertiesTable[int(block.GetType())].invisible)
 		return;
 
+	// if all tests are passed, generate this face of the block
 	addQuad(blockPos, block, face, nearChunk, light);
 }
 
@@ -310,10 +331,6 @@ void Chunk::buildBlockFace(
 void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr nearChunk, Light light)
 {
 	bool isWater = block.GetType() == BlockType::bWater;
-
-	// transform the vertices relative to the chunk
-	// (the full world transformation will be completed in a shader)
-	glm::mat4 localTransform = glm::translate(glm::mat4(1.f), glm::vec3(lpos) + .5f); // non-scaled
 
 	float shiny = Block::PropertiesTable[int(block.GetType())].specular;
 	glm::vec4 color = Block::PropertiesTable[int(block.GetType())].color;
@@ -328,44 +345,79 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 	// slightly randomize color for each block to make them more visible (temporary solution)
 	//float clrBias = Utils::get_random_r(-.03f, .03f);
 
-	// sadly we gotta copy all this stuff 6 times
-	for (int i = 0; i < 6; i++)
+	// sadly we gotta copy all this stuff 4 times
+	for (int i = 0; i < 4; i++)
 	{
 		if (isWater)
 		{
 			wtColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b), color.a));
-			wtNormals.push_back(Render::cube_normals_divisor2[curQuad]);
+			wtNormals.push_back(faces[face]);
 			wtSpeculars.push_back(shiny);
 		}
 		else
 		{
-			tNormals.push_back(Render::cube_normals_divisor2[curQuad]);
+			tNormals.push_back(faces[face]);
 			tSpeculars.push_back(shiny);
 		}
 	}
 
 	// loop should iterate 6 times
-	for (int i = quadStride * curQuad; i < quadStride * (curQuad + 1); i += 8) // += floats per vertex
+	//for (int i = quadStride * curQuad; i < quadStride * (curQuad + 1); i += 8) // += floats per vertex
+	//{
+	//	glm::vec4 vert(
+	//		data[i + 0],
+	//		data[i + 1],
+	//		data[i + 2],
+	//		1.f);
+	//	glm::vec4 finalvert = localTransform * vert;
+	//	if (isWater)
+	//		wtPositions.push_back(finalvert);
+	//	else
+	//	{
+	//		// TODO: call "compute block AO" once per block or vertex way before this
+	//		// because shared vertices means this is called too often
+	//		float invOcclusion = 1;
+	//		if (Settings::Graphics.blockAO)
+	//			invOcclusion = computeBlockAO(block, blockPos, glm::vec3(vert), nearFace);
+	//		tColors.push_back(glm::vec4((glm::vec3(color.r, color.g, color.b)) * invOcclusion, color.a));
+	//		tPositions.push_back(finalvert);
+	//	}
+	//}
+
+	// add 4 vertices representing a quad
+	const GLfloat* data = Render::cube_vertices_light;
+	int endQuad = (face + 1) * 12;
+	for (int i = face * 12; i < endQuad; i += 3)
 	{
-		glm::vec4 vert(
+		glm::vec3 vert(
 			data[i + 0],
 			data[i + 1],
-			data[i + 2],
-			1.f);
-		glm::vec4 finalvert = localTransform * vert;
+			data[i + 2]
+		);
+		// transform vertices relative to chunk
+		glm::vec3 finalVert = vert + glm::vec3(lpos) + .5f;
 
-		if (isWater)
-			wtPositions.push_back(finalvert);
-		else
+		if (!isWater)
 		{
-			// TODO: call "compute block AO" once per block or vertex way before this
-			// because shared vertices means this is called too often
 			float invOcclusion = 1;
 			if (Settings::Graphics.blockAO)
-				invOcclusion = computeBlockAO(block, blockPos, glm::vec3(vert), nearFace);
+				invOcclusion = computeBlockAO(block, lpos, glm::vec3(vert), lpos + faces[face]);
 			tColors.push_back(glm::vec4((glm::vec3(color.r, color.g, color.b)) * invOcclusion, color.a));
-			tPositions.push_back(finalvert);
+			tPositions.push_back(finalVert);
 		}
+		else
+			wtPositions.push_back(finalVert);
+	}
+
+	// add 6 indices defining 2 triangles from that quad
+	int endIndices = (face + 1) * 6;
+	for (int i = face * 6; i < endIndices; i++)
+	{
+		// refer to just placed vertices (4 of them)
+		if (!isWater)
+			tIndices.push_back(Render::cube_indices_light_cw[i] + tPositions.size() - 4);
+		else
+			wtIndices.push_back(Render::cube_indices_light_cw[i] + wtPositions.size() - 4);
 	}
 }
 

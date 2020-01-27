@@ -17,11 +17,15 @@ public:
 	uint8_t GetB() const { return (raw_ >> 4) & 0b1111; }
 	uint8_t GetS() const { return raw_ & 0b1111; }
 
-	void Set(glm::u8vec4 L) { SetR(L.r); SetG(L.g); SetB(L.b); SetS(L.a); }
-	void SetR(uint8_t r) { raw_ = (raw_ & 0x0FFF) | (r << 12); }
-	void SetG(uint8_t g) { raw_ = (raw_ & 0xF0FF) | (g << 8); }
-	void SetB(uint8_t b) { raw_ = (raw_ & 0xFF0F) | (b << 4); }
-	void SetS(uint8_t s) { raw_ = (raw_ & 0xFFF0) | s; }
+	void Set(glm::u8vec4 L)
+	{
+		ASSERT(L.r < 16 && L.g < 16 && L.b < 16 && L.a < 16);
+		raw_ = (L.r << 12) | (L.g << 8) | (L.b << 4) | L.a;
+	}
+	void SetR(uint8_t r) { ASSERT(r < 16); raw_ = (raw_ & 0x0FFF) | (r << 12); }
+	void SetG(uint8_t g) { ASSERT(g < 16); raw_ = (raw_ & 0xF0FF) | (g << 8); }
+	void SetB(uint8_t b) { ASSERT(b < 16); raw_ = (raw_ & 0xFF0F) | (b << 4); }
+	void SetS(uint8_t s) { ASSERT(s < 16); raw_ = (raw_ & 0xFFF0) | s; }
 
 	bool operator==(const Light& rhs) const { return this->raw_ == rhs.raw_; }
 	Light& operator=(const Light& rhs) { this->raw_ = rhs.raw_; return *this; }
