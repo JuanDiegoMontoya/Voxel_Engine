@@ -415,7 +415,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="vendor\imgui\stb_textedit.h" />
     <ClInclude Include="vendor\imgui\stb_truetype.h" />
     <ClInclude Include="vendor\noiseutils.h" />
-    <ClInclude Include="xoroshiro.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

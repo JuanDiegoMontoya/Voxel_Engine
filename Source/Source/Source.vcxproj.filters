@@ -226,9 +226,6 @@
     <ClInclude Include="player.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="xoroshiro.h">
-      <Filter>Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="collision_check.h">
       <Filter>Game\Collision</Filter>
     </ClInclude>

@@ -68,7 +68,7 @@ Performance was tested on this system for reference:
 
 ## Notes (and FAQ?)
 - The world will be dark initially. That is because sunlight is not implemented. There are blocks that produce light. To make the whole world bright, enable the "Skip lighting" option in the menu.
-- There may (will) be holes in the world. This is because the mesh for that chunk did not generate or was otherwise deleted. This is a bug related to multithreading that is being worked on.
+- There may (will) be holes in the world. This is because the mesh for that chunk did not generate or was otherwise deleted. This is a bug related to multithreading that is being worked on. Regenerate the mesh by modifying the chunk or by toggling "Compute Block AO" or "Skip lighting" to regenerate all meshes.
 - There is no gameplay. That is because this is a tech demo/engine, not a game (yet).
 ***
 
