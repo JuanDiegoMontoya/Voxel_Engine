@@ -256,6 +256,12 @@
     <ClInclude Include="parallel_chunks.h">
       <Filter>Voxel Engine\Chunk Manager</Filter>
     </ClInclude>
+    <ClInclude Include="FixedQueue.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiBonus.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
@@ -425,6 +431,9 @@
     </ClCompile>
     <ClCompile Include="parallel_chunks.cpp">
       <Filter>Voxel Engine\Chunk Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGuiBonus.cpp">
+      <Filter>Utilities</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

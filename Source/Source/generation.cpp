@@ -380,7 +380,6 @@ void WorldGen::InitNoiseFuncs()
 }
 
 
-// TODO: use cheap generate block functions, then update all 6 adjacent chunks
 void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 {
 	// generate everything
@@ -466,6 +465,11 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 	}
 
 
+	// a hack to make sure the meshes of this chunk and each of its neighbors exist
+	//level->chunkManager_.UpdateChunk(Chunk::chunks[cpos]);
+	//for (int f = 0; f < Chunk::fCount; f++)
+	//	if (Chunk::chunks[cpos + Chunk::faces[f]])
+	//		level->chunkManager_.UpdateChunk(Chunk::chunks[cpos + Chunk::faces[f]]);
 }
 
 

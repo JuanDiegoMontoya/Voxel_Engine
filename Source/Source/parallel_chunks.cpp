@@ -35,6 +35,7 @@ void ChunkManager::chunk_generator_thread_task()
 }
 
 
+// TODO: figure how to make this parallel again (if necessary)
 // perpetual thread task to generate meshes for updated chunks
 void ChunkManager::chunk_mesher_thread_task()
 {

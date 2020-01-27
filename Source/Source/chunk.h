@@ -54,6 +54,7 @@ typedef struct
 	glm::vec3 ps[3];
 } tri;
 
+// TODO: clean this up a lot
 typedef struct Chunk
 {
 private:
@@ -209,6 +210,8 @@ public:
 	
 	// debug
 	static inline bool debug_ignore_light_level = false;
+	static inline std::atomic<double> accumtime = 0;
+	static inline std::atomic<unsigned> accumcount = 0;
 
 	static cell buildCellFromVoxel(const glm::vec3& wpos);
 

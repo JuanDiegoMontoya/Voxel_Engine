@@ -73,8 +73,9 @@ void ChunkManager::Update(LevelPtr level)
 			p.second->Update();
 	});
 
+	//chunk_gen_mesh_nobuffer();
 	chunk_buffer_task();
-	removeFarChunks();
+	//removeFarChunks();
 	createNearbyChunks();
 
 	for (ChunkPtr chunk : delayed_update_queue_)
@@ -217,16 +218,6 @@ LightPtr ChunkManager::GetLightPtr(const glm::ivec3 wpos)
 }
 
 
-void ChunkManager::UpdatedChunk(ChunkPtr chunk)
-{
-	//if (isChunkInUpdateList(chunk))
-	//	updatedChunks_.push_back(chunk);
-	//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
-	std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
-	mesher_queue_.insert(chunk);
-}
-
-
 void ChunkManager::ReloadAllChunks()
 {
 	for (const auto& p : Chunk::chunks)
@@ -311,10 +302,12 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 }
 
 
+// TODO: make this a Safe & Reliable Operation(tm) \
+   rather than having it cause crashes often
 void ChunkManager::removeFarChunks()
 {
 	// delete chunks far from the camera (past leniency range)
-	if (generation_queue_.size() == 0 && mesher_queue_.size() == 0 && debug_cur_pool_left.load() == 0)
+	if (generation_queue_.size() == 0 && mesher_queue_.size() == 0 && debug_cur_pool_left == 0)
 	{
 		std::vector<ChunkPtr> deleteList;
 		// attempt at safety
@@ -357,7 +350,7 @@ void ChunkManager::removeFarChunks()
 }
 
 
-void ChunkManager::createNearbyChunks() // and delete ones outside of leniency distance
+void ChunkManager::createNearbyChunks()
 {
 	// generate new chunks that are close to the camera
 	std::for_each(

@@ -230,8 +230,6 @@ void Chunk::BuildBuffers()
 
 
 #include <iomanip>
-std::atomic<double> accumtime = 0;
-std::atomic<unsigned> accumcount = 0;
 void Chunk::BuildMesh()
 {
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
@@ -270,12 +268,17 @@ void Chunk::BuildMesh()
 
 	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
 	double milliseconds = benchmark_duration_.count() * 1000;
-	accumtime.store(accumtime + milliseconds);
-	accumcount.store(accumcount + 1);
-	std::cout 
-		<< std::setw(-2) << std::showpoint << std::setprecision(4) << accumtime / accumcount << " ms "
-		<< "(" << milliseconds << ")"
-		<< std::endl;
+	if (accumcount > 1000)
+	{
+		accumcount = 0;
+		accumtime = 0;
+	}
+	accumtime = accumtime + milliseconds;
+	accumcount = accumcount + 1;
+	//std::cout 
+	//	<< std::setw(-2) << std::showpoint << std::setprecision(4) << accumtime / accumcount << " ms "
+	//	<< "(" << milliseconds << ")"
+	//	<< std::endl;
 }
 
 

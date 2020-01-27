@@ -61,7 +61,6 @@ public:
 	Light GetLight(glm::ivec3 wpos); // wrapper
 	BlockPtr GetBlockPtr(const glm::ivec3 wpos);
 	LightPtr GetLightPtr(const glm::ivec3 wpos);
-	void UpdatedChunk(ChunkPtr chunk);
 	void ReloadAllChunks(); // for when big things change
 
 	// getters
@@ -98,7 +97,7 @@ private:
 	std::unordered_set<ChunkPtr> mesher_queue_;
 	std::mutex chunk_mesher_mutex_;
 	std::vector<std::thread*> chunk_mesher_threads_;
-	std::atomic_int debug_cur_pool_left = { 0 };
+	std::atomic_int debug_cur_pool_left = 0;
 
 	// NOT multithreaded task
 	void chunk_buffer_task();
@@ -110,7 +109,6 @@ private:
 	// DEBUG does everything in a serial fashion
 	// chunk_buffer_task must be called after this
 	void chunk_gen_mesh_nobuffer();
-
 
 	std::unordered_set<ChunkPtr> delayed_update_queue_;
 

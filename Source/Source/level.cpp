@@ -25,6 +25,7 @@
 #include <set>
 #include <memory>
 #include "collision_shapes.h"
+#include "ImGuiBonus.h"
 
 using namespace std::chrono;
 
@@ -186,9 +187,10 @@ void Level::DrawImGui()
 	}
 
 	{
+		
 		ImGui::Begin("Info");
-
 		ImGui::Text("FPS: %.0f (%.1f ms)", 1.f / game_->GetDT(), game_->GetDT() * 1000);
+
 		ImGui::NewLine();
 		glm::vec3 pos = Render::GetCamera()->GetPos();
 		//ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
@@ -314,6 +316,20 @@ void Level::DrawImGui()
 		ImGui::Checkbox("Blur Filter", &renderer_.ppBlurFilter);
 		ImGui::Checkbox("Edge detection", &renderer_.ppEdgeDetection);
 		ImGui::Checkbox("Chromatic Aberration", &renderer_.ppChromaticAberration);
+		ImGui::End();
+	}
+
+	if (debug_graphs)
+	{
+		ImGui::Begin("Graphs");
+		ImGui::PlotVar("Frametime", game_->GetDT(), FLT_MAX, FLT_MAX, 500, ImVec2(500, 150));
+		ImGui::Text("Avg Mesh Time: %.3f", Chunk::accumtime / Chunk::accumcount);
+		ImGui::End();
+	}
+
+	{
+		ImGui::Begin("Debug");
+		ImGui::Checkbox("Display Graphs", &debug_graphs);
 		ImGui::End();
 	}
 }
@@ -450,12 +466,6 @@ void Level::GenerateBlockAt(glm::ivec3 wpos, Block b)
 void Level::GenerateBlockAtCheap(glm::ivec3 wpos, Block b)
 {
 	chunkManager_.UpdateBlockCheap(wpos, b);
-}
-
-
-void Level::UpdatedChunk(ChunkPtr chunk)
-{
-	chunkManager_.UpdatedChunk(chunk);
 }
 
 
