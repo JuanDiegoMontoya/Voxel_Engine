@@ -334,6 +334,8 @@ void Level::DrawImGui()
 			glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &currentMemoryKb);
 			ImGui::PlotVar("VRAM usage", (totalMemoryKb - currentMemoryKb) / 1000.f, 0, totalMemoryKb / 1000, 300, ImVec2(300, 100));
 		}
+		else
+			ImGui::Text("VRAM usage graph disabled due to incompatible GPU");
 		ImGui::End();
 	}
 
