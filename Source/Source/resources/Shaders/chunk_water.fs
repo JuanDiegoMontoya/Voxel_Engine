@@ -325,7 +325,6 @@ void main()
   float waterVis = waterAngleVisModifier();
   if (computeSSR == true)
     lighting += ssr() * 0.200;
-  lighting = mix(lighting, fogColor, FogCalculation());
 
 
   float depthDiff = distance(calcViewPosition(ssTexCoords), calcViewPositionDepthTex(ssTexCoords));
@@ -337,6 +336,7 @@ void main()
   float sunLight = vSunlight;
   sunLight *= max(dot(lightDir, vec3(0, 1, 0)), 0.0);
   lighting = max(lighting * .2, lighting * sunLight); // magic (ensures lighting doesn't get too dark)
+  lighting = mix(lighting, fogColor, FogCalculation());
   fragColor = vec4(mix(lighting, foam, 1-depthDiff), vColor.a + waterVis);
 
   //fragColor = vec4(ssr(), 1.0) + fragColor * .0001;

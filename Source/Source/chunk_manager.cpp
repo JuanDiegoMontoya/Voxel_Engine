@@ -512,3 +512,38 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 	// do not update the removed block's chunk again since the act of removing will update it
 	delayed_update_queue_.erase(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
 }
+
+
+bool ChunkManager::checkDirectSunlight(glm::ivec3 wpos)
+{
+	localpos p = Chunk::worldBlockToLocalPos(wpos);
+	ChunkPtr chunk = Chunk::chunks[p.chunk_pos];
+	if (!chunk)
+		return;
+	Block block = chunk->At(p.block_pos);
+
+	// find the highest valid chunk
+	constexpr glm::ivec3 up(0, 1, 0);
+	glm::ivec3 cpos = p.chunk_pos + up;
+	ChunkPtr next = chunk;
+	while (next)
+	{
+		chunk = next;
+		cpos += up;
+		next = Chunk::chunks[cpos];
+	}
+
+	// go down until we hit another solid block or this block
+}
+
+
+void ChunkManager::sunlightPropagateAdd(glm::ivec3 wpos, uint8_t intensity)
+{
+
+}
+
+
+void ChunkManager::sunlightPropagateRemove(glm::ivec3 wpos)
+{
+
+}

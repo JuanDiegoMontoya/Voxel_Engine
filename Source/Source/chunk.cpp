@@ -363,6 +363,8 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 
 	// slightly randomize color for each block to make them more visible (temporary solution)
 	//float clrBias = Utils::get_random_r(-.03f, .03f);
+
+	// TODO: make sure this isn't always 1 when sunlight is properly added
 	//float sun = float(light.GetS()) / 15.f;
 	float sun = 1;
 

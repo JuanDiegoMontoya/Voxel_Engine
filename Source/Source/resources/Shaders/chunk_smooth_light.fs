@@ -133,11 +133,11 @@ void main()
   vec3 lighting = (ambient + (1.05 - shadow * 1.00) * (diffuse + specular)) * color;
   vec4 irrelevant = vec4(lighting, 0) * 0.0001;
   
-  lighting = mix(lighting, fogColor, FogCalculation());
   //fragColor = vec4(poopoo, 1) + irrelevant;
   float sunLight = vSunlight;
   sunLight *= max(dot(lightDir, vec3(0, 1, 0)), 0.0);
   lighting = max(lighting * .2, lighting * sunLight); // magic (ensures lighting doesn't get too dark)
+  lighting = mix(lighting, fogColor, FogCalculation());
   fragColor = vec4(lighting, vColor.a);
   //fragColor = vec4(vPos, 1) +  irrelevant;
   //fragColor = vec4(vec3(FragPosLightSpace[0].y / 10), 1) + irrelevant;
