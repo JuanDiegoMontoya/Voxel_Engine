@@ -34,6 +34,7 @@ public:
 	bool renderShadows = true;
 	bool doGeometryPass = true; // for ssr currently
 	//bool renderSSR = true;
+	bool nvUsageEnabled = false;
 
 	// pp effects
 	bool ppSharpenFilter = false;

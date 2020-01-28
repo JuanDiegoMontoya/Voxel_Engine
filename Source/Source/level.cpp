@@ -261,8 +261,8 @@ void Level::DrawImGui()
 			Render::GetCamera()->GetPos(),
 			Render::GetCamera()->front,
 			dist,
-			std::function<bool(float, float, float, BlockPtr, glm::vec3)>
-			([&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
+			std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
+			([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
 		{
 			if (!block || block->GetType() == BlockType::bAir)
 				return false;
@@ -270,18 +270,18 @@ void Level::DrawImGui()
 			ImGui::Text("Block Type: %d (%s)", (unsigned)block->GetType(), block->GetName());
 			ImGui::Text("Write Strength: %d", block->WriteStrength());
 			ImGui::Text("Light Value: %d", block->LightValue());
-			LightPtr lit = Chunk::LightAtWorld({ x, y, z });
-			LightPtr lit2 = Chunk::LightAtWorld(glm::vec3(x, y, z) + side);
+			LightPtr lit = Chunk::LightAtWorld(pos);
+			LightPtr lit2 = Chunk::LightAtWorld(pos + side);
 			ImGui::Text("Light: (%d, %d, %d, %d)", lit->GetR(), lit->GetG(), lit->GetB(), lit->GetS());
 			ImGui::Text("FLight: (%d, %d, %d, %d)", lit2->GetR(), lit2->GetG(), lit2->GetB(), lit2->GetS());
-			ImGui::Text("Block pos:  (%.2f, %.2f, %.2f)", x, y, z);
+			ImGui::Text("Block pos:  (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
 			ImGui::Text("Block side: (%.2f, %.2f, %.2f)", side.x, side.y, side.z);
 			//glm::vec3 color = Block::PropertiesTable[block->GetType()].color;
 			//ImGui::ColorPicker3("colorr", )
 
 			ShaderPtr curr = Shader::shaders["flat_color"];
 			curr->Use();
-			curr->setMat4("u_model", glm::translate(glm::mat4(1), glm::vec3(x, y, z) + .5f));
+			curr->setMat4("u_model", glm::translate(glm::mat4(1), pos + .5f));
 			curr->setMat4("u_view", Render::GetCamera()->GetView());
 			curr->setMat4("u_proj", Render::GetCamera()->GetProj());
 			curr->setVec4("u_color", glm::vec4(1, 1, 1, .4f));
@@ -322,8 +322,18 @@ void Level::DrawImGui()
 	if (debug_graphs)
 	{
 		ImGui::Begin("Graphs");
-		ImGui::PlotVar("Frametime", game_->GetDT(), FLT_MAX, FLT_MAX, 500, ImVec2(500, 150));
 		ImGui::Text("Avg Mesh Time: %.3f", Chunk::accumtime / Chunk::accumcount);
+		ImGui::PlotVar("Frametime", game_->GetDT(), FLT_MAX, FLT_MAX, 300, ImVec2(300, 100));
+
+		if (renderer_.nvUsageEnabled)
+		{
+			GLint totalMemoryKb = 0;
+			glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &totalMemoryKb);
+
+			GLint currentMemoryKb = 0;
+			glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &currentMemoryKb);
+			ImGui::PlotVar("VRAM usage", (totalMemoryKb - currentMemoryKb) / 1000.f, 0, totalMemoryKb / 1000, 300, ImVec2(300, 100));
+		}
 		ImGui::End();
 	}
 
@@ -483,13 +493,13 @@ void Level::checkBlockPlacement()
 			Render::GetCamera()->GetPos(),
 			Render::GetCamera()->front,
 			5,
-			std::function<bool(float, float, float, BlockPtr, glm::vec3)>
-			([&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
+			std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
+			([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
 		{
 			if (!block || block->GetType() == BlockType::bAir)
 				return false;
 
-			UpdateBlockAt(glm::ivec3(x, y, z) + glm::ivec3(side), hud_.selected_);
+			UpdateBlockAt(pos + side, hud_.selected_);
 
 			return true;
 		}
@@ -509,13 +519,13 @@ void Level::checkBlockDestruction()
 			Render::GetCamera()->GetPos(),
 			Render::GetCamera()->front,
 			5,
-			std::function<bool(float, float, float, BlockPtr, glm::vec3)>
-			([&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
+			std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
+			([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
 		{
 			if (!block || block->GetType() == BlockType::bAir)
 				return false;
 
-			UpdateBlockAt(glm::ivec3(x, y, z), BlockType::bAir);
+			UpdateBlockAt(pos, BlockType::bAir);
 
 			return true;
 		}
@@ -535,8 +545,8 @@ void Level::checkBlockPick()
 			Render::GetCamera()->GetPos(),
 			Render::GetCamera()->front,
 			5,
-			std::function<bool(float, float, float, BlockPtr, glm::vec3)>
-			([&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
+			std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
+			([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
 				{
 					if (!block || block->GetType() == BlockType::bAir)
 						return false;

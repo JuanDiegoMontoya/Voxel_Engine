@@ -28,6 +28,17 @@ void Renderer::Init()
 {
 	initDeferredBuffers();
 	initPPBuffers();
+
+	GLint count;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &count);
+
+	for (GLint i = 0; i < count; ++i)
+	{
+		const char* extension = (const char*)glGetStringi(GL_EXTENSIONS, i);
+		if (!strcmp(extension, "GL_NVX_gpu_memory_info"))
+			nvUsageEnabled = true;
+			//printf("%d: %s\n", i, extension);
+	}
 }
 
 // draws everything at once, I guess?

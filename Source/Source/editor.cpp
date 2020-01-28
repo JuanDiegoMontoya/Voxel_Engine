@@ -204,24 +204,24 @@ namespace Editor
 					Render::GetCamera()->GetPos(),
 					Render::GetCamera()->front,
 					pickLength,
-					[&](float x, float y, float z, BlockPtr block, glm::vec3 side)->bool
+					[&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
 				{
 					if (!block || block->GetType() == BlockType::bAir)
 						return false;
 					if (selectedPositions == 0)
-						hposition = glm::vec3(x, y, z);
+						hposition = pos;
 					else if (selectedPositions == 1)
 					{
 						// find axis that has smallest difference, and lock that one
-						glm::vec3 diff = glm::vec3(x, y, z) - wpositions[0];
+						glm::vec3 diff = pos - wpositions[0];
 						diff = glm::abs(diff);
 						float smol = std::min(diff.x, std::min(diff.y, diff.z));
 						if (smol == diff.x)
-							hposition = glm::vec3(wpositions[0].x, y, z);
+							hposition = glm::vec3(wpositions[0].x, pos.y, pos.z);
 						else if (smol == diff.y)
-							hposition = glm::vec3(x, wpositions[0].y, z);
+							hposition = glm::vec3(pos.x, wpositions[0].y, pos.z);
 						else if (smol == diff.z)
-							hposition = glm::vec3(x, y, wpositions[0].z);
+							hposition = glm::vec3(pos.x, pos.y, wpositions[0].z);
 					}
 					else if (selectedPositions == 2)
 					{
@@ -229,11 +229,11 @@ namespace Editor
 						glm::vec3 diff = wpositions[1] - wpositions[0];
 						hposition = wpositions[0];
 						if (!diff.x)
-							hposition.x = x;
+							hposition.x = pos.x;
 						if (!diff.y)
-							hposition.y = y;
+							hposition.y = pos.y;
 						if (!diff.z)
-							hposition.z = z;
+							hposition.z = pos.z;
 					}
 					SelectBlock();
 					return true;
