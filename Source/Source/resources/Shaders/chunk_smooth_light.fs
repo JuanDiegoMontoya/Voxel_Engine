@@ -14,6 +14,7 @@ const int NUM_CASCADES = 3;
 in vec4 vColor; // since there will be no textures, this is the diffuse component
 in vec3 vNormal;
 in float vShininess;
+in float vSunlight;
 in vec3 vPos;
 in vec4 FragPosLightSpace[NUM_CASCADES];
 in float ClipSpacePosZ;
@@ -103,7 +104,7 @@ void main()
   // diffuse
   vec3 lightDir = normalize(lightPos - vPos);
   //vec3 lightDir = -dirLight.direction;
-  float diff = max(dot(lightDir, normal), 0.0);
+  float diff = max(dot(lightDir, normal), 0.0); // 0
   vec3 diffuse = diff * lightColor;
   
   // specular
@@ -134,6 +135,9 @@ void main()
   
   lighting = mix(lighting, fogColor, FogCalculation());
   //fragColor = vec4(poopoo, 1) + irrelevant;
+  float sunLight = vSunlight;
+  sunLight *= max(dot(lightDir, vec3(0, 1, 0)), 0.0);
+  lighting = max(lighting * .2, lighting * sunLight); // magic (ensures lighting doesn't get too dark)
   fragColor = vec4(lighting, vColor.a);
   //fragColor = vec4(vPos, 1) +  irrelevant;
   //fragColor = vec4(vec3(FragPosLightSpace[0].y / 10), 1) + irrelevant;

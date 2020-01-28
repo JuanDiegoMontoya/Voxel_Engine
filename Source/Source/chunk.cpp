@@ -132,6 +132,8 @@ void Chunk::BuildBuffers()
 			delete speculars_;
 		if (ibo_)
 			delete ibo_;
+		if (sunlight_)
+			delete sunlight_;
 
 		ibo_ = new IBO(&tIndices[0], tIndices.size());
 
@@ -159,11 +161,16 @@ void Chunk::BuildBuffers()
 		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
 		glEnableVertexAttribArray(3);
 
-		// TODO: add float attribute for sunlight (0-1)
+		// sunlight
+		sunlight_ = new VBO(&tSunlight[0], sizeof(float) * tSunlight.size());
+		sunlight_->Bind();
+		glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+		glEnableVertexAttribArray(4);
 
 		vao_->Unbind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+		// delete mesh from CPU since it's no longer needed here
 		vertexCount_ = tPositions.size();
 		indexCount_ = tIndices.size();
 		tPositions.clear();
@@ -171,6 +178,7 @@ void Chunk::BuildBuffers()
 		tColors.clear();
 		tSpeculars.clear();
 		tIndices.clear();
+		tSunlight.clear();
 	}
 
 	// epic copypasta
@@ -188,6 +196,8 @@ void Chunk::BuildBuffers()
 			delete wspeculars_;
 		if (wibo_)
 			delete wibo_;
+		if (wsunlight_)
+			delete wsunlight_;
 
 		wibo_ = new IBO(&wtIndices[0], wtIndices.size());
 
@@ -215,6 +225,11 @@ void Chunk::BuildBuffers()
 		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
 		glEnableVertexAttribArray(3);
 
+		wsunlight_ = new VBO(&wtSunlight[0], sizeof(float) * wtSunlight.size());
+		wsunlight_->Bind();
+		glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+		glEnableVertexAttribArray(4);
+
 		wvao_->Unbind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -225,6 +240,7 @@ void Chunk::BuildBuffers()
 		wtColors.clear();
 		wtSpeculars.clear();
 		wtIndices.clear();
+		wtSunlight.clear();
 	}
 }
 
@@ -347,6 +363,8 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 
 	// slightly randomize color for each block to make them more visible (temporary solution)
 	//float clrBias = Utils::get_random_r(-.03f, .03f);
+	//float sun = float(light.GetS()) / 15.f;
+	float sun = 1;
 
 	// sadly we gotta copy all this stuff 4 times
 	for (int i = 0; i < 4; i++)
@@ -356,11 +374,13 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 			wtColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b), color.a));
 			wtNormals.push_back(faces[face]);
 			wtSpeculars.push_back(shiny);
+			wtSunlight.push_back(sun);
 		}
 		else
 		{
 			tNormals.push_back(faces[face]);
 			tSpeculars.push_back(shiny);
+			tSunlight.push_back(sun);
 		}
 	}
 

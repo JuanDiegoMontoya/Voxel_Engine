@@ -4,6 +4,7 @@ layout (location = 0) in vec3 aScreenPos;
 layout (location = 1) in vec4 aColor;
 layout (location = 2) in vec3 aNormal;
 layout (location = 3) in float aShininess;
+layout (location = 4) in float aSunlight;
 
 const int NUM_CASCADES = 3;
 
@@ -22,6 +23,7 @@ out vec3 vPos;
 out vec4 vColor;
 out vec3 vNormal;
 out float vShininess;
+out float vSunlight;
 out vec4 FragPosLightSpace[NUM_CASCADES];
 out float ClipSpacePosZ;
 
@@ -107,6 +109,7 @@ vec3 rippleNormal(vec2 pos0)
 void main()
 {
   vShininess = aShininess;
+  vSunlight = aSunlight;
   vPos = vec3(u_model * vec4(aScreenPos, 1.0));
   float rip = ripplePos(vPos.x, vPos.z) * .5 + .5;
   

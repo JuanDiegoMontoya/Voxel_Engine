@@ -14,6 +14,7 @@ const int NUM_CASCADES = 3;
 in vec4 vColor; // since there will be no textures, this is the diffuse component
 in vec3 vNormal;
 in float vShininess;
+in float vSunlight;
 in vec3 vPos;
 in vec4 FragPosLightSpace[NUM_CASCADES];
 in float ClipSpacePosZ;
@@ -333,6 +334,9 @@ void main()
   //depthDiff *= clamp(perlinNoise(vPos.xz * 15.0 + 2.0 * u_time) / 5.0, 0, 1);
   vec3 foam = vec3(mix(1.0, clamp(perlinNoise(vPos.xz * 15.0 + 2.0 * u_time) / 5.0, 0, 1), depthDiff));
   //fragColor = vec4(mix(lighting, vec3(clamp(perlinNoise(vPos.xz * 30.0),0,1)), depthDiff / 1), vColor.a + waterVis);
+  float sunLight = vSunlight;
+  sunLight *= max(dot(lightDir, vec3(0, 1, 0)), 0.0);
+  lighting = max(lighting * .2, lighting * sunLight); // magic (ensures lighting doesn't get too dark)
   fragColor = vec4(mix(lighting, foam, 1-depthDiff), vColor.a + waterVis);
 
   //fragColor = vec4(ssr(), 1.0) + fragColor * .0001;
