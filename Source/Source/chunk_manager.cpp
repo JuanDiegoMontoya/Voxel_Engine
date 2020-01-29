@@ -534,6 +534,7 @@ bool ChunkManager::checkDirectSunlight(glm::ivec3 wpos)
 	}
 
 	// go down until we hit another solid block or this block
+	return false;
 }
 
 
