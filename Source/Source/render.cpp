@@ -278,6 +278,7 @@ void Renderer::drawNormal()
 		currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
 		currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
 		currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+		currShader->setVec3("dirLight.direction", activeSun_->GetDir());
 		currShader->setBool("computeShadow", renderShadows);
 		activeDirLight_->bindForReading();
 	};
@@ -371,6 +372,7 @@ void Renderer::drawWater()
 	currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
 	currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
 	currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+	currShader->setVec3("dirLight.direction", activeSun_->GetDir());
 	activeDirLight_->bindForReading();
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, gPosition);

@@ -135,7 +135,7 @@ void main()
   
   //fragColor = vec4(poopoo, 1) + irrelevant;
   float sunLight = vSunlight;
-  sunLight *= max(dot(lightDir, vec3(0, 1, 0)), 0.0);
+  sunLight *= max(dot(-dirLight.direction, vec3(0, 1, 0)), 0.0);
   lighting = max(lighting * .2, lighting * sunLight); // magic (ensures lighting doesn't get too dark)
   lighting = mix(lighting, fogColor, FogCalculation());
   fragColor = vec4(lighting, vColor.a);

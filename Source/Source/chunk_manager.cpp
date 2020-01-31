@@ -519,7 +519,7 @@ bool ChunkManager::checkDirectSunlight(glm::ivec3 wpos)
 	localpos p = Chunk::worldBlockToLocalPos(wpos);
 	ChunkPtr chunk = Chunk::chunks[p.chunk_pos];
 	if (!chunk)
-		return;
+		return false;
 	Block block = chunk->At(p.block_pos);
 
 	// find the highest valid chunk
