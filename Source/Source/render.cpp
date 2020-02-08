@@ -14,7 +14,6 @@
 
 #include "render.h"
 
-#define VISUALIZE_MAPS 0
 
 Renderer::Renderer()
  : activeDirLight_(), activeSun_(), 
@@ -519,29 +518,6 @@ void Renderer::drawDepthMapsDebug()
 		drawQuad();
 	}
 
-	if (Input::Keyboard().down[GLFW_KEY_9])
-	{
-		glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
-		Shader::shaders["debug_map3"]->Use();
-		Shader::shaders["debug_map3"]->setInt("map", 4);
-		glActiveTexture(GL_TEXTURE4);
-		glBindTexture(GL_TEXTURE_2D, pColor);
-
-		drawQuad();
-	}
-
-	if (Input::Keyboard().down[GLFW_KEY_0])
-	{
-		glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
-		Shader::shaders["debug_shadow"]->Use();
-		Shader::shaders["debug_shadow"]->setInt("depthMap", 5);
-		glActiveTexture(GL_TEXTURE5);
-		glBindTexture(GL_TEXTURE_2D, pDepth);
-
-		drawQuad();
-	}
-
-#if VISUALIZE_MAPS
 	if (Input::Keyboard().down[GLFW_KEY_6])
 	{
 		Shader::shaders["debug_map3"]->Use();
@@ -564,7 +540,27 @@ void Renderer::drawDepthMapsDebug()
 		drawQuad();
 	}
 
-#endif
+	//if (Input::Keyboard().down[GLFW_KEY_9])
+	//{
+	//	glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
+	//	Shader::shaders["debug_map3"]->Use();
+	//	Shader::shaders["debug_map3"]->setInt("map", 4);
+	//	glActiveTexture(GL_TEXTURE4);
+	//	glBindTexture(GL_TEXTURE_2D, pColor);
+
+	//	drawQuad();
+	//}
+
+	if (Input::Keyboard().down[GLFW_KEY_0])
+	{
+		glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
+		Shader::shaders["debug_shadow"]->Use();
+		Shader::shaders["debug_shadow"]->setInt("depthMap", 5);
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, pDepth);
+
+		drawQuad();
+	}
 }
 
 void Renderer::drawAxisIndicators()
@@ -618,11 +614,7 @@ void Renderer::initDeferredBuffers()
 	// position 'color' buffer
 	glGenTextures(1, &gPosition);
 	glBindTexture(GL_TEXTURE_2D, gPosition);
-#if VISUALIZE_MAPS
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scrX, scrY, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-#else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
-#endif
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
@@ -630,15 +622,11 @@ void Renderer::initDeferredBuffers()
 	// normal 'color' buffer
 	glGenTextures(1, &gNormal);
 	glBindTexture(GL_TEXTURE_2D, gNormal);
-#if VISUALIZE_MAPS
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scrX, scrY, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-#else
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, scrX, scrY, 0, GL_RGB, GL_FLOAT, NULL);
-#endif
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
-	
+
 	// color + specular 'color' buffer
 	glGenTextures(1, &gAlbedoSpec);
 	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
@@ -650,21 +638,17 @@ void Renderer::initDeferredBuffers()
 	// depth attachment
 	glGenTextures(1, &gDepth);
 	glBindTexture(GL_TEXTURE_2D, gDepth);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
 
-	unsigned int attachments[4] = { 
-		GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, 
-		GL_COLOR_ATTACHMENT2, GL_DEPTH_ATTACHMENT };
+	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(3, attachments);
-	
-	// attach depth renderbuffer
-	//glGenRenderbuffers(1, &rboDepth);
-	//glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, scrX, scrY);
-	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
+	//GLint p;
+	//glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE, &p);
+	//std::cout << p;
 
 	ASSERT_MSG(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Incomplete framebuffer!");
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -717,10 +701,10 @@ void Renderer::initPPBuffers()
 	// depth attachment
 	glGenTextures(1, &pDepth);
 	glBindTexture(GL_TEXTURE_2D, pDepth);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, scrX, scrY, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, pDepth, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, pDepth, 0);
 
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	
@@ -738,29 +722,50 @@ void Renderer::postProcess()
 	int scrY = Settings::Graphics.screenY;
 
 	// copy default framebuffer contents into pBuffer
+	glDisable(GL_FRAMEBUFFER_SRGB);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pBuffer);
-	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	glBlitFramebuffer(
 		0, 0, scrX, scrY, 
 		0, 0, scrX, scrY, 
 		GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+	// copy default depth buffer to gBuffer's
+	//glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, gBuffer);
 	//glBlitFramebuffer(
-	//	0, 0, scrX / 2, scrY / 2,
-	//	0, 0, scrX / 2, scrY / 2,
-	//	GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	//	0, 0, scrX, scrY,
+	//	0, 0, scrX, scrY,
+	//	GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glEnable(GL_FRAMEBUFFER_SRGB);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, pColor);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, pDepth);
 	ShaderPtr shader = Shader::shaders["postprocess"];
 	shader->Use();
 
 	shader->setInt("colorTex", 0);
+	shader->setInt("depthTex", 1);
 	shader->setBool("sharpenFilter", ppSharpenFilter);
 	shader->setBool("edgeDetection", ppEdgeDetection);
 	shader->setBool("chromaticAberration", ppChromaticAberration);
 	shader->setBool("blurFilter", ppBlurFilter);
+
+	static glm::vec3 skyColor(
+		glm::pow(.529f, 2.2f),
+		glm::pow(.808f, 2.2f),
+		glm::pow(.922f, 2.2f));
+	float loadD = chunkManager_->GetLoadDistance();
+	float loadL = chunkManager_->GetUnloadLeniency();
+	//shader->setFloat("fogStart", loadD - loadD / 2.f);
+	//shader->setFloat("fogEnd", loadD - Chunk::CHUNK_SIZE * 1.44f); // cuberoot(3)
+	//shader->setVec3("fogColor", skyColor);
+	//shader->setFloat("near_plane", 0);
+	//shader->setFloat("far_plane", 1);
 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_FRAMEBUFFER_SRGB);
