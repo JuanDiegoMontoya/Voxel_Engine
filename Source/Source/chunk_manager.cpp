@@ -31,9 +31,13 @@ ChunkManager::ChunkManager()
 ChunkManager::~ChunkManager()
 {
 	for (auto t_ptr : chunk_generator_threads_)
+	{
 		delete t_ptr;
+	}
 	for (auto t_ptr : chunk_mesher_threads_)
+	{
 		delete t_ptr;
+	}
 }
 
 
@@ -132,12 +136,8 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 		block = &chunk->At(p.block_pos);
 	block->SetType(bl.GetType(), bl.WriteStrength());
 
-	// check if removed block emitted light
-	//glm::uvec3 emit1 = Block::PropertiesTable[int(remBlock.GetType())].emittance;
-	//auto emit1 = Chunk::LightAtWorld(wpos)->Get();
-	//if (emit1 != glm::uvec3(0))
-	//if (Chunk::LightAtWorld(wpos)->Raw() != 0)
-		lightPropagateRemove(wpos);
+	// remove light that deleted block was obscuring
+	lightPropagateRemove(wpos);
 
 	// check if added block emits light
 	glm::uvec3 emit2 = Block::PropertiesTable[int(bl.GetType())].emittance;

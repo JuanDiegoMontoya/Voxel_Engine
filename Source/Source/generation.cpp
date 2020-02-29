@@ -428,7 +428,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 					{
 						for (const auto& p : curBiome.surfaceFeatures)
 						{
-							if (Utils::get_random(0, 1) < p.first && actualHeight == y)
+							//if (Utils::get_random(0, 1) < p.first && actualHeight == y)
+							if (Utils::ivec3_rand_hash_s(global_seed_, wpos, 0, 1) < p.first && actualHeight == y)
 								GeneratePrefab(PrefabManager::GetPrefab(p.second), wpos + glm::ivec3(0, 1, 0), level);
 						}
 					}
@@ -441,7 +442,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 				if (worldY >= -30 && worldY < actualHeight - 3)
 				{
 					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), BlockType::bStone);
-					if (Utils::get_random(0, 1) > .99999f)
+					//if (Utils::get_random(0, 1) > .99999f)
+					if (Utils::ivec3_rand_hash_s(global_seed_, wpos, 0, 1) > .99999f)
 						GeneratePrefab(PrefabManager::GetPrefab(PrefabName::DungeonSmall), wpos, level);
 				}
 			}
