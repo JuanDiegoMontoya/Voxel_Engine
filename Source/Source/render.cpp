@@ -541,6 +541,7 @@ void Renderer::drawDepthMapsDebug()
 		drawQuad();
 	}
 
+	// TODO: use the good deferred pipeline stuff so we can get rid of this filthy macro
 #if VISUALIZE_MAPS
 	if (Input::Keyboard().down[GLFW_KEY_6])
 	{

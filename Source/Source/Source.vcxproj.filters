@@ -52,13 +52,13 @@
     <Filter Include="Voxel Engine\Chunk Manager">
       <UniqueIdentifier>{4c95e2df-6326-49ca-8141-86b2324d71b6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{743f078a-5283-40f5-9bfb-0ead862dbdc1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sys_window.h">
       <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="engine_assert.h">
-      <Filter>Debug</Filter>
     </ClInclude>
     <ClInclude Include="settings.h">
       <Filter>Serialization</Filter>
@@ -69,20 +69,11 @@
     <ClInclude Include="pipeline.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="input.h">
-      <Filter>System</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="god_ptr.h">
-      <Filter>Experimental</Filter>
-    </ClInclude>
     <ClInclude Include="render.h">
       <Filter>Graphics</Filter>
     </ClInclude>
     <ClInclude Include="utilities.h">
-      <Filter>Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="graphics_utils.h">
       <Filter>Utilities</Filter>
     </ClInclude>
     <ClInclude Include="misc_utils.h">
@@ -90,9 +81,6 @@
     </ClInclude>
     <ClInclude Include="math_utils.h">
       <Filter>Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="sphere.h">
-      <Filter>Graphics</Filter>
     </ClInclude>
     <ClInclude Include="vendor\imgui\imconfig.h">
       <Filter>vendor</Filter>
@@ -133,9 +121,6 @@
     <ClInclude Include="game_object.h">
       <Filter>Game\ECS</Filter>
     </ClInclude>
-    <ClInclude Include="game.h">
-      <Filter>Game</Filter>
-    </ClInclude>
     <ClInclude Include="level.h">
       <Filter>Game</Filter>
     </ClInclude>
@@ -153,30 +138,6 @@
     </ClInclude>
     <ClInclude Include="mesh_comp.h">
       <Filter>Game\ECS\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="ibo.h">
-      <Filter>Graphics\Low Level</Filter>
-    </ClInclude>
-    <ClInclude Include="vbo.h">
-      <Filter>Graphics\Low Level</Filter>
-    </ClInclude>
-    <ClInclude Include="vbo_layout.h">
-      <Filter>Graphics\Low Level</Filter>
-    </ClInclude>
-    <ClInclude Include="vao.h">
-      <Filter>Graphics\Low Level</Filter>
-    </ClInclude>
-    <ClInclude Include="shader.h">
-      <Filter>Graphics\Low Level</Filter>
-    </ClInclude>
-    <ClInclude Include="texture.h">
-      <Filter>Graphics\Low Level</Filter>
-    </ClInclude>
-    <ClInclude Include="load_image.h">
-      <Filter>Graphics\Low Level</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui_impl.h">
-      <Filter>Graphics\Low Level</Filter>
     </ClInclude>
     <ClInclude Include="render_data.h">
       <Filter>Game\ECS\Components</Filter>
@@ -198,9 +159,6 @@
     </ClInclude>
     <ClInclude Include="vendor\ctpl_stl.h">
       <Filter>vendor\ctpl</Filter>
-    </ClInclude>
-    <ClInclude Include="debug.h">
-      <Filter>Debug</Filter>
     </ClInclude>
     <ClInclude Include="generation.h">
       <Filter>Voxel Engine</Filter>
@@ -259,13 +217,61 @@
     <ClInclude Include="ImGuiBonus.h">
       <Filter>Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Source\debug.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Engine.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\engine_assert.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\ibo.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\imgui_impl.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\input.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\math_utils.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\misc_utils.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Pipeline.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\shader.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\sys_window.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\utilities.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\vao.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\vbo.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\vbo_layout.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Vertices.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface.h">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sys_window.cpp">
       <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="engine_assert.cpp">
-      <Filter>Debug</Filter>
     </ClCompile>
     <ClCompile Include="settings.cpp">
       <Filter>Serialization</Filter>
@@ -279,16 +285,10 @@
     <ClCompile Include="main.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="input.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
     <ClCompile Include="render.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="misc_utils.cpp">
-      <Filter>Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="graphics_utils.cpp">
       <Filter>Utilities</Filter>
     </ClCompile>
     <ClCompile Include="math_utils.cpp">
@@ -315,12 +315,6 @@
     <ClCompile Include="game_object.cpp">
       <Filter>Game\ECS</Filter>
     </ClCompile>
-    <ClCompile Include="game.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="level.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="mesh.cpp">
       <Filter>Graphics\Meshes</Filter>
     </ClCompile>
@@ -335,27 +329,6 @@
     </ClCompile>
     <ClCompile Include="mesh_comp.cpp">
       <Filter>Game\ECS\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="ibo.cpp">
-      <Filter>Graphics\Low Level</Filter>
-    </ClCompile>
-    <ClCompile Include="vbo.cpp">
-      <Filter>Graphics\Low Level</Filter>
-    </ClCompile>
-    <ClCompile Include="vao.cpp">
-      <Filter>Graphics\Low Level</Filter>
-    </ClCompile>
-    <ClCompile Include="shader.cpp">
-      <Filter>Graphics\Low Level</Filter>
-    </ClCompile>
-    <ClCompile Include="texture.cpp">
-      <Filter>Graphics\Low Level</Filter>
-    </ClCompile>
-    <ClCompile Include="load_image.cpp">
-      <Filter>Graphics\Low Level</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui_impl.cpp">
-      <Filter>Graphics\Low Level</Filter>
     </ClCompile>
     <ClCompile Include="render_data.cpp">
       <Filter>Game\ECS\Components</Filter>
@@ -374,9 +347,6 @@
     </ClCompile>
     <ClCompile Include="sun.cpp">
       <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="debug.cpp">
-      <Filter>Debug</Filter>
     </ClCompile>
     <ClCompile Include="generation.cpp">
       <Filter>Voxel Engine</Filter>
@@ -431,6 +401,48 @@
     </ClCompile>
     <ClCompile Include="ImGuiBonus.cpp">
       <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\debug.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Engine.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\engine_assert.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\ibo.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\imgui_impl.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\input.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\math_utils.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Pipeline.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\shader.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\sys_window.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\vao.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\vbo.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="level.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Interface.cpp">
+      <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
