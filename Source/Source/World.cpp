@@ -28,6 +28,7 @@
 #include <Engine.h>
 #include <Pipeline.h>
 #include "Renderer.h"
+#include "Interface.h"
 
 using namespace std::chrono;
 
@@ -42,8 +43,8 @@ namespace World
 	void World::Init()
 	{
 		//cameras_.push_back(new Camera(kControlCam));
-		cameras_.push_back(new Camera(CameraType::kControlCam));
-		Render::SetCamera(cameras_[0]);
+		//cameras_.push_back(new Camera(CameraType::kControlCam));
+		Renderer::GetPipeline()->AddCamera(new Camera(CameraType::kControlCam));
 
 		//config = std::make_shared<btDefaultCollisionConfiguration>();
 		//dispatcher = std::make_shared<btCollisionDispatcher>(config.get());
@@ -74,8 +75,8 @@ namespace World
 		for (auto& obj : objects_)
 			delete obj;
 
-		for (auto& cam : cameras_)
-			delete cam;
+		//for (auto& cam : cameras_)
+		//	delete cam;
 	}
 
 
@@ -84,13 +85,13 @@ namespace World
 	{
 		if (Input::Keyboard().pressed[GLFW_KEY_GRAVE_ACCENT])
 		{
-			activeCursor = !activeCursor;
+			Interface::activeCursor = !Interface::activeCursor;
 		}
-		glfwSetInputMode(Engine::GetWindow(), GLFW_CURSOR, activeCursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(Engine::GetWindow(), GLFW_CURSOR, Interface::activeCursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 
 		// update each camera
-		if (!activeCursor)
-			for (auto& cam : cameras_)
+		if (!Interface::activeCursor)
+			for (auto& cam : Renderer::GetPipeline()->GetAllCameras())
 				cam->Update(dt);
 
 		if (doCollisionTick)
@@ -256,8 +257,8 @@ namespace World
 		if (Input::Mouse().pressed[GLFW_MOUSE_BUTTON_2])
 		{
 			raycast(
-				Render::GetCamera()->GetPos(),
-				Render::GetCamera()->front,
+				Renderer::GetPipeline()->GetCamera(0)->GetPos(),
+				Renderer::GetPipeline()->GetCamera(0)->front,
 				5,
 				std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
 				([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
@@ -282,8 +283,8 @@ namespace World
 			!ImGui::IsAnyItemFocused())
 		{
 			raycast(
-				Render::GetCamera()->GetPos(),
-				Render::GetCamera()->front,
+				Renderer::GetPipeline()->GetCamera(0)->GetPos(),
+				Renderer::GetPipeline()->GetCamera(0)->front,
 				5,
 				std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
 				([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
@@ -308,8 +309,8 @@ namespace World
 			!ImGui::IsAnyItemFocused())
 		{
 			raycast(
-				Render::GetCamera()->GetPos(),
-				Render::GetCamera()->front,
+				Renderer::GetPipeline()->GetCamera(0)->GetPos(),
+				Renderer::GetPipeline()->GetCamera(0)->front,
 				5,
 				std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
 				([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool

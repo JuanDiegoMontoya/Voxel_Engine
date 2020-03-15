@@ -24,7 +24,7 @@ namespace Utils
 				return false;
 			glm::vec3 wposA = glm::vec3(first->GetPos() * Chunk::GetChunkSize());
 			glm::vec3 wposB = glm::vec3(second->GetPos() * Chunk::GetChunkSize());
-			glm::vec3 cam = Renderer::GetPipeline()::GetCamera()->GetPos();
+			glm::vec3 cam = Renderer::GetPipeline()->GetCamera(0)->GetPos();
 			return
 				glm::distance(wposA, cam) <
 				glm::distance(wposB, cam);
@@ -77,6 +77,7 @@ public:
 
 	friend class Level; // so level can display debug info
 private:
+public: // TODO: TEMPORARY
 	// functions
 	void checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::ivec3& near);
 

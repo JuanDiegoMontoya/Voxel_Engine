@@ -7,6 +7,9 @@
 #include <Pipeline.h>
 #include <camera.h>
 #include <Engine.h>
+#include "pick.h"
+#include "settings.h"
+#include "ImGuiBonus.h"
 
 namespace Interface
 {
@@ -15,19 +18,19 @@ namespace Interface
 		{
 			ImGui::Begin("Sun");
 
-			glm::vec3 pos = sun_.GetPos();
+			glm::vec3 pos = World::sun_.GetPos();
 			if (ImGui::DragFloat3("Sun Pos", &pos[0], 1, -500, 500, "%.0f"))
-				sun_.SetPos(pos);
+				World::sun_.SetPos(pos);
 
-			glm::vec3 dir = sun_.GetDir();
+			glm::vec3 dir = World::sun_.GetDir();
 			if (ImGui::SliderFloat3("Sun Dir", &dir[0], -1, 1, "%.3f"))
-				sun_.SetDir(dir);
+				World::sun_.SetDir(dir);
 
-			ImGui::Checkbox("Orbit Pos", &sun_.orbits);
+			ImGui::Checkbox("Orbit Pos", &World::sun_.orbits);
 			ImGui::SameLine();
-			ImGui::DragFloat3("##Orbitee", &sun_.orbitPos[0], 2.f, -500, 500, "%.0f");
-			ImGui::Checkbox("Follow Cam", &sun_.followCam);
-			ImGui::SliderFloat("Follow Distance", &sun_.followDist, 0, 500, "%.0f");
+			ImGui::DragFloat3("##Orbitee", &World::sun_.orbitPos[0], 2.f, -500, 500, "%.0f");
+			ImGui::Checkbox("Follow Cam", &World::sun_.followCam);
+			ImGui::SliderFloat("Follow Distance", &World::sun_.followDist, 0, 500, "%.0f");
 			ImGui::Checkbox("Collision Enabled", &World::doCollisionTick);
 
 			bool val = Renderer::GetPipeline()->GetCamera(0)->GetType() == CameraType::kPhysicsCam;
@@ -36,11 +39,11 @@ namespace Interface
 				Renderer::GetPipeline()->GetCamera(0)->SetType(val ? CameraType::kPhysicsCam : CameraType::kControlCam);
 			}
 
-			//int shadow = sun_.GetShadowSize().x;
+			//int shadow = World::sun_.GetShadowSize().x;
 			//if (ImGui::InputInt("Shadow Scale", &shadow, 1024, 1024))
 			//{
 			//	glm::clamp(shadow, 0, 16384);
-			//	sun_.SetShadowSize(glm::ivec2(shadow));
+			//	World::sun_.SetShadowSize(glm::ivec2(shadow));
 			//}
 			if (ImGui::Button("Recompile Water Shader"))
 			{
@@ -79,11 +82,11 @@ namespace Interface
 			ImGui::InputText("Map path", fileName, 256u);
 			if (ImGui::Button("Save Map"))
 			{
-				chunkManager_.SaveWorld(fileName);
+				World::chunkManager_.SaveWorld(fileName);
 			}
 			if (ImGui::Button("Load Map"))
 			{
-				chunkManager_.LoadWorld(fileName);
+				World::chunkManager_.LoadWorld(fileName);
 			}
 
 			ImGui::End();
@@ -97,14 +100,14 @@ namespace Interface
 			ImGui::NewLine();
 			glm::vec3 pos = Renderer::GetPipeline()->GetCamera(0)->GetPos();
 			//ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
-			ImGui::SliderFloat("Render distance", &chunkManager_.loadDistance_, 0, 1000, "%.0f");
-			ImGui::SliderFloat("Leniency distance", &chunkManager_.unloadLeniency_, 0, 1000, "%.0f");
-			float far = Render::GetCamera()->GetFar();
+			ImGui::SliderFloat("Render distance", &World::chunkManager_.loadDistance_, 0, 1000, "%.0f");
+			ImGui::SliderFloat("Leniency distance", &World::chunkManager_.unloadLeniency_, 0, 1000, "%.0f");
+			float far = Renderer::GetPipeline()->GetCamera(0)->GetFar();
 			if (ImGui::SliderFloat("Far plane", &far, 0, 1000, "%.0f"))
-				Render::GetCamera()->SetFar(far);
+				Renderer::GetPipeline()->GetCamera(0)->SetFar(far);
 			if (ImGui::InputFloat3("Camera Position", &pos[0], 2))
-				Render::GetCamera()->SetPos(pos);
-			pos = Render::GetCamera()->front;
+				Renderer::GetPipeline()->GetCamera(0)->SetPos(pos);
+			pos = Renderer::GetPipeline()->GetCamera(0)->front;
 			ImGui::Text("Camera Direction: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
 			pos = pos * .5f + .5f;
 			ImGui::SameLine();
@@ -133,9 +136,9 @@ namespace Interface
 
 			ImGui::NewLine();
 			// displaying zero just means the queue was taken, not finished!
-			ImGui::Text("Gen queue:    %d", chunkManager_.generation_queue_.size());
-			ImGui::Text("Mesh queue:   %-4d (%d)", chunkManager_.mesher_queue_.size(), chunkManager_.debug_cur_pool_left.load());
-			ImGui::Text("Buffer queue: %d", chunkManager_.buffer_queue_.size());
+			ImGui::Text("Gen queue:    %d", World::chunkManager_.generation_queue_.size());
+			ImGui::Text("Mesh queue:   %-4d (%d)", World::chunkManager_.mesher_queue_.size(), World::chunkManager_.debug_cur_pool_left.load());
+			ImGui::Text("Buffer queue: %d", World::chunkManager_.buffer_queue_.size());
 
 			ImGui::NewLine();
 			ImGui::Text("Flying: %s", activeCursor ? "False" : "True");
@@ -206,19 +209,19 @@ namespace Interface
 		{
 			ImGui::Begin("Global Settings");
 			if (ImGui::Checkbox("Compute baked AO", &Settings::GFX::blockAO))
-				chunkManager_.ReloadAllChunks();
+				World::chunkManager_.ReloadAllChunks();
 			if (ImGui::Checkbox("Skip lighting", &Chunk::debug_ignore_light_level))
-				chunkManager_.ReloadAllChunks();
-			if (ImGui::Checkbox("Shadows", &renderer_.renderShadows))
-				renderer_.ClearCSM();
-			if (ImGui::Checkbox("Reflections", &renderer_.doGeometryPass))
-				renderer_.ClearGGuffer();
+				World::chunkManager_.ReloadAllChunks();
+			if (ImGui::Checkbox("Shadows", &Renderer::renderShadows))
+				Renderer::ClearCSM();
+			if (ImGui::Checkbox("Reflections", &Renderer::doGeometryPass))
+				Renderer::ClearGGuffer();
 			ImGui::NewLine();
 			ImGui::Text("Post processing:");
-			ImGui::Checkbox("Sharpen Filter", &renderer_.ppSharpenFilter);
-			ImGui::Checkbox("Blur Filter", &renderer_.ppBlurFilter);
-			ImGui::Checkbox("Edge detection", &renderer_.ppEdgeDetection);
-			ImGui::Checkbox("Chromatic Aberration", &renderer_.ppChromaticAberration);
+			ImGui::Checkbox("Sharpen Filter", &Renderer::ppSharpenFilter);
+			ImGui::Checkbox("Blur Filter", &Renderer::ppBlurFilter);
+			ImGui::Checkbox("Edge detection", &Renderer::ppEdgeDetection);
+			ImGui::Checkbox("Chromatic Aberration", &Renderer::ppChromaticAberration);
 			ImGui::End();
 		}
 
@@ -226,7 +229,7 @@ namespace Interface
 		{
 			ImGui::Begin("Graphs");
 			ImGui::Text("Avg Mesh Time: %.3f", Chunk::accumtime / Chunk::accumcount);
-			ImGui::PlotVar("Frametime", game_->GetDT(), FLT_MAX, FLT_MAX, 300, ImVec2(300, 100));
+			ImGui::PlotVar("Frametime", Engine::GetDT(), FLT_MAX, FLT_MAX, 300, ImVec2(300, 100));
 
 			if (Renderer::nvUsageEnabled)
 			{

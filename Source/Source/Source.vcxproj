@@ -306,7 +306,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="render_data.cpp" />
     <ClCompile Include="sun.cpp" />
     <ClCompile Include="transform.cpp" />
-    <ClCompile Include="PlayerCamera.cpp" />
     <ClCompile Include="game_object.cpp" />
     <ClCompile Include="World.cpp" />
     <ClCompile Include="main.cpp" />
@@ -388,7 +387,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="Engine\Source\camera.h" />
     <ClInclude Include="Engine\Source\Frustum.h" />
     <ClInclude Include="Engine\Source\Shapes.h" />
-    <ClInclude Include="PlayerCamera.h" />
     <ClInclude Include="chunk.h" />
     <ClInclude Include="chunk_manager.h" />
     <ClInclude Include="chunk_manager_base.h" />

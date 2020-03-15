@@ -6,6 +6,7 @@
 #include <mutex>
 #include <concurrent_unordered_map.h> // TODO: temp solution to concurrent chunk access
 #include <atomic>
+#include <Shapes.h>
 
 #include <cereal/archives/binary.hpp>
 
@@ -93,6 +94,8 @@ public:
 	{
 		pos_ = pos;
 		model_ = glm::translate(glm::mat4(1.f), glm::vec3(pos_) * (float)CHUNK_SIZE);
+		bounds.min = glm::vec3(pos_ * CHUNK_SIZE);
+		bounds.max = glm::vec3(pos_ * CHUNK_SIZE + CHUNK_SIZE - 0);
 	}
 
 	const glm::ivec3& GetPos() { return pos_; }
@@ -187,17 +190,10 @@ public:
 		return nullptr;
 	}
 
-
-	glm::vec3 GetMin() const
+	AABB GetAABB() const
 	{
-		return glm::vec3(pos_ * CHUNK_SIZE);
+		return bounds;
 	}
-
-	glm::vec3 GetMax() const
-	{
-		return glm::vec3(pos_ * CHUNK_SIZE + CHUNK_SIZE - 0);
-	}
-
 
 	/*################################
 						Raw Block Data
@@ -324,6 +320,8 @@ private:
 	GLsizei vertexCount_ = 0; // number of opaque block vertices
 	GLsizei windexCount_ = 0;// number of transparent block vertices
 	GLsizei indexCount_ = 0; // number of opaque block vertices
+
+	AABB bounds;
 }Chunk, *ChunkPtr;
 
 void TestCoordinateStuff();

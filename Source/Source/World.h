@@ -43,7 +43,6 @@ namespace World
 
 
 	// "private" variables
-	inline bool debug_graphs = true;
 	 
 	inline ChunkManager chunkManager_;
 	//inline Renderer renderer_;
@@ -51,12 +50,11 @@ namespace World
 	 
 	inline std::string name_; // name of file
 	//inline GamePtr game_;
-	inline std::vector<Camera*> cameras_;			 // all cameras in the scene
+	//inline std::vector<Camera*> cameras_;			 // all cameras in the scene
 	inline std::vector<GameObjectPtr> objects_; // all game objects in the scene
 	inline glm::vec3 bgColor_ = glm::vec3(.529f, .808f, .922f); // sky blue
 	
 	inline Sun sun_;
-	inline bool activeCursor = false;
 	inline bool doCollisionTick = true;
 	// debug
 	inline int debugCascadeQuad = 0;

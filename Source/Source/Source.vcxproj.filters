@@ -244,9 +244,6 @@
     <ClInclude Include="Editor.h">
       <Filter>Game\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerCamera.h">
-      <Filter>Game\ECS\Components</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Source\camera.h">
       <Filter>Engine</Filter>
     </ClInclude>
@@ -413,9 +410,6 @@
     </ClCompile>
     <ClCompile Include="Editor.cpp">
       <Filter>Game\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerCamera.cpp">
-      <Filter>Game\ECS\Components</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Source\camera.cpp">
       <Filter>Engine</Filter>

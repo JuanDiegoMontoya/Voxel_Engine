@@ -6,4 +6,7 @@ namespace Interface
 	void Update();
 	void DrawImGui();
 	bool IsCursorActive();
+
+	inline bool activeCursor = false;
+	inline bool debug_graphs = true;
 }

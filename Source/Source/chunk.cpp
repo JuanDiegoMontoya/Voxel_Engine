@@ -1,13 +1,17 @@
 #include "stdafx.h"
+
+#include <Pipeline.h>
+#include "Renderer.h"
+#include <camera.h>
+#include <Frustum.h>
+
 #include "vbo.h"
 #include "vao.h"
 #include "ibo.h"
 #include "chunk.h"
 #include "block.h"
-#include "camera.h"
 #include "shader.h"
 #include <Vertices.h>
-#include "frustum.h"
 #include <sstream>
 #include "settings.h"
 #include "misc_utils.h"
@@ -75,7 +79,7 @@ void Chunk::Update()
 	// cull chunks that are invisible
 	if (active_)
 	{
-		if (Renderer::GetCamera()->GetFrustum()->IsInside(*this) >= Frustum::Visibility::Partial)
+		if (Renderer::GetPipeline()->GetCamera(0)->GetFrustum()->IsInside(bounds) >= Frustum::Visibility::Partial)
 			visible_ = true;
 		else
 			visible_ = false;
