@@ -47,7 +47,7 @@ void WorldGen::GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse
 }
 
 
-void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
+void WorldGen::GenerateHeightMapWorld(int x, int z)
 {
 	module::DEFAULT_PERLIN_FREQUENCY;
 	module::DEFAULT_PERLIN_LACUNARITY;
@@ -175,16 +175,16 @@ void WorldGen::GenerateHeightMapWorld(int x, int z, LevelPtr level)
 					height = height < -1 ? -1 : height;
 
 					int y = (int)Utils::mapToRange(height, -1.f, 1.f, -0.f, 100.f);
-					level->UpdateBlockAt(glm::ivec3(worldX, y, worldZ), BlockType::bGrass);
+					World::UpdateBlockAt(glm::ivec3(worldX, y, worldZ), BlockType::bGrass);
 
 					// generate subsurface
 					for (int j = -10; j < y; j++)
-						level->UpdateBlockAt(glm::ivec3(worldX, j, worldZ), BlockType::bStone);
+						World::UpdateBlockAt(glm::ivec3(worldX, j, worldZ), BlockType::bStone);
 
 					// extra layer(s) of grass on the top
-					level->UpdateBlockAt(glm::ivec3(worldX, y - 1, worldZ), BlockType::bDirt);
-					level->UpdateBlockAt(glm::ivec3(worldX, y - 2, worldZ), BlockType::bDirt);
-					level->UpdateBlockAt(glm::ivec3(worldX, y - 3, worldZ), BlockType::bDirt);
+					World::UpdateBlockAt(glm::ivec3(worldX, y - 1, worldZ), BlockType::bDirt);
+					World::UpdateBlockAt(glm::ivec3(worldX, y - 2, worldZ), BlockType::bDirt);
+					World::UpdateBlockAt(glm::ivec3(worldX, y - 3, worldZ), BlockType::bDirt);
 				}
 			}
 
@@ -380,7 +380,7 @@ void WorldGen::InitNoiseFuncs()
 }
 
 
-void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
+void WorldGen::GenerateChunk(glm::ivec3 cpos)
 {
 	// generate everything
 	for (int i = 0; i < Chunk::CHUNK_SIZE; i++)			// x
@@ -413,15 +413,15 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 
 				// TODO: make rivers have sand around/under them
 				if (worldY > actualHeight && worldY < y - 1)
-					level->GenerateBlockAt(wpos, BlockType::bWater);
+					World::GenerateBlockAt(wpos, BlockType::bWater);
 				if (worldY < 0 && worldY > actualHeight) // make ocean
-					level->GenerateBlockAt(wpos, BlockType::bWater);
+					World::GenerateBlockAt(wpos, BlockType::bWater);
 
 				// top cover
 				if (worldY == actualHeight)
 				{
 					// surface features
-					level->GenerateBlockAt(wpos, curBiome.surfaceCover);
+					World::GenerateBlockAt(wpos, curBiome.surfaceCover);
 
 					// generate surface prefabs
 					if (worldY > 0)
@@ -429,20 +429,20 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 						for (const auto& p : curBiome.surfaceFeatures)
 						{
 							if (Utils::get_random(0, 1) < p.first && actualHeight == y)
-								GeneratePrefab(PrefabManager::GetPrefab(p.second), wpos + glm::ivec3(0, 1, 0), level);
+								GeneratePrefab(PrefabManager::GetPrefab(p.second), wpos + glm::ivec3(0, 1, 0));
 						}
 					}
 				}
 				// just under top cover
 				if (worldY >= actualHeight - 3 && worldY < actualHeight)
-					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), BlockType::bDirt);
+					World::GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), BlockType::bDirt);
 
 				// generate subsurface layer (rocks)
 				if (worldY >= -30 && worldY < actualHeight - 3)
 				{
-					level->GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), BlockType::bStone);
+					World::GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), BlockType::bStone);
 					if (Utils::get_random(0, 1) > .99999f)
-						GeneratePrefab(PrefabManager::GetPrefab(PrefabName::DungeonSmall), wpos, level);
+						GeneratePrefab(PrefabManager::GetPrefab(PrefabName::DungeonSmall), wpos);
 				}
 			}
 		}
@@ -457,8 +457,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos, LevelPtr level)
 			{
 				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
-				if (val > .9 && level->GetBlockAt(pos).GetType() != BlockType::bWater)
-					level->GenerateBlockAtCheap(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
+				if (val > .9 && World::GetBlockAt(pos).GetType() != BlockType::bWater)
+					World::GenerateBlockAtCheap(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
 					//level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
 			}
 		}
@@ -507,13 +507,13 @@ void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos)
 	for (const auto& pair : prefab.blocks)
 	{
 		// written blocks so they don't get overwritten by normal terrain generation
-		level->GenerateBlockAt(wpos + pair.first, pair.second);
+		World::GenerateBlockAt(wpos + pair.first, pair.second);
 	}
 }
 
 
 static double magic = .2; // increase isolevel by this amount (makes it somewhat accurate)
-void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
+void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos)
 {
 	for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
 	{
@@ -524,12 +524,12 @@ void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level)
 				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 
 				// method 2
-				level->GenerateBlockAt(glm::ivec3(pos), BlockType::bAir); // air by default
+				World::GenerateBlockAt(glm::ivec3(pos), BlockType::bAir); // air by default
 				cell Cell = Chunk::buildCellFromVoxel(pos);
 				for (double& density : Cell.val)
 					if (Utils::mapToRange(density, -1.f, 1.f, 0.f, 1.f) > Chunk::isolevel + magic)
 					{
-						level->GenerateBlockAt(glm::ivec3(pos), BlockType::bGrass); // replace by grass
+						World::GenerateBlockAt(glm::ivec3(pos), BlockType::bGrass); // replace by grass
 						continue;
 					}
 			}

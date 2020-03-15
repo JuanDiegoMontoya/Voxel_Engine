@@ -73,7 +73,7 @@ namespace Editor
 			Prefab oldPfb;
 			archive(oldPfb);
 
-			WorldGen::GeneratePrefab(oldPfb, hposition, level);
+			WorldGen::GeneratePrefab(oldPfb, hposition);
 		}
 
 		void CancelSelection()
@@ -185,10 +185,10 @@ namespace Editor
 				ShaderPtr curr = Shader::shaders["flat_color"];
 				curr->Use();
 				curr->setMat4("u_model", tPos * tScale);
-				curr->setMat4("u_view", Render::GetCamera()->GetView());
-				curr->setMat4("u_proj", Render::GetCamera()->GetProj());
+				curr->setMat4("u_view", Renderer::GetPipeline()->GetCamera(0)->GetView());
+				curr->setMat4("u_proj", Renderer::GetPipeline()->GetCamera(0)->GetProj());
 				curr->setVec4("u_color", glm::vec4(1.f, .3f, 1.f, 1.f));
-				renderer->DrawCube();
+				Renderer::DrawCube();
 				glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 				glEnable(GL_CULL_FACE);
 			}
@@ -201,8 +201,8 @@ namespace Editor
 			if (open)
 			{
 				raycast(
-					Render::GetCamera()->GetPos(),
-					Render::GetCamera()->front,
+					Renderer::GetPipeline()->GetCamera(0)->GetPos(),
+					Renderer::GetPipeline()->GetCamera(0)->front,
 					pickLength,
 					[&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
 				{

@@ -31,7 +31,7 @@ public:
 	*/
 	static void GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse, std::vector<ChunkPtr>& updateList);
 	
-	static void GenerateHeightMapWorld(int x, int z, LevelPtr level);
+	static void GenerateHeightMapWorld(int x, int z);
 
 	//static void GenerateChunkMap()
 
@@ -39,14 +39,14 @@ public:
 		Populates a chunk based on its position in the world
 	*/
 	static void InitNoiseFuncs();
-	static void GenerateChunk(glm::ivec3 cpos, LevelPtr level);
+	static void GenerateChunk(glm::ivec3 cpos);
 	static TerrainType GetTerrainType(glm::ivec3 wpos);
 	static double GetTemperature(double x, double y, double z);
 	static double GetHumidity(double x, double z);
 
-	static void GeneratePrefab(const Prefab& pfab, glm::ivec3 wpos, LevelPtr level);
+	static void GeneratePrefab(const Prefab& pfab, glm::ivec3 wpos);
 
-	static void Generate3DNoiseChunk(glm::ivec3 cpos, LevelPtr level);
+	static void Generate3DNoiseChunk(glm::ivec3 cpos);
 
 	// returns a density at a particular point
 	static double GetDensity(const glm::vec3& wpos);
