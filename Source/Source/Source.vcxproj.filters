@@ -417,5 +417,8 @@
     <ClCompile Include="Engine\Source\Frustum.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Source\misc_utils.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
