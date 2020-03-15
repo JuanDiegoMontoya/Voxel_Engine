@@ -5,9 +5,9 @@
 #include "camera.h"
 #include "pipeline.h"
 #include "pick.h"
-#include "editor.h"
+#include "Editor.h"
 #include "shader.h"
-#include "render.h"
+#include "Renderer.h"
 #include "prefab.h"
 #include "generation.h"
 

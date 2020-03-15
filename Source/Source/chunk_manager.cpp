@@ -60,7 +60,7 @@ void ChunkManager::Init()
 }
 
 
-void ChunkManager::Update(LevelPtr level)
+void ChunkManager::Update()
 {
   PERF_BENCHMARK_START;
 	std::for_each(

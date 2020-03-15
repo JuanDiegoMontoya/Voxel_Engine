@@ -24,7 +24,7 @@ namespace Utils
 				return false;
 			glm::vec3 wposA = glm::vec3(first->GetPos() * Chunk::GetChunkSize());
 			glm::vec3 wposB = glm::vec3(second->GetPos() * Chunk::GetChunkSize());
-			glm::vec3 cam = Render::GetCamera()->GetPos();
+			glm::vec3 cam = Renderer::GetPipeline()::GetCamera()->GetPos();
 			return
 				glm::distance(wposA, cam) <
 				glm::distance(wposB, cam);
@@ -33,7 +33,7 @@ namespace Utils
 }
 
 
-// Interfaces (is this the correct term?) with the Chunk class to
+// Interfaces with the Chunk class to
 // manage how and when chunk block and mesh data is generated, and
 // when that data is sent to the GPU.
 // Also manages updates to blocks and lighting in chunks to determine
@@ -51,7 +51,7 @@ public:
 	void Init();
 
 	// interaction
-	void Update(LevelPtr level);
+	void Update();
 	void UpdateChunk(ChunkPtr chunk);
 	void UpdateChunk(const glm::ivec3 wpos); // update chunk at block position
 	void UpdateBlock(const glm::ivec3& wpos, Block bl);

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 //#include "biome.h"
 #include "block.h"
-#include "level.h"
+#include "World.h"
 #include "chunk.h"
 #include "utilities.h"
 #include "generation.h"
@@ -502,7 +502,7 @@ double WorldGen::GetHumidity(double x, double z)
 
 // TODO: find bounding box containing the prefab and update the chunks within
 // then use fast block update function
-void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos, LevelPtr level)
+void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos)
 {
 	for (const auto& pair : prefab.blocks)
 	{

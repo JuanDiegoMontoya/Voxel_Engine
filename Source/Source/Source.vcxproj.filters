@@ -31,12 +31,6 @@
     <Filter Include="Game\ECS\Components">
       <UniqueIdentifier>{ab4660b1-84b7-48a4-9281-daa0ba32ff13}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Graphics\Low Level">
-      <UniqueIdentifier>{f15c4eb7-c236-4099-872d-394e1a0f13ed}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Graphics\Meshes">
-      <UniqueIdentifier>{7f6f16ea-4562-4608-8caa-0f7db3051a4c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="vendor\ctpl">
       <UniqueIdentifier>{d94d4b42-3a18-475f-a15a-e49c0985918a}</UniqueIdentifier>
     </Filter>
@@ -57,22 +51,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sys_window.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="settings.h">
       <Filter>Serialization</Filter>
     </ClInclude>
     <ClInclude Include="serialize.h">
       <Filter>Serialization</Filter>
     </ClInclude>
-    <ClInclude Include="pipeline.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="render.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="utilities.h">
       <Filter>Utilities</Filter>
     </ClInclude>
@@ -121,18 +106,6 @@
     <ClInclude Include="game_object.h">
       <Filter>Game\ECS</Filter>
     </ClInclude>
-    <ClInclude Include="level.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="mesh.h">
-      <Filter>Graphics\Meshes</Filter>
-    </ClInclude>
-    <ClInclude Include="unlit_mesh.h">
-      <Filter>Graphics\Meshes</Filter>
-    </ClInclude>
-    <ClInclude Include="lit_mesh.h">
-      <Filter>Graphics\Meshes</Filter>
-    </ClInclude>
     <ClInclude Include="transform.h">
       <Filter>Game\ECS\Components</Filter>
     </ClInclude>
@@ -175,9 +148,6 @@
     <ClInclude Include="prefab.h">
       <Filter>Voxel Engine</Filter>
     </ClInclude>
-    <ClInclude Include="editor.h">
-      <Filter>Game\Editor</Filter>
-    </ClInclude>
     <ClInclude Include="hud.h">
       <Filter>Game</Filter>
     </ClInclude>
@@ -191,9 +161,6 @@
       <Filter>Game\Collision</Filter>
     </ClInclude>
     <ClInclude Include="physics_comp.h">
-      <Filter>Game\ECS\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="camera.h">
       <Filter>Game\ECS\Components</Filter>
     </ClInclude>
     <ClInclude Include="light.h">
@@ -268,25 +235,37 @@
     <ClInclude Include="Interface.h">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="World.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor.h">
+      <Filter>Game\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerCamera.h">
+      <Filter>Game\ECS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\camera.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Shapes.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\Frustum.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sys_window.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="settings.cpp">
       <Filter>Serialization</Filter>
     </ClCompile>
     <ClCompile Include="serialize.cpp">
       <Filter>Serialization</Filter>
     </ClCompile>
-    <ClCompile Include="pipeline.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="render.cpp">
-      <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="misc_utils.cpp">
       <Filter>Utilities</Filter>
@@ -314,15 +293,6 @@
     </ClCompile>
     <ClCompile Include="game_object.cpp">
       <Filter>Game\ECS</Filter>
-    </ClCompile>
-    <ClCompile Include="mesh.cpp">
-      <Filter>Graphics\Meshes</Filter>
-    </ClCompile>
-    <ClCompile Include="unlit_mesh.cpp">
-      <Filter>Graphics\Meshes</Filter>
-    </ClCompile>
-    <ClCompile Include="lit_mesh.cpp">
-      <Filter>Graphics\Meshes</Filter>
     </ClCompile>
     <ClCompile Include="transform.cpp">
       <Filter>Game\ECS\Components</Filter>
@@ -366,9 +336,6 @@
     <ClCompile Include="prefab.cpp">
       <Filter>Voxel Engine</Filter>
     </ClCompile>
-    <ClCompile Include="editor.cpp">
-      <Filter>Game\Editor</Filter>
-    </ClCompile>
     <ClCompile Include="hud.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -379,9 +346,6 @@
       <Filter>Game\Collision</Filter>
     </ClCompile>
     <ClCompile Include="physics_comp.cpp">
-      <Filter>Game\ECS\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="camera.cpp">
       <Filter>Game\ECS\Components</Filter>
     </ClCompile>
     <ClCompile Include="light.cpp">
@@ -438,11 +402,26 @@
     <ClCompile Include="Engine\Source\vbo.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="level.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Interface.cpp">
       <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="World.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor.cpp">
+      <Filter>Game\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerCamera.cpp">
+      <Filter>Game\ECS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\camera.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\Frustum.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

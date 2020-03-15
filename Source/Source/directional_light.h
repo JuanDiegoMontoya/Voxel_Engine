@@ -65,14 +65,13 @@ public:
 	inline void SetShadowSize(const glm::ivec2& s) { shadowSize_ = s; }
 	inline void SetNumCascades(unsigned num) { shadowCascades_ = num; }
 
-	friend class Renderer;
-private:
-	// functions
-	void initCascadedShadowMapFBO();
 	void bindForWriting(unsigned index);
 	void bindForReading();
 	void calcOrthoProjs(const glm::mat4& vView);
 	void calcPersProjs();
+private:
+	// functions
+	void initCascadedShadowMapFBO();
 
 	// vars
 	glm::vec3 tDir_;

@@ -6,7 +6,7 @@
 #include "block.h"
 #include "camera.h"
 #include "shader.h"
-#include "pipeline.h"
+#include <Vertices.h>
 #include "frustum.h"
 #include <sstream>
 #include "settings.h"
@@ -14,9 +14,6 @@
 
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #define GLM_FORCE_SIMD_AVX2
-/*
-	TODO: use IBOs to save GPU memory
-*/
 
 //Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
 //std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
@@ -78,7 +75,7 @@ void Chunk::Update()
 	// cull chunks that are invisible
 	if (active_)
 	{
-		if (Render::GetCamera()->GetFrustum()->IsInside(*this) >= Frustum::Visibility::Partial)
+		if (Renderer::GetCamera()->GetFrustum()->IsInside(*this) >= Frustum::Visibility::Partial)
 			visible_ = true;
 		else
 			visible_ = false;
@@ -410,7 +407,7 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 	//}
 
 	// add 4 vertices representing a quad
-	const GLfloat* data = Render::cube_vertices_light;
+	const GLfloat* data = Vertices::cube_light;
 	int endQuad = (face + 1) * 12;
 	for (int i = face * 12; i < endQuad; i += 3)
 	{
@@ -440,9 +437,9 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 	{
 		// refer to just placed vertices (4 of them)
 		if (!isWater)
-			tIndices.push_back(Render::cube_indices_light_cw[i] + tPositions.size() - 4);
+			tIndices.push_back(Vertices::cube_indices_light_cw[i] + tPositions.size() - 4);
 		else
-			wtIndices.push_back(Render::cube_indices_light_cw[i] + wtPositions.size() - 4);
+			wtIndices.push_back(Vertices::cube_indices_light_cw[i] + wtPositions.size() - 4);
 	}
 }
 
