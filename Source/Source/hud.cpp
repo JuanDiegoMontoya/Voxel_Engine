@@ -4,7 +4,7 @@
 #include "camera.h"
 #include "pipeline.h"
 #include "shader.h"
-#include "render.h"
+#include "Renderer.h"
 
 void HUD::Update()
 {
@@ -14,7 +14,7 @@ void HUD::Update()
 		ofs = 0;
 	reinterpret_cast<unsigned char&>(selected_) += ofs;
 
-	Camera* cam = Render::GetCamera();
+	Camera* cam = Renderer::GetPipeline()->GetCamera(0);
 
 	// render the selected object on the screen
 	ShaderPtr curr = Shader::shaders["flat_color"];

@@ -9,11 +9,13 @@
 #include "shader.h"
 #include "settings.h"
 #include <limits>
+#include <Vertices.h>
+#include "Renderer.h"
 
 Sun::Sun()
 {
 	vao_ = new VAO();
-	vbo_ = new VBO(Render::square_vertices_3d, sizeof(Render::square_vertices_3d));
+	vbo_ = new VBO(Vertices::square_vertices_3d, sizeof(Vertices::square_vertices_3d));
 	VBOlayout layout;
 	layout.Push<float>(3);
 	vao_->AddBuffer(*vbo_, layout);
@@ -35,10 +37,10 @@ void Sun::Update()
 	}
 
 	if (followCam)
-		pos_ = Render::GetCamera()->GetPos() - dir_ * followDist;
+		pos_ = Renderer::GetPipeline()->GetCamera(0)->GetPos() - dir_ * followDist;
 	
 	//glm::mat4 lightView = glm::lookAt(pos_, dir_, glm::vec3(0.0, 1.0, 0.0));
-	view_ = glm::lookAt(pos_, glm::normalize(Render::GetCamera()->GetPos()), glm::vec3(0.0, 1.0, 0.0));
+	view_ = glm::lookAt(pos_, glm::normalize(Renderer::GetPipeline()->GetCamera(0)->GetPos()), glm::vec3(0.0, 1.0, 0.0));
 
 	dirLight_.Update(pos_, dir_);
 }
@@ -50,8 +52,8 @@ void Sun::Render()
 
 	vao_->Bind();
 	vbo_->Bind();
-	const glm::mat4& view = Render::GetCamera()->GetView();
-	const glm::mat4& proj = Render::GetCamera()->GetProj();
+	const glm::mat4& view = Renderer::GetPipeline()->GetCamera(0)->GetView();
+	const glm::mat4& proj = Renderer::GetPipeline()->GetCamera(0)->GetProj();
 
 	ShaderPtr currShader = Shader::shaders["sun"];
 	currShader->Use();

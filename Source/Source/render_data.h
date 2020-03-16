@@ -18,7 +18,7 @@ public:
 	inline const VAO& GetVao() { return *vao_; }
 	inline const VBO& GetVbo() { return *vbo_; }
 	inline const IBO& GetIbo() { return *ibo_; }
-	inline ShaderPtr GetShader() { return shader_; } // not const so we can modify it
+	inline class Shader* GetShader() { return shader_; } // not const so we can modify it
 
 	static const ComponentType ctype = ComponentType::cRenderData;
 
@@ -29,7 +29,7 @@ private:
 	IBO* ibo_ = nullptr;
 
 	Texture* texture_ = nullptr;
-	ShaderPtr shader_ = nullptr;
+	class Shader* shader_ = nullptr;
 	bool isTextured_ = false;
 	glm::vec4 color_ = glm::vec4(1.f); // if not textured
 

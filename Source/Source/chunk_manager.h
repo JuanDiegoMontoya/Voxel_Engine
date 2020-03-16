@@ -2,7 +2,8 @@
 #include "chunk.h"
 #include "block.h"
 #include "camera.h"
-#include "pipeline.h"
+#include <Pipeline.h>
+#include "Renderer.h"
 
 #include <set>
 #include <unordered_set>
@@ -10,7 +11,6 @@
 #include <stack>
 
 typedef struct Chunk* ChunkPtr;
-typedef class Level* LevelPtr;
 //class ChunkLoadManager;
 
 namespace Utils
@@ -68,7 +68,7 @@ public:
 	float GetUnloadLeniency() const { return unloadLeniency_; }
 
 	// setters
-	void SetCurrentLevel(LevelPtr level) { level_ = level; }
+	//void SetCurrentLevel(LevelPtr level) { level_ = level; }
 	void SetLoadDistance(float d) { loadDistance_ = d; }
 	void SetUnloadLeniency(float d) { unloadLeniency_ = d; }
 
@@ -125,7 +125,7 @@ public: // TODO: TEMPORARY
 	// vars
 	float loadDistance_;
 	float unloadLeniency_;
-	std::vector<ChunkPtr> updatedChunks_;
-	std::vector<ChunkPtr> genChunkList_;
-	LevelPtr level_ = nullptr;
+	//std::vector<ChunkPtr> updatedChunks_;
+	//std::vector<ChunkPtr> genChunkList_;
+	//LevelPtr level_ = nullptr;
 };

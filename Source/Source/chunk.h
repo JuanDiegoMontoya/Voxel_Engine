@@ -221,7 +221,7 @@ public:
 
 	friend class WorldGen;
 	friend class ChunkManager;
-	friend class Renderer;
+	//friend class Renderer;
 
 private:
 	enum

@@ -475,7 +475,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos)
 
 TerrainType WorldGen::GetTerrainType(glm::ivec3 wpos)
 {
-	// TODO: special cases of height e.g. being very deep (underworld, etc.) or being high (sky islands)
+	// TODO: add special cases of height e.g. being very deep (underworld, etc.) or being high (sky islands)
 
 	// the order of these gotta be in the order in which they're generated
 	double pVal = plainsSelect.GetValue(wpos.x, 0, wpos.z);

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "component.h"
-#include "level.h"
+#include "World.h"
 #include "game_object.h"
 
 GameObject::GameObject()

@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "camera.h"
+#include <camera.h>
 #include "pipeline.h"
-#include "render.h"
+#include "Renderer.h"
 #include "settings.h"
 #include "directional_light.h"
 
@@ -15,12 +15,12 @@ void DirLight::Update(const glm::vec3& pos, const glm::vec3& dir)
 	tPos_ = pos;
 	tDir_ = dir;
 
-	view_ = glm::lookAt(tPos_, -glm::normalize(Render::GetCamera()->GetPos()), glm::vec3(0.0, 1.0, 0.0));
+	view_ = glm::lookAt(tPos_, -glm::normalize(Renderer::GetPipeline()->GetCamera(0)->GetPos()), glm::vec3(0.0, 1.0, 0.0));
 	//view_ = glm::lookAt(-tPos_, glm::vec3(0), glm::vec3(0.0, 1.0, 0.0));
 
 	// equally spaced cascade ends (may change in future)
-	float persNear = Render::GetCamera()->GetNear();
-	float persFar = Render::GetCamera()->GetFar();
+	float persNear = Renderer::GetPipeline()->GetCamera(0)->GetNear();
+	float persFar = Renderer::GetPipeline()->GetCamera(0)->GetFar();
 	cascadeEnds_[0] = persNear;
 	cascadeEnds_[1] = 25.f;
 	cascadeEnds_[2] = 70.f;
@@ -97,7 +97,7 @@ void DirLight::bindForReading()
 void DirLight::calcOrthoProjs(const glm::mat4& vView)
 {
 	// Get the inverse of the view transform
-	glm::mat4 Cam = Render::GetCamera()->GetView();
+	glm::mat4 Cam = Renderer::GetPipeline()->GetCamera(0)->GetView();
 	//glm::mat4 Cam = glm::lookAt(tPos_, Render::GetCamera()->GetDir(), glm::vec3(0, 1, 0));
 	glm::mat4 CamInv = glm::inverse(Cam);
 
@@ -106,7 +106,7 @@ void DirLight::calcOrthoProjs(const glm::mat4& vView)
 	glm::mat4 LightM = vView;// *glm::translate(glm::mat4(1), tPos_);
 
 	float ar = (float)Settings::Graphics.screenX / (float)Settings::Graphics.screenY;
-	float fov = Render::GetCamera()->GetFov(); // degrees
+	float fov = Renderer::GetPipeline()->GetCamera(0)->GetFov(); // degrees
 	float tanHalfHFOV = glm::tan(glm::radians(fov / 2.0f)) / ar;
 	float tanHalfVFOV = glm::tan(glm::radians((fov * ar) / 2.0f)) / ar;
 
@@ -178,6 +178,6 @@ void DirLight::calcPersProjs()
 	*/
 	for (unsigned i = 0; i < shadowCascades_; i++)
 	{
-		shadowOrthoProjMtxs_[i] = glm::perspective(glm::radians(80.f), 1920.f / 1080.f, cascadeEnds_[i], cascadeEnds_[i + 1]) * Render::GetCamera()->GetView();
+		shadowOrthoProjMtxs_[i] = glm::perspective(glm::radians(80.f), 1920.f / 1080.f, cascadeEnds_[i], cascadeEnds_[i + 1]) * Renderer::GetPipeline()->GetCamera(0)->GetView();
 	}
 }

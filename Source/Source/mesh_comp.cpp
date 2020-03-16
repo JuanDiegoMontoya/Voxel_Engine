@@ -17,5 +17,5 @@ MeshComp::~MeshComp()
 
 Component* MeshComp::Clone() const
 {
-	return new MeshComp(mesh->vertices, mesh->indices, mesh->textures);
+	return new MeshComp(mesh->GetVertices(), mesh->GetIndices(), mesh->GetTextures());
 }

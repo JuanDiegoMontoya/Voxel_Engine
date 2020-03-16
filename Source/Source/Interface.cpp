@@ -10,9 +10,23 @@
 #include "pick.h"
 #include "settings.h"
 #include "ImGuiBonus.h"
+#include <input.h>
 
 namespace Interface
 {
+	void Init()
+	{
+		Engine::PushRenderCallback(DrawImGui, 1);
+		Engine::PushRenderCallback(Update, 2);
+	}
+
+	void Update()
+	{
+		if (Input::Keyboard().pressed[GLFW_KEY_GRAVE_ACCENT])
+			Interface::activeCursor = !Interface::activeCursor;
+		glfwSetInputMode(Engine::GetWindow(), GLFW_CURSOR, Interface::activeCursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+	}
+
 	void DrawImGui()
 	{
 		{
@@ -66,8 +80,8 @@ namespace Interface
 				std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
 					[&](auto& p)
 				{
-					float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
-					if (p.second && dist > chunkManager_.loadDistance_ + chunkManager_.unloadLeniency_)
+					float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Renderer::GetPipeline()->GetCamera(0)->GetPos());
+					if (p.second && dist > World::chunkManager_.loadDistance_ + World::chunkManager_.unloadLeniency_)
 					{
 						deleteList.push_back(p.second);
 						p.second = nullptr;

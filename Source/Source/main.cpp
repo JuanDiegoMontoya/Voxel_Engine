@@ -1,33 +1,20 @@
 #include "stdafx.h"
 
-#include "sys_window.h"
-#include "input.h"
-#include "pipeline.h"
-#include "game.h"
-#include "imgui_impl.h"
-
-GLFWwindow* win = nullptr;
+#include "Renderer.h"
+#include <Engine.h>
+#include "Interface.h"
 
 int main()
 {
-	GLFWwindow* window = init_glfw_context();
-	win = window;
+	EngineConfig cfg;
+	cfg.verticalSync = true;
+	Engine::Init(cfg);
+	Renderer::Init();
+	Interface::Init();
 
-	ImGui_Impl::Init(window);
+	Engine::Run();
 
-	glfwMakeContextCurrent(window);
-	set_glfw_callbacks(window);
-
-	// 1 = vsync; 0 = fast fps
-	glfwSwapInterval(1);
-
-	Render::Init();
-
-	Game game(window);
-	game.Run();
-
-	ImGui_Impl::Cleanup();
-	glfwTerminate();
+	Engine::Cleanup();
 
 	return 0;
 }

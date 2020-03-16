@@ -28,7 +28,7 @@ namespace World
 	void GenerateBlockAtCheap(glm::ivec3 wpos, Block b);
 	Block GetBlockAt(glm::ivec3 wpos);
 
-	inline void SetBgColor(glm::vec3 c) { bgColor_ = c; }
+	//inline void SetBgColor(glm::vec3 c) { World::bgColor_ = c; }
 
 	//inline GamePtr Game() { return game_; }
 	//inline const std::vector<GameObjectPtr>& GetObjects() const { return objects_; }

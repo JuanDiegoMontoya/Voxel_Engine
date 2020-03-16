@@ -264,12 +264,6 @@
     <ClCompile Include="main.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="misc_utils.cpp">
-      <Filter>Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="math_utils.cpp">
-      <Filter>Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="vendor\imgui\imgui.cpp">
       <Filter>vendor</Filter>
     </ClCompile>
@@ -308,9 +302,6 @@
     </ClCompile>
     <ClCompile Include="chunk.cpp">
       <Filter>Voxel Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="frustum.cpp">
-      <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="sun.cpp">
       <Filter>Graphics</Filter>

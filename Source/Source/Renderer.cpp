@@ -14,6 +14,7 @@
 
 #include "Renderer.h"
 #include <Vertices.h>
+#include <Engine.h>
 
 #define VISUALIZE_MAPS 0
 
@@ -24,6 +25,7 @@ namespace Renderer
 	// private variables
 	namespace
 	{
+		Pipeline pipeline;
 	}
 
 
@@ -81,6 +83,36 @@ namespace Renderer
 	void CompileShaders()
 	{
 		// initialize all of the shaders that will be used
+		Shader::shaders["postprocess"] = new Shader("postprocess.vs", "postprocess.fs");
+		Shader::shaders["flat"] = new Shader("flat_color_instanced.vs", "flat_color_instanced.fs");
+		Shader::shaders["chunk"] = new Shader("chunk_flat.vs", "chunk_flat.fs");
+		Shader::shaders["sun"] = new Shader("flat_sun.vs", "flat_sun.fs");
+		Shader::shaders["shadow"] = new Shader("shadow.vs", "shadow.fs");
+		Shader::shaders["axis"] = new Shader("axis.vs", "axis.fs");
+		Shader::shaders["flat_color"] = new Shader("flat_color.vs", "flat_color.fs");
+
+		Shader::shaders["chunk_water"] = new Shader("chunk_water.vs", "chunk_water.fs");
+		Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
+		Shader::shaders["chunk_geometry"] = new Shader("chunk_gBuffer.vs", "chunk_gBuffer.fs");
+		std::vector<int> values = { 0, 1, 2 };
+		//std::vector<int> values = { 1, 2, 3 };
+		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[0]", 0);
+		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[1]", 1);
+		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[2]", 2);
+		Shader::shaders["chunk_shaded"]->Use();
+		Shader::shaders["chunk_shaded"]->setIntArray("shadowMap", values);
+		Shader::shaders["chunk_water"]->Use();
+		Shader::shaders["chunk_water"]->setIntArray("shadowMap", values);
+		Shader::shaders["chunk_water"]->setInt("ssr_positions", 3);
+		//Shader::shaders["chunk_water"]->setInt("ssr_normals", 4);
+		Shader::shaders["chunk_water"]->setInt("ssr_albedoSpec", 5);
+		//Shader::shaders["chunk_water"]->setInt("ssr_depth", 6);
+
+
+		Shader::shaders["debug_map3"] = new Shader("debug_map.vs", "debug_map.fs");
+		Shader::shaders["debug_shadow"] = new Shader("debug_shadow.vs", "debug_shadow.fs");
+		Shader::shaders["debug_shadow"]->Use();
+		//Shader::shaders["debug_shadow"]->setInt("depthMap", 1);
 	}
 
 
@@ -115,38 +147,6 @@ namespace Renderer
 		glCullFace(GL_BACK);
 		glFrontFace(GL_CCW);
 
-		// initialize all of the shaders that will be used
-		Shader::shaders["postprocess"] = new Shader("postprocess.vs", "postprocess.fs");
-		Shader::shaders["flat"] = new Shader("flat_color_instanced.vs", "flat_color_instanced.fs");
-		Shader::shaders["chunk"] = new Shader("chunk_flat.vs", "chunk_flat.fs");
-		Shader::shaders["sun"] = new Shader("flat_sun.vs", "flat_sun.fs");
-		Shader::shaders["shadow"] = new Shader("shadow.vs", "shadow.fs");
-		Shader::shaders["axis"] = new Shader("axis.vs", "axis.fs");
-		Shader::shaders["flat_color"] = new Shader("flat_color.vs", "flat_color.fs");
-
-		Shader::shaders["chunk_water"] = new Shader("chunk_water.vs", "chunk_water.fs");
-		Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
-		Shader::shaders["chunk_geometry"] = new Shader("chunk_gBuffer.vs", "chunk_gBuffer.fs");
-		std::vector<int> values = { 0, 1, 2 };
-		//std::vector<int> values = { 1, 2, 3 };
-		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[0]", 0);
-		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[1]", 1);
-		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[2]", 2);
-		Shader::shaders["chunk_shaded"]->Use();
-		Shader::shaders["chunk_shaded"]->setIntArray("shadowMap", values);
-		Shader::shaders["chunk_water"]->Use();
-		Shader::shaders["chunk_water"]->setIntArray("shadowMap", values);
-		Shader::shaders["chunk_water"]->setInt("ssr_positions", 3);
-		//Shader::shaders["chunk_water"]->setInt("ssr_normals", 4);
-		Shader::shaders["chunk_water"]->setInt("ssr_albedoSpec", 5);
-		//Shader::shaders["chunk_water"]->setInt("ssr_depth", 6);
-
-
-		Shader::shaders["debug_map3"] = new Shader("debug_map.vs", "debug_map.fs");
-		Shader::shaders["debug_shadow"] = new Shader("debug_shadow.vs", "debug_shadow.fs");
-		Shader::shaders["debug_shadow"]->Use();
-		//Shader::shaders["debug_shadow"]->setInt("depthMap", 1);
-
 		initDeferredBuffers();
 		initPPBuffers();
 
@@ -159,6 +159,9 @@ namespace Renderer
 			if (!strcmp(extension, "GL_NVX_gpu_memory_info"))
 				nvUsageEnabled = true;
 		}
+
+		Engine::PushRenderCallback(DrawAll, 0);
+		//Engine::PushUpdateCallback(Update, 0);
 	}
 
 	// draws everything at once, I guess?

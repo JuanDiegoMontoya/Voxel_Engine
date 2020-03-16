@@ -7,6 +7,7 @@ class Shader;
 class DirLight;
 class Sun;
 class ChunkManager;
+class Pipeline;
 typedef struct Chunk* ChunkPtr;
 typedef std::function<void()> DrawCB;
 typedef std::function<void(const glm::mat4&)> ModelCB;
@@ -25,7 +26,7 @@ namespace Renderer
 	void SetDirLight(DirLight* d);
 	void SetSun(Sun* s);
 
-	static void DrawCube();
+	void DrawCube();
 
 
 	// broad-phase rendering
@@ -57,7 +58,7 @@ namespace Renderer
 	void initPPBuffers();
 	void postProcess();
 
-	class Pipeline* GetPipeline();
+	Pipeline* GetPipeline();
 
 
 	/*###################################################
@@ -74,7 +75,6 @@ namespace Renderer
 	inline bool ppEdgeDetection = false;
 	inline bool ppChromaticAberration = false;
 
-	inline Pipeline pipeline;
 	inline ChunkManager* chunkManager_;
 
 

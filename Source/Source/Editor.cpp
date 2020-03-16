@@ -3,11 +3,9 @@
 #include "input.h"
 #include "block.h"
 #include "camera.h"
-#include "pipeline.h"
 #include "pick.h"
 #include "Editor.h"
 #include "shader.h"
-#include "Renderer.h"
 #include "prefab.h"
 #include "generation.h"
 
@@ -17,6 +15,8 @@
 #include <cereal/types/vector.hpp>
 #include <cereal/types/utility.hpp>
 #include <cereal/archives/binary.hpp>
+#include <Pipeline.h>
+#include "Renderer.h"
 
 namespace Editor
 {

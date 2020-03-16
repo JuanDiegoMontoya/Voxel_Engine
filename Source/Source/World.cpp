@@ -83,12 +83,6 @@ namespace World
 	// update every object in the level
 	void World::Update(float dt)
 	{
-		if (Input::Keyboard().pressed[GLFW_KEY_GRAVE_ACCENT])
-		{
-			Interface::activeCursor = !Interface::activeCursor;
-		}
-		glfwSetInputMode(Engine::GetWindow(), GLFW_CURSOR, Interface::activeCursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-
 		// update each camera
 		if (!Interface::activeCursor)
 			for (auto& cam : Renderer::GetPipeline()->GetAllCameras())

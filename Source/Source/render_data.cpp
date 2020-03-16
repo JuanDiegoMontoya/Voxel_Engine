@@ -1,13 +1,14 @@
 #include "stdafx.h"
 #include "component.h"
-#include "ibo.h"
-#include "vbo.h"
-#include "vao.h"
-#include "texture.h"
-#include "pipeline.h"
-#include "shader.h"
+#include <ibo.h>
+#include <vbo.h>
+#include <vao.h>
+#include <texture.h>
+#include <Pipeline.h>
 
+#include <shader.h>
 #include "render_data.h"
+#include <Vertices.h>
 
 Component * RenderData::Clone() const
 {
@@ -27,7 +28,7 @@ void RenderData::UseUntexturedBlockData()
 	if (ibo_)
 		delete ibo_;
 
-	vbo_ = new VBO(Render::cube_tex_vertices, sizeof(Render::cube_tex_vertices));
+	vbo_ = new VBO(Vertices::cube_tex, sizeof(Vertices::cube_tex));
 	vao_ = new VAO();
 	VBOlayout layout;
 	layout.Push<GLfloat>(3);

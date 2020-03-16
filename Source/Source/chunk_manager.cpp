@@ -4,7 +4,7 @@
 #include <mutex>
 #include "chunk.h"
 #include "block.h"
-#include "level.h"
+#include "World.h"
 #include "chunk_manager.h"
 #include "generation.h"
 #include "pipeline.h"
@@ -302,8 +302,8 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 }
 
 
-// TODO: make this a Safe & Reliable Operation(tm) \
-   rather than having it cause crashes often
+// TODO: make this a Safe & Reliable Operation(tm)
+//   rather than having it cause crashes often
 void ChunkManager::removeFarChunks()
 {
 	// delete chunks far from the camera (past leniency range)
@@ -319,7 +319,7 @@ void ChunkManager::removeFarChunks()
 			[&](auto& p)->bool
 		{
 			// range is distance from camera to corner of chunk (corner is ok)
-			float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
+			float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Renderer::GetPipeline()->GetCamera(0)->GetPos());
 			if (p.second && dist > loadDistance_ + unloadLeniency_)
 			{
 				deleteList.push_back(p.second);
@@ -338,7 +338,7 @@ void ChunkManager::removeFarChunks()
 	//	Chunk::chunks.end(),
 	//	[&](auto& p)
 	//{
-	//	float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
+	//	float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Renderer::GetPipeline()->GetCamera(0)->GetPos());
 	//	if (p.second)
 	//	{
 	//		if (dist > loadDistance_ + unloadLeniency_)
@@ -359,7 +359,7 @@ void ChunkManager::createNearbyChunks()
 		Chunk::chunks.end(),
 		[&](auto& p)
 	{
-		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Render::GetCamera()->GetPos());
+		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Renderer::GetPipeline()->GetCamera(0)->GetPos());
 		// generate null chunks within distance
 		if (!p.second && dist <= loadDistance_)
 		{
