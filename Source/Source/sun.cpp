@@ -45,6 +45,11 @@ void Sun::Update()
 	dirLight_.Update(pos_, dir_);
 }
 
+//void Sun::Init()
+//{
+//	dirLight_ = new DirLight();
+//}
+
 void Sun::Render()
 {
 	glClear(GL_DEPTH_BUFFER_BIT);

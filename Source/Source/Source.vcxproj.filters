@@ -253,6 +253,15 @@
     <ClInclude Include="Engine\Source\Frustum.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Source\load_image.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\mesh.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\texture.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -409,6 +418,15 @@
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Source\misc_utils.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\load_image.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\mesh.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\texture.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
   </ItemGroup>

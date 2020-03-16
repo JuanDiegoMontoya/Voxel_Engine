@@ -125,6 +125,7 @@ public: // TODO: TEMPORARY
 	// vars
 	float loadDistance_;
 	float unloadLeniency_;
+	bool shutdownThreads = false;
 	//std::vector<ChunkPtr> updatedChunks_;
 	//std::vector<ChunkPtr> genChunkList_;
 	//LevelPtr level_ = nullptr;

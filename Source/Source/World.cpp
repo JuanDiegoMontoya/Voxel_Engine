@@ -68,6 +68,9 @@ namespace World
 
 		duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
 		std::cout << benchmark_duration_.count() << std::endl;
+		sun_ = new Sun();
+
+		Engine::PushUpdateCallback(Update, 0);
 	}
 
 	void Shutdown()
@@ -81,23 +84,23 @@ namespace World
 
 
 	// update every object in the level
-	void World::Update(float dt)
+	void World::Update()
 	{
 		// update each camera
 		if (!Interface::activeCursor)
 			for (auto& cam : Renderer::GetPipeline()->GetAllCameras())
-				cam->Update(dt);
+				cam->Update(Engine::GetDT());
 
 		if (doCollisionTick)
 			CheckCollision();
 
 		chunkManager_.Update();
 		CheckInteraction();
-		sun_.Update();
-		Renderer::SetDirLight(&sun_.GetDirLight());
-		Renderer::SetSun(&sun_);
-
-		Renderer::DrawAll();
+		sun_->Update();
+		Renderer::SetDirLight(&sun_->GetDirLight());
+		Renderer::SetSun(sun_);
+		
+		//Renderer::DrawAll();
 		Editor::Update();
 		hud_.Update();
 		//DrawImGui();

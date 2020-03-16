@@ -1,8 +1,9 @@
 #include "stdafx.h"
 
-#include "Renderer.h"
 #include <Engine.h>
 #include "Interface.h"
+#include "World.h"
+#include "Renderer.h"
 
 int main()
 {
@@ -11,6 +12,7 @@ int main()
 	Engine::Init(cfg);
 	Renderer::Init();
 	Interface::Init();
+	World::Init();
 
 	Engine::Run();
 

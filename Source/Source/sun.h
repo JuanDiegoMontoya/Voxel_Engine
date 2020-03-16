@@ -17,6 +17,7 @@ public:
 	Sun();
 
 	void Update();
+	//void Init();
 	void Render();
 
 	// getters

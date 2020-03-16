@@ -15,6 +15,7 @@
 #include "Renderer.h"
 #include <Vertices.h>
 #include <Engine.h>
+#include "World.h"
 
 #define VISUALIZE_MAPS 0
 
@@ -160,6 +161,9 @@ namespace Renderer
 				nvUsageEnabled = true;
 		}
 
+		CompileShaders();
+		//pipeline.AddCamera()
+
 		Engine::PushRenderCallback(DrawAll, 0);
 		//Engine::PushUpdateCallback(Update, 0);
 	}
@@ -169,6 +173,8 @@ namespace Renderer
 	void DrawAll()
 	{
 		PERF_BENCHMARK_START;
+
+		Clear();
 		glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
 		//std::cout << "RENDER" << std::endl;
@@ -196,7 +202,8 @@ namespace Renderer
 
 	void Clear()
 	{
-		glClearColor(0, 0, 0, 1.f);
+		auto cc = World::bgColor_;
+		glClearColor(cc.r, cc.g, cc.b, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
@@ -380,8 +387,8 @@ namespace Renderer
 			currShader->setVec3("viewPos",GetPipeline()->GetCamera(0)->GetPos());
 			currShader->setVec3("lightPos", activeDirLight_->GetPos());
 			//currShader->setVec3("ratios", ratios);
-			float loadD = chunkManager_->GetLoadDistance();
-			float loadL = chunkManager_->GetUnloadLeniency();
+			float loadD = World::chunkManager_.GetLoadDistance();
+			float loadL = World::chunkManager_.GetUnloadLeniency();
 			// undo gamma correction
 			static glm::vec3 skyColor(
 				glm::pow(.529f, 2.2f),
@@ -471,8 +478,8 @@ namespace Renderer
 		currShader->setBool("computeShadow", renderShadows);
 
 		// fog
-		float loadD = chunkManager_->GetLoadDistance();
-		float loadL = chunkManager_->GetUnloadLeniency();
+		float loadD = World::chunkManager_.GetLoadDistance();
+		float loadL = World::chunkManager_.GetUnloadLeniency();
 		// undo gamma correction
 		static glm::vec3 skyColor(
 			glm::pow(.529f, 2.2f),

@@ -18,7 +18,7 @@ namespace World
 {
 	void Init();
 	void Shutdown();
-	void Update(float dt);
+	void Update();
 	void CheckCollision();
 	void CheckInteraction();
 
@@ -54,7 +54,7 @@ namespace World
 	inline std::vector<GameObjectPtr> objects_; // all game objects in the scene
 	inline glm::vec3 bgColor_ = glm::vec3(.529f, .808f, .922f); // sky blue
 	
-	inline Sun sun_;
+	inline Sun* sun_;
 	inline bool doCollisionTick = true;
 	// debug
 	inline int debugCascadeQuad = 0;

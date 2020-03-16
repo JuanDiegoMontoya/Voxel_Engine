@@ -189,7 +189,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClCompile>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -266,7 +266,15 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="Engine\Source\load_image.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="Engine\Source\math_utils.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\mesh.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -283,6 +291,10 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\sys_window.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\texture.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -390,6 +402,8 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="block.h" />
     <ClInclude Include="Engine\Source\camera.h" />
     <ClInclude Include="Engine\Source\Frustum.h" />
+    <ClInclude Include="Engine\Source\load_image.h" />
+    <ClInclude Include="Engine\Source\mesh.h" />
     <ClInclude Include="Engine\Source\Shapes.h" />
     <ClInclude Include="chunk.h" />
     <ClInclude Include="chunk_manager.h" />
@@ -410,6 +424,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="Engine\Source\Pipeline.h" />
     <ClInclude Include="Engine\Source\shader.h" />
     <ClInclude Include="Engine\Source\sys_window.h" />
+    <ClInclude Include="Engine\Source\texture.h" />
     <ClInclude Include="Engine\Source\utilities.h" />
     <ClInclude Include="Engine\Source\vao.h" />
     <ClInclude Include="Engine\Source\vbo.h" />

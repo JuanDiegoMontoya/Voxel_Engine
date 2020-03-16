@@ -9,7 +9,7 @@
 // perpetual thread task to generate blocks in new chunks
 void ChunkManager::chunk_generator_thread_task()
 {
-	while (1)
+	while (!shutdownThreads)
 	{
 		//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
 		std::unordered_set<ChunkPtr> temp;
@@ -39,7 +39,7 @@ void ChunkManager::chunk_generator_thread_task()
 // perpetual thread task to generate meshes for updated chunks
 void ChunkManager::chunk_mesher_thread_task()
 {
-	while (1)
+	while (!shutdownThreads)
 	{
 		//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> temp;
 		//std::set<ChunkPtr> temp;

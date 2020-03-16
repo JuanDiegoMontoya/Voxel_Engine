@@ -75,7 +75,7 @@ namespace Renderer
 	inline bool ppEdgeDetection = false;
 	inline bool ppChromaticAberration = false;
 
-	inline ChunkManager* chunkManager_;
+	//inline ChunkManager* chunkManager_;
 
 
 	/*###################################################

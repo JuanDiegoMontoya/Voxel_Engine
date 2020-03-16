@@ -32,19 +32,19 @@ namespace Interface
 		{
 			ImGui::Begin("Sun");
 
-			glm::vec3 pos = World::sun_.GetPos();
+			glm::vec3 pos = World::sun_->GetPos();
 			if (ImGui::DragFloat3("Sun Pos", &pos[0], 1, -500, 500, "%.0f"))
-				World::sun_.SetPos(pos);
+				World::sun_->SetPos(pos);
 
-			glm::vec3 dir = World::sun_.GetDir();
+			glm::vec3 dir = World::sun_->GetDir();
 			if (ImGui::SliderFloat3("Sun Dir", &dir[0], -1, 1, "%.3f"))
-				World::sun_.SetDir(dir);
+				World::sun_->SetDir(dir);
 
-			ImGui::Checkbox("Orbit Pos", &World::sun_.orbits);
+			ImGui::Checkbox("Orbit Pos", &World::sun_->orbits);
 			ImGui::SameLine();
-			ImGui::DragFloat3("##Orbitee", &World::sun_.orbitPos[0], 2.f, -500, 500, "%.0f");
-			ImGui::Checkbox("Follow Cam", &World::sun_.followCam);
-			ImGui::SliderFloat("Follow Distance", &World::sun_.followDist, 0, 500, "%.0f");
+			ImGui::DragFloat3("##Orbitee", &World::sun_->orbitPos[0], 2.f, -500, 500, "%.0f");
+			ImGui::Checkbox("Follow Cam", &World::sun_->followCam);
+			ImGui::SliderFloat("Follow Distance", &World::sun_->followDist, 0, 500, "%.0f");
 			ImGui::Checkbox("Collision Enabled", &World::doCollisionTick);
 
 			bool val = Renderer::GetPipeline()->GetCamera(0)->GetType() == CameraType::kPhysicsCam;
@@ -53,11 +53,11 @@ namespace Interface
 				Renderer::GetPipeline()->GetCamera(0)->SetType(val ? CameraType::kPhysicsCam : CameraType::kControlCam);
 			}
 
-			//int shadow = World::sun_.GetShadowSize().x;
+			//int shadow = World::sun_->GetShadowSize().x;
 			//if (ImGui::InputInt("Shadow Scale", &shadow, 1024, 1024))
 			//{
 			//	glm::clamp(shadow, 0, 16384);
-			//	World::sun_.SetShadowSize(glm::ivec2(shadow));
+			//	World::sun_->SetShadowSize(glm::ivec2(shadow));
 			//}
 			if (ImGui::Button("Recompile Water Shader"))
 			{

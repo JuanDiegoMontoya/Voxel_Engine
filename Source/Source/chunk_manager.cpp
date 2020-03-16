@@ -30,10 +30,17 @@ ChunkManager::ChunkManager()
 
 ChunkManager::~ChunkManager()
 {
+	shutdownThreads = true;
 	for (auto t_ptr : chunk_generator_threads_)
+	{
+		t_ptr->join();
 		delete t_ptr;
+	}
 	for (auto t_ptr : chunk_mesher_threads_)
+	{
+		t_ptr->join();
 		delete t_ptr;
+	}
 }
 
 
