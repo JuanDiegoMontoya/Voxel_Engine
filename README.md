@@ -37,7 +37,7 @@ Performance was tested on this system for reference:
 - Directional environment lighting
 - Deferred rendering pipeline
 - Post processing effects
-- (*WIP*) Ray traced screen space water reflections
+- (*WIP*) Screen space water reflections
 - (*WIP*) Cascaded shadow maps
 
 ### Other
