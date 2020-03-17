@@ -44,7 +44,9 @@ namespace World
 	{
 		//cameras_.push_back(new Camera(kControlCam));
 		//cameras_.push_back(new Camera(CameraType::kControlCam));
-		Renderer::GetPipeline()->AddCamera(new Camera(CameraType::kControlCam));
+		auto cam = new Camera(CameraType::kControlCam);
+		cam->SetPos({ 0, 5, 0 });
+		Renderer::GetPipeline()->AddCamera(cam);
 
 		//config = std::make_shared<btDefaultCollisionConfiguration>();
 		//dispatcher = std::make_shared<btCollisionDispatcher>(config.get());
