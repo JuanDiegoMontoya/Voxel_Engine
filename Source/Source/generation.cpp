@@ -428,7 +428,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos)
 					{
 						for (const auto& p : curBiome.surfaceFeatures)
 						{
-							if (Utils::get_random(0, 1) < p.first && actualHeight == y)
+							// generate each prefab if RNG is met and the heightmap = this Y
+							if (Utils::get_random_svr(wpos, 0, 1) < p.first && actualHeight == y)
 								GeneratePrefab(PrefabManager::GetPrefab(p.second), wpos + glm::ivec3(0, 1, 0));
 						}
 					}
@@ -441,7 +442,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos)
 				if (worldY >= -30 && worldY < actualHeight - 3)
 				{
 					World::GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), BlockType::bStone);
-					if (Utils::get_random(0, 1) > .99999f)
+					if (Utils::get_random_svr(wpos, 0, 1) < 1.0f / 100000.0f) // one in ten thousand chance per block
 						GeneratePrefab(PrefabManager::GetPrefab(PrefabName::DungeonSmall), wpos);
 				}
 			}
@@ -490,6 +491,7 @@ TerrainType WorldGen::GetTerrainType(glm::ivec3 wpos)
 
 double WorldGen::GetTemperature(double x, double y, double z)
 {
+	// height affects temperature
 	return temperature.GetValue(x, z) - y * .007;
 }
 

@@ -63,9 +63,9 @@ void BiomeManager::InitializeBiomes()
 	{
 		Biome tundra(0, -.5f, TerrainType::tPlains, BlockType::bSnow);
 		tundra.name = "tundra";
-		tundra.surfaceFeatures.push_back({ .0001, PrefabName::BoulderA });
-		tundra.surfaceFeatures.push_back({ .0001, PrefabName::BoulderB });
-		tundra.surfaceFeatures.push_back({ .0001, PrefabName::BoulderC });
+		tundra.surfaceFeatures.push_back({ .0001f, PrefabName::BoulderA });
+		tundra.surfaceFeatures.push_back({ .0001f, PrefabName::BoulderB });
+		tundra.surfaceFeatures.push_back({ .0001f, PrefabName::BoulderC });
 		//tundra.surfaceFeatures.push_back({ .001f, Prefab::BorealTree });
 		registerBiome(tundra);
 	}

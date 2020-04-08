@@ -19,7 +19,7 @@ struct Biome
 	// when to spawn this biome
 	float humidity_avg; // -1 to 1
 	float temp_avg;			// -1 to 1
-	TerrainType terrain;
+	TerrainType terrain; // terrain type this biome will spawn on
 
 	// % chance and name of prefab to spawn
 	BlockType surfaceCover; // sand, dirt, snow, etc.
