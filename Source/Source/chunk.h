@@ -296,6 +296,7 @@ private:
 	VBO* colors_ = nullptr;
 	VBO* speculars_ = nullptr;
 	VBO* sunlight_ = nullptr;
+	VBO* blocklight_ = nullptr;
 	IBO* wibo_ = nullptr;
 	VAO* wvao_ = nullptr;
 	VBO* wpositions_ = nullptr;
@@ -303,6 +304,7 @@ private:
 	VBO* wcolors_ = nullptr;
 	VBO* wspeculars_ = nullptr;
 	VBO* wsunlight_ = nullptr;
+	VBO* wblocklight_ = nullptr;
 	// vertex data (held until buffers are sent to GPU)
 	std::vector<GLuint> tIndices;
 	std::vector<glm::vec3> tPositions;
@@ -310,12 +312,14 @@ private:
 	std::vector<glm::vec4> tColors;
 	std::vector<float> tSpeculars;
 	std::vector<float> tSunlight;
+	std::vector<GLushort> tBlockLight;
 	std::vector<GLuint> wtIndices;
 	std::vector<glm::vec3> wtPositions;
 	std::vector<glm::vec3> wtNormals;
 	std::vector<glm::vec4> wtColors;
 	std::vector<float>		 wtSpeculars;
 	std::vector<float> wtSunlight;
+	std::vector<GLushort> wtBlockLight;
 	GLsizei wvertexCount_ = 0;// number of transparent block vertices
 	GLsizei vertexCount_ = 0; // number of opaque block vertices
 	GLsizei windexCount_ = 0;// number of transparent block vertices

@@ -135,6 +135,8 @@ void Chunk::BuildBuffers()
 			delete ibo_;
 		if (sunlight_)
 			delete sunlight_;
+		if (blocklight_)
+			delete blocklight_;
 
 		ibo_ = new IBO(&tIndices[0], tIndices.size());
 
@@ -168,6 +170,12 @@ void Chunk::BuildBuffers()
 		glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
 		glEnableVertexAttribArray(4);
 
+		// block lighting
+		blocklight_ = new VBO(&tBlockLight[0], sizeof(GLubyte) * tBlockLight.size());
+		blocklight_->Bind();
+		glVertexAttribPointer(5, 2, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(GLubyte), (void*)0);
+		glEnableVertexAttribArray(5);
+
 		vao_->Unbind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -180,6 +188,7 @@ void Chunk::BuildBuffers()
 		tSpeculars.clear();
 		tIndices.clear();
 		tSunlight.clear();
+		tBlockLight.clear();
 	}
 
 	// epic copypasta
@@ -199,6 +208,8 @@ void Chunk::BuildBuffers()
 			delete wibo_;
 		if (wsunlight_)
 			delete wsunlight_;
+		if (wblocklight_)
+			delete wblocklight_;
 
 		wibo_ = new IBO(&wtIndices[0], wtIndices.size());
 
@@ -226,10 +237,17 @@ void Chunk::BuildBuffers()
 		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
 		glEnableVertexAttribArray(3);
 
+		// sunlight
 		wsunlight_ = new VBO(&wtSunlight[0], sizeof(float) * wtSunlight.size());
 		wsunlight_->Bind();
 		glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
 		glEnableVertexAttribArray(4);
+
+		// block lighting
+		wblocklight_ = new VBO(&wtBlockLight[0], sizeof(GLubyte) * wtBlockLight.size());
+		wblocklight_->Bind();
+		glVertexAttribPointer(5, 2, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(GLubyte), (void*)0);
+		glEnableVertexAttribArray(5);
 
 		wvao_->Unbind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -242,6 +260,7 @@ void Chunk::BuildBuffers()
 		wtSpeculars.clear();
 		wtIndices.clear();
 		wtSunlight.clear();
+		wtBlockLight.clear();
 	}
 }
 
@@ -378,12 +397,14 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 			wtNormals.push_back(faces[face]);
 			wtSpeculars.push_back(shiny);
 			wtSunlight.push_back(sun);
+			wtBlockLight.push_back(light.Raw());
 		}
 		else
 		{
 			tNormals.push_back(faces[face]);
 			tSpeculars.push_back(shiny);
 			tSunlight.push_back(sun);
+			tBlockLight.push_back(light.Raw());
 		}
 	}
 
