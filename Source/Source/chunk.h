@@ -311,15 +311,15 @@ private:
 	std::vector<glm::vec3> tNormals;
 	std::vector<glm::vec4> tColors;
 	std::vector<float> tSpeculars;
-	std::vector<float> tSunlight;
-	std::vector<GLushort> tBlockLight;
+	//std::vector<float> tSunlight;
+	std::vector<GLint> tLighting;
 	std::vector<GLuint> wtIndices;
 	std::vector<glm::vec3> wtPositions;
 	std::vector<glm::vec3> wtNormals;
 	std::vector<glm::vec4> wtColors;
 	std::vector<float>		 wtSpeculars;
-	std::vector<float> wtSunlight;
-	std::vector<GLushort> wtBlockLight;
+	//std::vector<float> wtSunlight;
+	std::vector<GLint> wtLighting;
 	GLsizei wvertexCount_ = 0;// number of transparent block vertices
 	GLsizei vertexCount_ = 0; // number of opaque block vertices
 	GLsizei windexCount_ = 0;// number of transparent block vertices

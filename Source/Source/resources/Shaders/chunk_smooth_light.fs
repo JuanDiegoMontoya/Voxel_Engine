@@ -14,7 +14,8 @@ const int NUM_CASCADES = 3;
 in vec4 vColor; // since there will be no textures, this is the diffuse component
 in vec3 vNormal;
 in float vShininess;
-in float vSunlight;
+//in float vSunlight;
+in lowp vec4 vLighting;
 in vec3 vPos;
 in vec4 FragPosLightSpace[NUM_CASCADES];
 in float ClipSpacePosZ;
@@ -134,6 +135,8 @@ void main()
   vec4 irrelevant = vec4(lighting, 0) * 0.0001;
   
   //fragColor = vec4(poopoo, 1) + irrelevant;
+
+  // TODO: lighting stuff (i'm tired rn)
   float sunLight = vSunlight;
   sunLight *= max(dot(-dirLight.direction, vec3(0, 1, 0)), 0.0);
   lighting = max(lighting * .2, lighting * sunLight); // magic (ensures lighting doesn't get too dark)

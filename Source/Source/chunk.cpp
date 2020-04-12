@@ -164,17 +164,17 @@ void Chunk::BuildBuffers()
 		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
 		glEnableVertexAttribArray(3);
 
-		// sunlight
-		sunlight_ = new VBO(&tSunlight[0], sizeof(float) * tSunlight.size());
-		sunlight_->Bind();
-		glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-		glEnableVertexAttribArray(4);
+		//// sunlight
+		//sunlight_ = new VBO(&tSunlight[0], sizeof(float) * tSunlight.size());
+		//sunlight_->Bind();
+		//glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+		//glEnableVertexAttribArray(4);
 
 		// block lighting
-		blocklight_ = new VBO(&tBlockLight[0], sizeof(GLubyte) * tBlockLight.size());
+		blocklight_ = new VBO(&tLighting[0], sizeof(GLint) * tLighting.size());
 		blocklight_->Bind();
-		glVertexAttribPointer(5, 2, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(GLubyte), (void*)0);
-		glEnableVertexAttribArray(5);
+		glVertexAttribIPointer(4, 1, GL_INT, sizeof(GLint), (void*)0);
+		glEnableVertexAttribArray(4);
 
 		vao_->Unbind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -187,8 +187,8 @@ void Chunk::BuildBuffers()
 		tColors.clear();
 		tSpeculars.clear();
 		tIndices.clear();
-		tSunlight.clear();
-		tBlockLight.clear();
+		tLighting.clear();
+		//tBlockLight.clear();
 	}
 
 	// epic copypasta
@@ -237,17 +237,17 @@ void Chunk::BuildBuffers()
 		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
 		glEnableVertexAttribArray(3);
 
-		// sunlight
-		wsunlight_ = new VBO(&wtSunlight[0], sizeof(float) * wtSunlight.size());
-		wsunlight_->Bind();
-		glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-		glEnableVertexAttribArray(4);
+		//// sunlight
+		//wsunlight_ = new VBO(&wtSunlight[0], sizeof(float) * wtSunlight.size());
+		//wsunlight_->Bind();
+		//glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+		//glEnableVertexAttribArray(4);
 
 		// block lighting
-		wblocklight_ = new VBO(&wtBlockLight[0], sizeof(GLubyte) * wtBlockLight.size());
+		wblocklight_ = new VBO(&wtLighting[0], sizeof(GLint) * wtLighting.size());
 		wblocklight_->Bind();
-		glVertexAttribPointer(5, 2, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(GLubyte), (void*)0);
-		glEnableVertexAttribArray(5);
+		glVertexAttribIPointer(4, 1, GL_INT, sizeof(GLint), (void*)0);
+		glEnableVertexAttribArray(4);
 
 		wvao_->Unbind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -259,8 +259,8 @@ void Chunk::BuildBuffers()
 		wtColors.clear();
 		wtSpeculars.clear();
 		wtIndices.clear();
-		wtSunlight.clear();
-		wtBlockLight.clear();
+		wtLighting.clear();
+		//wtBlockLight.clear();
 	}
 }
 
@@ -396,15 +396,15 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 			wtColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b), color.a));
 			wtNormals.push_back(faces[face]);
 			wtSpeculars.push_back(shiny);
-			wtSunlight.push_back(sun);
-			wtBlockLight.push_back(light.Raw());
+			//wtSunlight.push_back(sun);
+			wtLighting.push_back(light.Raw());
 		}
 		else
 		{
 			tNormals.push_back(faces[face]);
 			tSpeculars.push_back(shiny);
-			tSunlight.push_back(sun);
-			tBlockLight.push_back(light.Raw());
+			//tSunlight.push_back(sun);
+			tLighting.push_back(light.Raw());
 		}
 	}
 

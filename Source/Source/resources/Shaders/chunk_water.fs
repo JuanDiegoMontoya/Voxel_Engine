@@ -333,6 +333,8 @@ void main()
   //depthDiff *= clamp(perlinNoise(vPos.xz * 15.0 + 2.0 * u_time) / 5.0, 0, 1);
   vec3 foam = vec3(mix(1.0, clamp(perlinNoise(vPos.xz * 15.0 + 2.0 * u_time) / 5.0, 0, 1), depthDiff));
   //fragColor = vec4(mix(lighting, vec3(clamp(perlinNoise(vPos.xz * 30.0),0,1)), depthDiff / 1), vColor.a + waterVis);
+  
+  // TODO: lighting stuff
   float sunLight = vSunlight;
   sunLight *= max(dot(-dirLight.direction, vec3(0, 1, 0)), 0.0);
   lighting = max(lighting * .2, lighting * sunLight); // magic (ensures lighting doesn't get too dark)

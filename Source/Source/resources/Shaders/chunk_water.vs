@@ -108,6 +108,7 @@ vec3 rippleNormal(vec2 pos0)
 
 void main()
 {
+  // TODO: lighting stuff
   vShininess = aShininess;
   vSunlight = aSunlight;
   vPos = vec3(u_model * vec4(aScreenPos, 1.0));
