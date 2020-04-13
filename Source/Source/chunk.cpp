@@ -376,9 +376,9 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 
 	if (!debug_ignore_light_level)
 	{
-		color.r *= (1 + float(light.GetR())) / 16.f;
-		color.g *= (1 + float(light.GetG())) / 16.f;
-		color.b *= (1 + float(light.GetB())) / 16.f;
+		//color.r *= (1 + float(light.GetR())) / 16.f;
+		//color.g *= (1 + float(light.GetG())) / 16.f;
+		//color.b *= (1 + float(light.GetB())) / 16.f;
 	}
 
 	// slightly randomize color for each block to make them more visible (temporary solution)

@@ -14,7 +14,8 @@ const int NUM_CASCADES = 3;
 in vec4 vColor; // since there will be no textures, this is the diffuse component
 in vec3 vNormal;
 in float vShininess;
-in float vSunlight;
+//in float vSunlight;
+in vec4 vLighting;
 in vec3 vPos;
 in vec4 FragPosLightSpace[NUM_CASCADES];
 in float ClipSpacePosZ;
