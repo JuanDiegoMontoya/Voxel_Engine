@@ -157,7 +157,7 @@ namespace Renderer
 		for (GLint i = 0; i < count; ++i)
 		{
 			const char* extension = (const char*)glGetStringi(GL_EXTENSIONS, i);
-			if (!strcmp(extension, "GL_NVX_gpu_memory_info"))
+			if (strcmp(extension, "GL_NVX_gpu_memory_info") == 0)
 				nvUsageEnabled = true;
 		}
 
@@ -236,8 +236,6 @@ namespace Renderer
 		glClearTexSubImage(gDepth, 0, 0, 0, 0, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	}
 
-	static VAO* blockHoverVao = nullptr;
-	static VBO* blockHoverVbo = nullptr;
 	void SetDirLight(DirLight* d)
 	{
 		activeDirLight_ = d;
@@ -249,6 +247,8 @@ namespace Renderer
 
 	void DrawCube()
 	{
+		static VAO* blockHoverVao = nullptr;
+		static VBO* blockHoverVbo = nullptr;
 		if (blockHoverVao == nullptr)
 		{
 			blockHoverVao = new VAO();

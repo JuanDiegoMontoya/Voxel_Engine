@@ -262,6 +262,9 @@
     <ClInclude Include="Engine\Source\texture.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="NuRenderer.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -428,6 +431,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Source\texture.cpp">
       <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="NuRenderer.cpp">
+      <Filter>Graphics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
