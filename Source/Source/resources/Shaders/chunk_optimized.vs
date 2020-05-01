@@ -10,7 +10,7 @@ layout (location = 0) in float aEncoded; // encoded uint as float
 layout (location = 1) in float aLighting;// encoded uint as float
 
 // chunk-wide info
-uniform mat4 u_mvp;
+uniform mat4 u_viewProj;
 uniform vec3 u_pos;
 
 out vec3 vPos;
@@ -83,5 +83,5 @@ void main()
   decode(floatBitsToUint(aLighting), vLighting);
   //vColor = aColor;
 
-  gl_Position = u_mvp * vec4(modelPos, 1.0);
+  gl_Position = u_viewProj * vec4(vPos, 1.0);
 }

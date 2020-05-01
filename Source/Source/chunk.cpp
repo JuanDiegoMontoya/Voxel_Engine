@@ -15,45 +15,16 @@
 #include <sstream>
 #include "settings.h"
 #include "misc_utils.h"
+#include <type_trait>
 
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#define GLM_FORCE_SIMD_AVX2
 
-//Concurrency::concurrent_unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
-//std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> Chunk::chunks;
-
-double Chunk::isolevel = 0.60;
-
-Chunk::Chunk(bool active) : active_(active)
+Chunk::Chunk()
 {
-	std::fill(std::begin(blocks), std::end(blocks), Block(BlockType::bAir));
-	std::memset(lightMap, 0, sizeof(lightMap));
 }
 
 
 Chunk::~Chunk()
 {
-	if (vao_)
-		delete vao_;
-	if (positions_)
-		delete positions_;
-	if (normals_)
-		delete normals_;
-	if (colors_)
-		delete colors_;
-	if (speculars_)
-		delete speculars_;
-
-	if (wvao_)
-		delete wvao_;
-	if (wpositions_)
-		delete wpositions_;
-	if (wnormals_)
-		delete wnormals_;
-	if (wcolors_)
-		delete wcolors_;
-	if (wspeculars_)
-		delete wspeculars_;
 }
 
 
@@ -76,14 +47,6 @@ Chunk& Chunk::operator=(const Chunk& rhs)
 
 void Chunk::Update()
 {
-	// cull chunks that are invisible
-	if (active_)
-	{
-		if (Renderer::GetPipeline()->GetCamera(0)->GetFrustum()->IsInside(bounds) >= Frustum::Visibility::Partial)
-			visible_ = true;
-		else
-			visible_ = false;
-	}
 
 	// in the future, make this function perform other tick update actions,
 	// such as updating N random blocks (like in Minecraft)
@@ -93,7 +56,7 @@ void Chunk::Update()
 void Chunk::Render()
 {
 	//ASSERT(vao_ && positions_ && normals_ && colors_);
-	if (active_ && vao_)
+	if (vao_)
 	{
 		vao_->Bind();
 		//glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
@@ -105,13 +68,13 @@ void Chunk::Render()
 
 void Chunk::RenderWater()
 {
-	if (active_ && wvao_)
-	{
-		wvao_->Bind();
-		//glDrawArrays(GL_TRIANGLES, 0, wvertexCount_);
-		wibo_->Bind();
-		glDrawElements(GL_TRIANGLES, windexCount_, GL_UNSIGNED_INT, (void*)0);
-	}
+	//if (active_ && wvao_)
+	//{
+	//	wvao_->Bind();
+	//	//glDrawArrays(GL_TRIANGLES, 0, wvertexCount_);
+	//	wibo_->Bind();
+	//	glDrawElements(GL_TRIANGLES, windexCount_, GL_UNSIGNED_INT, (void*)0);
+	//}
 }
 
 
@@ -121,146 +84,18 @@ void Chunk::BuildBuffers()
 	// generate various vertex buffers
 	{
 		if (!vao_)
-			vao_ = new VAO;
-		vao_->Bind();
-		if (positions_)
-			delete positions_;
-		if (normals_)
-			delete normals_;
-		if (colors_)
-			delete colors_;
-		if (speculars_)
-			delete speculars_;
-		if (ibo_)
-			delete ibo_;
-		if (sunlight_)
-			delete sunlight_;
-		if (blocklight_)
-			delete blocklight_;
+			vao_ = std::make_unique<VAO>();
+		ibo_ = std::make_unique<IBO>(&tIndices[0], tIndices.size());
 
-		ibo_ = new IBO(&tIndices[0], tIndices.size());
-
-		// screen positions
-		positions_ = new VBO(&tPositions[0], sizeof(glm::vec3) * tPositions.size());
-		positions_->Bind();
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0); // screenpos
+		encodedStuffVbo_ = std::make_unique<VBO>(encodedStuffArr.data(), sizeof(GLfloat) * encodedStuffArr.size());
+		encodedStuffVbo_->Bind();
 		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0); // encoded stuff
 
-		// colors
-		colors_ = new VBO(&tColors[0], sizeof(glm::vec4) * tColors.size());
-		colors_->Bind();
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
+		lightingVbo_ = std::make_unique<VBO>(lightingArr.data(), sizeof(GLfloat) * lightingArr.size());
+		lightingVbo_->Bind();
 		glEnableVertexAttribArray(1);
-
-		// normals
-		normals_ = new VBO(&tNormals[0], sizeof(glm::vec3) * tNormals.size());
-		normals_->Bind();
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-		glEnableVertexAttribArray(2);
-
-		// specular
-		speculars_ = new VBO(&tSpeculars[0], sizeof(float) * tSpeculars.size());
-		speculars_->Bind();
-		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-		glEnableVertexAttribArray(3);
-
-		//// sunlight
-		//sunlight_ = new VBO(&tSunlight[0], sizeof(float) * tSunlight.size());
-		//sunlight_->Bind();
-		//glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-		//glEnableVertexAttribArray(4);
-
-		// block lighting
-		blocklight_ = new VBO(&tLighting[0], sizeof(GLint) * tLighting.size());
-		blocklight_->Bind();
-		glVertexAttribIPointer(4, 1, GL_INT, sizeof(GLint), (void*)0);
-		glEnableVertexAttribArray(4);
-
-		vao_->Unbind();
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		// delete mesh from CPU since it's no longer needed here
-		vertexCount_ = tPositions.size();
-		indexCount_ = tIndices.size();
-		tPositions.clear();
-		tNormals.clear();
-		tColors.clear();
-		tSpeculars.clear();
-		tIndices.clear();
-		tLighting.clear();
-		//tBlockLight.clear();
-	}
-
-	// epic copypasta
-	{
-		if (!wvao_)
-			wvao_ = new VAO;
-		wvao_->Bind();
-		if (wpositions_)
-			delete wpositions_;
-		if (wnormals_)
-			delete wnormals_;
-		if (wcolors_)
-			delete wcolors_;
-		if (wspeculars_)
-			delete wspeculars_;
-		if (wibo_)
-			delete wibo_;
-		if (wsunlight_)
-			delete wsunlight_;
-		if (wblocklight_)
-			delete wblocklight_;
-
-		wibo_ = new IBO(&wtIndices[0], wtIndices.size());
-
-		// screen positions
-		wpositions_ = new VBO(&wtPositions[0], sizeof(glm::vec3) * wtPositions.size());
-		wpositions_->Bind();
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0); // screenpos
-		glEnableVertexAttribArray(0);
-
-		// colors
-		wcolors_ = new VBO(&wtColors[0], sizeof(glm::vec4) * wtColors.size());
-		wcolors_->Bind();
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
-		glEnableVertexAttribArray(1);
-
-		// normals
-		wnormals_ = new VBO(&wtNormals[0], sizeof(glm::vec3) * wtNormals.size());
-		wnormals_->Bind();
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-		glEnableVertexAttribArray(2);
-
-		// specular
-		wspeculars_ = new VBO(&wtSpeculars[0], sizeof(float) * wtSpeculars.size());
-		wspeculars_->Bind();
-		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-		glEnableVertexAttribArray(3);
-
-		//// sunlight
-		//wsunlight_ = new VBO(&wtSunlight[0], sizeof(float) * wtSunlight.size());
-		//wsunlight_->Bind();
-		//glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
-		//glEnableVertexAttribArray(4);
-
-		// block lighting
-		wblocklight_ = new VBO(&wtLighting[0], sizeof(GLint) * wtLighting.size());
-		wblocklight_->Bind();
-		glVertexAttribIPointer(4, 1, GL_INT, sizeof(GLint), (void*)0);
-		glEnableVertexAttribArray(4);
-
-		wvao_->Unbind();
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		wvertexCount_ = wtPositions.size();
-		windexCount_ = wtIndices.size();
-		wtPositions.clear();
-		wtNormals.clear();
-		wtColors.clear();
-		wtSpeculars.clear();
-		wtIndices.clear();
-		wtLighting.clear();
-		//wtBlockLight.clear();
+		glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0); // encoded lighting
 	}
 }
 
@@ -344,7 +179,7 @@ void Chunk::buildBlockFace(
 
 	// for now, we won't make a mesh for faces adjacent to NULL chunks \
 	in the future it may be wise to construct the mesh
-	if (!nearChunk || !nearChunk->active_)
+	if (!nearChunk)
 		return;
 
 	// nearby block

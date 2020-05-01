@@ -60,7 +60,7 @@ typedef struct Chunk
 {
 private:
 public:
-	Chunk(bool active = true);
+	Chunk();
 	~Chunk();
 	Chunk(const Chunk& other);
 	Chunk& operator=(const Chunk& rhs);
@@ -99,10 +99,10 @@ public:
 	}
 
 	const glm::ivec3& GetPos() { return pos_; }
-	void SetActive(bool e) { active_ = e; }
-	bool IsActive() { return active_; }
-	bool IsVisible() const { return visible_; }
-	void SetVisible(bool b) { visible_ = b; }
+	bool IsVisible(Camera& cam) const
+	{
+		return cam.GetFrustum()->IsInside(bounds) >= Frustum::Visibility::Partial;
+	}
 
 
 	/*################################
@@ -209,7 +209,6 @@ public:
 	static inline std::atomic<double> accumtime = 0;
 	static inline std::atomic<unsigned> accumcount = 0;
 
-	static cell buildCellFromVoxel(const glm::vec3& wpos);
 
 	// Serialization
 	template <class Archive>
@@ -253,6 +252,7 @@ private:
 		int face,
 		const glm::ivec3& blockPos,
 		Block block);
+
 	// adds quad at given location
 	void addQuad(const glm::ivec3& lpos, Block block, 
 		int face, ChunkPtr nearChunk, Light light);
@@ -267,65 +267,25 @@ private:
 		const glm::vec3& corner,
 		const glm::ivec3& faceNorm);
 
-	void buildBlockVertices_marched_cubes(
-		glm::ivec3 pos,
-		Block block);
-	size_t polygonize(const glm::ivec3& pos, const Block&);
-	glm::vec3 VertexInterp(double isolevel, glm::vec3 p1, glm::vec3 p2, double valp1, double valp2);
-	//glm::vec3 VertexInterp2(glm::vec3 p1, glm::vec3 p2, double value);
-
-	/*
-		Used for marching cubes. Determines the minimum density of a point
-		for it to be considered solid or not.
-	*/
-	static double isolevel; // between 0 and 1
-
-	glm::mat4 model_;
-	glm::ivec3 pos_;	// position relative to other chunks (1 chunk = 1 index)
-	bool active_;			// unused
-	bool visible_;		// used in frustum culling
 	std::mutex mutex_;// used for safe concurrent access
-
 	std::mutex vertex_buffer_mutex_;
 
 	// buffers
-	IBO* ibo_ = nullptr;
-	VAO* vao_ = nullptr;
-	VBO* positions_ = nullptr;
-	VBO* normals_ = nullptr;
-	VBO* colors_ = nullptr;
-	VBO* speculars_ = nullptr;
-	VBO* sunlight_ = nullptr;
-	VBO* blocklight_ = nullptr;
-	IBO* wibo_ = nullptr;
-	VAO* wvao_ = nullptr;
-	VBO* wpositions_ = nullptr;
-	VBO* wnormals_ = nullptr;
-	VBO* wcolors_ = nullptr;
-	VBO* wspeculars_ = nullptr;
-	VBO* wsunlight_ = nullptr;
-	VBO* wblocklight_ = nullptr;
+	std::unique_ptr<IBO> ibo_;
+	std::unique_ptr<VAO> vao_;
+	std::unique_ptr<VBO> encodedStuffVbo_;
+	std::unique_ptr<VBO> lightingVbo_;
 	// vertex data (held until buffers are sent to GPU)
 	std::vector<GLuint> tIndices;
-	std::vector<glm::vec3> tPositions;
-	std::vector<glm::vec3> tNormals;
-	std::vector<glm::vec4> tColors;
-	std::vector<float> tSpeculars;
-	//std::vector<float> tSunlight;
-	std::vector<GLint> tLighting;
-	std::vector<GLuint> wtIndices;
-	std::vector<glm::vec3> wtPositions;
-	std::vector<glm::vec3> wtNormals;
-	std::vector<glm::vec4> wtColors;
-	std::vector<float>		 wtSpeculars;
-	//std::vector<float> wtSunlight;
-	std::vector<GLint> wtLighting;
-	GLsizei wvertexCount_ = 0;// number of transparent block vertices
-	GLsizei vertexCount_ = 0; // number of opaque block vertices
-	GLsizei windexCount_ = 0;// number of transparent block vertices
-	GLsizei indexCount_ = 0; // number of opaque block vertices
+	std::vector<GLfloat> encodedStuffArr;
+	std::vector<GLfloat> lightingArr;
+	GLsizei vertexCount_ = 0; // number of block vertices
+	GLsizei indexCount_ = 0; // number of block vertices
 
-	AABB bounds;
+	glm::mat4 model_;
+	glm::ivec3 pos_;	// position relative to other chunks (1 chunk = 1 index)
+	bool visible_;		// used in frustum culling
+	AABB bounds{};
 }Chunk, *ChunkPtr;
 
 void TestCoordinateStuff();
