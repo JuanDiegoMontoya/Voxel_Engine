@@ -289,3 +289,8 @@ private:
 }Chunk, *ChunkPtr;
 
 void TestCoordinateStuff();
+
+inline GLuint Encode(const glm::uvec3& modelPos, int normalIdx, int texIdx, int cornerIdx)
+{
+
+}

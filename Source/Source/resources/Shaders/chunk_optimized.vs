@@ -7,6 +7,10 @@
 // normal = 0 - 5 index into "normals" table
 // texcoord = texture index (0 - 512), corner index (0 - 3)
 layout (location = 0) in float aEncoded; // encoded uint as float
+
+// aLighting layout
+// 0 - 15   16 - 19   20 - 23   24 - 27   28 - 31
+// unused     R         G         B         Sun
 layout (location = 1) in float aLighting;// encoded uint as float
 
 // chunk-wide info
@@ -41,13 +45,14 @@ const vec2 tex_corners[] =
 
 // decodes vertex, normal, and texcoord info from encoded data
 // returns usable data (i.e. fully processed)
-void decode(in uint encoded,
+void Decode(in uint encoded,
   out vec3 modelPos, out vec3 normal, out vec2 texCoord)
 {
   // decode vertex position
   modelPos.x = encoded >> 27;
   modelPos.y = (encoded >> 22) & 0x1F; // = 0b11111
   modelPos.z = (encoded >> 17) & 0x1F; // = 0b11111
+  //modelPos += 0.5;
 
   // decode normal
   uint normalIdx = (encoded >> 14) & 0x7; // = 0b111
@@ -64,7 +69,7 @@ void decode(in uint encoded,
 
 
 // decodes lighting information into a usable vec4
-void decode(in uint encoded, out vec4 lighting)
+void Decode(in uint encoded, out vec4 lighting)
 {
   //encoded >>= 
   lighting.r = encoded >> 12;
@@ -78,9 +83,9 @@ void decode(in uint encoded, out vec4 lighting)
 void main()
 {
   vec3 modelPos;
-  decode(floatBitsToUint(aEncoded), modelPos, vNormal, vTexCoord);
+  Decode(floatBitsToUint(aEncoded), modelPos, vNormal, vTexCoord);
   vPos = modelPos + u_pos;
-  decode(floatBitsToUint(aLighting), vLighting);
+  Decode(floatBitsToUint(aLighting), vLighting);
   //vColor = aColor;
 
   gl_Position = u_viewProj * vec4(vPos, 1.0);

@@ -15,7 +15,6 @@
 #include <sstream>
 #include "settings.h"
 #include "misc_utils.h"
-#include <type_trait>
 
 
 Chunk::Chunk()
@@ -206,89 +205,58 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 {
 	bool isWater = block.GetType() == BlockType::bWater;
 
-	float shiny = Block::PropertiesTable[int(block.GetType())].specular;
-	glm::vec4 color = Block::PropertiesTable[int(block.GetType())].color;
+	//glm::vec4 color = Block::PropertiesTable[int(block.GetType())].color;
 
-	if (!debug_ignore_light_level)
-	{
-		//color.r *= (1 + float(light.GetR())) / 16.f;
-		//color.g *= (1 + float(light.GetG())) / 16.f;
-		//color.b *= (1 + float(light.GetB())) / 16.f;
-	}
-
-	// slightly randomize color for each block to make them more visible (temporary solution)
-	//float clrBias = Utils::get_random_r(-.03f, .03f);
-
-	// TODO: make sure this isn't always 1 when sunlight is properly added
-	//float sun = float(light.GetS()) / 15.f;
 	float sun = 1;
 
 	// sadly we gotta copy all this stuff 4 times
-	for (int i = 0; i < 4; i++)
-	{
-		if (isWater)
-		{
-			wtColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b), color.a));
-			wtNormals.push_back(faces[face]);
-			wtSpeculars.push_back(shiny);
-			//wtSunlight.push_back(sun);
-			wtLighting.push_back(light.Raw());
-		}
-		else
-		{
-			tNormals.push_back(faces[face]);
-			tSpeculars.push_back(shiny);
-			//tSunlight.push_back(sun);
-			tLighting.push_back(light.Raw());
-		}
-	}
-
-	// loop should iterate 6 times
-	//for (int i = quadStride * curQuad; i < quadStride * (curQuad + 1); i += 8) // += floats per vertex
+	//for (int i = 0; i < 4; i++)
 	//{
-	//	glm::vec4 vert(
-	//		data[i + 0],
-	//		data[i + 1],
-	//		data[i + 2],
-	//		1.f);
-	//	glm::vec4 finalvert = localTransform * vert;
 	//	if (isWater)
-	//		wtPositions.push_back(finalvert);
+	//	{
+	//		wtColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b), color.a));
+	//		wtNormals.push_back(faces[face]);
+	//		wtSpeculars.push_back(shiny);
+	//		//wtSunlight.push_back(sun);
+	//		wtLighting.push_back(light.Raw());
+	//	}
 	//	else
 	//	{
-	//		// TODO: call "compute block AO" once per block or vertex way before this
-	//		// because shared vertices means this is called too often
-	//		float invOcclusion = 1;
-	//		if (Settings::Graphics.blockAO)
-	//			invOcclusion = computeBlockAO(block, blockPos, glm::vec3(vert), nearFace);
-	//		tColors.push_back(glm::vec4((glm::vec3(color.r, color.g, color.b)) * invOcclusion, color.a));
-	//		tPositions.push_back(finalvert);
+	//		tNormals.push_back(faces[face]);
+	//		tSpeculars.push_back(shiny);
+	//		//tSunlight.push_back(sun);
+	//		tLighting.push_back(light.Raw());
 	//	}
 	//}
+
+	int normalIdx = face;
+	int texIdx = 100; // temp
+	uint16_t lighting = light.Raw();
 
 	// add 4 vertices representing a quad
 	const GLfloat* data = Vertices::cube_light;
 	int endQuad = (face + 1) * 12;
 	for (int i = face * 12; i < endQuad; i += 3)
 	{
-		glm::vec3 vert(
-			data[i + 0],
-			data[i + 1],
-			data[i + 2]
-		);
 		// transform vertices relative to chunk
-		glm::vec3 finalVert = vert + glm::vec3(lpos) + .5f;
+		glm::vec3 vert(data[i + 0], data[i + 1], data[i + 2]);
+		glm::uvec3 finalVert = vert + glm::vec3(lpos);// +.5f;
+		
+		int cornerIdx = 2; // temp
 
-		if (!isWater)
-		{
-			float invOcclusion = 1;
-			if (Settings::Graphics.blockAO)
-				invOcclusion = computeBlockAO(block, lpos, glm::vec3(vert), lpos + faces[face]);
-			tColors.push_back(glm::vec4((glm::vec3(color.r, color.g, color.b)) * invOcclusion, color.a));
-			tPositions.push_back(finalVert);
-		}
-		else
-			wtPositions.push_back(finalVert);
+		// compress attributes into 32 bits
+		GLuint encoded = Encode(finalVert, normalIdx, texIdx, cornerIdx);
+
+		// preserve bit ordering
+		encodedStuffArr.push_back(glm::uintBitsToFloat(encoded));
+		lightingArr.push_back(glm::uintBitsToFloat(lighting));
+
+		//float invOcclusion = 1;
+		//if (Settings::Graphics.blockAO)
+		//	invOcclusion = computeBlockAO(block, lpos, glm::vec3(vert), lpos + faces[face]);
+		//tColors.push_back(glm::vec4((glm::vec3(color.r, color.g, color.b)) * invOcclusion, color.a));
+		//tPositions.push_back(finalVert);
+
 	}
 
 	// add 6 indices defining 2 triangles from that quad
@@ -296,10 +264,7 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 	for (int i = face * 6; i < endIndices; i++)
 	{
 		// refer to just placed vertices (4 of them)
-		if (!isWater)
-			tIndices.push_back(Vertices::cube_indices_light_cw[i] + tPositions.size() - 4);
-		else
-			wtIndices.push_back(Vertices::cube_indices_light_cw[i] + wtPositions.size() - 4);
+		tIndices.push_back(Vertices::cube_indices_light_cw[i] + encodedStuffArr.size() - 4);
 	}
 }
 
@@ -312,64 +277,64 @@ float Chunk::computeBlockAO(
 	const glm::vec3& corner,
 	const glm::ivec3& nearFace)
 {
-	glm::ivec3 normal = nearFace - blockPos;
-	glm::ivec3 combined = glm::ivec3(corner * 2.f) + normal; // convert corner to -1 to 1 range
-	glm::ivec3 c1(0);
-	glm::ivec3 c2(0);
-	for (int i = 0; i < 3; i++)
-	{
-		if (glm::abs(combined[i]) != 2)
-		{
-			if (combined[i] && c1 == glm::ivec3(0))
-				c1[i] = combined[i];
-			else if (c2 == glm::ivec3(0))
-				c2[i] = combined[i];
-		}
-	}
-	
-	float occlusion = 1;
-	const float occAmt = .2f;
-
-	// block 1
-	localpos nearblock1 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c1 + normal));
-	auto findVal1 = chunks.find(nearblock1.chunk_pos);
-	ChunkPtr near1 = findVal1 == chunks.end() ? nullptr : findVal1->second;
-	if (!near1)
-		goto B2AO;
-	if (!near1->active_)
-		goto B2AO;
-	if (near1->At(nearblock1.block_pos).GetType() != BlockType::bAir && near1->At(nearblock1.block_pos).GetType() != BlockType::bWater)
-		occlusion -= occAmt;
-
-B2AO:
-	// block 2
-	localpos nearblock2 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c2 + normal));
-	auto findVal2 = chunks.find(nearblock2.chunk_pos);
-	ChunkPtr near2 = findVal2 == chunks.end() ? nullptr : findVal2->second;
-	if (!near2)
-		goto BAO_END;
-	if (!near2->active_)
-		goto BAO_END;
-	if (near2->At(nearblock2.block_pos).GetType() != BlockType::bAir && near2->At(nearblock2.block_pos).GetType() != BlockType::bWater)
-		occlusion -= occAmt;
-
-	// check diagonal if not 'fully' occluded
-	if (occlusion > 1 - 2.f * occAmt)
-	{
-		// block 3
-		localpos nearblock3 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c1 + c2 + normal));
-		auto findVal3 = chunks.find(nearblock3.chunk_pos);
-		ChunkPtr near3 = findVal3 == chunks.end() ? nullptr : findVal3->second;
-		if (!near3)
-			goto BAO_END;
-		if (!near3->active_)
-			goto BAO_END;
-		if (near3->At(nearblock3.block_pos).GetType() != BlockType::bAir && near3->At(nearblock3.block_pos).GetType() != BlockType::bWater)
-			occlusion -= occAmt;
-	}
-
-BAO_END:
-	return occlusion;
+//	glm::ivec3 normal = nearFace - blockPos;
+//	glm::ivec3 combined = glm::ivec3(corner * 2.f) + normal; // convert corner to -1 to 1 range
+//	glm::ivec3 c1(0);
+//	glm::ivec3 c2(0);
+//	for (int i = 0; i < 3; i++)
+//	{
+//		if (glm::abs(combined[i]) != 2)
+//		{
+//			if (combined[i] && c1 == glm::ivec3(0))
+//				c1[i] = combined[i];
+//			else if (c2 == glm::ivec3(0))
+//				c2[i] = combined[i];
+//		}
+//	}
+//	
+//	float occlusion = 1;
+//	const float occAmt = .2f;
+//
+//	// block 1
+//	localpos nearblock1 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c1 + normal));
+//	auto findVal1 = chunks.find(nearblock1.chunk_pos);
+//	ChunkPtr near1 = findVal1 == chunks.end() ? nullptr : findVal1->second;
+//	if (!near1)
+//		goto B2AO;
+//	if (!near1->active_)
+//		goto B2AO;
+//	if (near1->At(nearblock1.block_pos).GetType() != BlockType::bAir && near1->At(nearblock1.block_pos).GetType() != BlockType::bWater)
+//		occlusion -= occAmt;
+//
+//B2AO:
+//	// block 2
+//	localpos nearblock2 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c2 + normal));
+//	auto findVal2 = chunks.find(nearblock2.chunk_pos);
+//	ChunkPtr near2 = findVal2 == chunks.end() ? nullptr : findVal2->second;
+//	if (!near2)
+//		goto BAO_END;
+//	if (!near2->active_)
+//		goto BAO_END;
+//	if (near2->At(nearblock2.block_pos).GetType() != BlockType::bAir && near2->At(nearblock2.block_pos).GetType() != BlockType::bWater)
+//		occlusion -= occAmt;
+//
+//	// check diagonal if not 'fully' occluded
+//	if (occlusion > 1 - 2.f * occAmt)
+//	{
+//		// block 3
+//		localpos nearblock3 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c1 + c2 + normal));
+//		auto findVal3 = chunks.find(nearblock3.chunk_pos);
+//		ChunkPtr near3 = findVal3 == chunks.end() ? nullptr : findVal3->second;
+//		if (!near3)
+//			goto BAO_END;
+//		if (!near3->active_)
+//			goto BAO_END;
+//		if (near3->At(nearblock3.block_pos).GetType() != BlockType::bAir && near3->At(nearblock3.block_pos).GetType() != BlockType::bWater)
+//			occlusion -= occAmt;
+//	}
+//
+//BAO_END:
+//	return occlusion;
 }
 
 
