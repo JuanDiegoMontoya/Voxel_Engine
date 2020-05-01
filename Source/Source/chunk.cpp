@@ -240,7 +240,7 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 	{
 		// transform vertices relative to chunk
 		glm::vec3 vert(data[i + 0], data[i + 1], data[i + 2]);
-		glm::uvec3 finalVert = vert + glm::vec3(lpos);// +.5f;
+		glm::uvec3 finalVert = vert + glm::vec3(lpos) + .5f;
 		
 		int cornerIdx = 2; // temp
 
