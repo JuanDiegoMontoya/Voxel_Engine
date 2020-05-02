@@ -112,7 +112,13 @@ void Chunk::BuildMesh()
 {
 	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
+	for (int i = 0; i < fCount; i++)
+	{
+		nearChunks[i] = chunks[this->pos_ + faces[i]];
+	}
 	std::lock_guard<std::mutex> lock(vertex_buffer_mutex_);
+
+
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
 		// precompute first flat index part
@@ -174,14 +180,18 @@ void Chunk::buildBlockFace(
 {
 	thread_local static localpos nearblock; // avoids unnecessary construction of vec3s
 	glm::ivec3 nearFace = blockPos + faces[face];
+	//glm::ivec3 chunkDiff = glm::floor(glm::vec3(nearFace) / 32.f);
+
 
 	//localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
 	fastWorldBlockToLocalPos(chunkBlockToWorldPos(nearFace), nearblock);
 	ChunkPtr nearChunk = this;
+
 	if (this->pos_ != nearblock.chunk_pos)
 	{
-		nearChunk = chunks[nearblock.chunk_pos];
-		ASSERT(this != nearChunk);
+		//printf("CD: %d, %d, %d\n", chunkDiff.x, chunkDiff.y, chunkDiff.z);
+		//printf("FC: %d, %d, %d\n", faces[face].x, faces[face].y, faces[face].z);
+		nearChunk = nearChunks[face];
 	}
 
 	// for now, we won't make a mesh for faces adjacent to NULL chunks \

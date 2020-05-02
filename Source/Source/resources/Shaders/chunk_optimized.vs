@@ -1,9 +1,9 @@
 #version 450 core
 
 // aEncoded layout (left to right bits):
-// 0 - 14   15 - 17   18 - 28   29 - 31
-// vertex   normal    texcoord  unused
-// vertex = x, y, z from 0-31
+// 0 - 17   18 - 20   21 - 31
+// vertex   normal    texcoord
+// vertex = x, y, z from 0-32 (supports up to 63)
 // normal = 0 - 5 index into "normals" table
 // texcoord = texture index (0 - 512), corner index (0 - 3)
 layout (location = 0) in float aEncoded; // encoded uint as float
@@ -76,7 +76,7 @@ void Decode(in uint encoded, out vec4 lighting)
   lighting.g = (encoded >> 8) & 0xF;
   lighting.b = (encoded >> 4) & 0xF;
   lighting.a = encoded & 0xF;
-  lighting = 1.0 + (lighting / 16.0);
+  lighting = (0.0 + lighting) / 16.0;
 }
 
 

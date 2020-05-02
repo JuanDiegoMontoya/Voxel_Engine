@@ -57,8 +57,9 @@ void Sun::Render()
 
 	vao_->Bind();
 	vbo_->Bind();
-	const glm::mat4& view = Renderer::GetPipeline()->GetCamera(0)->GetView();
-	const glm::mat4& proj = Renderer::GetPipeline()->GetCamera(0)->GetProj();
+	auto cam = Renderer::GetPipeline()->GetCamera(0);
+	const glm::mat4& view = cam->GetView();
+	const glm::mat4& proj = cam->GetProj();
 
 	ShaderPtr currShader = Shader::shaders["sun"];
 	currShader->Use();
@@ -69,13 +70,13 @@ void Sun::Render()
 	currShader->setVec2("BillboardSize", 15.5f, 15.5f);
 
 	currShader->setVec4("u_color", 1.f, 1.f, 0.f, 1.f);
-	glDepthMask(GL_TRUE);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glDepthMask(GL_FALSE);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDepthMask(GL_TRUE);
 
-	/* Clear the depth buffer after rendering the sun to simulate
-			the sun being at infinity.
-			Note: this means the sun should be rendered first each frame
-			to prevent depth-related artifacts from appearing. */
+	//Clear the depth buffer after rendering the sun to simulate
+	//		the sun being at infinity.
+	//		Note: this means the sun should be rendered first each frame
+	//		to prevent depth-related artifacts from appearing.
 	//glClear(GL_DEPTH_BUFFER_BIT); // uncomment to make sun appear to be in the sky
 }

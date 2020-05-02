@@ -69,7 +69,7 @@ namespace World
 		//renderer_.chunkManager_ = &chunkManager_;
 
 		duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
-		std::cout << benchmark_duration_.count() << std::endl;
+		//std::cout << benchmark_duration_.count() << std::endl;
 		sun_ = new Sun();
 
 		Engine::PushUpdateCallback(Update, 0);

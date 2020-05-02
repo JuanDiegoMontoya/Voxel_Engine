@@ -46,16 +46,6 @@ struct localpos
 	6: +x+y-z
 	7: -x+y-z
 */
-typedef struct
-{
-	glm::vec3 p[8]; // corner positions
-	double val[8]; // density values
-} cell;
-
-typedef struct
-{
-	glm::vec3 ps[3];
-} tri;
 
 // TODO: clean this up a lot
 typedef struct Chunk
@@ -288,6 +278,7 @@ private:
 	glm::ivec3 pos_;	// position relative to other chunks (1 chunk = 1 index)
 	bool visible_;		// used in frustum culling
 	AABB bounds{};
+	ChunkPtr nearChunks[6];
 }Chunk, *ChunkPtr;
 
 void TestCoordinateStuff();

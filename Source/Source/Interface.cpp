@@ -59,21 +59,27 @@ namespace Interface
 			//	glm::clamp(shadow, 0, 16384);
 			//	World::sun_->SetShadowSize(glm::ivec2(shadow));
 			//}
-			if (ImGui::Button("Recompile Water Shader"))
+			//if (ImGui::Button("Recompile Water Shader"))
+			//{
+			//	delete Shader::shaders["chunk_water"];
+			//	Shader::shaders["chunk_water"] = new Shader("chunk_water.vs", "chunk_water.fs");
+			//}
+			//if (ImGui::Button("Recompile Debug Map"))
+			//{
+			//	delete Shader::shaders["debug_map3"];
+			//	Shader::shaders["debug_map3"] = new Shader("debug_map.vs", "debug_map.fs");
+			//}
+			//if (ImGui::Button("Recompile Postprocess Shader"))
+			//{
+			//	//delete Shader::shaders["postprocess"];
+			//	Shader::shaders["postprocess"] = new Shader("postprocess.vs", "postprocess.fs");
+			//}
+			if (ImGui::Button("Recompile Optimized Chunk Shader"))
 			{
-				delete Shader::shaders["chunk_water"];
-				Shader::shaders["chunk_water"] = new Shader("chunk_water.vs", "chunk_water.fs");
+				delete Shader::shaders["chunk_optimized"];
+				Shader::shaders["chunk_optimized"] = new Shader("chunk_optimized.vs", "chunk_optimized.fs");
 			}
-			if (ImGui::Button("Recompile Debug Map"))
-			{
-				delete Shader::shaders["debug_map3"];
-				Shader::shaders["debug_map3"] = new Shader("debug_map.vs", "debug_map.fs");
-			}
-			if (ImGui::Button("Recompile Postprocess Shader"))
-			{
-				//delete Shader::shaders["postprocess"];
-				Shader::shaders["postprocess"] = new Shader("postprocess.vs", "postprocess.fs");
-			}
+
 			if (ImGui::Button("Delete far chunks (unsafe)"))
 			{
 				std::vector<ChunkPtr> deleteList;
