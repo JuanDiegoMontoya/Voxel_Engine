@@ -435,6 +435,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 				continue;
 
 			// iterate over R, G, B
+			bool enqueue = false;
 			for (int ci = 0; ci < 3; ci++)
 			{
 				// skip blocks that are too bright to be affected by this light
@@ -447,8 +448,10 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 				glm::u8vec4 val = light->Get();
 				val[ci] = (lightLevel.Get()[ci] - 1);// *Block::PropertiesTable[block.GetTypei()].color[ci];
 				light->Set(val);
-				lightQueue.push(lightp + dir);
+				enqueue = true;
 			}
+			if (enqueue) // enqueue if any lighting component changed
+				lightQueue.push(lightp + dir);
 		}
 	}
 

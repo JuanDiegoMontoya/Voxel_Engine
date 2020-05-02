@@ -253,8 +253,9 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 			//invOcclusion = computeBlockAO(block, lpos, glm::vec3(vert), lpos + faces[face]);
 			invOcclusion = vertexFaceAO(lpos, vert, faces[face]);
 		//tColors.push_back(glm::vec4((glm::vec3(color.r, color.g, color.b)) * invOcclusion, color.a));
-		light.Set(glm::vec4(light.Get()) * invOcclusion);
-		lighting = light.Raw();
+		auto tLight = light;
+		tLight.Set(glm::vec4(tLight.Get()) * invOcclusion);
+		lighting = tLight.Raw();
 
 		// preserve bit ordering
 		encodedStuffArr.push_back(glm::uintBitsToFloat(encoded));
@@ -345,17 +346,34 @@ BAO_END:
 float Chunk::vertexFaceAO(const glm::vec3& lpos, const glm::vec3& cornerDir, const glm::vec3& norm)
 {
 	using namespace glm;
-	//Block side1, side2, corn;
 
-	//glm::vec3 side1Pos = ;
+	int occluded = 0;
+
+	// sides are components of the corner minus the normal direction
+	vec3 sidesDir = cornerDir * 2.0f - norm;
+	for (int i = 0; i < sidesDir.length(); i++)
+	{
+		if (sidesDir[i] != 0)
+		{
+			vec3 sideDir(0);
+			sideDir[i] = sidesDir[i];
+			vec3 sidePos = lpos + sideDir + norm;
+			if (all(greaterThanEqual(sidePos, vec3(0))) && all(lessThan(sidePos, vec3(CHUNK_SIZE))))
+				if (At(ivec3(sidePos)).GetType() != BlockType::bAir)
+					occluded++;
+		}
+	}
+
+	ASSERT(occluded <= 2);
+	if (occluded == 2)
+		return 0.0f;
 	
 	vec3 cornerPos = lpos + (cornerDir * 2.0f);
-
 	if (all(greaterThanEqual(cornerPos, vec3(0))) && all(lessThan(cornerPos, vec3(CHUNK_SIZE))))
 		if (At(ivec3(cornerPos)).GetType() != BlockType::bAir)
-			return .5f;
+			occluded++;
 
-	return 1.0f;
+	return 1.0f - ((1.0f / 3.0f) * occluded);
 }
 
 

@@ -5,6 +5,7 @@
 #include <Engine.h>
 #include <shader.h>
 #include <camera.h>
+#include <input.h>
 
 namespace NuRenderer
 {
@@ -32,6 +33,16 @@ namespace NuRenderer
 
 		Clear();
 		glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
+
+		if (Input::Keyboard().down[GLFW_KEY_LEFT_SHIFT])
+		{
+			if (Input::Keyboard().down[GLFW_KEY_1])
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			if (Input::Keyboard().down[GLFW_KEY_2])
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			if (Input::Keyboard().down[GLFW_KEY_3])
+				glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		}
 
 		Renderer::drawSky();
 		drawChunks();
