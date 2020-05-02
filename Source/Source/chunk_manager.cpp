@@ -383,23 +383,30 @@ void ChunkManager::createNearbyChunks()
 // TODO: make lighting updates also check chunks around the cell 
 // (because lighting affects all neighboring blocks)
 // ref https://www.seedofandromeda.com/blogs/29-fast-flood-fill-lighting-in-a-blocky-voxel-game-pt-1
+// wpos: world position
+// nLight: new lighting value
+// skipself: chunk updating thing
 void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself)
 {
-	//UpdateBlockLight(wpos, Block::PropertiesTable[bt].emittance);
+	// get existing light at the position
 	LightPtr L = GetLightPtr(wpos);
 	if (L)
 	{
-		// combine the two lights by taking the max values only
+		// if there is already light in the spot,
+		// combine the two by taking the max values only
 		glm::u8vec4 t = glm::max(L->Get(), nLight.Get());
-		*L = t;
+		L->Set(t); //*L = t;
 	}
+	
+	// queue of world positions, rather than chunk + local index (they are equivalent)
 	std::queue<glm::ivec3> lightQueue;
 	lightQueue.push(wpos);
+
 	while (!lightQueue.empty())
 	{
-		glm::ivec3 lightp = lightQueue.front();
+		glm::ivec3 lightp = lightQueue.front(); // light position
 		lightQueue.pop();
-		Light lightLevel = GetLight(lightp);
+		Light lightLevel = GetLight(lightp);    // node that will be giving light to others
 		constexpr glm::ivec3 dirs[] =
 		{
 			{ 1, 0, 0 },
@@ -410,29 +417,34 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 			{ 0, 0,-1 },
 		};
 
+		// update each neighbor
 		for (const auto& dir : dirs)
 		{
-			Block block = GetBlock(lightp + dir);
-			LightPtr light = GetLightPtr(lightp + dir);
-			//UpdateChunk(lightp + dir);
-			if (Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos])
-				delayed_update_queue_.insert(Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos]);
-			if (!light) // skip if invalid block
-				continue;
+			Block block = GetBlock(lightp + dir);       // neighboring block
+			LightPtr light = GetLightPtr(lightp + dir); // neighboring light (pointer)
 
-			// if solid block or too bright of a block, skip dat boi
+			// add chunk to update queue if it exists
+			if (Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos] != nullptr)
+				delayed_update_queue_.insert(Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos]);
+			
+			// invalid light check (should be impossible)
+			ASSERT(light != nullptr);
+
+			// if neighbor is solid block, skip dat boi
 			if (Block::PropertiesTable[block.GetTypei()].color.a == 1)
 				continue;
 
-			// iterate for R, G, B
-			for (int ci = 0; ci < 3; ci++) // iterate color index
+			// iterate over R, G, B
+			for (int ci = 0; ci < 3; ci++)
 			{
 				// skip blocks that are too bright to be affected by this light
 				if (light->Get()[ci] + 2 > lightLevel.Get()[ci])
 					continue;
-				//UpdateBlockLight(lightp + dir, glm::uvec3(lightLevel.r - 1));
-				auto val = light->Get();
-				// TODO: fix light propagation to make light filtering work properly
+
+				// TODO: light propagation through transparent materials
+				// get all light components (R, G, B, Sun) and modify ONE of them,
+				// then push the position of that light into the queue
+				glm::u8vec4 val = light->Get();
 				val[ci] = (lightLevel.Get()[ci] - 1);// *Block::PropertiesTable[block.GetTypei()].color[ci];
 				light->Set(val);
 				lightQueue.push(lightp + dir);

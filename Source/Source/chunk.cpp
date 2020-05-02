@@ -183,34 +183,42 @@ void Chunk::buildBlockFace(
 	//glm::ivec3 chunkDiff = glm::floor(glm::vec3(nearFace) / 32.f);
 
 
-	//localpos nearblock = worldBlockToLocalPos(chunkBlockToWorldPos(nearFace));
-	fastWorldBlockToLocalPos(chunkBlockToWorldPos(nearFace), nearblock);
+	using namespace glm;
 	ChunkPtr nearChunk = this;
 
-	if (this->pos_ != nearblock.chunk_pos)
+	// if neighbor is out of this chunk, find which chunk it is in
+	if (any(lessThan(nearFace, ivec3(0))) || any(greaterThanEqual(nearFace, ivec3(CHUNK_SIZE))))
 	{
-		//printf("CD: %d, %d, %d\n", chunkDiff.x, chunkDiff.y, chunkDiff.z);
-		//printf("FC: %d, %d, %d\n", faces[face].x, faces[face].y, faces[face].z);
+		fastWorldBlockToLocalPos(chunkBlockToWorldPos(nearFace), nearblock);
 		nearChunk = nearChunks[face];
 	}
+	else
+	{
+		nearblock.block_pos = nearFace;
+	}
 
-	// for now, we won't make a mesh for faces adjacent to NULL chunks \
-	in the future it may be wise to construct the mesh
-	if (!nearChunk)
+	// for now, we won't make a mesh for faces adjacent to NULL chunks
+	// in the future it may be wise to construct the mesh regardless
+	if (nearChunk == nullptr)
 		return;
 
-	// nearby block
+	// neighboring block and light
 	Block block2 = nearChunk->BlockAtCheap(nearblock.block_pos);
 	Light light = nearChunk->LightAtCheap(nearblock.block_pos);
+
+	// this block is water and other block isn't water and is above this block
 	if (block2.GetType() != BlockType::bWater && block.GetType() == BlockType::bWater && (nearFace - blockPos).y > 0)
 	{
 		addQuad(blockPos, block, face, nearChunk, light);
 		return;
 	}
+	// other block isn't air or water - don't add mesh
 	if (block2.GetType() != BlockType::bAir && block2.GetType() != BlockType::bWater)
 		return;
+	// both blocks are water - don't add mesh
 	if (block2.GetType() == BlockType::bWater && block.GetType() == BlockType::bWater)
 		return;
+	// this block is invisible - don't add mesh
 	if (Block::PropertiesTable[int(block.GetType())].invisible)
 		return;
 
@@ -221,32 +229,6 @@ void Chunk::buildBlockFace(
 
 void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr nearChunk, Light light)
 {
-	bool isWater = block.GetType() == BlockType::bWater;
-
-	//glm::vec4 color = Block::PropertiesTable[int(block.GetType())].color;
-
-	float sun = 1;
-
-	// sadly we gotta copy all this stuff 4 times
-	//for (int i = 0; i < 4; i++)
-	//{
-	//	if (isWater)
-	//	{
-	//		wtColors.push_back(glm::vec4(glm::vec3(color.r, color.g, color.b), color.a));
-	//		wtNormals.push_back(faces[face]);
-	//		wtSpeculars.push_back(shiny);
-	//		//wtSunlight.push_back(sun);
-	//		wtLighting.push_back(light.Raw());
-	//	}
-	//	else
-	//	{
-	//		tNormals.push_back(faces[face]);
-	//		tSpeculars.push_back(shiny);
-	//		//tSunlight.push_back(sun);
-	//		tLighting.push_back(light.Raw());
-	//	}
-	//}
-
 	int normalIdx = face;
 	int texIdx = 100; // temp
 	uint16_t lighting = light.Raw();
@@ -268,7 +250,8 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 
 		float invOcclusion = 1;
 		if (Settings::Graphics.blockAO)
-			invOcclusion = computeBlockAO(block, lpos, glm::vec3(vert), lpos + faces[face]);
+			//invOcclusion = computeBlockAO(block, lpos, glm::vec3(vert), lpos + faces[face]);
+			invOcclusion = vertexFaceAO(lpos, vert, faces[face]);
 		//tColors.push_back(glm::vec4((glm::vec3(color.r, color.g, color.b)) * invOcclusion, color.a));
 		light.Set(glm::vec4(light.Get()) * invOcclusion);
 		lighting = light.Raw();
@@ -276,8 +259,6 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 		// preserve bit ordering
 		encodedStuffArr.push_back(glm::uintBitsToFloat(encoded));
 		lightingArr.push_back(glm::uintBitsToFloat(lighting));
-
-
 	}
 
 	// add 6 indices defining 2 triangles from that quad
@@ -361,11 +342,20 @@ BAO_END:
 
 // TODO: when making this function, use similar near chunk checking scheme to
 // minimize amount of searching in the global chunk map
-float Chunk::vertexFaceAO(const glm::vec3& corner, const glm::ivec3& faceNorm)
+float Chunk::vertexFaceAO(const glm::vec3& lpos, const glm::vec3& cornerDir, const glm::vec3& norm)
 {
-	Block side1, side2, corn;
+	using namespace glm;
+	//Block side1, side2, corn;
 
-	return 0.0f;
+	//glm::vec3 side1Pos = ;
+	
+	vec3 cornerPos = lpos + (cornerDir * 2.0f);
+
+	if (all(greaterThanEqual(cornerPos, vec3(0))) && all(lessThan(cornerPos, vec3(CHUNK_SIZE))))
+		if (At(ivec3(cornerPos)).GetType() != BlockType::bAir)
+			return .5f;
+
+	return 1.0f;
 }
 
 

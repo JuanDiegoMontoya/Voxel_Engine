@@ -256,8 +256,9 @@ private:
 		const glm::vec3& corner,
 		const glm::ivec3& nearFace);
 	float vertexFaceAO(
-		const glm::vec3& corner,
-		const glm::ivec3& faceNorm);
+		const glm::vec3& lpos,
+		const glm::vec3& cornerDir,
+		const glm::vec3& norm);
 
 	std::mutex mutex_;// used for safe concurrent access
 	std::mutex vertex_buffer_mutex_;
