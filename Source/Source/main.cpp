@@ -4,6 +4,7 @@
 #include "Interface.h"
 #include "World.h"
 #include "Renderer.h"
+#include "NuRenderer.h"
 
 int main()
 {
@@ -11,6 +12,7 @@ int main()
 	cfg.verticalSync = true;
 	Engine::Init(cfg);
 	Renderer::Init();
+	NuRenderer::Init();
 	Interface::Init();
 	World::Init();
 

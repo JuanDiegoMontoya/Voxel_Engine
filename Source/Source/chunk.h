@@ -1,4 +1,6 @@
 #pragma once
+#include <camera.h>
+#include <Frustum.h>
 #include "block.h"
 #include "light.h"
 #include "biome.h"
@@ -290,7 +292,74 @@ private:
 
 void TestCoordinateStuff();
 
-inline GLuint Encode(const glm::uvec3& modelPos, int normalIdx, int texIdx, int cornerIdx)
-{
 
+inline const glm::vec3 normals[] =
+{
+	{ 0, 0, 1 }, // 'far' face    (+z direction)
+	{ 0, 0,-1 }, // 'near' face   (-z direction)
+	{-1, 0, 0 }, // 'left' face   (-x direction)
+	{ 1, 0, 0 }, // 'right' face  (+x direction)
+	{ 0, 1, 0 }, // 'top' face    (+y direction)
+	{ 0,-1, 0 }  // 'bottom' face (-y direction)
+};
+
+// clockwise from bottom left texture coordinates
+inline const glm::vec2 tex_corners[] =
+{
+	{ 0, 0 },
+	{ 0, 1 },
+	{ 1, 1 },
+	{ 1, 0 }
+};
+inline void Decode(GLuint encoded, glm::uvec3& modelPos, glm::vec3& normal, glm::vec2& texCoord)
+{
+	// decode vertex position
+	modelPos.x = encoded >> 26;
+	modelPos.y = (encoded >> 20) & 0x3F; // = 0b111111
+	modelPos.z = (encoded >> 14) & 0x3F; // = 0b111111
+	//modelPos += 0.5;
+
+	// decode normal
+	GLuint normalIdx = (encoded >> 11) & 0x7; // = 0b111
+	normal = normals[normalIdx];
+
+	// decode texture index and UV
+	GLuint textureIdx = (encoded >> 2) & 0x1FF; // = 0b1111111111
+	GLuint cornerIdx = (encoded >> 0) & 0x3; // = 0b11
+	glm::vec2 corner = tex_corners[cornerIdx];
+
+	// sample from texture using knowledge of texture dimensions and block index
+	// texCoord = ...
+}
+
+inline GLuint Encode(const glm::uvec3& modelPos, GLuint normalIdx, GLuint texIdx, GLuint cornerIdx)
+{
+	//ASSERT(glm::all(glm::lessThan(modelPos, glm::uvec3(1 << 6))));
+	//ASSERT(normalIdx < (1 << 3));
+	//ASSERT(texIdx < (1 << 9));
+	//ASSERT(cornerIdx < (1 << 2));
+	GLuint encoded = 0;
+
+	// encode vertex position
+	encoded = encoded | (modelPos.x << 26);
+	encoded = encoded | (modelPos.y << 20);
+	encoded = encoded | (modelPos.z << 14);
+
+	// encode normal
+	encoded = encoded | (normalIdx << 11);
+
+	// encode texture information
+	encoded = encoded | (texIdx << 2);
+	encoded = encoded | (cornerIdx << 0);
+
+	//glm::uvec3 pos;
+	//glm::vec3 normal;
+	//glm::vec2 texCoord;
+	//Decode(encoded, pos, normal, texCoord);
+	//ASSERT(glm::all(glm::lessThanEqual(pos, glm::uvec3(32))));
+	//ASSERT(pos == modelPos);
+
+	//float ayy = glm::uintBitsToFloat(encoded);
+	//GLuint lmao = glm::floatBitsToUint(ayy);
+	return encoded;
 }

@@ -25,7 +25,7 @@ void WorldGen::GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse
 		{
 			for (int zc = 0; zc < zSize; zc++)
 			{
-				Chunk* init = Chunk::chunks[glm::ivec3(xc, yc, zc)] = new Chunk(true);
+				Chunk* init = Chunk::chunks[glm::ivec3(xc, yc, zc)] = new Chunk();
 				init->SetPos(glm::ivec3(xc, yc, zc));
 				updateList.push_back(init);
 					
@@ -517,26 +517,26 @@ void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos)
 static double magic = .2; // increase isolevel by this amount (makes it somewhat accurate)
 void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos)
 {
-	for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
-	{
-		for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
-		{
-			for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
-			{
-				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
+	//for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
+	//{
+	//	for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
+	//	{
+	//		for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
+	//		{
+	//			glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 
-				// method 2
-				World::GenerateBlockAt(glm::ivec3(pos), BlockType::bAir); // air by default
-				cell Cell = Chunk::buildCellFromVoxel(pos);
-				for (double& density : Cell.val)
-					if (Utils::mapToRange(density, -1.f, 1.f, 0.f, 1.f) > Chunk::isolevel + magic)
-					{
-						World::GenerateBlockAt(glm::ivec3(pos), BlockType::bGrass); // replace by grass
-						continue;
-					}
-			}
-		}
-	}
+	//			// method 2
+	//			World::GenerateBlockAt(glm::ivec3(pos), BlockType::bAir); // air by default
+	//			cell Cell = Chunk::buildCellFromVoxel(pos);
+	//			for (double& density : Cell.val)
+	//				if (Utils::mapToRange(density, -1.f, 1.f, 0.f, 1.f) > Chunk::isolevel + magic)
+	//				{
+	//					World::GenerateBlockAt(glm::ivec3(pos), BlockType::bGrass); // replace by grass
+	//					continue;
+	//				}
+	//		}
+	//	}
+	//}
 }
 
 

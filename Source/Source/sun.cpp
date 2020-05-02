@@ -69,7 +69,9 @@ void Sun::Render()
 	currShader->setVec2("BillboardSize", 15.5f, 15.5f);
 
 	currShader->setVec4("u_color", 1.f, 1.f, 0.f, 1.f);
+	glDepthMask(GL_TRUE);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDepthMask(GL_FALSE);
 
 	/* Clear the depth buffer after rendering the sun to simulate
 			the sun being at infinity.

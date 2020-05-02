@@ -49,18 +49,18 @@ void Decode(in uint encoded,
   out vec3 modelPos, out vec3 normal, out vec2 texCoord)
 {
   // decode vertex position
-  modelPos.x = encoded >> 27;
-  modelPos.y = (encoded >> 22) & 0x1F; // = 0b11111
-  modelPos.z = (encoded >> 17) & 0x1F; // = 0b11111
+  modelPos.x = encoded >> 26;
+  modelPos.y = (encoded >> 20) & 0x3F; // = 0b111111
+  modelPos.z = (encoded >> 14) & 0x3F; // = 0b111111
   //modelPos += 0.5;
 
   // decode normal
-  uint normalIdx = (encoded >> 14) & 0x7; // = 0b111
+  uint normalIdx = (encoded >> 11) & 0x7; // = 0b111
   normal = normals[normalIdx];
 
   // decode texture index and UV
-  uint textureIdx = (encoded >> 5) & 0x1FF; // = 0b1111111111
-  uint cornerIdx = (encoded >> 3) & 0x3; // = 0b11
+  uint textureIdx = (encoded >> 2) & 0x1FF; // = 0b1111111111
+  uint cornerIdx = (encoded >> 0) & 0x3; // = 0b11
   vec2 corner = tex_corners[cornerIdx];
 
   // sample from texture using knowledge of texture dimensions and block index
@@ -76,7 +76,7 @@ void Decode(in uint encoded, out vec4 lighting)
   lighting.g = (encoded >> 8) & 0xF;
   lighting.b = (encoded >> 4) & 0xF;
   lighting.a = encoded & 0xF;
-  lighting = 1 + (lighting / 16.0);
+  lighting = 1.0 + (lighting / 16.0);
 }
 
 

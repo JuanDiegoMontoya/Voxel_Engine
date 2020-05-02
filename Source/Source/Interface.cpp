@@ -140,8 +140,7 @@ namespace Interface
 				if (p.second)
 				{
 					nonNull++;
-					if (p.second->IsActive())
-						active++;
+					//active++;
 				}
 			}
 			ImGui::Text("Total chunks:    %d", Chunk::chunks.size());

@@ -10,7 +10,13 @@ namespace NuRenderer
 {
 	void Init()
 	{
+		CompileShaders();
 		Engine::PushRenderCallback(DrawAll, 0);
+	}
+
+	void CompileShaders()
+	{
+		Shader::shaders["chunk_optimized"] = new Shader("chunk_optimized.vs", "chunk_optimized.fs");
 	}
 
 	void Clear()
@@ -28,9 +34,9 @@ namespace NuRenderer
 		glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
 		Renderer::drawSky();
-		drawChunks();
-		drawChunksWater();
-		Renderer::drawAxisIndicators();
+		//drawChunks();
+		//drawChunksWater();
+		//Renderer::drawAxisIndicators();
 		//Renderer::postProcess();
 
 		glDisable(GL_FRAMEBUFFER_SRGB);
@@ -43,13 +49,14 @@ namespace NuRenderer
 		glCullFace(GL_BACK); // don't forget to reset original culling face
 
 		// render blocks in each active chunk
-		ShaderPtr currShader = Shader::shaders["chunk_shaded"];
+		ShaderPtr currShader = Shader::shaders["chunk_optimized"];
 		currShader->Use();
 
 		Camera* cam = Renderer::GetPipeline()->GetCamera(0);
 		currShader->setVec3("viewPos", cam->GetPos());
-		float angle = glm::max(glm::dot(Renderer::activeSun_->GetDir(), glm::vec3(0, 1, 0)), 0.f);
+		float angle = glm::max(glm::dot(-Renderer::activeSun_->GetDir(), glm::vec3(0, 1, 0)), 0.f);
 		currShader->setFloat("sunAngle", angle);
+		//printf("Angle: %f\n", angle);
 		// currShader->setInt("textureAtlas", ...);
 
 		float loadD = World::chunkManager_.GetLoadDistance();
@@ -67,11 +74,11 @@ namespace NuRenderer
 			[&](const std::pair<glm::ivec3, Chunk*>& pair)
 		{
 			ChunkPtr chunk = pair.second;
-			if (chunk && chunk->IsVisible())
+			if (chunk && chunk->IsVisible(*cam))
 			{
 				// set some uniforms, etc
 				currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
-				currShader->setVec3("u_pos", chunk->GetPos());
+				currShader->setVec3("u_pos", Chunk::CHUNK_SIZE * chunk->GetPos());
 				chunk->Render();
 			}
 		});

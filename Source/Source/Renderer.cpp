@@ -92,21 +92,21 @@ namespace Renderer
 		Shader::shaders["axis"] = new Shader("axis.vs", "axis.fs");
 		Shader::shaders["flat_color"] = new Shader("flat_color.vs", "flat_color.fs");
 
-		Shader::shaders["chunk_water"] = new Shader("chunk_water.vs", "chunk_water.fs");
-		Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
+		//Shader::shaders["chunk_water"] = new Shader("chunk_water.vs", "chunk_water.fs");
+		//Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
 		Shader::shaders["chunk_geometry"] = new Shader("chunk_gBuffer.vs", "chunk_gBuffer.fs");
 		std::vector<int> values = { 0, 1, 2 };
 		//std::vector<int> values = { 1, 2, 3 };
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[0]", 0);
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[1]", 1);
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[2]", 2);
-		Shader::shaders["chunk_shaded"]->Use();
-		Shader::shaders["chunk_shaded"]->setIntArray("shadowMap", values);
-		Shader::shaders["chunk_water"]->Use();
-		Shader::shaders["chunk_water"]->setIntArray("shadowMap", values);
-		Shader::shaders["chunk_water"]->setInt("ssr_positions", 3);
+		//Shader::shaders["chunk_shaded"]->Use();
+		//Shader::shaders["chunk_shaded"]->setIntArray("shadowMap", values);
+		//Shader::shaders["chunk_water"]->Use();
+		//Shader::shaders["chunk_water"]->setIntArray("shadowMap", values);
+		//Shader::shaders["chunk_water"]->setInt("ssr_positions", 3);
 		//Shader::shaders["chunk_water"]->setInt("ssr_normals", 4);
-		Shader::shaders["chunk_water"]->setInt("ssr_albedoSpec", 5);
+		//Shader::shaders["chunk_water"]->setInt("ssr_albedoSpec", 5);
 		//Shader::shaders["chunk_water"]->setInt("ssr_depth", 6);
 
 
@@ -164,7 +164,7 @@ namespace Renderer
 		CompileShaders();
 		//pipeline.AddCamera()
 
-		Engine::PushRenderCallback(DrawAll, 0);
+		//Engine::PushRenderCallback(DrawAll, 0);
 		//Engine::PushUpdateCallback(Update, 0);
 	}
 
@@ -598,7 +598,7 @@ namespace Renderer
 		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
 			[&](std::pair<glm::ivec3, Chunk*> chunk)
 		{
-			if (chunk.second && (cullFrustum ? chunk.second->IsVisible() : true))
+			if (chunk.second && (cullFrustum ? chunk.second->IsVisible(*pipeline.GetCamera(0)) : true))
 			{
 				auto model = chunk.second->GetModel();
 				draw_cb(model);

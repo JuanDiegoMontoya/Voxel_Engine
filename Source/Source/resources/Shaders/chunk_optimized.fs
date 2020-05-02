@@ -34,8 +34,11 @@ void main()
   //vec3 color = vColor.rgb;
   vec3 tempColor = vNormal * .5 + .5;
 
-  tempColor *= max(vLighting.rgb, vLighting.aaa);
+  vec4 lighting = vLighting;
+  lighting.a *= sunAngle;
+  tempColor *= max(lighting.rgb, lighting.aaa);
   // fog is applied last
   tempColor = mix(tempColor, fogColor, FogCalculation());
   fragColor = vec4(tempColor, 1.0); // alpha is always 100% or 0%
+  //fragColor = vec4(.0001 * tempColor + 1.0, 1.0);
 }

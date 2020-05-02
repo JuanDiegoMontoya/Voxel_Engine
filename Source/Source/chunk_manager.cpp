@@ -128,7 +128,7 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 	// create empty chunk if it's null
 	if (!chunk)
 	{
-		Chunk::chunks[p.chunk_pos] = chunk = new Chunk(true);
+		Chunk::chunks[p.chunk_pos] = chunk = new Chunk();
 		chunk->SetPos(p.chunk_pos);
 		std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
 		generation_queue_.insert(chunk);
@@ -370,7 +370,7 @@ void ChunkManager::createNearbyChunks()
 		// generate null chunks within distance
 		if (!p.second && dist <= loadDistance_)
 		{
-			p.second = new Chunk(true);
+			p.second = new Chunk();
 			p.second->SetPos(p.first);
 //			p.second->generate_ = true;
 			std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
