@@ -6,7 +6,6 @@
 // OpenGL API stuff
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-//#include <glfw3.h>
 
 // GL math libraries
 //#define GLM_SWIZZLE_XYZW

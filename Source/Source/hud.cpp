@@ -10,11 +10,17 @@ void HUD::Update()
 {
 	int ofs = Input::Mouse().scrollOffset.y;
 	int num = int(selected_) + ofs;
-	if (num >= int(BlockType::bCount) || num < 0)
-		ofs = 0;
-	reinterpret_cast<unsigned char&>(selected_) += ofs;
-
+	//if (num >= int(BlockType::bCount) || num < 0)
+	//	ofs = 0;
+	if (ofs)
+	{
+		//printf("%d\n", selected_);
+		selected_ = (BlockType)glm::clamp(num, 0, (int)BlockType::bCount - 1);
+		//printf("%d\n", selected_);
+	}
+	//reinterpret_cast<unsigned char&>(selected_) += ofs;
 	Camera* cam = Renderer::GetPipeline()->GetCamera(0);
+	//printf("%f\n", Input::Mouse().scrollOffset.y);
 
 	// render the selected object on the screen
 	ShaderPtr curr = Shader::shaders["flat_color"];
@@ -32,12 +38,17 @@ void HUD::Update()
 	curr->setVec4("u_color", Block::PropertiesTable[int(selected_)].color);
 	Renderer::DrawCube();
 	curr->setVec4("u_color", glm::vec4(1));
+	model = glm::scale(model, { 1.1, 1.1, 1.1 });
+	curr->setMat4("u_model", model);
+
+
 	GLint polygonMode;
 	glGetIntegerv(GL_POLYGON_MODE, &polygonMode);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	model = glm::scale(model, { 1.1, 1.1, 1.1 });
-	curr->setMat4("u_model", model);
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
 	Renderer::DrawCube();
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
 	glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 }

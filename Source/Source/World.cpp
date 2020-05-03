@@ -45,6 +45,7 @@ namespace World
 		//cameras_.push_back(new Camera(kControlCam));
 		//cameras_.push_back(new Camera(CameraType::kControlCam));
 		auto cam = new Camera(CameraType::kControlCam);
+		cam->scrollMove = false;
 		cam->SetPos({ 0, 5, 0 });
 		Renderer::GetPipeline()->AddCamera(cam);
 
@@ -73,6 +74,7 @@ namespace World
 		sun_ = new Sun();
 
 		Engine::PushUpdateCallback(Update, 0);
+		Engine::PushRenderCallback([] { hud_.Update(); }, 5);
 	}
 
 	void Shutdown()
@@ -104,7 +106,7 @@ namespace World
 		
 		//Renderer::DrawAll();
 		Editor::Update();
-		hud_.Update();
+		//hud_.Update();
 		//DrawImGui();
 	}
 
@@ -265,7 +267,7 @@ namespace World
 				if (!block || block->GetType() == BlockType::bAir)
 					return false;
 
-				UpdateBlockAt(pos + side, hud_.selected_);
+				UpdateBlockAt(pos + side, hud_.GetSelected());
 
 				return true;
 			}
@@ -317,7 +319,7 @@ namespace World
 				if (!block || block->GetType() == BlockType::bAir)
 					return false;
 
-				hud_.selected_ = block->GetType();
+				hud_.SetSelected(block->GetType());
 
 				return true;
 			}

@@ -6,6 +6,9 @@ class HUD
 {
 public:
 	void Update();
-	BlockType selected_ = BlockType::bError;
+
+	BlockType GetSelected() { return selected_; }
+	void SetSelected(BlockType s) { selected_ = s; }
 private:
+	BlockType selected_ = BlockType::bError;
 };

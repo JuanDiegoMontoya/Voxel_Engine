@@ -327,7 +327,9 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="transform.cpp" />
     <ClCompile Include="game_object.cpp" />
     <ClCompile Include="World.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="main.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="serialize.cpp" />
     <ClCompile Include="settings.cpp" />

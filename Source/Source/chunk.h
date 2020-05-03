@@ -255,7 +255,7 @@ private:
 		const glm::ivec3& blockPos,
 		const glm::vec3& corner,
 		const glm::ivec3& nearFace);
-	float vertexFaceAO(
+	int vertexFaceAO(
 		const glm::vec3& lpos,
 		const glm::vec3& cornerDir,
 		const glm::vec3& norm);
@@ -333,16 +333,16 @@ inline GLuint Encode(const glm::uvec3& modelPos, GLuint normalIdx, GLuint texIdx
 	GLuint encoded = 0;
 
 	// encode vertex position
-	encoded = encoded | (modelPos.x << 26);
-	encoded = encoded | (modelPos.y << 20);
-	encoded = encoded | (modelPos.z << 14);
+	encoded |= modelPos.x << 26;
+	encoded |= modelPos.y << 20;
+	encoded |= modelPos.z << 14;
 
 	// encode normal
-	encoded = encoded | (normalIdx << 11);
+	encoded |= normalIdx << 11;
 
 	// encode texture information
-	encoded = encoded | (texIdx << 2);
-	encoded = encoded | (cornerIdx << 0);
+	encoded |= texIdx << 2;
+	encoded |= cornerIdx << 0;
 
 	//glm::uvec3 pos;
 	//glm::vec3 normal;

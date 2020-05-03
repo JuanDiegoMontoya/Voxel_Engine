@@ -1,5 +1,4 @@
 #include "stdafx.h"
-
 #include <Engine.h>
 #include "Interface.h"
 #include "World.h"

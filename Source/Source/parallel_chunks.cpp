@@ -20,11 +20,7 @@ void ChunkManager::chunk_generator_thread_task()
 
 		std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
 		{
-#if MARCHED_CUBES
-			WorldGen::Generate3DNoiseChunk(chunk->GetPos());
-#else
 			WorldGen::GenerateChunk(chunk->GetPos());
-#endif
 			std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
 			mesher_queue_.insert(chunk);
 		});

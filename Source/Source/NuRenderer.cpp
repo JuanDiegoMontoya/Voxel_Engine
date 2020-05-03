@@ -64,7 +64,6 @@ namespace NuRenderer
 		currShader->Use();
 
 		Camera* cam = Renderer::GetPipeline()->GetCamera(0);
-		//currShader->setVec3("viewPos", cam->GetPos());
 		float angle = glm::max(glm::dot(-glm::normalize(Renderer::activeSun_->GetDir()), glm::vec3(0, 1, 0)), 0.f);
 		currShader->setFloat("sunAngle", angle);
 		//printf("Angle: %f\n", angle);
@@ -77,9 +76,10 @@ namespace NuRenderer
 			glm::pow(.529f, 2.2f),
 			glm::pow(.808f, 2.2f),
 			glm::pow(.922f, 2.2f));
-		//currShader->setFloat("fogStart", loadD - loadD / 2.f);
-		//currShader->setFloat("fogEnd", loadD - Chunk::CHUNK_SIZE * 1.44f); // cuberoot(3)
-		//currShader->setVec3("fogColor", skyColor);
+		currShader->setVec3("viewPos", cam->GetPos());
+		currShader->setFloat("fogStart", loadD - loadD / 2.f);
+		currShader->setFloat("fogEnd", loadD - Chunk::CHUNK_SIZE * 1.44f); // cuberoot(3)
+		currShader->setVec3("fogColor", skyColor);
 
 		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
 			[&](const std::pair<glm::ivec3, Chunk*>& pair)

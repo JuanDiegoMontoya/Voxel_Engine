@@ -47,14 +47,14 @@ ChunkManager::~ChunkManager()
 void ChunkManager::Init()
 {
 	// run main thread on core 1
-	SetThreadAffinityMask(GetCurrentThread(), 1);
+	//SetThreadAffinityMask(GetCurrentThread(), 1);
 
 	// spawn chunk block generator threads
 	for (int i = 0; i < 4; i++)
 	{
 		chunk_generator_threads_.push_back(
 			new std::thread([this]() { chunk_generator_thread_task(); }));
-		SetThreadAffinityMask(chunk_generator_threads_[i]->native_handle(), ~1);
+		//SetThreadAffinityMask(chunk_generator_threads_[i]->native_handle(), ~1);
 	}
 
 	// spawn chunk mesh generator threads
@@ -62,7 +62,7 @@ void ChunkManager::Init()
 	{
 		chunk_mesher_threads_.push_back(
 			new std::thread([this]() { chunk_mesher_thread_task(); }));
-		SetThreadAffinityMask(chunk_mesher_threads_[i]->native_handle(), ~1);
+		//SetThreadAffinityMask(chunk_mesher_threads_[i]->native_handle(), ~1);
 	}
 }
 
