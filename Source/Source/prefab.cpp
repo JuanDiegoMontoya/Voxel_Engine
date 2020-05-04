@@ -15,18 +15,18 @@ void PrefabManager::InitPrefabs()
 	Prefab tree;
 	for (int i = 0; i < 5; i++)
 	{
-		tree.Add({ 0, i, 0 }, Block(BlockType::bOakWood, 2));
+		tree.Add({ 0, i, 0 }, Block(BlockType::bOakWood));
 
 		if (i > 2)
 		{
-			tree.Add({ -1, i, 0 }, Block(BlockType::bOakLeaves, 1));
-			tree.Add({ +1, i, 0 }, Block(BlockType::bOakLeaves, 1));
-			tree.Add({ 0, i, -1 }, Block(BlockType::bOakLeaves, 1));
-			tree.Add({ 0, i, +1 }, Block(BlockType::bOakLeaves, 1));
+			tree.Add({ -1, i, 0 }, Block(BlockType::bOakLeaves));
+			tree.Add({ +1, i, 0 }, Block(BlockType::bOakLeaves));
+			tree.Add({ 0, i, -1 }, Block(BlockType::bOakLeaves));
+			tree.Add({ 0, i, +1 }, Block(BlockType::bOakLeaves));
 		}
 
 		if (i == 4)
-			tree.Add({ 0, i + 1, 0 }, Block(BlockType::bOakLeaves, 1));
+			tree.Add({ 0, i + 1, 0 }, Block(BlockType::bOakLeaves));
 	}
 	prefabs_[PrefabName::OakTree] = tree;
 
@@ -34,21 +34,21 @@ void PrefabManager::InitPrefabs()
 	for (int i = 0; i < 8; i++)
 	{
 		if (i < 7)
-			bTree.Add({ 0, i, 0 }, Block(BlockType::bOakWood, 2));
+			bTree.Add({ 0, i, 0 }, Block(BlockType::bOakWood));
 		else
-			bTree.Add({ 0, i, 0 }, Block(BlockType::bOakLeaves, 2));
+			bTree.Add({ 0, i, 0 }, Block(BlockType::bOakLeaves));
 
 		if (i > 4)
 		{
-			bTree.Add({ -1, i, 0 }, Block(BlockType::bOakLeaves, 1));
-			bTree.Add({ +1, i, 0 }, Block(BlockType::bOakLeaves, 1));
-			bTree.Add({ 0 , i, -1 }, Block(BlockType::bOakLeaves, 1));
-			bTree.Add({ 0 , i, +1 }, Block(BlockType::bOakLeaves, 1));
+			bTree.Add({ -1, i, 0 }, Block(BlockType::bOakLeaves));
+			bTree.Add({ +1, i, 0 }, Block(BlockType::bOakLeaves));
+			bTree.Add({ 0 , i, -1 }, Block(BlockType::bOakLeaves));
+			bTree.Add({ 0 , i, +1 }, Block(BlockType::bOakLeaves));
 
-			bTree.Add({ -1, i, -1 }, Block(BlockType::bOakLeaves, 1));
-			bTree.Add({ +1, i, +1 }, Block(BlockType::bOakLeaves, 1));
-			bTree.Add({ +1, i, -1 }, Block(BlockType::bOakLeaves, 1));
-			bTree.Add({ -1, i, +1 }, Block(BlockType::bOakLeaves, 1));
+			bTree.Add({ -1, i, -1 }, Block(BlockType::bOakLeaves));
+			bTree.Add({ +1, i, +1 }, Block(BlockType::bOakLeaves));
+			bTree.Add({ +1, i, -1 }, Block(BlockType::bOakLeaves));
+			bTree.Add({ -1, i, +1 }, Block(BlockType::bOakLeaves));
 		}
 	}
 	prefabs_[PrefabName::OakTreeBig] = bTree;
@@ -61,7 +61,7 @@ void PrefabManager::InitPrefabs()
 		{
 			for (int z = 0; z < 3; z++)
 			{
-				error.Add({ x, y, z }, Block(BlockType::bError, 0xf));
+				error.Add({ x, y, z }, Block(BlockType::bError));
 			}
 		}
 	}

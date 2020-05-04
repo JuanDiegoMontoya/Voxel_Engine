@@ -229,7 +229,7 @@ namespace World
 	void World::UpdateBlockAt(glm::ivec3 wpos, Block bl)
 	{
 		Block block = bl;
-		block.SetWriteStrength(0xf);
+		//block.SetWriteStrength(0xf);
 		chunkManager_.UpdateBlock(wpos, block);
 	}
 

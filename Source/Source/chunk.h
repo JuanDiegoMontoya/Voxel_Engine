@@ -10,6 +10,8 @@
 #include <atomic>
 #include <Shapes.h>
 
+#include "BlockStorage.h"
+
 #include <cereal/archives/binary.hpp>
 
 #define MARCHED_CUBES 0
@@ -60,7 +62,6 @@ public:
 	/*################################
 						Global Chunk Info
 	################################*/
-	static constexpr int GetChunkSize() { return CHUNK_SIZE; }
 	static constexpr int CHUNK_SIZE			  = 32;
 	static constexpr int CHUNK_SIZE_SQRED = CHUNK_SIZE * CHUNK_SIZE;
 	static constexpr int CHUNK_SIZE_CUBED = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
@@ -140,28 +141,28 @@ public:
 
 	Block& At(const glm::ivec3 p)
 	{
-		return blocks[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+		return storage[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
 	}
 
 	Block& At(int x, int y, int z)
 	{
-		return blocks[ID3D(x, y, z, CHUNK_SIZE, CHUNK_SIZE)];
+		return storage[ID3D(x, y, z, CHUNK_SIZE, CHUNK_SIZE)];
 	}
 
-	inline Block BlockAtCheap(const glm::ivec3 p)
+	inline Block BlockAtCheap(const glm::ivec3& p)
 	{
-		return blocks[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+		return storage[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
 	}
 
-	Light& LightAt(const glm::ivec3 p)
-	{
-		return lightMap[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
-	}
+	//Light& LightAt(const glm::ivec3 p)
+	//{
+	//	return lightMap[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+	//}
 
-	Light LightAtCheap(const glm::ivec3 p)
-	{
-		return lightMap[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
-	}
+	//Light LightAtCheap(const glm::ivec3 p)
+	//{
+	//	return lightMap[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+	//}
 
 	// block at a position in world space
 	static BlockPtr AtWorld(const glm::ivec3 p)
@@ -173,14 +174,14 @@ public:
 		return nullptr;
 	}
 
-	static LightPtr LightAtWorld(const glm::ivec3 p)
-	{
-		localpos w = worldBlockToLocalPos(p);
-		ChunkPtr cnk = chunks[w.chunk_pos];
-		if (cnk)
-			return &cnk->LightAt(w.block_pos);
-		return nullptr;
-	}
+	//static LightPtr LightAtWorld(const glm::ivec3 p)
+	//{
+	//	localpos w = worldBlockToLocalPos(p);
+	//	ChunkPtr cnk = chunks[w.chunk_pos];
+	//	if (cnk)
+	//		return &cnk->LightAt(w.block_pos);
+	//	return nullptr;
+	//}
 
 	AABB GetAABB() const
 	{
@@ -190,8 +191,9 @@ public:
 	/*################################
 						Raw Block Data
 	################################*/
-	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
-	Light lightMap[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+	//Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+	//Light lightMap[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+	ArrayBlockStorage storage;
 	//static inline std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 	static inline Concurrency::concurrent_unordered_map // TODO: make CustomGrow(tm) concurrent map solution to be more portable
 		<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
@@ -207,7 +209,7 @@ public:
 	void serialize(Archive& ar)
 	{
 		// save position, block, and lighting data
-		ar(pos_, cereal::binary_data(blocks, sizeof(blocks)), cereal::binary_data(lightMap, sizeof(lightMap)));
+		//ar(pos_, cereal::binary_data(blocks, sizeof(blocks)), cereal::binary_data(lightMap, sizeof(lightMap)));
 	}
 
 	friend class WorldGen;

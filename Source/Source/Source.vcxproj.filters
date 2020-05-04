@@ -49,6 +49,9 @@
     <Filter Include="Engine">
       <UniqueIdentifier>{743f078a-5283-40f5-9bfb-0ead862dbdc1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Voxel Engine\Chunks">
+      <UniqueIdentifier>{39f2c382-fdfb-4702-a311-794e55352318}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="settings.h">
@@ -265,6 +268,12 @@
     <ClInclude Include="NuRenderer.h">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="ChunkStorage.h">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </ClInclude>
+    <ClInclude Include="BlockStorage.h">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -435,5 +444,10 @@
     <ClCompile Include="NuRenderer.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BlockStorage.inl">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </None>
   </ItemGroup>
 </Project>

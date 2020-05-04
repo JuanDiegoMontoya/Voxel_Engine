@@ -17,7 +17,7 @@
 #include "misc_utils.h"
 
 
-Chunk::Chunk()
+Chunk::Chunk() : storage(CHUNK_SIZE)
 {
 }
 
@@ -27,7 +27,7 @@ Chunk::~Chunk()
 }
 
 
-Chunk::Chunk(const Chunk& other)
+Chunk::Chunk(const Chunk& other) : storage(CHUNK_SIZE)
 {
 	*this = other;
 }
@@ -38,8 +38,7 @@ Chunk& Chunk::operator=(const Chunk& rhs)
 {
 	//this->pos_ = rhs.pos_;
 	this->SetPos(rhs.pos_);
-	std::copy(std::begin(rhs.blocks), std::end(rhs.blocks), std::begin(this->blocks));
-	std::copy(std::begin(rhs.lightMap), std::end(rhs.lightMap), std::begin(this->lightMap));
+	this->storage = rhs.storage;
 	return *this;
 }
 
@@ -103,6 +102,9 @@ void Chunk::BuildBuffers()
 		tIndices.clear();
 		encodedStuffArr.clear();
 		lightingArr.clear();
+		//tIndices.resize(0);
+		//encodedStuffArr.resize(0);
+		//lightingArr.resize(0);
 	}
 }
 
@@ -118,6 +120,9 @@ void Chunk::BuildMesh()
 	}
 	std::lock_guard<std::mutex> lock(vertex_buffer_mutex_);
 
+	// absolute worst case (chunk consisting of checkered cubes)
+	//encodedStuffArr.reserve(393216);
+	//lightingArr.reserve(393216);
 
 	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
@@ -135,17 +140,11 @@ void Chunk::BuildMesh()
 				int index = x + yczcsq;
 
 				// skip fully transparent blocks
-				const Block block = blocks[index];
+				const Block block = storage[index];
 				if (Block::PropertiesTable[block.GetTypei()].invisible)
 					continue;
 
-#if MARCHED_CUBES
-				//buildBlockVertices_marched_cubes(pos, At(x, y, z));
-				buildBlockVertices_marched_cubes({ x, y, z }, block);
-#else
-				//buildBlockVertices_normal(pos, Render::cube_norm_tex_vertices, 48, At(x, y, z));
 				buildBlockVertices_normal({ x, y, z }, block);
-#endif
 			}
 		}
 	}
@@ -200,7 +199,8 @@ void Chunk::buildBlockFace(
 
 	// neighboring block and light
 	Block block2 = nearChunk->BlockAtCheap(nearblock.block_pos);
-	Light light = nearChunk->LightAtCheap(nearblock.block_pos);
+	Light light = block2.GetLight();
+	//Light light = nearChunk->LightAtCheap(nearblock.block_pos);
 
 	// this block is water and other block isn't water and is above this block
 	if (block2.GetType() != BlockType::bWater && block.GetType() == BlockType::bWater && (nearblock.block_pos - blockPos).y > 0)

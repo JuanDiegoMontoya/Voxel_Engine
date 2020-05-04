@@ -22,8 +22,8 @@ namespace Utils
 			//ASSERT(first != second);
 			if (first == second)
 				return false;
-			glm::vec3 wposA = glm::vec3(first->GetPos() * Chunk::GetChunkSize());
-			glm::vec3 wposB = glm::vec3(second->GetPos() * Chunk::GetChunkSize());
+			glm::vec3 wposA = glm::vec3(first->GetPos() * Chunk::CHUNK_SIZE);
+			glm::vec3 wposB = glm::vec3(second->GetPos() * Chunk::CHUNK_SIZE);
 			glm::vec3 cam = Renderer::GetPipeline()->GetCamera(0)->GetPos();
 			return
 				glm::distance(wposA, cam) <
@@ -58,9 +58,7 @@ public:
 	void UpdateBlockCheap(const glm::ivec3& wpos, Block block);
 	void UpdateBlockLight(const glm::ivec3 wpos, const Light light);
 	Block GetBlock(glm::ivec3 wpos); // wrapper
-	Light GetLight(glm::ivec3 wpos); // wrapper
 	BlockPtr GetBlockPtr(const glm::ivec3 wpos);
-	LightPtr GetLightPtr(const glm::ivec3 wpos);
 	void ReloadAllChunks(); // for when big things change
 
 	// getters

@@ -37,7 +37,7 @@ void WorldGen::GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse
 						{
 							if (Utils::get_random(0, 1) > sparse)
 								continue;
-							init->At(x, y, z).SetType(BlockType(int(Utils::get_random(1.f, float(BlockType::bCount)))), false);
+							init->At(x, y, z).SetType(BlockType(int(Utils::get_random(1.f, float(BlockType::bCount)))));
 						}
 					}
 				}

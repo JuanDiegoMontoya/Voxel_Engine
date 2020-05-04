@@ -403,6 +403,8 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
   <ItemGroup>
     <ClInclude Include="biome.h" />
     <ClInclude Include="block.h" />
+    <ClInclude Include="BlockStorage.h" />
+    <ClInclude Include="ChunkStorage.h" />
     <ClInclude Include="Engine\Source\camera.h" />
     <ClInclude Include="Engine\Source\Frustum.h" />
     <ClInclude Include="Engine\Source\load_image.h" />
@@ -473,6 +475,9 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="vendor\imgui\stb_textedit.h" />
     <ClInclude Include="vendor\imgui\stb_truetype.h" />
     <ClInclude Include="vendor\noiseutils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BlockStorage.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

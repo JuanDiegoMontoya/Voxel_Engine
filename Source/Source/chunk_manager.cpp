@@ -118,12 +118,12 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 	Block remBlock = block ? *block : Block(); // store state of removed block to update lighting
 	ChunkPtr chunk = Chunk::chunks[p.chunk_pos];
 
-	if (block)
-	{
-		// write policy: skip if new block is WEAKER than current block (same strength WILL overwrite)
-		if (bl.WriteStrength() < block->WriteStrength())
-			return;
-	}
+	//if (block)
+	//{
+	//	// write policy: skip if new block is WEAKER than current block (same strength WILL overwrite)
+	//	if (bl.WriteStrength() < block->WriteStrength())
+	//		return;
+	//}
 
 	// create empty chunk if it's null
 	if (!chunk)
@@ -137,7 +137,7 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 
 	if (!block) // reset block if it's invalid
 		block = &chunk->At(p.block_pos);
-	block->SetType(bl.GetType(), bl.WriteStrength());
+	block->SetType(bl.GetType());
 
 	// check if removed block emitted light
 	//glm::uvec3 emit1 = Block::PropertiesTable[int(remBlock.GetType())].emittance;
@@ -204,24 +204,9 @@ Block ChunkManager::GetBlock(const glm::ivec3 wpos)
 }
 
 
-Light ChunkManager::GetLight(const glm::ivec3 wpos)
-{
-	LightPtr light = Chunk::LightAtWorld(wpos);
-	if (!light)
-		return Light();
-	return *light;
-}
-
-
 BlockPtr ChunkManager::GetBlockPtr(const glm::ivec3 wpos)
 {
 	return Chunk::AtWorld(wpos);
-}
-
-
-LightPtr ChunkManager::GetLightPtr(const glm::ivec3 wpos)
-{
-	return Chunk::LightAtWorld(wpos);
 }
 
 
@@ -389,14 +374,11 @@ void ChunkManager::createNearbyChunks()
 void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself)
 {
 	// get existing light at the position
-	LightPtr L = GetLightPtr(wpos);
-	if (L)
-	{
-		// if there is already light in the spot,
-		// combine the two by taking the max values only
-		glm::u8vec4 t = glm::max(L->Get(), nLight.Get());
-		L->Set(t); //*L = t;
-	}
+	Light& L = GetBlockPtr(wpos)->GetLightRef();
+	// if there is already light in the spot,
+	// combine the two by taking the max values only
+	glm::u8vec4 t = glm::max(L.Get(), nLight.Get());
+	L.Set(t); //*L = t;
 	
 	// queue of world positions, rather than chunk + local index (they are equivalent)
 	std::queue<glm::ivec3> lightQueue;
@@ -406,7 +388,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 	{
 		glm::ivec3 lightp = lightQueue.front(); // light position
 		lightQueue.pop();
-		Light lightLevel = GetLight(lightp);    // node that will be giving light to others
+		Light lightLevel = GetBlock(lightp).GetLight(); // node that will be giving light to others
 		constexpr glm::ivec3 dirs[] =
 		{
 			{ 1, 0, 0 },
@@ -420,8 +402,9 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 		// update each neighbor
 		for (const auto& dir : dirs)
 		{
-			Block block = GetBlock(lightp + dir);       // neighboring block
-			LightPtr light = GetLightPtr(lightp + dir); // neighboring light (pointer)
+			BlockPtr block = GetBlockPtr(lightp + dir);
+			//Block block = GetBlock(lightp + dir); // neighboring block
+			LightPtr light = &block->GetLightRef(); // neighboring light (pointer)
 
 			// add chunk to update queue if it exists
 			if (Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos] != nullptr)
@@ -431,7 +414,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 			ASSERT(light != nullptr);
 
 			// if neighbor is solid block, skip dat boi
-			if (Block::PropertiesTable[block.GetTypei()].color.a == 1)
+			if (Block::PropertiesTable[block->GetTypei()].color.a == 1)
 				continue;
 
 			// iterate over R, G, B
@@ -464,9 +447,9 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 {
 	std::queue<std::pair<glm::ivec3, Light>> lightRemovalQueue;
-	Light light = GetLight(wpos);
+	Light light = GetBlock(wpos).GetLight();
 	lightRemovalQueue.push({ wpos, light });
-	GetLightPtr(wpos)->Set({ 0, 0, 0, light.GetS() });
+	GetBlockPtr(wpos)->GetLightRef().Set({ 0, 0, 0, light.GetS() });
 
 	std::queue<std::pair<glm::ivec3, Light>> lightReadditionQueue;
 
@@ -492,10 +475,11 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 			//	continue;
 			for (const auto& dir : dirs)
 			{
-				LightPtr nearLight = GetLightPtr(plight + dir);
-				if (!nearLight)
+				BlockPtr b = GetBlockPtr(plight + dir);
+				if (!b)
 					continue;
-				glm::u8vec4 nlightv = nearLight->Get(); // near light value
+				Light& nearLight = b->GetLightRef();
+				glm::u8vec4 nlightv = nearLight.Get(); // near light value
 
 				// skip updates when light is 0
 				// remove light if there is any and if it is weaker than this node's light value
@@ -503,12 +487,12 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 				{
 					if (nlightv[ci] != 0 && nlightv[ci] == lightv[ci] - 1)
 					{
-						lightRemovalQueue.push({ plight + dir, *nearLight });
+						lightRemovalQueue.push({ plight + dir, nearLight });
 						if (Chunk::chunks[Chunk::worldBlockToLocalPos(plight + dir).chunk_pos])
 							delayed_update_queue_.insert(Chunk::chunks[Chunk::worldBlockToLocalPos(plight + dir).chunk_pos]);
-						auto tmp = nearLight->Get();
+						auto tmp = nearLight.Get();
 						tmp[ci] = 0;
-						nearLight->Set(tmp);
+						nearLight.Set(tmp);
 					}
 					// re-propagate near light that is equal to or brighter than this after setting it all to 0
 					else if (nlightv[ci] > lightv[ci])

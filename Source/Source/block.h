@@ -1,8 +1,6 @@
 #pragma once
-//#include "level.h"
-//#include "pipeline.h"
 #include "serialize.h"
-//#include "utilities.h"
+#include "light.h"
 
 // visual properties (for now)
 struct BlockProperties
@@ -18,7 +16,7 @@ struct BlockProperties
 
 
 // defines various block properties and behaviors
-enum class BlockType : uint8_t // upgrade when over 256 block types
+enum class BlockType : uint16_t // upgrade when over 2^16 block types
 {
 	bAir = 0, // default type
 	bStone,
@@ -43,53 +41,33 @@ enum class BlockType : uint8_t // upgrade when over 256 block types
 };
 
 
-// a 1x1x1 cube
-//#pragma pack(push, 1)
-typedef class Block
+typedef struct Block
 {
 public:
 	
-	Block(BlockType t = BlockType::bAir, unsigned char w = 0, unsigned char l = 0)
-		: type_(t)
-	{
-		SetWriteStrength(w);
-		SetLightValue(l);
-	}
+	Block(BlockType t = BlockType::bAir) : type_(t) {}
 
 	// Getters
 	BlockType GetType() const { return type_; }
 	int GetTypei() const { return int(type_); }
 	const char* GetName() const { return Block::PropertiesTable[unsigned(type_)].name; }
-	unsigned char WriteStrength() const { return (wlValues_ & 0xF0) >> 4; }
-	unsigned char LightValue() const { return wlValues_ & 0x0F; }
+	Light& GetLightRef() { return light_; }
+	Light GetLight() const { return light_; }
 
 	// Setters
-	void SetType(BlockType ty, unsigned char write) { type_ = ty; SetWriteStrength(write); }
-	void SetWriteStrength(unsigned char w)
-	{
-		ASSERT(w <= 0xf);
-		wlValues_ = (wlValues_ & 0x0F) | (w << 4);
-	}
-	void SetLightValue(unsigned char l)
-	{
-		ASSERT(l <= 0xf);
-		wlValues_ = (wlValues_ & 0xF0) | (l);
-	}
+	void SetType(BlockType ty) { type_ = ty; }
 
 	// Serialization
 	template <class Archive>
 	void serialize(Archive& ar)
 	{
-		ar(type_, wlValues_);
+		uint8_t fake;
+		ar(type_, fake);
 	}
 
 	static const std::vector<BlockProperties> PropertiesTable;
 private:
-	BlockType type_;
+	BlockType type_; // could probably shove extra data in this
+	Light light_;
 
-	// left 4 bits = writeStrength; right 4 bits = lightValue
-	// the lighting information can be derived at runtime, but
-	// the write strength should be serialized in the future
-	uint8_t wlValues_;
 }Block, *BlockPtr;
-//#pragma pack(pop)
