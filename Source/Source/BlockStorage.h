@@ -18,4 +18,22 @@ private:
 	Block* blocks = nullptr;
 };
 
+
+class PaletteBlockStorage
+{
+public:
+	
+
+private:
+	struct PaletteEntry
+	{
+		int refcount = 0;
+		BlockType type;
+	};
+
+	const size_t size;
+	std::vector<bool> data;
+	PaletteEntry* palette;
+};
+
 #include "BlockStorage.inl"
