@@ -274,6 +274,9 @@
     <ClInclude Include="BlockStorage.h">
       <Filter>Voxel Engine\Chunks</Filter>
     </ClInclude>
+    <ClInclude Include="BitArray.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
