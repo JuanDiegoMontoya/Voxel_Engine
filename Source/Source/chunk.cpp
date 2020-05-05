@@ -140,7 +140,7 @@ void Chunk::BuildMesh()
 				int index = x + yczcsq;
 
 				// skip fully transparent blocks
-				const Block block = storage[index];
+				const Block block = BlockAt(index);
 				if (Block::PropertiesTable[block.GetTypei()].invisible)
 					continue;
 
@@ -198,7 +198,7 @@ void Chunk::buildBlockFace(
 		return;
 
 	// neighboring block and light
-	Block block2 = nearChunk->BlockAtCheap(nearblock.block_pos);
+	Block block2 = nearChunk->BlockAt(nearblock.block_pos);
 	Light light = block2.GetLight();
 	//Light light = nearChunk->LightAtCheap(nearblock.block_pos);
 
@@ -280,75 +280,6 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 }
 
 
-// computes how many of the two adjacent faces to the corner (that aren't this block) are solid
-// returns a brightness scalar
-float Chunk::computeBlockAO(
-	Block block,
-	const glm::ivec3& blockPos,
-	const glm::vec3& corner,
-	const glm::ivec3& nearFace)
-{
-	glm::ivec3 normal = nearFace - blockPos;
-	glm::ivec3 combined = glm::ivec3(corner * 2.f) + normal; // convert corner to -1 to 1 range
-	glm::ivec3 c1(0);
-	glm::ivec3 c2(0);
-	for (int i = 0; i < 3; i++)
-	{
-		if (glm::abs(combined[i]) != 2)
-		{
-			if (combined[i] && c1 == glm::ivec3(0))
-				c1[i] = combined[i];
-			else if (c2 == glm::ivec3(0))
-				c2[i] = combined[i];
-		}
-	}
-	
-	float occlusion = 1;
-	const float occAmt = .2f;
-
-	// block 1
-	localpos nearblock1 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c1 + normal));
-	auto findVal1 = chunks.find(nearblock1.chunk_pos);
-	ChunkPtr near1 = findVal1 == chunks.end() ? nullptr : findVal1->second;
-	if (!near1)
-		goto B2AO;
-	//if (!near1->active_)
-	//	goto B2AO;
-	if (near1->At(nearblock1.block_pos).GetType() != BlockType::bAir && near1->At(nearblock1.block_pos).GetType() != BlockType::bWater)
-		occlusion -= occAmt;
-
-B2AO:
-	// block 2
-	localpos nearblock2 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c2 + normal));
-	auto findVal2 = chunks.find(nearblock2.chunk_pos);
-	ChunkPtr near2 = findVal2 == chunks.end() ? nullptr : findVal2->second;
-	if (!near2)
-		goto BAO_END;
-	//if (!near2->active_)
-	//	goto BAO_END;
-	if (near2->At(nearblock2.block_pos).GetType() != BlockType::bAir && near2->At(nearblock2.block_pos).GetType() != BlockType::bWater)
-		occlusion -= occAmt;
-
-	// check diagonal if not 'fully' occluded
-	if (occlusion > 1 - 2.f * occAmt)
-	{
-		// block 3
-		localpos nearblock3 = worldBlockToLocalPos(chunkBlockToWorldPos(blockPos + c1 + c2 + normal));
-		auto findVal3 = chunks.find(nearblock3.chunk_pos);
-		ChunkPtr near3 = findVal3 == chunks.end() ? nullptr : findVal3->second;
-		if (!near3)
-			goto BAO_END;
-		//if (!near3->active_)
-		//	goto BAO_END;
-		if (near3->At(nearblock3.block_pos).GetType() != BlockType::bAir && near3->At(nearblock3.block_pos).GetType() != BlockType::bWater)
-			occlusion -= occAmt;
-	}
-
-BAO_END:
-	return occlusion;
-}
-
-
 // TODO: when making this function, use similar near chunk checking scheme to
 // minimize amount of searching in the global chunk map
 int Chunk::vertexFaceAO(const glm::vec3& lpos, const glm::vec3& cornerDir, const glm::vec3& norm)
@@ -368,7 +299,7 @@ int Chunk::vertexFaceAO(const glm::vec3& lpos, const glm::vec3& cornerDir, const
 			sideDir[i] = sidesDir[i];
 			vec3 sidePos = lpos + sideDir + norm;
 			if (all(greaterThanEqual(sidePos, vec3(0))) && all(lessThan(sidePos, vec3(CHUNK_SIZE))))
-				if (At(ivec3(sidePos)).GetType() != BlockType::bAir)
+				if (BlockAt(ivec3(sidePos)).GetType() != BlockType::bAir)
 					occluded++;
 		}
 	}
@@ -379,7 +310,7 @@ int Chunk::vertexFaceAO(const glm::vec3& lpos, const glm::vec3& cornerDir, const
 	
 	vec3 cornerPos = lpos + (cornerDir * 2.0f);
 	if (all(greaterThanEqual(cornerPos, vec3(0))) && all(lessThan(cornerPos, vec3(CHUNK_SIZE))))
-		if (At(ivec3(cornerPos)).GetType() != BlockType::bAir)
+		if (BlockAt(ivec3(cornerPos)).GetType() != BlockType::bAir)
 			occluded++;
 
 	return 3 - occluded;

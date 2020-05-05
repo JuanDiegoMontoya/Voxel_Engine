@@ -46,6 +46,7 @@ typedef struct Block
 public:
 	
 	Block(BlockType t = BlockType::bAir) : type_(t) {}
+	Block(BlockType t, Light l) : type_(t), light_(l) {}
 
 	// Getters
 	BlockType GetType() const { return type_; }

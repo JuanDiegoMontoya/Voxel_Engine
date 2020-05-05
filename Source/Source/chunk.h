@@ -139,49 +139,44 @@ public:
 		return glm::ivec3(local + (pos_ * CHUNK_SIZE));
 	}
 
-	Block& At(const glm::ivec3 p)
-	{
-		return storage[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
-	}
-
-	Block& At(int x, int y, int z)
-	{
-		return storage[ID3D(x, y, z, CHUNK_SIZE, CHUNK_SIZE)];
-	}
-
-	inline Block BlockAtCheap(const glm::ivec3& p)
-	{
-		return storage[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
-	}
-
-	//Light& LightAt(const glm::ivec3 p)
+	//Block& At(const glm::ivec3 p)
 	//{
-	//	return lightMap[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+	//	return storage[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
 	//}
 
-	//Light LightAtCheap(const glm::ivec3 p)
+	//Block& At(int x, int y, int z)
 	//{
-	//	return lightMap[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+	//	return storage[ID3D(x, y, z, CHUNK_SIZE, CHUNK_SIZE)];
 	//}
+
+	inline Block BlockAt(const glm::ivec3& p)
+	{
+		return storage.GetBlock(ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE));
+	}
+
+	inline Block BlockAt(int index)
+	{
+		return storage.GetBlock(index);
+	}
 
 	// block at a position in world space
-	static BlockPtr AtWorld(const glm::ivec3 p)
-	{
-		localpos w = worldBlockToLocalPos(p);
-		ChunkPtr cnk = chunks[w.chunk_pos];
-		if (cnk)
-			return &cnk->At(w.block_pos);
-		return nullptr;
-	}
-
-	//static LightPtr LightAtWorld(const glm::ivec3 p)
+	//static BlockPtr AtWorld(const glm::ivec3& p)
 	//{
 	//	localpos w = worldBlockToLocalPos(p);
 	//	ChunkPtr cnk = chunks[w.chunk_pos];
 	//	if (cnk)
-	//		return &cnk->LightAt(w.block_pos);
+	//		return &cnk->At(w.block_pos);
 	//	return nullptr;
 	//}
+
+	static Block AtWorldC(const glm::ivec3& p)
+	{
+			localpos w = worldBlockToLocalPos(p);
+			ChunkPtr cnk = chunks[w.chunk_pos];
+			if (cnk)
+				return cnk->BlockAt(w.block_pos);
+			return Block();
+	}
 
 	AABB GetAABB() const
 	{
@@ -193,7 +188,8 @@ public:
 	################################*/
 	//Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 	//Light lightMap[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
-	ArrayBlockStorage storage;
+	//ArrayBlockStorage storage;
+	PaletteBlockStorage storage;
 	//static inline std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
 	static inline Concurrency::concurrent_unordered_map // TODO: make CustomGrow(tm) concurrent map solution to be more portable
 		<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
@@ -252,11 +248,6 @@ private:
 		int face, ChunkPtr nearChunk, Light light);
 
 	// returns inverse of occludedness
-	float computeBlockAO(
-		Block block,
-		const glm::ivec3& blockPos,
-		const glm::vec3& corner,
-		const glm::ivec3& nearFace);
 	int vertexFaceAO(
 		const glm::vec3& lpos,
 		const glm::vec3& cornerDir,

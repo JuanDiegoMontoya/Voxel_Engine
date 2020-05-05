@@ -195,8 +195,8 @@ namespace Interface
 				ImGui::Text("Block Type: %d (%s)", (unsigned)block->GetType(), block->GetName());
 				//ImGui::Text("Write Strength: %d", block->WriteStrength());
 				//ImGui::Text("Light Value: %d", block->LightValue());
-				Light lit = Chunk::AtWorld(pos)->GetLight();
-				Light lit2 = Chunk::AtWorld(pos + side)->GetLight();
+				Light lit = Chunk::AtWorldC(pos).GetLight();
+				Light lit2 = Chunk::AtWorldC(pos + side).GetLight();
 				ImGui::Text("Light: (%d, %d, %d, %d)", lit.GetR(), lit.GetG(), lit.GetB(), lit.GetS());
 				ImGui::Text("FLight: (%d, %d, %d, %d)", lit2.GetR(), lit2.GetG(), lit2.GetB(), lit2.GetS());
 				ImGui::Text("Block pos:  (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
