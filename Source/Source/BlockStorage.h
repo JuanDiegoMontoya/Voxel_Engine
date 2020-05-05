@@ -15,6 +15,8 @@ public:
 	Block& operator[](int index);
 	Block& GetBlockRef(int index);
 	Block GetBlock(int index);
+	void SetBlock(int index, BlockType);
+	void SetLight(int index, Light);
 private:
 
 	const size_t size_;
@@ -44,7 +46,7 @@ private:
 	struct PaletteEntry
 	{
 		BlockType type;
-		int refcount = 0;
+		unsigned refcount = 0;
 	};
 
 	unsigned newPaletteEntry();

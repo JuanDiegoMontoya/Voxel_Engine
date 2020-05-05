@@ -17,7 +17,7 @@
 #include "misc_utils.h"
 
 
-Chunk::Chunk() : storage(CHUNK_SIZE)
+Chunk::Chunk() : storage(CHUNK_SIZE_CUBED)
 {
 }
 
@@ -27,7 +27,7 @@ Chunk::~Chunk()
 }
 
 
-Chunk::Chunk(const Chunk& other) : storage(CHUNK_SIZE)
+Chunk::Chunk(const Chunk& other) : storage(CHUNK_SIZE_CUBED)
 {
 	*this = other;
 }

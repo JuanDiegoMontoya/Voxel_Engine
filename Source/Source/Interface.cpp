@@ -186,13 +186,13 @@ namespace Interface
 				Renderer::GetPipeline()->GetCamera(0)->GetPos(),
 				Renderer::GetPipeline()->GetCamera(0)->front,
 				dist,
-				std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
-				([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
+				std::function<bool(glm::vec3, Block, glm::vec3)>
+				([&](glm::vec3 pos, Block block, glm::vec3 side)->bool
 			{
-				if (!block || block->GetType() == BlockType::bAir)
+				if (block.GetType() == BlockType::bAir)
 					return false;
 
-				ImGui::Text("Block Type: %d (%s)", (unsigned)block->GetType(), block->GetName());
+				ImGui::Text("Block Type: %d (%s)", (unsigned)block.GetType(), block.GetName());
 				//ImGui::Text("Write Strength: %d", block->WriteStrength());
 				//ImGui::Text("Light Value: %d", block->LightValue());
 				Light lit = Chunk::AtWorldC(pos).GetLight();

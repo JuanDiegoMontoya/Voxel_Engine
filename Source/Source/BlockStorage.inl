@@ -41,16 +41,27 @@ inline Block ArrayBlockStorage::GetBlock(int index)
 	return blocks_[index];
 }
 
-
-
-
-
-inline PaletteBlockStorage::PaletteBlockStorage(size_t chunkSize)
-	: size_(chunkSize * chunkSize * chunkSize), data_(size_ * paletteEntryLength_)
+inline void ArrayBlockStorage::SetBlock(int index, BlockType type)
 {
+	blocks_[index].SetType(type);
+}
+
+inline void ArrayBlockStorage::SetLight(int index, Light light)
+{
+	blocks_[index].GetLightRef() = light;
+}
+
+
+
+
+
+inline PaletteBlockStorage::PaletteBlockStorage(size_t size)
+	: size_(size)
+{
+	data_.Resize(size_ * paletteEntryLength_);
 	// # of block choices corresponds to # of bits required for palette entry
 	// 2^paletteEntryLength choices
-	palette_.resize(1 << paletteEntryLength_);
+	palette_.resize(1u << paletteEntryLength_);
 }
 
 inline PaletteBlockStorage::~PaletteBlockStorage()
@@ -153,7 +164,7 @@ inline void PaletteBlockStorage::growPalette()
 	// double length of palette
 	//paletteEntryLength_ <<= 1;
 	paletteEntryLength_++;
-	palette_.resize(1 << paletteEntryLength_);
+	palette_.resize(1u << paletteEntryLength_);
 
 	// increase length of bitset to accommodate extra bit
 	data_.Resize(size_ * paletteEntryLength_);

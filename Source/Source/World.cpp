@@ -243,6 +243,7 @@ namespace World
 
 	void World::GenerateBlockAtCheap(glm::ivec3 wpos, Block b)
 	{
+		ASSERT(0);
 		chunkManager_.UpdateBlockCheap(wpos, b);
 	}
 
@@ -261,10 +262,10 @@ namespace World
 				Renderer::GetPipeline()->GetCamera(0)->GetPos(),
 				Renderer::GetPipeline()->GetCamera(0)->front,
 				5,
-				std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
-				([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
+				std::function<bool(glm::vec3, Block, glm::vec3)>
+				([&](glm::vec3 pos, Block block, glm::vec3 side)->bool
 			{
-				if (!block || block->GetType() == BlockType::bAir)
+				if (block.GetType() == BlockType::bAir)
 					return false;
 
 				UpdateBlockAt(pos + side, hud_.GetSelected());
@@ -287,10 +288,10 @@ namespace World
 				Renderer::GetPipeline()->GetCamera(0)->GetPos(),
 				Renderer::GetPipeline()->GetCamera(0)->front,
 				5,
-				std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
-				([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
+				std::function<bool(glm::vec3, Block, glm::vec3)>
+				([&](glm::vec3 pos, Block block, glm::vec3 side)->bool
 			{
-				if (!block || block->GetType() == BlockType::bAir)
+				if (block.GetType() == BlockType::bAir)
 					return false;
 
 				UpdateBlockAt(pos, BlockType::bAir);
@@ -313,13 +314,13 @@ namespace World
 				Renderer::GetPipeline()->GetCamera(0)->GetPos(),
 				Renderer::GetPipeline()->GetCamera(0)->front,
 				5,
-				std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
-				([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
+				std::function<bool(glm::vec3, Block, glm::vec3)>
+				([&](glm::vec3 pos, Block block, glm::vec3 side)->bool
 			{
-				if (!block || block->GetType() == BlockType::bAir)
+				if (block.GetType() == BlockType::bAir)
 					return false;
 
-				hud_.SetSelected(block->GetType());
+				hud_.SetSelected(block.GetType());
 
 				return true;
 			}

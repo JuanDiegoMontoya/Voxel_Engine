@@ -94,6 +94,7 @@ void ChunkManager::Update()
 
 void ChunkManager::UpdateChunk(ChunkPtr chunk)
 {
+	ASSERT(chunk != nullptr);
 	std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 	mesher_queue_.insert(chunk);
 }
@@ -114,8 +115,8 @@ void ChunkManager::UpdateChunk(const glm::ivec3 wpos)
 void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 {
 	localpos p = Chunk::worldBlockToLocalPos(wpos);
-	BlockPtr block = Chunk::AtWorld(wpos);
-	Block remBlock = block ? *block : Block(); // store state of removed block to update lighting
+	//BlockPtr block = Chunk::AtWorld(wpos);
+	Block remBlock = Chunk::AtWorldD(p); // store state of removed block to update lighting
 	ChunkPtr chunk = Chunk::chunks[p.chunk_pos];
 
 	//if (block)
@@ -128,23 +129,18 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 	// create empty chunk if it's null
 	if (!chunk)
 	{
+		// make chunk, then modify changed block
 		Chunk::chunks[p.chunk_pos] = chunk = new Chunk();
 		chunk->SetPos(p.chunk_pos);
 		std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
 		generation_queue_.insert(chunk);
-		//chunk->generate_ = true;
+		remBlock = chunk->BlockAt(p.block_pos); // remBlock would've been 0 block cuz null, so it's fix here
 	}
 
-	if (!block) // reset block if it's invalid
-		block = &chunk->At(p.block_pos);
-	block->SetType(bl.GetType());
+	chunk->SetBlockTypeAt(p.block_pos, bl.GetType());
 
 	// check if removed block emitted light
-	//glm::uvec3 emit1 = Block::PropertiesTable[int(remBlock.GetType())].emittance;
-	//auto emit1 = Chunk::LightAtWorld(wpos)->Get();
-	//if (emit1 != glm::uvec3(0))
-	//if (Chunk::LightAtWorld(wpos)->Raw() != 0)
-		lightPropagateRemove(wpos);
+	lightPropagateRemove(wpos);
 
 	// check if added block emits light
 	glm::uvec3 emit2 = Block::PropertiesTable[int(bl.GetType())].emittance;
@@ -152,8 +148,6 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 		lightPropagateAdd(wpos, Light(Block::PropertiesTable[int(bl.GetType())].emittance));
 
 	// add to update list if it ain't
-	//if (!isChunkInUpdateList(chunk))
-	//	updatedChunks_.push_back(chunk);
 	{ // scoped, otherwise deadlock will occur in 'checkUpdateChunkNearBlock'
 		std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 		mesher_queue_.insert(chunk);
@@ -168,7 +162,7 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 		{ 0, 1, 0 },
 		{ 0, 0,-1 },
 		{ 0, 0, 1 }
-		// TODO: add 8 more cases for diagonals (AO)
+		// TODO: add 20 more cases for diagonals (AO)
 	};
 	for (const auto& dir : dirs)
 	{
@@ -182,13 +176,16 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 // perform no checks, therefore the chunk must be known prior to placing the block
 void ChunkManager::UpdateBlockCheap(const glm::ivec3& wpos, Block block)
 {
-	*Chunk::AtWorld(wpos) = block;
+	auto l = Chunk::worldBlockToLocalPos(wpos);
+	Chunk::chunks[l.chunk_pos]->SetBlockTypeAt(l.block_pos, block.GetType());
+	//*Chunk::AtWorld(wpos) = block;
 	//UpdatedChunk(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
 }
 
 
 void ChunkManager::UpdateBlockLight(const glm::ivec3 wpos, const Light light)
 {
+	ASSERT(0);
 	Block block = GetBlock(wpos);
 	//block.SetLightValue(light.r);
 	//UpdateBlock(wpos, block);
@@ -197,16 +194,19 @@ void ChunkManager::UpdateBlockLight(const glm::ivec3 wpos, const Light light)
 
 Block ChunkManager::GetBlock(const glm::ivec3 wpos)
 {
-	BlockPtr block = Chunk::AtWorld(wpos);
-	if (!block)
-		return Block();
-	return *block;
+	//BlockPtr block = Chunk::AtWorld(wpos);
+	//if (!block)
+	//	return Block();
+	//return *block;
+	return Chunk::AtWorldC(wpos);
 }
 
 
 BlockPtr ChunkManager::GetBlockPtr(const glm::ivec3 wpos)
 {
-	return Chunk::AtWorld(wpos);
+	ASSERT(0);
+	return nullptr;
+	//return Chunk::AtWorld(wpos);
 }
 
 
@@ -281,13 +281,15 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 		return;
 
 	// update chunk if near block is NOT air/invisible
-	BlockPtr cb = Chunk::AtWorld(pos);
-	BlockPtr nb = Chunk::AtWorld(pos + near);
-	if (cb && nb && nb->GetType() != BlockType::bAir)
+	//BlockPtr cb = Chunk::AtWorld(pos);
+	//BlockPtr nb = Chunk::AtWorld(pos + near);
+	//if (cb && nb && nb->GetType() != BlockType::bAir)
+	ChunkPtr cptr = Chunk::chunks[p2.chunk_pos];
+	if (cptr)
 	{
 		std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
-		mesher_queue_.insert(Chunk::chunks[p2.chunk_pos]);
-		delayed_update_queue_.erase(Chunk::chunks[p2.chunk_pos]);
+		mesher_queue_.insert(cptr);
+		delayed_update_queue_.erase(cptr);
 	}
 		//if (!isChunkInUpdateList(Chunk::chunks[p2.chunk_pos]))
 		//	updatedChunks_.push_back(Chunk::chunks[p2.chunk_pos]);
@@ -373,6 +375,10 @@ void ChunkManager::createNearbyChunks()
 // skipself: chunk updating thing
 void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself)
 {
+	return;
+
+
+
 	// get existing light at the position
 	Light& L = GetBlockPtr(wpos)->GetLightRef();
 	// if there is already light in the spot,
@@ -446,6 +452,11 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 
 void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 {
+	return;
+
+
+
+
 	std::queue<std::pair<glm::ivec3, Light>> lightRemovalQueue;
 	Light light = GetBlock(wpos).GetLight();
 	lightRemovalQueue.push({ wpos, light });
@@ -526,7 +537,7 @@ bool ChunkManager::checkDirectSunlight(glm::ivec3 wpos)
 	ChunkPtr chunk = Chunk::chunks[p.chunk_pos];
 	if (!chunk)
 		return false;
-	Block block = chunk->At(p.block_pos);
+	Block block = chunk->BlockAt(p.block_pos);
 
 	// find the highest valid chunk
 	constexpr glm::ivec3 up(0, 1, 0);

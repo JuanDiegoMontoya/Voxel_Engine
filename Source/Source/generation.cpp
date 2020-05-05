@@ -37,7 +37,7 @@ void WorldGen::GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse
 						{
 							if (Utils::get_random(0, 1) > sparse)
 								continue;
-							init->At(x, y, z).SetType(BlockType(int(Utils::get_random(1.f, float(BlockType::bCount)))));
+							init->SetBlockTypeAt({ x, y, z }, BlockType(int(Utils::get_random(1.f, float(BlockType::bCount)))));
 						}
 					}
 				}
@@ -459,7 +459,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos)
 				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
 				if (val > .9 && World::GetBlockAt(pos).GetType() != BlockType::bWater)
-					World::GenerateBlockAtCheap(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
+					World::GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
 					//level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
 			}
 		}

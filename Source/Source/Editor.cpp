@@ -204,9 +204,9 @@ namespace Editor
 					Renderer::GetPipeline()->GetCamera(0)->GetPos(),
 					Renderer::GetPipeline()->GetCamera(0)->front,
 					pickLength,
-					[&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
+					[&](glm::vec3 pos, Block block, glm::vec3 side)->bool
 				{
-					if (!block || block->GetType() == BlockType::bAir)
+					if (block.GetType() == BlockType::bAir)
 						return false;
 					if (selectedPositions == 0)
 						hposition = pos;

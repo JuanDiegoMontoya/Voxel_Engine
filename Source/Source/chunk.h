@@ -178,6 +178,26 @@ public:
 			return Block();
 	}
 
+	static Block AtWorldD(const localpos& p)
+	{
+		ChunkPtr cnk = chunks[p.chunk_pos];
+		if (cnk)
+			return cnk->BlockAt(p.block_pos);
+		return Block();
+	}
+
+	inline void SetBlockTypeAt(const glm::ivec3& lpos, BlockType type)
+	{
+		storage.SetBlock(
+			ID3D(lpos.x, lpos.y, lpos.z, CHUNK_SIZE, CHUNK_SIZE), type);
+	}
+
+	inline void SetLightAt(const glm::ivec3& lpos, Light light)
+	{
+		storage.SetLight(
+			ID3D(lpos.x, lpos.y, lpos.z, CHUNK_SIZE, CHUNK_SIZE), light);
+	}
+
 	AABB GetAABB() const
 	{
 		return bounds;
