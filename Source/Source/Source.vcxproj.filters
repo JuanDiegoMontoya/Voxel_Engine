@@ -280,6 +280,9 @@
     <ClInclude Include="ChunkHelpers.h">
       <Filter>Voxel Engine\Chunks</Filter>
     </ClInclude>
+    <ClInclude Include="ChunkMesh.h">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -450,9 +453,15 @@
     <ClCompile Include="chunk.cpp">
       <Filter>Voxel Engine</Filter>
     </ClCompile>
+    <ClCompile Include="ChunkMesh.cpp">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="BlockStorage.inl">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </None>
+    <None Include="ChunkHelpers.inl">
       <Filter>Voxel Engine\Chunks</Filter>
     </None>
   </ItemGroup>

@@ -76,15 +76,6 @@ namespace ChunkHelpers
 		// texCoord = ...
 	}
 
-	inline constexpr glm::ivec3 faces[6] =
-	{
-		{ 0, 0, 1 }, // 'far' face    (+z direction)
-		{ 0, 0,-1 }, // 'near' face   (-z direction)
-		{-1, 0, 0 }, // 'left' face   (-x direction)
-		{ 1, 0, 0 }, // 'right' face  (+x direction)
-		{ 0, 1, 0 }, // 'top' face    (+y direction)
-		{ 0,-1, 0 }, // 'bottom' face (-y direction)
-	};
 
 	// clockwise from bottom left texture coordinates
 	inline const glm::vec2 tex_corners[] =

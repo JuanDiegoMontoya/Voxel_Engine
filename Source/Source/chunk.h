@@ -113,10 +113,6 @@ public:
 		return bounds;
 	}
 
-	// debug
-	static inline bool debug_ignore_light_level = false;
-	static inline std::atomic<double> accumtime = 0;
-	static inline std::atomic<unsigned> accumcount = 0;
 
 
 	// Serialization
@@ -128,17 +124,6 @@ public:
 	}
 
 private:
-	enum
-	{
-		Far,
-		Near,
-		Left,
-		Right,
-		Top,
-		Bottom,
-
-		fCount
-	};
 
 
 	void buildBlockVertices_normal(

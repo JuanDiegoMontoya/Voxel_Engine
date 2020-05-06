@@ -229,6 +229,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="biome.cpp" />
     <ClCompile Include="block.cpp" />
     <ClCompile Include="chunk.cpp" />
+    <ClCompile Include="ChunkMesh.cpp" />
     <ClCompile Include="chunk_manager.cpp" />
     <ClCompile Include="chunk_manager_base.cpp" />
     <ClCompile Include="collision_check.cpp" />
@@ -406,6 +407,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="block.h" />
     <ClInclude Include="BlockStorage.h" />
     <ClInclude Include="ChunkHelpers.h" />
+    <ClInclude Include="ChunkMesh.h" />
     <ClInclude Include="ChunkStorage.h" />
     <ClInclude Include="Engine\Source\camera.h" />
     <ClInclude Include="Engine\Source\Frustum.h" />
@@ -480,6 +482,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
   </ItemGroup>
   <ItemGroup>
     <None Include="BlockStorage.inl" />
+    <None Include="ChunkHelpers.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

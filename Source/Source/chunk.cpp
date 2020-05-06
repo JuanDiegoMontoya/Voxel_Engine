@@ -79,98 +79,16 @@ void Chunk::RenderWater()
 
 void Chunk::BuildBuffers()
 {
-	std::lock_guard<std::mutex> lock(vertex_buffer_mutex_);
-	// generate various vertex buffers
-	{
-		if (!vao_)
-			vao_ = std::make_unique<VAO>();
-
-		ibo_ = std::make_unique<IBO>(&tIndices[0], tIndices.size());
-
-		vao_->Bind();
-		encodedStuffVbo_ = std::make_unique<VBO>(encodedStuffArr.data(), sizeof(GLfloat) * encodedStuffArr.size());
-		encodedStuffVbo_->Bind();
-		glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0); // encoded stuff
-		glEnableVertexAttribArray(0);
-
-		lightingVbo_ = std::make_unique<VBO>(lightingArr.data(), sizeof(GLfloat) * lightingArr.size());
-		lightingVbo_->Bind();
-		glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0); // encoded lighting
-		glEnableVertexAttribArray(1);
-
-		vertexCount_ = encodedStuffArr.size();
-		indexCount_ = tIndices.size();
-		tIndices.clear();
-		encodedStuffArr.clear();
-		lightingArr.clear();
-		//tIndices.resize(0);
-		//encodedStuffArr.resize(0);
-		//lightingArr.resize(0);
-	}
 }
 
 
-#include <iomanip>
 void Chunk::BuildMesh()
 {
-	high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
-
-	for (int i = 0; i < fCount; i++)
-	{
-		nearChunks[i] = ChunkStorage::GetChunk(
-			this->pos_ + ChunkHelpers::faces[i]);
-	}
-	std::lock_guard<std::mutex> lock(vertex_buffer_mutex_);
-
-	// absolute worst case (chunk consisting of checkered cubes)
-	//encodedStuffArr.reserve(393216);
-	//lightingArr.reserve(393216);
-
-	for (int z = 0; z < CHUNK_SIZE; z++)
-	{
-		// precompute first flat index part
-		int zcsq = z * CHUNK_SIZE_SQRED;
-		for (int y = 0; y < CHUNK_SIZE; y++)
-		{
-			// precompute second flat index part
-			int yczcsq = y * CHUNK_SIZE + zcsq;
-			for (int x = 0; x < CHUNK_SIZE; x++)
-			{
-				// this is what we would be doing every innermost iteration
-				//int index = x + y * CHUNK_SIZE + z * CHUNK_SIZE_SQRED;
-				// we only need to do addition
-				int index = x + yczcsq;
-
-				// skip fully transparent blocks
-				const Block block = BlockAt(index);
-				if (Block::PropertiesTable[block.GetTypei()].invisible)
-					continue;
-
-				buildBlockVertices_normal({ x, y, z }, block);
-			}
-		}
-	}
-
-	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
-	double milliseconds = benchmark_duration_.count() * 1000;
-	if (accumcount > 1000)
-	{
-		accumcount = 0;
-		accumtime = 0;
-	}
-	accumtime = accumtime + milliseconds;
-	accumcount = accumcount + 1;
-	//std::cout 
-	//	<< std::setw(-2) << std::showpoint << std::setprecision(4) << accumtime / accumcount << " ms "
-	//	<< "(" << milliseconds << ")"
-	//	<< std::endl;
 }
 
 
 void Chunk::buildBlockVertices_normal(const glm::ivec3& pos, Block block)
 {
-	for (int f = Far; f < fCount; f++)
-		buildBlockFace(f, pos, block);
 }
 
 
