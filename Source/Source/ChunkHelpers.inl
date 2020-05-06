@@ -13,29 +13,43 @@ namespace ChunkHelpers
 
 	inline void fastWorldPosToLocalPos(const glm::ivec3& wpos, localpos& ret)
 	{
+		// TODO: this is a hack to make the compiler happy
+		constexpr int CHUNK_SIZE = 32;
+
 		// compute the modulus of wpos and chunk size (bitwise AND method only works for powers of 2)
 		// to find the relative block position in the chunk
-		ret.block_pos.x = wpos.x & Chunk::CHUNK_SIZE - 1;
-		ret.block_pos.y = wpos.y & Chunk::CHUNK_SIZE - 1;
-		ret.block_pos.z = wpos.z & Chunk::CHUNK_SIZE - 1;
+		ret.block_pos.x = wpos.x & CHUNK_SIZE - 1;
+		ret.block_pos.y = wpos.y & CHUNK_SIZE - 1;
+		ret.block_pos.z = wpos.z & CHUNK_SIZE - 1;
 		// find the chunk position using integer floor method
-		ret.chunk_pos.x = wpos.x / Chunk::CHUNK_SIZE;
-		ret.chunk_pos.y = wpos.y / Chunk::CHUNK_SIZE;
-		ret.chunk_pos.z = wpos.z / Chunk::CHUNK_SIZE;
+		ret.chunk_pos.x = wpos.x / CHUNK_SIZE;
+		ret.chunk_pos.y = wpos.y / CHUNK_SIZE;
+		ret.chunk_pos.z = wpos.z / CHUNK_SIZE;
 		// subtract (floor) if negative w/ non-zero modulus
 		if (wpos.x < 0 && ret.block_pos.x) ret.chunk_pos.x--;
 		if (wpos.y < 0 && ret.block_pos.y) ret.chunk_pos.y--;
 		if (wpos.z < 0 && ret.block_pos.z) ret.chunk_pos.z--;
 		// shift local block position forward by chunk size if negative
-		if (ret.block_pos.x < 0) ret.block_pos.x += Chunk::CHUNK_SIZE;
-		if (ret.block_pos.y < 0) ret.block_pos.y += Chunk::CHUNK_SIZE;
-		if (ret.block_pos.z < 0) ret.block_pos.z += Chunk::CHUNK_SIZE;
+		if (ret.block_pos.x < 0) ret.block_pos.x += CHUNK_SIZE;
+		if (ret.block_pos.y < 0) ret.block_pos.y += CHUNK_SIZE;
+		if (ret.block_pos.z < 0) ret.block_pos.z += CHUNK_SIZE;
 	}
 
 	inline glm::ivec3 chunkPosToWorldPos(const glm::ivec3& local, const glm::ivec3& cpos)
 	{
-		return glm::ivec3(local + (cpos * Chunk::CHUNK_SIZE));
+		// TODO: this is a hack to make the compiler happy
+		constexpr int CHUNK_SIZE = 32;
+		return glm::ivec3(local + (cpos * CHUNK_SIZE));
 	}
+
+	// clockwise from bottom left texture coordinates
+	inline const glm::vec2 tex_corners[] =
+	{
+		{ 0, 0 },
+		{ 0, 1 },
+		{ 1, 1 },
+		{ 1, 0 }
+	};
 
 	inline GLuint Encode(const glm::uvec3& modelPos, GLuint normalIdx, GLuint texIdx, GLuint cornerIdx)
 	{
@@ -76,14 +90,4 @@ namespace ChunkHelpers
 		// sample from texture using knowledge of texture dimensions and block index
 		// texCoord = ...
 	}
-
-
-	// clockwise from bottom left texture coordinates
-	inline const glm::vec2 tex_corners[] =
-	{
-		{ 0, 0 },
-		{ 0, 1 },
-		{ 1, 1 },
-		{ 1, 0 }
-	};
 }

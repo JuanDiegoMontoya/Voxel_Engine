@@ -196,6 +196,7 @@ inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face
 		int invOcclusion = 6;
 		if (Settings::Graphics.blockAO)
 			invOcclusion = 2 * vertexFaceAO(lpos, vert, faces[face]);
+		
 		aoValues[aoValuesIndex++] = invOcclusion;
 		invOcclusion = 6 - invOcclusion;
 		auto tLight = light;

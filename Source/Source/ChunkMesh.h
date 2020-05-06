@@ -14,7 +14,7 @@ public:
 	void Render();
 	void BuildMesh();
 	void BuildBuffers();
-	void SetParent(ChunkPtr);
+	void SetParent(Chunk*);
 
 	// debug
 	static inline bool debug_ignore_light_level = false;
@@ -26,7 +26,7 @@ private:
 		int face,
 		const glm::ivec3& blockPos,
 		BlockType block);
-	void addQuad(const glm::ivec3& lpos, BlockType block, int face, ChunkPtr nearChunk, Light light);
+	void addQuad(const glm::ivec3& lpos, BlockType block, int face, Chunk* nearChunk, Light light);
 	int vertexFaceAO(const glm::vec3& lpos, const glm::vec3& cornerDir, const glm::vec3& norm);
 
 
@@ -42,8 +42,8 @@ private:
 		fCount
 	};
 
-	ChunkPtr parent = nullptr;
-	ChunkPtr nearChunks[6];
+	Chunk* parent = nullptr;
+	Chunk* nearChunks[6];
 
 	std::unique_ptr<IBO> ibo_;
 	std::unique_ptr<VAO> vao_;

@@ -156,7 +156,7 @@ private:
 	AABB bounds{};
 	ChunkPtr nearChunks[6];
 
-	//ArrayBlockStorage storage;
-	PaletteBlockStorage storage;
+	ArrayBlockStorage storage;
+	//PaletteBlockStorage storage;
 	ChunkMesh mesh;
 }Chunk, *ChunkPtr;

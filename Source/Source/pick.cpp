@@ -3,6 +3,7 @@
 #include "block.h"
 #include "chunk.h"
 #include "pick.h"
+#include "ChunkStorage.h"
 
 static int ww = 10000;
 
@@ -95,7 +96,7 @@ void raycast(glm::vec3 origin, glm::vec3 direction, float radius, std::function<
 
 		// Invoke the callback, unless we are not *yet* within the bounds of the
 		// world.
-		if (callback(p, Chunk::AtWorldC(p), face))
+		if (callback(p, ChunkStorage::AtWorldC(p), face))
 			break;
 
 		// tMax.x stores the t-value at which we cross a cube boundary along the

@@ -41,6 +41,11 @@ inline Block ArrayBlockStorage::GetBlock(int index)
 	return blocks_[index];
 }
 
+inline BlockType ArrayBlockStorage::GetBlockType(int index)
+{
+	return blocks_[index].GetType();
+}
+
 inline void ArrayBlockStorage::SetBlock(int index, BlockType type)
 {
 	blocks_[index].SetType(type);

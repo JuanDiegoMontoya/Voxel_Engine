@@ -15,6 +15,7 @@ public:
 	Block& operator[](int index);
 	Block& GetBlockRef(int index);
 	Block GetBlock(int index);
+	BlockType GetBlockType(int index);
 	void SetBlock(int index, BlockType);
 	void SetLight(int index, Light);
 private:
