@@ -283,9 +283,6 @@
     <ClInclude Include="ChunkMesh.h">
       <Filter>Voxel Engine\Chunks</Filter>
     </ClInclude>
-    <ClInclude Include="ChunksInc.h">
-      <Filter>Voxel Engine\Chunks</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">

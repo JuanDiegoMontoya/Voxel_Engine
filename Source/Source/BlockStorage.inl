@@ -67,6 +67,7 @@ inline PaletteBlockStorage::PaletteBlockStorage(size_t size)
 	// # of block choices corresponds to # of bits required for palette entry
 	// 2^paletteEntryLength choices
 	palette_.resize(1u << paletteEntryLength_);
+	palette_[0].refcount = size_;
 }
 
 inline PaletteBlockStorage::~PaletteBlockStorage()
@@ -89,6 +90,12 @@ inline PaletteBlockStorage& PaletteBlockStorage::operator=(const PaletteBlockSto
 
 inline void PaletteBlockStorage::SetBlock(int index, BlockType type)
 {
+	//std::shared_lock lk(mtx);
+	//std::lock_guard lk(mtx);
+	//lk.lock();
+	mtx.lock();
+	//std::cout << "LOCKED\n";
+
 	unsigned paletteIndex = data_.GetSequence(index * paletteEntryLength_, paletteEntryLength_);
 	auto& current = palette_[paletteIndex]; // compiler forces me to make this auto
 
@@ -98,14 +105,16 @@ inline void PaletteBlockStorage::SetBlock(int index, BlockType type)
 	// check if block type is already in palette
 	int replaceIndex = -1;
 	for (int i = 0; i < palette_.size(); i++)
-		if (palette_[i].type == type)
-			replaceIndex = i;
-	if (replaceIndex != -1)
 	{
-		// use existing palette entry
-		data_.SetSequence(index * paletteEntryLength_, paletteEntryLength_, unsigned(replaceIndex));
-		palette_[replaceIndex].refcount++;
-		return;
+		if (palette_[i].type == type)
+		{
+			replaceIndex = i;
+			// use existing palette entry
+			data_.SetSequence(index * paletteEntryLength_, paletteEntryLength_, unsigned(replaceIndex));
+			palette_[replaceIndex].refcount++;
+			mtx.unlock();
+			return;
+		}
 	}
 
 	// check if palette entry of block we just removed is empty
@@ -113,6 +122,7 @@ inline void PaletteBlockStorage::SetBlock(int index, BlockType type)
 	{
 		current.type = type;
 		current.refcount = 1;
+		mtx.unlock();
 		return;
 	}
 
@@ -120,6 +130,9 @@ inline void PaletteBlockStorage::SetBlock(int index, BlockType type)
 	unsigned newEntry = newPaletteEntry();
 	palette_[newEntry] = { type, 1 };
 	data_.SetSequence(index * paletteEntryLength_, paletteEntryLength_, newEntry);
+
+	//std::cout << "UNLOCKED\n";
+	mtx.unlock();
 }
 
 inline Block PaletteBlockStorage::GetBlock(int index)
@@ -129,8 +142,11 @@ inline Block PaletteBlockStorage::GetBlock(int index)
 
 inline BlockType PaletteBlockStorage::GetBlockType(int index)
 {
+	mtx.lock_shared();
 	unsigned paletteIndex = data_.GetSequence(index * paletteEntryLength_, paletteEntryLength_);
-	return palette_[paletteIndex].type;
+	BlockType ret = palette_[paletteIndex].type;
+	mtx.unlock_shared();
+	return ret;
 }
 
 inline void PaletteBlockStorage::SetLight(int index, Light light)

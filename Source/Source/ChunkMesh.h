@@ -58,7 +58,7 @@ private:
 	GLsizei vertexCount_ = 0; // number of block vertices
 	GLsizei indexCount_ = 0; // number of block vertices
 
-	std::mutex mtx;
+	std::shared_mutex mtx;
 };
 
 

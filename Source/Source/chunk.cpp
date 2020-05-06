@@ -48,9 +48,6 @@ Chunk& Chunk::operator=(const Chunk& rhs)
 
 void Chunk::Update()
 {
-	sizeof(Chunk);
-	sizeof(nearChunks);
-	alignof(Chunk);
 	// in the future, make this function perform other tick update actions,
 	// such as updating N random blocks (like in Minecraft)
 }

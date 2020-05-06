@@ -189,7 +189,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClCompile>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -408,7 +408,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="BlockStorage.h" />
     <ClInclude Include="ChunkHelpers.h" />
     <ClInclude Include="ChunkMesh.h" />
-    <ClInclude Include="ChunksInc.h" />
     <ClInclude Include="ChunkStorage.h" />
     <ClInclude Include="Engine\Source\camera.h" />
     <ClInclude Include="Engine\Source\Frustum.h" />

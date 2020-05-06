@@ -58,6 +58,8 @@ private:
 	std::vector<PaletteEntry> palette_;
 	size_t paletteEntryLength_ = 1;
 
+	// allow concurrent reads, but not concurrent writes
+	std::shared_mutex mtx;
 };
 
 #include "BlockStorage.inl"
