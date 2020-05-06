@@ -9,6 +9,8 @@
 #include "generation.h"
 #include "pipeline.h"
 #include "utilities.h"
+#include "ChunkHelpers.h"
+#include "ChunkStorage.h"
 
 // Windows-specific thread affinity
 #ifdef _WIN32
@@ -72,8 +74,8 @@ void ChunkManager::Update()
   PERF_BENCHMARK_START;
 	std::for_each(
 		std::execution::par,
-		Chunk::chunks.begin(),
-		Chunk::chunks.end(),
+		ChunkStorage::GetMapRaw().begin(),
+		ChunkStorage::GetMapRaw().end(),
 		[](auto& p)
 	{
 		if (p.second)
@@ -102,8 +104,9 @@ void ChunkManager::UpdateChunk(ChunkPtr chunk)
 
 void ChunkManager::UpdateChunk(const glm::ivec3 wpos)
 {
-	auto cpos = Chunk::worldBlockToLocalPos(wpos);
-	auto cptr = Chunk::chunks[cpos.chunk_pos];
+	auto cpos = ChunkHelpers::worldPosToLocalPos(wpos);
+	//auto cptr = Chunk::chunks[cpos.chunk_pos];
+	auto cptr = ChunkStorage::GetChunk(cpos.chunk_pos);
 	if (cptr)
 	{
 		std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
@@ -114,10 +117,10 @@ void ChunkManager::UpdateChunk(const glm::ivec3 wpos)
 
 void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 {
-	localpos p = Chunk::worldBlockToLocalPos(wpos);
+	ChunkHelpers::localpos p = ChunkHelpers::worldPosToLocalPos(wpos);
 	//BlockPtr block = Chunk::AtWorld(wpos);
-	Block remBlock = Chunk::AtWorldD(p); // store state of removed block to update lighting
-	ChunkPtr chunk = Chunk::chunks[p.chunk_pos];
+	Block remBlock = ChunkStorage::AtWorldD(p); // store state of removed block to update lighting
+	ChunkPtr chunk = ChunkStorage::GetChunk(p.chunk_pos);
 
 	//if (block)
 	//{
@@ -130,7 +133,7 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 	if (!chunk)
 	{
 		// make chunk, then modify changed block
-		Chunk::chunks[p.chunk_pos] = chunk = new Chunk();
+		ChunkStorage::GetMapRaw()[p.chunk_pos] = chunk = new Chunk();
 		chunk->SetPos(p.chunk_pos);
 		std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
 		generation_queue_.insert(chunk);
@@ -176,8 +179,8 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 // perform no checks, therefore the chunk must be known prior to placing the block
 void ChunkManager::UpdateBlockCheap(const glm::ivec3& wpos, Block block)
 {
-	auto l = Chunk::worldBlockToLocalPos(wpos);
-	Chunk::chunks[l.chunk_pos]->SetBlockTypeAt(l.block_pos, block.GetType());
+	auto l = ChunkHelpers::worldPosToLocalPos(wpos);
+	ChunkStorage::GetChunk(l.chunk_pos)->SetBlockTypeAt(l.block_pos, block.GetType());
 	//*Chunk::AtWorld(wpos) = block;
 	//UpdatedChunk(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
 }
@@ -198,7 +201,7 @@ Block ChunkManager::GetBlock(const glm::ivec3 wpos)
 	//if (!block)
 	//	return Block();
 	//return *block;
-	return Chunk::AtWorldC(wpos);
+	return ChunkStorage::AtWorldC(wpos);
 }
 
 
@@ -212,7 +215,7 @@ BlockPtr ChunkManager::GetBlockPtr(const glm::ivec3 wpos)
 
 void ChunkManager::ReloadAllChunks()
 {
-	for (const auto& p : Chunk::chunks)
+	for (const auto& p : ChunkStorage::GetMapRaw())
 	{
 		if (p.second)
 		{
@@ -237,7 +240,7 @@ void ChunkManager::SaveWorld(std::string fname)
 	cereal::BinaryOutputArchive archive(of);
 	std::vector<Chunk*> tempChunks;
 	//tempChunks.insert(tempChunks.begin(), Chunk::chunks.begin(), Chunk::chunks.end());
-	std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(), [&](auto& p)
+	std::for_each(ChunkStorage::GetMapRaw().begin(), ChunkStorage::GetMapRaw().end(), [&](auto& p)
 		{
 			if (p.second)
 				tempChunks.push_back(p.second);
@@ -250,12 +253,12 @@ void ChunkManager::SaveWorld(std::string fname)
 
 void ChunkManager::LoadWorld(std::string fname)
 {
-	for_each(Chunk::chunks.begin(), Chunk::chunks.end(), [](auto pair)
+	for_each(ChunkStorage::GetMapRaw().begin(), ChunkStorage::GetMapRaw().end(), [](auto pair)
 	{
 		if (pair.second)
 			delete pair.second;
 	});
-	Chunk::chunks.clear();
+	ChunkStorage::GetMapRaw().clear();
 
 	// TODO: fix this (doesn't call serialize functions for some reason)
 	std::ifstream is("./resources/Maps/" + fname + ".bin", std::ios::binary);
@@ -264,7 +267,7 @@ void ChunkManager::LoadWorld(std::string fname)
 	archive(tempChunks);
 	std::for_each(tempChunks.begin(), tempChunks.end(), [&](Chunk& c)
 		{
-			Chunk::chunks[c.GetPos()] = new Chunk(c);
+		ChunkStorage::GetMapRaw()[c.GetPos()] = new Chunk(c);
 		});
 
 	ReloadAllChunks();
@@ -275,8 +278,8 @@ void ChunkManager::LoadWorld(std::string fname)
 void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::ivec3& near)
 {
 	// skip if both blocks are in same chunk
-	localpos p1 = Chunk::worldBlockToLocalPos(pos);
-	localpos p2 = Chunk::worldBlockToLocalPos(pos + near);
+	auto p1 = ChunkHelpers::worldPosToLocalPos(pos);
+	auto p2 = ChunkHelpers::worldPosToLocalPos(pos + near);
 	if (p1.chunk_pos == p2.chunk_pos)
 		return;
 
@@ -284,7 +287,7 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 	//BlockPtr cb = Chunk::AtWorld(pos);
 	//BlockPtr nb = Chunk::AtWorld(pos + near);
 	//if (cb && nb && nb->GetType() != BlockType::bAir)
-	ChunkPtr cptr = Chunk::chunks[p2.chunk_pos];
+	ChunkPtr cptr = ChunkStorage::GetChunk(p2.chunk_pos);
 	if (cptr)
 	{
 		std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
@@ -309,7 +312,7 @@ void ChunkManager::removeFarChunks()
 		std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
 		std::lock_guard<std::mutex> lock3(chunk_buffer_mutex_);
 		Utils::erase_if(
-			Chunk::chunks,
+			ChunkStorage::GetMapRaw(),
 			[&](auto& p)->bool
 		{
 			// range is distance from camera to corner of chunk (corner is ok)
@@ -349,8 +352,8 @@ void ChunkManager::createNearbyChunks()
 	// generate new chunks that are close to the camera
 	std::for_each(
 		std::execution::par,
-		Chunk::chunks.begin(),
-		Chunk::chunks.end(),
+		ChunkStorage::GetMapRaw().begin(),
+		ChunkStorage::GetMapRaw().end(),
 		[&](auto& p)
 	{
 		float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Renderer::GetPipeline()->GetCamera(0)->GetPos());
@@ -413,8 +416,8 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 			LightPtr light = &block->GetLightRef(); // neighboring light (pointer)
 
 			// add chunk to update queue if it exists
-			if (Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos] != nullptr)
-				delayed_update_queue_.insert(Chunk::chunks[Chunk::worldBlockToLocalPos(lightp + dir).chunk_pos]);
+			if (ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(lightp + dir).chunk_pos) != nullptr)
+				delayed_update_queue_.insert(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(lightp + dir).chunk_pos));
 			
 			// invalid light check (should be impossible)
 			ASSERT(light != nullptr);
@@ -446,7 +449,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 
 	// do not update this chunk again if it contained the placed light
 	if (skipself)
-		delayed_update_queue_.erase(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
+		delayed_update_queue_.erase(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(wpos).chunk_pos));
 }
 
 
@@ -499,8 +502,8 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 					if (nlightv[ci] != 0 && nlightv[ci] == lightv[ci] - 1)
 					{
 						lightRemovalQueue.push({ plight + dir, nearLight });
-						if (Chunk::chunks[Chunk::worldBlockToLocalPos(plight + dir).chunk_pos])
-							delayed_update_queue_.insert(Chunk::chunks[Chunk::worldBlockToLocalPos(plight + dir).chunk_pos]);
+						if (ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(plight + dir).chunk_pos))
+							delayed_update_queue_.insert(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(plight + dir).chunk_pos));
 						auto tmp = nearLight.Get();
 						tmp[ci] = 0;
 						nearLight.Set(tmp);
@@ -527,14 +530,14 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 	}
 
 	// do not update the removed block's chunk again since the act of removing will update it
-	delayed_update_queue_.erase(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
+	delayed_update_queue_.erase(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(wpos).chunk_pos));
 }
 
 
 bool ChunkManager::checkDirectSunlight(glm::ivec3 wpos)
 {
-	localpos p = Chunk::worldBlockToLocalPos(wpos);
-	ChunkPtr chunk = Chunk::chunks[p.chunk_pos];
+	auto p = ChunkHelpers::worldPosToLocalPos(wpos);
+	ChunkPtr chunk = ChunkStorage::GetChunk(p.chunk_pos);
 	if (!chunk)
 		return false;
 	Block block = chunk->BlockAt(p.block_pos);
@@ -547,7 +550,7 @@ bool ChunkManager::checkDirectSunlight(glm::ivec3 wpos)
 	{
 		chunk = next;
 		cpos += up;
-		next = Chunk::chunks[cpos];
+		next = ChunkStorage::GetChunk(cpos);
 	}
 
 	// go down until we hit another solid block or this block

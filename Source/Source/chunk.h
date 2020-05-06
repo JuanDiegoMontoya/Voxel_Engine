@@ -10,8 +10,9 @@
 #include <atomic>
 #include <Shapes.h>
 
-#include "BlockStorage.h"
 #include "ChunkHelpers.h"
+#include "BlockStorage.h"
+#include "ChunkMesh.h"
 
 #include <cereal/archives/binary.hpp>
 
@@ -61,10 +62,6 @@ public:
 						Draw Functions
 	################################*/
 	void Update();
-	void Render();
-	void RenderWater();
-	void BuildMesh();
-	void BuildBuffers();
 
 
 	/*################################
@@ -96,6 +93,16 @@ public:
 		return storage.GetBlock(index);
 	}
 
+	inline BlockType BlockTypeAt(const glm::ivec3& p)
+	{
+		return storage.GetBlockType(ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE));
+	}
+
+	inline BlockType BlockTypeAt(int index)
+	{
+		return storage.GetBlockType(index);
+	}
+
 	inline void SetBlockTypeAt(const glm::ivec3& lpos, BlockType type)
 	{
 		storage.SetBlock(
@@ -114,6 +121,22 @@ public:
 	}
 
 
+	void BuildMesh()
+	{
+		mesh.BuildMesh();
+	}
+
+	void BuildBuffers()
+	{
+		mesh.BuildBuffers();
+	}
+
+	void Render()
+	{
+		mesh.Render();
+	}
+
+
 
 	// Serialization
 	template <class Archive>
@@ -125,39 +148,7 @@ public:
 
 private:
 
-
-	void buildBlockVertices_normal(
-		const glm::ivec3& pos,
-		Block block);
-	void buildBlockFace(
-		int face,
-		const glm::ivec3& blockPos,
-		Block block);
-
-	// adds quad at given location
-	void addQuad(const glm::ivec3& lpos, Block block, 
-		int face, ChunkPtr nearChunk, Light light);
-
-	// returns inverse of occludedness
-	int vertexFaceAO(
-		const glm::vec3& lpos,
-		const glm::vec3& cornerDir,
-		const glm::vec3& norm);
-
 	std::mutex mutex_;// used for safe concurrent access
-	std::mutex vertex_buffer_mutex_;
-
-	// buffers
-	std::unique_ptr<IBO> ibo_;
-	std::unique_ptr<VAO> vao_;
-	std::unique_ptr<VBO> encodedStuffVbo_;
-	std::unique_ptr<VBO> lightingVbo_;
-	// vertex data (held until buffers are sent to GPU)
-	std::vector<GLuint> tIndices;
-	std::vector<GLfloat> encodedStuffArr;
-	std::vector<GLfloat> lightingArr;
-	GLsizei vertexCount_ = 0; // number of block vertices
-	GLsizei indexCount_ = 0; // number of block vertices
 
 	glm::mat4 model_;
 	glm::ivec3 pos_;	// position relative to other chunks (1 chunk = 1 index)
@@ -167,4 +158,5 @@ private:
 
 	//ArrayBlockStorage storage;
 	PaletteBlockStorage storage;
+	ChunkMesh mesh;
 }Chunk, *ChunkPtr;

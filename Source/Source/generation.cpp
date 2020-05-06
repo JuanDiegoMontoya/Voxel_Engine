@@ -9,6 +9,7 @@
 #include <noise/noise.h>
 #include "vendor/noiseutils.h"
 #include <execution>
+#include "ChunkStorage.h"
 
 int maxHeight = 255;
 
@@ -25,7 +26,7 @@ void WorldGen::GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse
 		{
 			for (int zc = 0; zc < zSize; zc++)
 			{
-				Chunk* init = Chunk::chunks[glm::ivec3(xc, yc, zc)] = new Chunk();
+				Chunk* init = ChunkStorage::GetMapRaw()[glm::ivec3(xc, yc, zc)] = new Chunk();
 				init->SetPos(glm::ivec3(xc, yc, zc));
 				updateList.push_back(init);
 					

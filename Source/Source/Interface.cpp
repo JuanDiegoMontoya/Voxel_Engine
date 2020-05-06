@@ -11,6 +11,9 @@
 #include "settings.h"
 #include "ImGuiBonus.h"
 #include <input.h>
+#include "ChunkStorage.h"
+#include "ChunkHelpers.h"
+#include "ChunkMesh.h"
 
 namespace Interface
 {
@@ -83,7 +86,7 @@ namespace Interface
 			if (ImGui::Button("Delete far chunks (unsafe)"))
 			{
 				std::vector<ChunkPtr> deleteList;
-				std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
+				std::for_each(ChunkStorage::GetMapRaw().begin(), ChunkStorage::GetMapRaw().end(),
 					[&](auto& p)
 				{
 					float dist = glm::distance(glm::vec3(p.first * Chunk::CHUNK_SIZE), Renderer::GetPipeline()->GetCamera(0)->GetPos());
@@ -133,7 +136,7 @@ namespace Interface
 			ImGui::SameLine();
 			ImGui::ColorButton("visualization", ImVec4(pos.x, pos.y, pos.z, 1.f));
 
-			localpos local = Chunk::worldBlockToLocalPos(Renderer::GetPipeline()->GetCamera(0)->GetPos());
+			ChunkHelpers::localpos local = ChunkHelpers::worldPosToLocalPos(Renderer::GetPipeline()->GetCamera(0)->GetPos());
 			ImGui::Text("In chunk pos: (%d, %d, %d)", local.chunk_pos.x, local.chunk_pos.y, local.chunk_pos.z);
 			ImGui::Text("In block pos: (%d, %d, %d)", local.block_pos.x, local.block_pos.y, local.block_pos.z);
 
@@ -141,7 +144,7 @@ namespace Interface
 			ImGui::Text("Chunk size: %d", Chunk::CHUNK_SIZE);
 			int nonNull = 0;
 			int active = 0;
-			for (auto& p : Chunk::chunks)
+			for (auto& p : ChunkStorage::GetMapRaw())
 			{
 				if (p.second)
 				{
@@ -149,7 +152,7 @@ namespace Interface
 					//active++;
 				}
 			}
-			ImGui::Text("Total chunks:    %d", Chunk::chunks.size());
+			ImGui::Text("Total chunks:    %d", ChunkStorage::GetMapRaw().size());
 			ImGui::Text("Non-null chunks: %d", nonNull);
 			ImGui::Text("Active chunks:   %d", active);
 
@@ -195,8 +198,8 @@ namespace Interface
 				ImGui::Text("Block Type: %d (%s)", (unsigned)block.GetType(), block.GetName());
 				//ImGui::Text("Write Strength: %d", block->WriteStrength());
 				//ImGui::Text("Light Value: %d", block->LightValue());
-				Light lit = Chunk::AtWorldC(pos).GetLight();
-				Light lit2 = Chunk::AtWorldC(pos + side).GetLight();
+				Light lit = ChunkStorage::AtWorldC(pos).GetLight();
+				Light lit2 = ChunkStorage::AtWorldC(pos + side).GetLight();
 				ImGui::Text("Light: (%d, %d, %d, %d)", lit.GetR(), lit.GetG(), lit.GetB(), lit.GetS());
 				ImGui::Text("FLight: (%d, %d, %d, %d)", lit2.GetR(), lit2.GetG(), lit2.GetB(), lit2.GetS());
 				ImGui::Text("Block pos:  (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
@@ -229,7 +232,7 @@ namespace Interface
 			ImGui::Begin("Global Settings");
 			if (ImGui::Checkbox("Compute baked AO", &Settings::GFX::blockAO))
 				World::chunkManager_.ReloadAllChunks();
-			if (ImGui::Checkbox("Skip lighting", &Chunk::debug_ignore_light_level))
+			if (ImGui::Checkbox("Skip lighting", &ChunkMesh::debug_ignore_light_level))
 				World::chunkManager_.ReloadAllChunks();
 			if (ImGui::Checkbox("Shadows", &Renderer::renderShadows))
 				Renderer::ClearCSM();
@@ -247,7 +250,7 @@ namespace Interface
 		if (debug_graphs)
 		{
 			ImGui::Begin("Graphs");
-			ImGui::Text("Avg Mesh Time: %.3f", Chunk::accumtime / Chunk::accumcount);
+			ImGui::Text("Avg Mesh Time: %.3f", ChunkMesh::accumtime / ChunkMesh::accumcount);
 			ImGui::PlotVar("Frametime", Engine::GetDT(), FLT_MAX, FLT_MAX, 300, ImVec2(300, 100));
 
 			if (Renderer::nvUsageEnabled)

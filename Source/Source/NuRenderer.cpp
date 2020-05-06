@@ -6,6 +6,7 @@
 #include <shader.h>
 #include <camera.h>
 #include <input.h>
+#include "ChunkStorage.h"
 
 namespace NuRenderer
 {
@@ -81,7 +82,7 @@ namespace NuRenderer
 		currShader->setFloat("fogEnd", loadD - Chunk::CHUNK_SIZE * 1.44f); // cuberoot(3)
 		currShader->setVec3("fogColor", skyColor);
 
-		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
+		std::for_each(ChunkStorage::GetMapRaw().begin(), ChunkStorage::GetMapRaw().end(),
 			[&](const std::pair<glm::ivec3, Chunk*>& pair)
 		{
 			ChunkPtr chunk = pair.second;
