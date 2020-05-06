@@ -147,9 +147,6 @@ public:
 	}
 
 private:
-
-	std::mutex mutex_;// used for safe concurrent access
-
 	glm::mat4 model_;
 	glm::ivec3 pos_;	// position relative to other chunks (1 chunk = 1 index)
 	bool visible_;		// used in frustum culling
