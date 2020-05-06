@@ -15,6 +15,7 @@
 #include <sstream>
 #include "settings.h"
 #include "misc_utils.h"
+#include "ChunkStorage.h"
 
 
 Chunk::Chunk() : storage(CHUNK_SIZE_CUBED)
@@ -116,7 +117,8 @@ void Chunk::BuildMesh()
 
 	for (int i = 0; i < fCount; i++)
 	{
-		nearChunks[i] = chunks[this->pos_ + faces[i]];
+		nearChunks[i] = ChunkStorage::GetChunk(
+			this->pos_ + ChunkHelpers::faces[i]);
 	}
 	std::lock_guard<std::mutex> lock(vertex_buffer_mutex_);
 
@@ -178,6 +180,7 @@ void Chunk::buildBlockFace(
 	Block block)								// block-specific information)
 {
 	using namespace glm;
+	using namespace ChunkHelpers;
 	thread_local static localpos nearblock; // avoids unnecessary construction of vec3s
 	//glm::ivec3 nearFace = blockPos + faces[face];
 
@@ -188,7 +191,7 @@ void Chunk::buildBlockFace(
 	// if neighbor is out of this chunk, find which chunk it is in
 	if (any(lessThan(nearblock.block_pos, ivec3(0))) || any(greaterThanEqual(nearblock.block_pos, ivec3(CHUNK_SIZE))))
 	{
-		fastWorldBlockToLocalPos(chunkBlockToWorldPos(nearblock.block_pos), nearblock);
+		fastWorldPosToLocalPos(chunkPosToWorldPos(nearblock.block_pos, pos_), nearblock);
 		nearChunk = nearChunks[face];
 	}
 
@@ -237,6 +240,7 @@ void Chunk::addQuad(const glm::ivec3& lpos, Block block, int face, ChunkPtr near
 	int endQuad = (face + 1) * 12;
 	for (int i = face * 12; i < endQuad; i += 3)
 	{
+		using namespace ChunkHelpers;
 		// transform vertices relative to chunk
 		glm::vec3 vert(data[i + 0], data[i + 1], data[i + 2]);
 		glm::uvec3 finalVert = glm::ceil(vert) + glm::vec3(lpos);// +0.5f;
@@ -314,44 +318,4 @@ int Chunk::vertexFaceAO(const glm::vec3& lpos, const glm::vec3& cornerDir, const
 			occluded++;
 
 	return 3 - occluded;
-}
-
-
-// prints to console if errors are found
-void TestCoordinateStuff()
-{
-	using namespace std;
-	for (auto& p : Chunk::chunks)
-	{
-		using namespace std;
-		//cout << p.first << '\n';
-		if (!p.second)
-			continue;
-		if (p.first != p.second->GetPos())
-			cout << "Hash key " << p.first 
-			<< " does not match chunk internal position" 
-			<< p.second->GetPos() << '\n';
-
-		for (int x = 0; x < Chunk::CHUNK_SIZE; x++)
-		{
-			for (int y = 0; y < Chunk::CHUNK_SIZE; y++)
-			{
-				for (int z = 0; z < Chunk::CHUNK_SIZE; z++)
-				{
-					glm::ivec3 posLocal(x, y, z);
-					glm::ivec3 posActual = p.second->chunkBlockToWorldPos(posLocal);
-					localpos posCalc = Chunk::worldBlockToLocalPos(posActual);
-
-					if (posCalc.chunk_pos != p.first)
-						cout << "Calculated chunk position " << 
-						posCalc.chunk_pos << 
-						" does not match hash key " << p.first;
-					if (posCalc.block_pos != posLocal)
-						cout << "Calculated block position " <<
-						posCalc.block_pos <<
-						" does not match local pos " << posLocal;
-				}
-			}
-		}
-	}
 }

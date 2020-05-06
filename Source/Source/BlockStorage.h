@@ -46,7 +46,7 @@ private:
 	struct PaletteEntry
 	{
 		BlockType type;
-		unsigned refcount = 0;
+		int refcount = 0;
 	};
 
 	unsigned newPaletteEntry();

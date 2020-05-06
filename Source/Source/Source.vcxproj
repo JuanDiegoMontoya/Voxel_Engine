@@ -405,6 +405,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="BitArray.h" />
     <ClInclude Include="block.h" />
     <ClInclude Include="BlockStorage.h" />
+    <ClInclude Include="ChunkHelpers.h" />
     <ClInclude Include="ChunkStorage.h" />
     <ClInclude Include="Engine\Source\camera.h" />
     <ClInclude Include="Engine\Source\Frustum.h" />

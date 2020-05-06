@@ -145,7 +145,7 @@ inline unsigned PaletteBlockStorage::newPaletteEntry()
 	{
 		// find index of free palette entry
 		for (int i = 0; i < palette_.size(); i++)
-			if (palette_[i].refcount == 0)
+			if (palette_[i].refcount == 0) // empty or uninitialized entry
 				return i;
 
 		// grow palette if no free entry

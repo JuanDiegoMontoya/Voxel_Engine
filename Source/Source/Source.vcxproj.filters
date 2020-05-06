@@ -124,9 +124,6 @@
     <ClInclude Include="block.h">
       <Filter>Voxel Engine</Filter>
     </ClInclude>
-    <ClInclude Include="chunk.h">
-      <Filter>Voxel Engine</Filter>
-    </ClInclude>
     <ClInclude Include="frustum.h">
       <Filter>Graphics</Filter>
     </ClInclude>
@@ -277,6 +274,12 @@
     <ClInclude Include="BitArray.h">
       <Filter>Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="chunk.h">
+      <Filter>Voxel Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkHelpers.h">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -322,9 +325,6 @@
       <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="block.cpp">
-      <Filter>Voxel Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="chunk.cpp">
       <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="sun.cpp">
@@ -446,6 +446,9 @@
     </ClCompile>
     <ClCompile Include="NuRenderer.cpp">
       <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="chunk.cpp">
+      <Filter>Voxel Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
