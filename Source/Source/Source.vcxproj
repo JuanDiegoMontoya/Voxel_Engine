@@ -307,6 +307,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="FixedSizeWorld.cpp" />
     <ClCompile Include="hud.cpp" />
     <ClCompile Include="ImGuiBonus.cpp" />
     <ClCompile Include="infinite_chunk_manager.cpp" />
@@ -440,6 +441,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="Engine\Source\vbo_layout.h" />
     <ClInclude Include="Engine\Source\Vertices.h" />
     <ClInclude Include="FixedQueue.h" />
+    <ClInclude Include="FixedSizeWorld.h" />
     <ClInclude Include="frustum.h" />
     <ClInclude Include="generation.h" />
     <ClInclude Include="hud.h" />

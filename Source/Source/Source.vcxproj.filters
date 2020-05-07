@@ -283,6 +283,9 @@
     <ClInclude Include="ChunkMesh.h">
       <Filter>Voxel Engine\Chunks</Filter>
     </ClInclude>
+    <ClInclude Include="FixedSizeWorld.h">
+      <Filter>Voxel Engine\Chunk Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -455,6 +458,9 @@
     </ClCompile>
     <ClCompile Include="ChunkMesh.cpp">
       <Filter>Voxel Engine\Chunks</Filter>
+    </ClCompile>
+    <ClCompile Include="FixedSizeWorld.cpp">
+      <Filter>Voxel Engine\Chunk Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
