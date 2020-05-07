@@ -115,6 +115,16 @@ public:
 			ID3D(lpos.x, lpos.y, lpos.z, CHUNK_SIZE, CHUNK_SIZE), light);
 	}
 
+	inline Light LightAt(const glm::ivec3& p)
+	{
+		return storage.GetLight(ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE));
+	}
+
+	inline Light LightAt(int index)
+	{
+		return storage.GetLight(index);
+	}
+
 	AABB GetAABB() const
 	{
 		return bounds;
@@ -153,7 +163,7 @@ private:
 	AABB bounds{};
 	ChunkPtr nearChunks[6];
 
-	//ArrayBlockStorage storage;
-	PaletteBlockStorage storage;
+	ArrayBlockStorage storage;
+	//PaletteBlockStorage storage;
 	ChunkMesh mesh;
 }Chunk, *ChunkPtr;

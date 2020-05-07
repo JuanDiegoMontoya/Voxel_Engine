@@ -17,6 +17,7 @@
 #include <cereal/archives/binary.hpp>
 #include <Pipeline.h>
 #include "Renderer.h"
+#include "ChunkStorage.h"
 
 namespace Editor
 {
@@ -50,7 +51,7 @@ namespace Editor
 					for (int z = min.z; z <= max.z; z++)
 					{
 						// TODO: make bottom-middle of prefab be the origin
-						Block b = chunkManager->GetBlock(glm::ivec3(x, y, z));
+						Block b = ChunkStorage::AtWorldC(glm::ivec3(x, y, z));
 						if (skipAir && b.GetType() == BlockType::bAir)
 							continue;
 						//b.SetWriteStrength(0x0F);

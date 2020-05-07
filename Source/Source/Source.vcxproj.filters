@@ -52,6 +52,9 @@
     <Filter Include="Voxel Engine\Chunks">
       <UniqueIdentifier>{39f2c382-fdfb-4702-a311-794e55352318}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Voxel Engine\World Generation">
+      <UniqueIdentifier>{ea3919bb-71c7-46d8-a42d-44c4af54f0e9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="settings.h">
@@ -132,9 +135,6 @@
     </ClInclude>
     <ClInclude Include="vendor\ctpl_stl.h">
       <Filter>vendor\ctpl</Filter>
-    </ClInclude>
-    <ClInclude Include="generation.h">
-      <Filter>Voxel Engine</Filter>
     </ClInclude>
     <ClInclude Include="vendor\noiseutils.h">
       <Filter>vendor</Filter>
@@ -286,6 +286,12 @@
     <ClInclude Include="FixedSizeWorld.h">
       <Filter>Voxel Engine\Chunk Manager</Filter>
     </ClInclude>
+    <ClInclude Include="generation.h">
+      <Filter>Voxel Engine\World Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldGen2.h">
+      <Filter>Voxel Engine\World Generation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -335,9 +341,6 @@
     </ClCompile>
     <ClCompile Include="sun.cpp">
       <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="generation.cpp">
-      <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="vendor\noiseutils.cpp">
       <Filter>vendor</Filter>
@@ -461,6 +464,12 @@
     </ClCompile>
     <ClCompile Include="FixedSizeWorld.cpp">
       <Filter>Voxel Engine\Chunk Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="generation.cpp">
+      <Filter>Voxel Engine\World Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldGen2.cpp">
+      <Filter>Voxel Engine\World Generation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

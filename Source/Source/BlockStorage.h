@@ -18,6 +18,8 @@ public:
 	BlockType GetBlockType(int index);
 	void SetBlock(int index, BlockType);
 	void SetLight(int index, Light);
+	Light GetLight(int index);
+
 private:
 
 	const size_t size_;

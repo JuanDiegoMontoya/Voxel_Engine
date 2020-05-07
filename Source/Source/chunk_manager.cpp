@@ -52,12 +52,12 @@ void ChunkManager::Init()
 	//SetThreadAffinityMask(GetCurrentThread(), 1);
 
 	// spawn chunk block generator threads
-	for (int i = 0; i < 4; i++)
-	{
-		chunk_generator_threads_.push_back(
-			new std::thread([this]() { chunk_generator_thread_task(); }));
-		//SetThreadAffinityMask(chunk_generator_threads_[i]->native_handle(), ~1);
-	}
+	//for (int i = 0; i < 4; i++)
+	//{
+	//	chunk_generator_threads_.push_back(
+	//		new std::thread([this]() { chunk_generator_thread_task(); }));
+	//	//SetThreadAffinityMask(chunk_generator_threads_[i]->native_handle(), ~1);
+	//}
 
 	// spawn chunk mesh generator threads
 	for (int i = 0; i < 1; i++)
@@ -85,7 +85,7 @@ void ChunkManager::Update()
 	//chunk_gen_mesh_nobuffer();
 	chunk_buffer_task();
 	//removeFarChunks();
-	createNearbyChunks();
+	//createNearbyChunks();
 
 	for (ChunkPtr chunk : delayed_update_queue_)
 		UpdateChunk(chunk);
@@ -183,33 +183,6 @@ void ChunkManager::UpdateBlockCheap(const glm::ivec3& wpos, Block block)
 	ChunkStorage::GetChunk(l.chunk_pos)->SetBlockTypeAt(l.block_pos, block.GetType());
 	//*Chunk::AtWorld(wpos) = block;
 	//UpdatedChunk(Chunk::chunks[Chunk::worldBlockToLocalPos(wpos).chunk_pos]);
-}
-
-
-void ChunkManager::UpdateBlockLight(const glm::ivec3 wpos, const Light light)
-{
-	ASSERT(0);
-	Block block = GetBlock(wpos);
-	//block.SetLightValue(light.r);
-	//UpdateBlock(wpos, block);
-}
-
-
-Block ChunkManager::GetBlock(const glm::ivec3 wpos)
-{
-	//BlockPtr block = Chunk::AtWorld(wpos);
-	//if (!block)
-	//	return Block();
-	//return *block;
-	return ChunkStorage::AtWorldC(wpos);
-}
-
-
-BlockPtr ChunkManager::GetBlockPtr(const glm::ivec3 wpos)
-{
-	ASSERT(0);
-	return nullptr;
-	//return Chunk::AtWorld(wpos);
 }
 
 
@@ -378,16 +351,16 @@ void ChunkManager::createNearbyChunks()
 // skipself: chunk updating thing
 void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself)
 {
-	return;
-
-
-
 	// get existing light at the position
-	Light& L = GetBlockPtr(wpos)->GetLightRef();
-	// if there is already light in the spot,
-	// combine the two by taking the max values only
-	glm::u8vec4 t = glm::max(L.Get(), nLight.Get());
-	L.Set(t); //*L = t;
+	auto optL = ChunkStorage::AtWorldE(wpos);
+	if (optL.has_value())
+	{
+		// if there is already light in the spot,
+		// combine the two by taking the max values only
+		glm::u8vec4 t = glm::max(optL->GetLight().Get(), nLight.Get());
+		ChunkStorage::SetLight(wpos, t);
+		//L.Set(t); //*L = t;
+	}
 	
 	// queue of world positions, rather than chunk + local index (they are equivalent)
 	std::queue<glm::ivec3> lightQueue;
@@ -397,7 +370,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 	{
 		glm::ivec3 lightp = lightQueue.front(); // light position
 		lightQueue.pop();
-		Light lightLevel = GetBlock(lightp).GetLight(); // node that will be giving light to others
+		Light lightLevel = ChunkStorage::AtWorldC(lightp).GetLight(); // node that will be giving light to others
 		constexpr glm::ivec3 dirs[] =
 		{
 			{ 1, 0, 0 },
@@ -411,16 +384,21 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 		// update each neighbor
 		for (const auto& dir : dirs)
 		{
-			BlockPtr block = GetBlockPtr(lightp + dir);
+			glm::ivec3 lightPos = lightp + dir;
+			auto block = ChunkStorage::AtWorldE(lightPos);
+			if (!block.has_value())
+				continue;
+			//BlockPtr block = GetBlockPtr(lightp + dir);
 			//Block block = GetBlock(lightp + dir); // neighboring block
-			LightPtr light = &block->GetLightRef(); // neighboring light (pointer)
+			//LightPtr light = &block->GetLightRef(); // neighboring light (pointer)
+			Light light = block->GetLight();
 
 			// add chunk to update queue if it exists
-			if (ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(lightp + dir).chunk_pos) != nullptr)
-				delayed_update_queue_.insert(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(lightp + dir).chunk_pos));
+			if (ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(lightPos).chunk_pos) != nullptr)
+				delayed_update_queue_.insert(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(lightPos).chunk_pos));
 			
 			// invalid light check (should be impossible)
-			ASSERT(light != nullptr);
+			//ASSERT(light != nullptr);
 
 			// if neighbor is solid block, skip dat boi
 			if (Block::PropertiesTable[block->GetTypei()].color.a == 1)
@@ -431,19 +409,22 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 			for (int ci = 0; ci < 3; ci++)
 			{
 				// skip blocks that are too bright to be affected by this light
-				if (light->Get()[ci] + 2 > lightLevel.Get()[ci])
+				if (light.Get()[ci] + 2 > lightLevel.Get()[ci])
 					continue;
 
 				// TODO: light propagation through transparent materials
 				// get all light components (R, G, B, Sun) and modify ONE of them,
 				// then push the position of that light into the queue
-				glm::u8vec4 val = light->Get();
+				//glm::u8vec4 val = light.Get();
+				// this line can be optimized to reduce amount of global block getting
+				glm::u8vec4 val = ChunkStorage::AtWorldC(lightPos).GetLight().Get();
 				val[ci] = (lightLevel.Get()[ci] - 1);// *Block::PropertiesTable[block.GetTypei()].color[ci];
-				light->Set(val);
+				//light->Set(val);
+				ChunkStorage::SetLight(lightPos, val);
 				enqueue = true;
 			}
 			if (enqueue) // enqueue if any lighting component changed
-				lightQueue.push(lightp + dir);
+				lightQueue.push(lightPos);
 		}
 	}
 
@@ -455,15 +436,11 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 
 void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 {
-	return;
-
-
-
-
 	std::queue<std::pair<glm::ivec3, Light>> lightRemovalQueue;
-	Light light = GetBlock(wpos).GetLight();
+	Light light = ChunkStorage::AtWorldC(wpos).GetLight();
 	lightRemovalQueue.push({ wpos, light });
-	GetBlockPtr(wpos)->GetLightRef().Set({ 0, 0, 0, light.GetS() });
+	ChunkStorage::SetLight(wpos, Light({ 0, 0, 0, light.GetS() }));
+	//GetBlockPtr(wpos)->GetLightRef().Set({ 0, 0, 0, light.GetS() });
 
 	std::queue<std::pair<glm::ivec3, Light>> lightReadditionQueue;
 
@@ -489,10 +466,13 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 			//	continue;
 			for (const auto& dir : dirs)
 			{
-				BlockPtr b = GetBlockPtr(plight + dir);
-				if (!b)
+				glm::ivec3 blockPos = plight + dir;
+				auto optB = ChunkStorage::AtWorldE(blockPos);
+				//BlockPtr b = GetBlockPtr(plight + dir);
+				if (!optB.has_value())
 					continue;
-				Light& nearLight = b->GetLightRef();
+				Light nearLight = optB->GetLight();
+				//Light& nearLight = b->GetLightRef();
 				glm::u8vec4 nlightv = nearLight.Get(); // near light value
 
 				// skip updates when light is 0
@@ -506,14 +486,15 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 							delayed_update_queue_.insert(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(plight + dir).chunk_pos));
 						auto tmp = nearLight.Get();
 						tmp[ci] = 0;
-						nearLight.Set(tmp);
+						//nearLight.Set(tmp);
+						ChunkStorage::SetLight(blockPos, tmp);
 					}
 					// re-propagate near light that is equal to or brighter than this after setting it all to 0
 					else if (nlightv[ci] > lightv[ci])
 					{
 						glm::u8vec4 nue(0);
 						nue[ci] = nlightv[ci];
-						lightReadditionQueue.push({ plight + dir, nue });
+						lightReadditionQueue.push({ blockPos, nue });
 					}
 				}
 			}

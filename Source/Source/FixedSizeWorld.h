@@ -6,8 +6,7 @@ class FixedSizeWorld
 {
 public:
 
-	void GenWorld(glm::uvec3 chunkDim);
+	static void GenWorld(glm::ivec3 lowChunkDim, glm::ivec3 highChunkDim);
 private:
 
-	std::vector<Chunk*> shit;
 };

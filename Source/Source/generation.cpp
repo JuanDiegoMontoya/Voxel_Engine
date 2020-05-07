@@ -414,9 +414,9 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos)
 
 				// TODO: make rivers have sand around/under them
 				if (worldY > actualHeight && worldY < y - 1)
-					World::GenerateBlockAt(wpos, BlockType::bWater);
+					World::GenerateBlockAtCheap(wpos, BlockType::bWater);
 				if (worldY < 0 && worldY > actualHeight) // make ocean
-					World::GenerateBlockAt(wpos, BlockType::bWater);
+					World::GenerateBlockAtCheap(wpos, BlockType::bWater);
 
 				// top cover
 				if (worldY == actualHeight)
@@ -437,12 +437,12 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos)
 				}
 				// just under top cover
 				if (worldY >= actualHeight - 3 && worldY < actualHeight)
-					World::GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), BlockType::bDirt);
+					World::GenerateBlockAtCheap(glm::ivec3(worldX, worldY, worldZ), BlockType::bDirt);
 
 				// generate subsurface layer (rocks)
 				if (worldY >= -30 && worldY < actualHeight - 3)
 				{
-					World::GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), BlockType::bStone);
+					World::GenerateBlockAtCheap(glm::ivec3(worldX, worldY, worldZ), BlockType::bStone);
 					if (Utils::get_random_svr(wpos, 0, 1) < 1.0f / 100000.0f) // one in ten thousand chance per block
 						GeneratePrefab(PrefabManager::GetPrefab(PrefabName::DungeonSmall), wpos);
 				}
@@ -459,8 +459,8 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos)
 			{
 				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
-				if (val > .9 && World::GetBlockAt(pos).GetType() != BlockType::bWater)
-					World::GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
+				if (val > .9 && ChunkStorage::AtWorldC(pos).GetType() != BlockType::bWater)
+					World::GenerateBlockAtCheap(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
 					//level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
 			}
 		}

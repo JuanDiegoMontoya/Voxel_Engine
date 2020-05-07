@@ -56,6 +56,11 @@ inline void ArrayBlockStorage::SetLight(int index, Light light)
 	blocks_[index].GetLightRef() = light;
 }
 
+inline Light ArrayBlockStorage::GetLight(int index)
+{
+	return blocks_[index].GetLight();
+}
+
 
 
 

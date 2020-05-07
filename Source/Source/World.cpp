@@ -29,6 +29,8 @@
 #include <Pipeline.h>
 #include "Renderer.h"
 #include "Interface.h"
+#include "FixedSizeWorld.h"
+#include "ChunkStorage.h"
 
 using namespace std::chrono;
 
@@ -42,32 +44,23 @@ namespace World
 	// for now this function is where we declare objects
 	void World::Init()
 	{
-		//cameras_.push_back(new Camera(kControlCam));
-		//cameras_.push_back(new Camera(CameraType::kControlCam));
 		auto cam = new Camera(CameraType::kControlCam);
 		cam->scrollMove = false;
 		cam->SetPos({ 0, 5, 0 });
 		Renderer::GetPipeline()->AddCamera(cam);
 
-		//config = std::make_shared<btDefaultCollisionConfiguration>();
-		//dispatcher = std::make_shared<btCollisionDispatcher>(config.get());
-		//btInterface = std::make_shared<btSimpleBroadphase>();
-
 
 		high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
-		chunkManager_.Init();
 		WorldGen::InitNoiseFuncs();
-		//Editor::level = this;
 		Editor::chunkManager = &chunkManager_;
-		//Editor::renderer = &renderer_;
 		PrefabManager::InitPrefabs();
 		BiomeManager::InitializeBiomes();
-		//chunkManager_.SetCurrentLevel(this);
 		chunkManager_.SetLoadDistance(200.f);
 		chunkManager_.SetUnloadLeniency(100.f);
-		//renderer_.Init();
-		//renderer_.chunkManager_ = &chunkManager_;
+
+		FixedSizeWorld::GenWorld({ -5, -2, -5 }, { 5, 2, 5 });
+		chunkManager_.Init();
 
 		duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
 		//std::cout << benchmark_duration_.count() << std::endl;
@@ -141,7 +134,7 @@ namespace World
 		for (auto& blockBox : blocks)
 		{
 			auto pos = blockBox.blockpos;
-			if (GetBlockAt(pos).GetType() != BlockType::bAir)
+			if (ChunkStorage::AtWorldC(pos).GetType() != BlockType::bAir)
 			{
 				// the normal of each face.
 				constexpr glm::vec3 faces[6] =
@@ -192,7 +185,7 @@ namespace World
 				auto refl = glm::normalize(glm::reflect(glm::normalize(cam->GetPos() - cam->oldPos + .000001f), -collisionNormal));
 				//refl[normalComp] /= 2;
 				glm::vec3 newPos = cam->GetPos();
-				if (GetBlockAt(pos).GetType() == BlockType::bWater)
+				if (ChunkStorage::AtWorldC(pos).GetType() == BlockType::bWater)
 				{
 					cam->velocity_.y *= glm::pow(.987f, Engine::GetDT() * 100);
 					if (Input::Keyboard().down[GLFW_KEY_SPACE])
@@ -243,14 +236,8 @@ namespace World
 
 	void World::GenerateBlockAtCheap(glm::ivec3 wpos, Block b)
 	{
-		ASSERT(0);
+		//ASSERT(0);
 		chunkManager_.UpdateBlockCheap(wpos, b);
-	}
-
-
-	Block World::GetBlockAt(glm::ivec3 wpos)
-	{
-		return chunkManager_.GetBlock(wpos);
 	}
 
 

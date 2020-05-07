@@ -31,9 +31,52 @@ public:
 		return Block();
 	}
 
+	static inline std::optional<Block> AtWorldE(const glm::ivec3& wpos)
+	{
+		ChunkHelpers::localpos w = ChunkHelpers::worldPosToLocalPos(wpos);
+		Chunk* cnk = chunks_[w.chunk_pos];
+		if (cnk)
+			return cnk->BlockAt(w.block_pos);
+		return std::nullopt;
+	}
+
 	static inline auto& GetMapRaw()
 	{
 		return chunks_;
+	}
+
+	static inline bool SetBlock(const glm::ivec3& wpos, Block b)
+	{
+		ChunkHelpers::localpos w = ChunkHelpers::worldPosToLocalPos(wpos);
+		Chunk* cnk = chunks_[w.chunk_pos];
+		if (cnk)
+		{
+			cnk->SetBlockTypeAt(w.block_pos, b.GetType());
+			cnk->SetLightAt(w.block_pos, b.GetLight());
+		}
+		return false;
+	}
+
+	static inline bool SetBlockType(const glm::ivec3& wpos, BlockType bt)
+	{
+		ChunkHelpers::localpos w = ChunkHelpers::worldPosToLocalPos(wpos);
+		Chunk* cnk = chunks_[w.chunk_pos];
+		if (cnk)
+		{
+			cnk->SetBlockTypeAt(w.block_pos, bt);
+		}
+		return false;
+	}
+
+	static inline bool SetLight(const glm::ivec3& wpos, Light l)
+	{
+		ChunkHelpers::localpos w = ChunkHelpers::worldPosToLocalPos(wpos);
+		Chunk* cnk = chunks_[w.chunk_pos];
+		if (cnk)
+		{
+			cnk->SetLightAt(w.block_pos, l);
+		}
+		return false;
 	}
 
 private:
