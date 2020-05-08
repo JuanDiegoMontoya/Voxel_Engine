@@ -161,9 +161,8 @@ private:
 	glm::ivec3 pos_;	// position relative to other chunks (1 chunk = 1 index)
 	bool visible_;		// used in frustum culling
 	AABB bounds{};
-	ChunkPtr nearChunks[6];
 
-	ArrayBlockStorage storage;
-	//PaletteBlockStorage storage;
+	//ArrayBlockStorage<CHUNK_SIZE_CUBED> storage;
+	PaletteBlockStorage<CHUNK_SIZE_CUBED> storage;
 	ChunkMesh mesh;
 }Chunk, *ChunkPtr;

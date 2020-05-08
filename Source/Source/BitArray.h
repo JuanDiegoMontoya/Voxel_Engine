@@ -9,7 +9,7 @@ public:
 	BitArray(size_t size = 0);
 	void Resize(size_t newSize);
 	void SetSequence(int index, int len, unsigned val);
-	unsigned GetSequence(int index, int len);
+	unsigned GetSequence(int index, int len) const;
 
 private:
 	// TODO: make this less vector<bool>
@@ -35,7 +35,7 @@ inline void BitArray::SetSequence(int index, int len, unsigned val)
 	}
 }
 
-inline unsigned BitArray::GetSequence(int index, int len)
+inline unsigned BitArray::GetSequence(int index, int len) const
 {
 	unsigned ret = 0;
 	for (int i = index; i < index + len; i++)

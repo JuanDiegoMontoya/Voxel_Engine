@@ -460,17 +460,20 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 			{ 0, 0,-1 },
 		};
 
-		for (int ci = 0; ci < 3; ci++) // iterate 3 color components (not sunlight)
+		for (const auto& dir : dirs)
 		{
-			//if (lightv[ci] == 0)
-			//	continue;
-			for (const auto& dir : dirs)
+			glm::ivec3 blockPos = plight + dir;
+			auto optB = ChunkStorage::AtWorldE(blockPos);
+			//BlockPtr b = GetBlockPtr(plight + dir);
+			if (!optB.has_value())
+				continue;
+			for (int ci = 0; ci < 3; ci++) // iterate 3 color components (not sunlight)
 			{
-				glm::ivec3 blockPos = plight + dir;
-				auto optB = ChunkStorage::AtWorldE(blockPos);
-				//BlockPtr b = GetBlockPtr(plight + dir);
-				if (!optB.has_value())
-					continue;
+
+				// if the removed block emits light, it needs to be re-propagated
+				auto emit = Block::PropertiesTable[optB->GetTypei()].emittance;
+				if (emit != glm::u8vec4(0))
+					lightReadditionQueue.push({ blockPos, emit });
 				Light nearLight = optB->GetLight();
 				//Light& nearLight = b->GetLightRef();
 				glm::u8vec4 nlightv = nearLight.Get(); // near light value
@@ -481,12 +484,13 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 				{
 					if (nlightv[ci] != 0 && nlightv[ci] == lightv[ci] - 1)
 					{
-						lightRemovalQueue.push({ plight + dir, nearLight });
-						if (ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(plight + dir).chunk_pos))
-							delayed_update_queue_.insert(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(plight + dir).chunk_pos));
+						lightRemovalQueue.push({ blockPos, nearLight });
+						if (ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(blockPos).chunk_pos))
+							delayed_update_queue_.insert(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(blockPos).chunk_pos));
 						auto tmp = nearLight.Get();
 						tmp[ci] = 0;
 						//nearLight.Set(tmp);
+						optB->GetLightRef().Set(tmp);
 						ChunkStorage::SetLight(blockPos, tmp);
 					}
 					// re-propagate near light that is equal to or brighter than this after setting it all to 0

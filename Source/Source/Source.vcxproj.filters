@@ -292,6 +292,9 @@
     <ClInclude Include="WorldGen2.h">
       <Filter>Voxel Engine\World Generation</Filter>
     </ClInclude>
+    <ClInclude Include="Palette.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -478,6 +481,9 @@
     </None>
     <None Include="ChunkHelpers.inl">
       <Filter>Voxel Engine\Chunks</Filter>
+    </None>
+    <None Include="Palette.inl">
+      <Filter>Utilities</Filter>
     </None>
   </ItemGroup>
 </Project>

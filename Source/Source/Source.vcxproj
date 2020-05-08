@@ -189,7 +189,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
     <ClCompile>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -452,6 +452,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="light.h" />
     <ClInclude Include="mesh_comp.h" />
     <ClInclude Include="NuRenderer.h" />
+    <ClInclude Include="Palette.h" />
     <ClInclude Include="parallel_chunks.h" />
     <ClInclude Include="physics_comp.h" />
     <ClInclude Include="pick.h" />
@@ -487,6 +488,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
   <ItemGroup>
     <None Include="BlockStorage.inl" />
     <None Include="ChunkHelpers.inl" />
+    <None Include="Palette.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

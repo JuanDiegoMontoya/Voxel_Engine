@@ -19,7 +19,7 @@
 #include "ChunkMesh.h"
 
 
-Chunk::Chunk() : storage(CHUNK_SIZE_CUBED)
+Chunk::Chunk()
 {
 	mesh.SetParent(this);
 }
@@ -30,7 +30,7 @@ Chunk::~Chunk()
 }
 
 
-Chunk::Chunk(const Chunk& other) : storage(CHUNK_SIZE_CUBED)
+Chunk::Chunk(const Chunk& other)
 {
 	*this = other;
 }
@@ -39,9 +39,9 @@ Chunk::Chunk(const Chunk& other) : storage(CHUNK_SIZE_CUBED)
 // copy assignment operator for serialization
 Chunk& Chunk::operator=(const Chunk& rhs)
 {
-	//this->pos_ = rhs.pos_;
 	this->SetPos(rhs.pos_);
-	this->storage = rhs.storage;
+	// TODO: storage should be set equal here, but idc about this function rn
+	//this->storage = rhs.storage;
 	return *this;
 }
 

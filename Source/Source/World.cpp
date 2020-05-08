@@ -31,6 +31,7 @@
 #include "Interface.h"
 #include "FixedSizeWorld.h"
 #include "ChunkStorage.h"
+#include "WorldGen2.h"
 
 using namespace std::chrono;
 
@@ -59,7 +60,11 @@ namespace World
 		chunkManager_.SetLoadDistance(200.f);
 		chunkManager_.SetUnloadLeniency(100.f);
 
-		FixedSizeWorld::GenWorld({ -5, -2, -5 }, { 5, 2, 5 });
+		//FixedSizeWorld::GenWorld({ -3, -2, -3 }, { 3, 2, 3 });
+		WorldGen2::Init();
+		WorldGen2::GenerateWorld();
+		WorldGen2::InitMeshes();
+		WorldGen2::InitBuffers();
 		chunkManager_.Init();
 
 		duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);

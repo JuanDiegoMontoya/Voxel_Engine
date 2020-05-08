@@ -123,10 +123,10 @@ namespace Interface
 			ImGui::NewLine();
 			glm::vec3 pos = Renderer::GetPipeline()->GetCamera(0)->GetPos();
 			//ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
-			ImGui::SliderFloat("Render distance", &World::chunkManager_.loadDistance_, 0, 1000, "%.0f");
+			ImGui::SliderFloat("Render distance", &World::chunkManager_.loadDistance_, 0, 3000, "%.0f");
 			ImGui::SliderFloat("Leniency distance", &World::chunkManager_.unloadLeniency_, 0, 1000, "%.0f");
 			float far = Renderer::GetPipeline()->GetCamera(0)->GetFar();
-			if (ImGui::SliderFloat("Far plane", &far, 0, 1000, "%.0f"))
+			if (ImGui::SliderFloat("Far plane", &far, 0.1f, 3000, "%.0f"))
 				Renderer::GetPipeline()->GetCamera(0)->SetFar(far);
 			if (ImGui::InputFloat3("Camera Position", &pos[0], 2))
 				Renderer::GetPipeline()->GetCamera(0)->SetPos(pos);

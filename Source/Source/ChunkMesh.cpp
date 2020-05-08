@@ -141,7 +141,10 @@ inline void ChunkMesh::buildBlockFace(
 	// for now, we won't make a mesh for faces adjacent to NULL chunks
 	// in the future it may be wise to construct the mesh regardless
 	if (nearChunk == nullptr)
+	{
+		addQuad(blockPos, block, face, nearChunk, Light({ 0, 0, 0, 15 }));
 		return;
+	}
 
 	// neighboring block and light
 	Block block2 = nearChunk->BlockAt(nearblock.block_pos);

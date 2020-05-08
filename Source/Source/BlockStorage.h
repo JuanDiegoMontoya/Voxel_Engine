@@ -1,13 +1,16 @@
 #pragma once
 #include "block.h"
 #include "BitArray.h"
+#include "Palette.h"
+#include <array>
 
 // uncompressed block storage for chunks
+template<unsigned _Size>
 class ArrayBlockStorage
 {
 public:
 	// num blocks
-	ArrayBlockStorage(size_t size);
+	ArrayBlockStorage();
 	~ArrayBlockStorage();
 	ArrayBlockStorage(const ArrayBlockStorage&);
 	ArrayBlockStorage& operator=(const ArrayBlockStorage&);
@@ -22,8 +25,8 @@ public:
 
 private:
 
-	const size_t size_;
-	Block* blocks_ = nullptr;
+	std::array<Block, _Size> blocks_;
+	//Block* blocks_ = nullptr;
 };
 
 
@@ -31,14 +34,10 @@ private:
 // compressed block storage
 // lighting is uncompressed
 // can't really return references w/o doing crazy proxy class stuff
+template<unsigned _Size>
 class PaletteBlockStorage
 {
 public:
-	PaletteBlockStorage(size_t size);
-	~PaletteBlockStorage();
-	PaletteBlockStorage(const PaletteBlockStorage&);
-	PaletteBlockStorage& operator=(const PaletteBlockStorage&);
-
 	void SetBlock(int index, BlockType);
 	Block GetBlock(int index);
 	BlockType GetBlockType(int index);
@@ -46,22 +45,8 @@ public:
 	Light GetLight(int index);
 
 private:
-	struct PaletteEntry
-	{
-		BlockType type;
-		int refcount = 0;
-	};
-
-	unsigned newPaletteEntry();
-	void growPalette();
-
-	const size_t size_;
-	BitArray data_;
-	std::vector<PaletteEntry> palette_;
-	size_t paletteEntryLength_ = 1;
-
-	// allow concurrent reads, but not concurrent writes
-	std::shared_mutex mtx;
+	ConcurrentPalette<BlockType, _Size> pblock_;
+	ConcurrentPalette<Light, _Size> plight_;
 };
 
 #include "BlockStorage.inl"
