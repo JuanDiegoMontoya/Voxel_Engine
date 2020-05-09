@@ -63,9 +63,9 @@ void ChunkMesh::BuildBuffers()
 		svao_ = std::make_unique<VAO>();
 
 	svao_->Bind();
-	svbo_ = std::make_unique<VBO>(sPosArr.data(), sizeof(glm::vec3) * sPosArr.size());
+	svbo_ = std::make_unique<VBO>(sPosArr.data(), sizeof(GLfloat) * sPosArr.size());
 	svbo_->Bind();
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0);
 	glEnableVertexAttribArray(0);
 	pointCount_ = sPosArr.size();
 	sPosArr.clear();
@@ -108,9 +108,9 @@ void ChunkMesh::BuildMesh()
 				if (Block::PropertiesTable[uint16_t(block)].invisible)
 					continue;
 
+				voxelReady_ = true;
 				for (int f = Far; f < fCount; f++)
 					buildBlockFace(f, pos, block);
-				sPosArr.push_back(pos);
 				//buildBlockVertices_normal({ x, y, z }, block);
 			}
 		}
@@ -197,6 +197,15 @@ inline void ChunkMesh::buildBlockFace(
 
 inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face, Chunk* nearChunk, Light light)
 {
+	if (voxelReady_)
+	{
+		//if (block != BlockType::bStone)
+		//	__debugbreak();
+		sPosArr.push_back(glm::uintBitsToFloat(ChunkHelpers::EncodeSplat(lpos, 
+			glm::vec3(Block::PropertiesTable[uint16_t(block)].color))));
+		voxelReady_ = false;
+	}
+
 	int normalIdx = face;
 	int texIdx = 100; // temp
 	uint16_t lighting = light.Raw();

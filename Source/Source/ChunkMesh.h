@@ -63,8 +63,9 @@ private:
 	// SPLATTING STUFF
 	std::unique_ptr<VAO> svao_;
 	std::unique_ptr<VBO> svbo_;
-	std::vector<glm::vec3> sPosArr; // point positions (optimize later)
+	std::vector<GLfloat> sPosArr; // point positions (optimize later)
 	GLsizei pointCount_ = 0;
+	bool voxelReady_ = true; // hack to prevent same voxel from being added multiple times
 
 	std::shared_mutex mtx;
 };

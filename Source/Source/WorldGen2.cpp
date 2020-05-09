@@ -64,12 +64,16 @@ namespace WorldGen2
 							wpos = ChunkHelpers::chunkPosToWorldPos(pos, pair.first);
 
 							double density = noise.GetValue(pos.x, pos.y, pos.z);
-							
+
 							if (density > .9)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bStone);
 							}
-							else
+							if (density > .95)
+							{
+								ChunkStorage::SetBlockType(wpos, BlockType::bDirt);
+							}
+							if (density <= .9)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bAir);
 							}

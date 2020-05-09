@@ -1,15 +1,17 @@
 #version 450 core
 
 in flat vec3 vPos;
+in vec3 vColor;
 
 uniform vec3 u_viewpos;
 uniform mat4 u_invProj;
 uniform mat4 u_invView;
 uniform vec2 u_viewportSize;
+uniform float sunAngle;
 
 out vec4 fragColor;
 
-
+// TODO: get position of ray hit to write to depth buffer (gl_FragDepth...)
 bool AABBIntersect(vec3 ro, vec3 rd, vec3 minV, vec3 maxV)
 {
     vec3 invR = 1.0 / rd;
@@ -21,7 +23,6 @@ bool AABBIntersect(vec3 ro, vec3 rd, vec3 minV, vec3 maxV)
 
     vec3 tmin = min(ttop, tbot);
     vec3 tmax = max(ttop, tbot);
-
 
     vec2 t = max(tmin.xx, tmin.yz);
 
@@ -59,9 +60,9 @@ void main()
   bool intersect = AABBIntersect(ro, rd, vPos - 0.5, vPos + 0.5);
 
   rd = rd * .5 + .5;
-  if (intersect == true)
-    fragColor.xyz = ro;
-  else
-    discard;//fragColor.xyz = vec3(rd);
   fragColor.a = 1.0;
+  if (intersect == true)
+    fragColor.xyz = vColor * max(sunAngle, .01);
+  else
+    discard;
 }

@@ -1,3 +1,4 @@
+#include "ChunkHelpers.h"
 #pragma once
 //#include "ChunkHelpers.h"
 //#include "chunk.h"
@@ -89,5 +90,28 @@ namespace ChunkHelpers
 
 		// sample from texture using knowledge of texture dimensions and block index
 		// texCoord = ...
+	}
+
+
+	inline GLuint EncodeSplat(const glm::uvec3& modelPos, const glm::vec3& color)
+	{
+		GLuint encoded = 0;
+
+		// encode vertex position
+		encoded |= modelPos.x << 26;
+		encoded |= modelPos.y << 20;
+		encoded |= modelPos.z << 14;
+
+		// encode color as 4-bit unsigned int
+		glm::uvec3 tmp;
+		tmp.r = unsigned(color.r * (1 << 4));
+		tmp.g = unsigned(color.g * (1 << 4));
+		tmp.b = unsigned(color.b * (1 << 4));
+		tmp = glm::clamp(tmp, glm::uvec3(0), glm::uvec3(15));
+		encoded |= tmp.r << 10;
+		encoded |= tmp.g << 6;
+		encoded |= tmp.b << 2;
+
+		return encoded;
 	}
 }

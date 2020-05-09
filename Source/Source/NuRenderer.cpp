@@ -48,7 +48,7 @@ namespace NuRenderer
 		}
 
 		Renderer::drawSky();
-		//drawChunks();
+		drawChunks();
 		splatChunks();
 		drawChunksWater();
 		Renderer::drawAxisIndicators();
@@ -89,7 +89,8 @@ namespace NuRenderer
 			[&](const std::pair<glm::ivec3, Chunk*>& pair)
 		{
 			ChunkPtr chunk = pair.second;
-			if (chunk && chunk->IsVisible(*cam))
+			if (chunk && chunk->IsVisible(*cam) &&
+				glm::distance(cam->GetPos(), glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE)) < 200)
 			{
 				// set some uniforms, etc
 				currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
@@ -112,6 +113,9 @@ namespace NuRenderer
 		currShader->setMat4("u_invProj", glm::inverse(proj));
 		currShader->setMat4("u_invView", glm::inverse(view));
 
+		float angle = glm::max(glm::dot(-glm::normalize(Renderer::activeSun_->GetDir()), glm::vec3(0, 1, 0)), 0.f);
+		currShader->setFloat("sunAngle", angle);
+
 		GLint vp[4];
 		glGetIntegerv(GL_VIEWPORT, vp);
 		currShader->setVec2("u_viewportSize", glm::vec2(vp[2], vp[3]));
@@ -120,7 +124,8 @@ namespace NuRenderer
 			[&](const std::pair<glm::ivec3, Chunk*>& pair)
 		{
 			ChunkPtr chunk = pair.second;
-			if (chunk && chunk->IsVisible(*cam))
+			if (chunk && chunk->IsVisible(*cam) &&
+				glm::distance(cam->GetPos(), glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE)) >= 200)
 			{
 				// set some uniforms, etc
 				currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());

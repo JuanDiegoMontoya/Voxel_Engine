@@ -21,6 +21,8 @@ namespace ChunkHelpers
 	GLuint Encode(const glm::uvec3& modelPos, GLuint normalIdx, GLuint texIdx, GLuint cornerIdx);
 	void Decode(GLuint encoded, glm::uvec3& modelPos, glm::vec3& normal, glm::vec2& texCoord);
 
+	GLuint EncodeSplat(const glm::uvec3& modelPos, const glm::vec3& color);
+
 	inline constexpr glm::ivec3 faces[6] =
 	{
 		{ 0, 0, 1 }, // 'far' face    (+z direction)
