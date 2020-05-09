@@ -82,6 +82,11 @@ namespace Interface
 				delete Shader::shaders["chunk_optimized"];
 				Shader::shaders["chunk_optimized"] = new Shader("chunk_optimized.vs", "chunk_optimized.fs");
 			}
+			if (ImGui::Button("Recompile Splat Chunk Shader"))
+			{
+				delete Shader::shaders["chunk_splat"];
+				Shader::shaders["chunk_splat"] = new Shader("chunk_splat.vs", "chunk_splat.fs");
+			}
 
 			if (ImGui::Button("Delete far chunks (unsafe)"))
 			{

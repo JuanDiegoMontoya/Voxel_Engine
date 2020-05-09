@@ -13,15 +13,66 @@
 
 void ChunkMesh::Render()
 {
-	//ASSERT(vao_ && positions_ && normals_ && colors_);
 	if (vao_)
 	{
 		vao_->Bind();
-		//glDrawArrays(GL_TRIANGLES, 0, vertexCount_);
 		ibo_->Bind();
 		glDrawElements(GL_TRIANGLES, indexCount_, GL_UNSIGNED_INT, (void*)0);
 	}
 }
+
+
+void ChunkMesh::RenderSplat()
+{
+	if (svao_)
+	{
+		svao_->Bind();
+		glDrawArrays(GL_POINTS, 0, pointCount_);
+	}
+}
+
+
+void ChunkMesh::BuildBuffers()
+{
+	mtx.lock();
+
+	if (!vao_)
+		vao_ = std::make_unique<VAO>();
+
+	ibo_ = std::make_unique<IBO>(&tIndices[0], tIndices.size());
+
+	vao_->Bind();
+	encodedStuffVbo_ = std::make_unique<VBO>(encodedStuffArr.data(), sizeof(GLfloat) * encodedStuffArr.size());
+	encodedStuffVbo_->Bind();
+	glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0); // encoded stuff
+	glEnableVertexAttribArray(0);
+
+	lightingVbo_ = std::make_unique<VBO>(lightingArr.data(), sizeof(GLfloat) * lightingArr.size());
+	lightingVbo_->Bind();
+	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0); // encoded lighting
+	glEnableVertexAttribArray(1);
+
+	vertexCount_ = encodedStuffArr.size();
+	indexCount_ = tIndices.size();
+	tIndices.clear();
+	encodedStuffArr.clear();
+	lightingArr.clear();
+
+	// SPLATTING STUFF
+	if (!svao_)
+		svao_ = std::make_unique<VAO>();
+
+	svao_->Bind();
+	svbo_ = std::make_unique<VBO>(sPosArr.data(), sizeof(glm::vec3) * sPosArr.size());
+	svbo_->Bind();
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glEnableVertexAttribArray(0);
+	pointCount_ = sPosArr.size();
+	sPosArr.clear();
+
+	mtx.unlock();
+}
+
 
 void ChunkMesh::BuildMesh()
 {
@@ -59,6 +110,7 @@ void ChunkMesh::BuildMesh()
 
 				for (int f = Far; f < fCount; f++)
 					buildBlockFace(f, pos, block);
+				sPosArr.push_back(pos);
 				//buildBlockVertices_normal({ x, y, z }, block);
 			}
 		}
@@ -81,37 +133,8 @@ void ChunkMesh::BuildMesh()
 	//	<< std::endl;
 }
 
-void ChunkMesh::BuildBuffers()
-{
-	mtx.lock();
 
-	if (!vao_)
-		vao_ = std::make_unique<VAO>();
-
-	ibo_ = std::make_unique<IBO>(&tIndices[0], tIndices.size());
-
-	vao_->Bind();
-	encodedStuffVbo_ = std::make_unique<VBO>(encodedStuffArr.data(), sizeof(GLfloat) * encodedStuffArr.size());
-	encodedStuffVbo_->Bind();
-	glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0); // encoded stuff
-	glEnableVertexAttribArray(0);
-
-	lightingVbo_ = std::make_unique<VBO>(lightingArr.data(), sizeof(GLfloat) * lightingArr.size());
-	lightingVbo_->Bind();
-	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0); // encoded lighting
-	glEnableVertexAttribArray(1);
-
-	vertexCount_ = encodedStuffArr.size();
-	indexCount_ = tIndices.size();
-	tIndices.clear();
-	encodedStuffArr.clear();
-	lightingArr.clear();
-
-	mtx.unlock();
-}
-
-
-void ChunkMesh::SetParent(ChunkPtr p)
+void ChunkMesh::SetParent(Chunk* p)
 {
 	parent = p;
 }
@@ -172,7 +195,7 @@ inline void ChunkMesh::buildBlockFace(
 }
 
 
-inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face, ChunkPtr nearChunk, Light light)
+inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face, Chunk* nearChunk, Light light)
 {
 	int normalIdx = face;
 	int texIdx = 100; // temp

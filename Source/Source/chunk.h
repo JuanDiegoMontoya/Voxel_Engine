@@ -146,7 +146,10 @@ public:
 		mesh.Render();
 	}
 
-
+	void RenderSplat()
+	{
+		mesh.RenderSplat();
+	}
 
 	// Serialization
 	template <class Archive>

@@ -19,6 +19,7 @@ namespace NuRenderer
 	void CompileShaders()
 	{
 		Shader::shaders["chunk_optimized"] = new Shader("chunk_optimized.vs", "chunk_optimized.fs");
+		Shader::shaders["chunk_splat"] = new Shader("chunk_splat.vs", "chunk_splat.fs");
 	}
 
 	void Clear()
@@ -34,6 +35,7 @@ namespace NuRenderer
 
 		Clear();
 		glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
+		glEnable(GL_PROGRAM_POINT_SIZE);
 
 		if (Input::Keyboard().down[GLFW_KEY_LEFT_SHIFT])
 		{
@@ -46,7 +48,8 @@ namespace NuRenderer
 		}
 
 		Renderer::drawSky();
-		drawChunks();
+		//drawChunks();
+		splatChunks();
 		drawChunksWater();
 		Renderer::drawAxisIndicators();
 		//Renderer::postProcess();
@@ -92,6 +95,37 @@ namespace NuRenderer
 				currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
 				currShader->setVec3("u_pos", Chunk::CHUNK_SIZE * chunk->GetPos());
 				chunk->Render();
+			}
+		});
+	}
+
+	void splatChunks()
+	{
+		Camera* cam = Renderer::GetPipeline()->GetCamera(0);
+		auto proj = cam->GetProj();
+		auto view = cam->GetView();
+		ShaderPtr currShader = Shader::shaders["chunk_splat"];
+		currShader->Use();
+
+		currShader->setVec3("u_viewpos", cam->GetPos());
+
+		currShader->setMat4("u_invProj", glm::inverse(proj));
+		currShader->setMat4("u_invView", glm::inverse(view));
+
+		GLint vp[4];
+		glGetIntegerv(GL_VIEWPORT, vp);
+		currShader->setVec2("u_viewportSize", glm::vec2(vp[2], vp[3]));
+
+		std::for_each(ChunkStorage::GetMapRaw().begin(), ChunkStorage::GetMapRaw().end(),
+			[&](const std::pair<glm::ivec3, Chunk*>& pair)
+		{
+			ChunkPtr chunk = pair.second;
+			if (chunk && chunk->IsVisible(*cam))
+			{
+				// set some uniforms, etc
+				currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
+				currShader->setVec3("u_pos", Chunk::CHUNK_SIZE * chunk->GetPos());
+				chunk->RenderSplat();
 			}
 		});
 	}

@@ -32,7 +32,6 @@ private:
 
 // https://www.reddit.com/r/VoxelGameDev/comments/9yu8qy/palettebased_compression_for_chunked_discrete/
 // compressed block storage
-// lighting is uncompressed
 // can't really return references w/o doing crazy proxy class stuff
 template<unsigned _Size>
 class PaletteBlockStorage

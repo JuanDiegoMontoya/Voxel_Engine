@@ -8,5 +8,6 @@ namespace NuRenderer
 	void DrawAll();
 
 	void drawChunks();
+	void splatChunks();
 	void drawChunksWater();
 }
