@@ -8,6 +8,7 @@
 #include <input.h>
 #include "ChunkStorage.h"
 
+
 namespace NuRenderer
 {
 	void Init()
@@ -16,11 +17,13 @@ namespace NuRenderer
 		Engine::PushRenderCallback(DrawAll, 0);
 	}
 
+
 	void CompileShaders()
 	{
 		Shader::shaders["chunk_optimized"] = new Shader("chunk_optimized.vs", "chunk_optimized.fs");
 		Shader::shaders["chunk_splat"] = new Shader("chunk_splat.vs", "chunk_splat.fs");
 	}
+
 
 	void Clear()
 	{
@@ -28,6 +31,7 @@ namespace NuRenderer
 		glClearColor(cc.r, cc.g, cc.b, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
+
 
 	void DrawAll()
 	{
@@ -57,6 +61,7 @@ namespace NuRenderer
 		glDisable(GL_FRAMEBUFFER_SRGB);
 		PERF_BENCHMARK_END;
 	}
+
 
 	void drawChunks()
 	{
@@ -100,6 +105,7 @@ namespace NuRenderer
 		});
 	}
 
+
 	void splatChunks()
 	{
 		Camera* cam = Renderer::GetPipeline()->GetCamera(0);
@@ -135,7 +141,41 @@ namespace NuRenderer
 		});
 	}
 
+
 	void drawChunksWater()
+	{
+
+	}
+
+
+	void generateDrawCommands()
+	{
+		std::vector<DrawElementsIndirectCommand> drawCommands;
+		GLuint baseVert = 0;
+		
+		auto& chunks = ChunkStorage::GetMapRaw();
+		auto it = chunks.begin();
+		auto end = chunks.end();
+		for (int i = 0; it != end; ++it)
+		{
+			Chunk* chunk = it->second;
+			DrawElementsIndirectCommand cmd = chunk->GetMesh().GetDrawCommand(baseVert, i);
+			drawCommands.push_back(cmd);
+		}
+
+		//feed the draw command data to the gpu
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, gIndirectBuffer);
+		glBufferData(GL_DRAW_INDIRECT_BUFFER, drawCommands.size() * sizeof(DrawElementsIndirectCommand), drawCommands.data(), GL_DYNAMIC_DRAW);
+
+		//feed the instance id to the shader. (not needed in this case)
+		//glBindBuffer(GL_ARRAY_BUFFER, gIndirectBuffer);
+		//glEnableVertexAttribArray(2);
+		//glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(SDrawElementsCommand), (void*)(offsetof(DrawElementsIndirectCommand, baseInstance)));
+		//glVertexAttribDivisor(2, 1); //only once per instance
+	}
+
+
+	void drawChunksMultiIndirect()
 	{
 
 	}

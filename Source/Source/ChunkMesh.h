@@ -1,6 +1,7 @@
 #pragma once
 #include "block.h"
 //#include "chunk.h"
+#include "NuRenderer.h"
 
 class VAO;
 class VBO;
@@ -13,6 +14,7 @@ public:
 
 	void Render();
 	void RenderSplat();
+	DrawElementsIndirectCommand GetDrawCommand(GLuint& baseVert, int index);
 	void BuildBuffers();
 	void BuildMesh();
 	void SetParent(Chunk*);

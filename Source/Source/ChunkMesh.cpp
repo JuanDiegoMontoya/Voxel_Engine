@@ -32,6 +32,19 @@ void ChunkMesh::RenderSplat()
 }
 
 
+DrawElementsIndirectCommand ChunkMesh::GetDrawCommand(GLuint& baseVert, int index)
+{
+	DrawElementsIndirectCommand cmd;
+	cmd.count = indexCount_;
+	cmd.instanceCount = 1;
+	cmd.firstIndex = 0;
+	cmd.baseVertex = baseVert;
+	cmd.baseInstance = index;
+	baseVert += vertexCount_;
+	return cmd;
+}
+
+
 void ChunkMesh::BuildBuffers()
 {
 	mtx.lock();

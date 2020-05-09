@@ -6,16 +6,20 @@
 // vertex = x, y, z from 0-32 (supports up to 63)
 // normal = 0 - 5 index into "normals" table
 // texcoord = texture index (0 - 512), corner index (0 - 3)
-layout (location = 0) in float aEncoded; // encoded uint as float
+layout (location = 0) in float aEncoded; // encoded uint as float (per vertex)
 
 // aLighting layout
 // 0 - 15   16 - 19   20 - 23   24 - 27   28 - 31
 // unused     R         G         B         Sun
-layout (location = 1) in float aLighting;// encoded uint as float
+layout (location = 1) in float aLighting;// encoded uint as float (per vertex)
 
-// chunk-wide info
+layout (location = 2) in vec3 aChunkPos; // (per instance) 
+
+// global info
 uniform mat4 u_viewProj;
-uniform vec3 u_pos;
+
+// per-chunk info
+//uniform vec3 u_pos;
 
 out vec3 vPos;
 out vec3 vNormal;
@@ -71,7 +75,6 @@ void Decode(in uint encoded,
 // decodes lighting information into a usable vec4
 void Decode(in uint encoded, out vec4 lighting)
 {
-  //encoded >>= 
   lighting.r = encoded >> 12;
   lighting.g = (encoded >> 8) & 0xF;
   lighting.b = (encoded >> 4) & 0xF;
@@ -84,7 +87,7 @@ void main()
 {
   vec3 modelPos;
   Decode(floatBitsToUint(aEncoded), modelPos, vNormal, vTexCoord);
-  vPos = modelPos + u_pos;
+  vPos = modelPos + aChunkPos;
   Decode(floatBitsToUint(aLighting), vLighting);
   //vColor = aColor;
 

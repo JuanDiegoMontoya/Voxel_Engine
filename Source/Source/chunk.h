@@ -151,6 +151,11 @@ public:
 		mesh.RenderSplat();
 	}
 
+	ChunkMesh& GetMesh()
+	{
+		return mesh;
+	}
+
 	// Serialization
 	template <class Archive>
 	void serialize(Archive& ar)
