@@ -5,6 +5,7 @@ layout (location = 0) in float aEncoded;
 // chunk-wide info
 uniform mat4 u_viewProj;
 uniform vec3 u_pos;
+uniform vec2 u_viewportSize;
 
 out flat vec3 vPos;
 out vec3 vColor;
@@ -23,6 +24,19 @@ void Decode(in uint encoded, out vec3 modelPos, out vec3 color)
   color /= (1 << 4);
 }
 
+void SetPointSizeFancy(vec4 glPos)
+{
+  float aspectRatio = u_viewportSize.x / u_viewportSize.y;
+  // embiggen point if it's near screen edge
+  float reduce = max(
+    abs(glPos.x * aspectRatio / glPos.w),
+    abs(glPos.y / glPos.w)
+  );
+  reduce -= 0.13; // affects overdraw near edges
+  float size = (u_viewportSize.y * 1.1) / glPos.z * max(reduce, 1.0);
+  gl_PointSize = size * 1.0;
+}
+
 void main()
 {
   vec3 modelPos;
@@ -33,5 +47,6 @@ void main()
 
   // extremely unscientific pointsize calculation
   // let's just say it was done in the name of performance
-  gl_PointSize = 900.0 / gl_Position.z;
+  gl_PointSize = 1200.0 / gl_Position.z;
+  SetPointSizeFancy(gl_Position);
 }

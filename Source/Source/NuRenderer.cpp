@@ -52,7 +52,7 @@ namespace NuRenderer
 		}
 
 		Renderer::drawSky();
-		drawChunks();
+		//drawChunks();
 		splatChunks();
 		drawChunksWater();
 		Renderer::drawAxisIndicators();
@@ -131,7 +131,7 @@ namespace NuRenderer
 		{
 			ChunkPtr chunk = pair.second;
 			if (chunk && chunk->IsVisible(*cam) &&
-				glm::distance(cam->GetPos(), glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE)) >= 200)
+				glm::distance(cam->GetPos(), glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE)) >= 00)
 			{
 				// set some uniforms, etc
 				currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
@@ -164,7 +164,7 @@ namespace NuRenderer
 		}
 
 		//feed the draw command data to the gpu
-		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, gIndirectBuffer);
+		//glBindBuffer(GL_DRAW_INDIRECT_BUFFER, gIndirectBuffer);
 		glBufferData(GL_DRAW_INDIRECT_BUFFER, drawCommands.size() * sizeof(DrawElementsIndirectCommand), drawCommands.data(), GL_DYNAMIC_DRAW);
 
 		//feed the instance id to the shader. (not needed in this case)
