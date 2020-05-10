@@ -295,6 +295,9 @@
     <ClInclude Include="Palette.h">
       <Filter>Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Source\dib.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -473,6 +476,9 @@
     </ClCompile>
     <ClCompile Include="WorldGen2.cpp">
       <Filter>Voxel Engine\World Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\dib.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

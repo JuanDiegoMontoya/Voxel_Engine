@@ -13,13 +13,6 @@ namespace NuRenderer
 
 	void generateDrawCommands();
 	void drawChunksMultiIndirect();
-}
 
-struct DrawElementsIndirectCommand
-{
-	GLuint  count;
-	GLuint  instanceCount;
-	GLuint  firstIndex;
-	GLuint  baseVertex;
-	GLuint  baseInstance;
-};
+	inline int drawCalls = 0;
+}

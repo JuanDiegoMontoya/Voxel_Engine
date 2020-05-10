@@ -2,10 +2,12 @@
 #include "block.h"
 //#include "chunk.h"
 #include "NuRenderer.h"
+#include <dib.h>
 
 class VAO;
 class VBO;
 class IBO;
+class DIB;
 struct Chunk;
 
 class ChunkMesh
@@ -14,7 +16,6 @@ public:
 
 	void Render();
 	void RenderSplat();
-	DrawElementsIndirectCommand GetDrawCommand(GLuint& baseVert, int index);
 	void BuildBuffers();
 	void BuildMesh();
 	void SetParent(Chunk*);
@@ -52,6 +53,7 @@ private:
 	std::unique_ptr<VAO> vao_;
 	std::unique_ptr<VBO> encodedStuffVbo_;
 	std::unique_ptr<VBO> lightingVbo_;
+	std::unique_ptr<VBO> posVbo_;
 
 	// vertex data (held until buffers are sent to GPU)
 	std::vector<GLuint> tIndices;
@@ -68,6 +70,9 @@ private:
 	std::vector<GLfloat> sPosArr; // point positions (optimize later)
 	GLsizei pointCount_ = 0;
 	bool voxelReady_ = true; // hack to prevent same voxel from being added multiple times
+
+	// indirect drawing stuff
+	std::unique_ptr<DIB> dib_;
 
 	std::shared_mutex mtx;
 };

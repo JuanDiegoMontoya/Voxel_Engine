@@ -154,12 +154,12 @@ namespace Interface
 				if (p.second)
 				{
 					nonNull++;
-					//active++;
 				}
 			}
 			ImGui::Text("Total chunks:    %d", ChunkStorage::GetMapRaw().size());
 			ImGui::Text("Non-null chunks: %d", nonNull);
-			ImGui::Text("Active chunks:   %d", active);
+			ImGui::Text("Drawn chunks:    %d", NuRenderer::drawCalls);
+			ImGui::Text("Culled chunks:   %d", nonNull - NuRenderer::drawCalls);
 
 			ImGui::NewLine();
 			// displaying zero just means the queue was taken, not finished!

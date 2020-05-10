@@ -3,6 +3,7 @@
 #include <vao.h>
 #include <vbo.h>
 #include <ibo.h>
+#include <dib.h>
 #include <iomanip>
 #include "chunk.h"
 #include "ChunkHelpers.h"
@@ -16,8 +17,9 @@ void ChunkMesh::Render()
 	if (vao_)
 	{
 		vao_->Bind();
-		ibo_->Bind();
-		glDrawElements(GL_TRIANGLES, indexCount_, GL_UNSIGNED_INT, (void*)0);
+		dib_->Bind();
+		//glDrawElementsInstanced(GL_TRIANGLES, indexCount_, GL_UNSIGNED_INT, (void*)0, 1);
+		glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)0);
 	}
 }
 
@@ -32,17 +34,17 @@ void ChunkMesh::RenderSplat()
 }
 
 
-DrawElementsIndirectCommand ChunkMesh::GetDrawCommand(GLuint& baseVert, int index)
-{
-	DrawElementsIndirectCommand cmd;
-	cmd.count = indexCount_;
-	cmd.instanceCount = 1;
-	cmd.firstIndex = 0;
-	cmd.baseVertex = baseVert;
-	cmd.baseInstance = index;
-	baseVert += vertexCount_;
-	return cmd;
-}
+//DrawElementsIndirectCommand ChunkMesh::GetDrawCommand(GLuint& baseVert, int index)
+//{
+//	DrawElementsIndirectCommand cmd;
+//	cmd.count = indexCount_;
+//	cmd.instanceCount = 1;
+//	cmd.firstIndex = 0;
+//	cmd.baseVertex = baseVert;
+//	cmd.baseInstance = index;
+//	baseVert += vertexCount_;
+//	return cmd;
+//}
 
 
 void ChunkMesh::BuildBuffers()
@@ -52,9 +54,9 @@ void ChunkMesh::BuildBuffers()
 	if (!vao_)
 		vao_ = std::make_unique<VAO>();
 
-	ibo_ = std::make_unique<IBO>(&tIndices[0], tIndices.size());
 
 	vao_->Bind();
+	ibo_ = std::make_unique<IBO>(&tIndices[0], tIndices.size());
 	encodedStuffVbo_ = std::make_unique<VBO>(encodedStuffArr.data(), sizeof(GLfloat) * encodedStuffArr.size());
 	encodedStuffVbo_->Bind();
 	glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0); // encoded stuff
@@ -64,6 +66,14 @@ void ChunkMesh::BuildBuffers()
 	lightingVbo_->Bind();
 	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0); // encoded lighting
 	glEnableVertexAttribArray(1);
+
+	glm::vec3 pos = Chunk::CHUNK_SIZE * parent->GetPos();
+	posVbo_ = std::make_unique<VBO>(glm::value_ptr(pos), sizeof(glm::vec3));
+	posVbo_->Bind();
+	glEnableVertexAttribArray(2);
+	glVertexAttribDivisor(2, 1);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0);
+
 
 	vertexCount_ = encodedStuffArr.size();
 	indexCount_ = tIndices.size();
@@ -82,6 +92,15 @@ void ChunkMesh::BuildBuffers()
 	glEnableVertexAttribArray(0);
 	pointCount_ = sPosArr.size();
 	sPosArr.clear();
+
+	// INDIRECT STUFF
+	DrawElementsIndirectCommand cmd;
+	cmd.count = indexCount_;
+	cmd.instanceCount = 1;
+	cmd.firstIndex = 0;
+	cmd.baseVertex = 0;
+	cmd.baseInstance = 0; // must be zero for glDrawElementsIndirect
+	dib_ = std::make_unique<DIB>(&cmd, 1);
 
 	mtx.unlock();
 }

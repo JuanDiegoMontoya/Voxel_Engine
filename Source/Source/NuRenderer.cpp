@@ -7,7 +7,7 @@
 #include <camera.h>
 #include <input.h>
 #include "ChunkStorage.h"
-
+#include <dib.h>
 
 namespace NuRenderer
 {
@@ -27,6 +27,7 @@ namespace NuRenderer
 
 	void Clear()
 	{
+		drawCalls = 0;
 		auto cc = World::bgColor_;
 		glClearColor(cc.r, cc.g, cc.b, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -52,8 +53,9 @@ namespace NuRenderer
 		}
 
 		Renderer::drawSky();
-		//drawChunks();
-		splatChunks();
+		drawChunks();
+		//splatChunks();
+		//drawChunksMultiIndirect();
 		drawChunksWater();
 		Renderer::drawAxisIndicators();
 		//Renderer::postProcess();
@@ -89,20 +91,26 @@ namespace NuRenderer
 		currShader->setFloat("fogStart", loadD - loadD / 2.f);
 		currShader->setFloat("fogEnd", loadD - Chunk::CHUNK_SIZE * 1.44f); // cuberoot(3)
 		currShader->setVec3("fogColor", skyColor);
+		currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
 
-		std::for_each(ChunkStorage::GetMapRaw().begin(), ChunkStorage::GetMapRaw().end(),
-			[&](const std::pair<glm::ivec3, Chunk*>& pair)
+
+		auto& chunks = ChunkStorage::GetMapRaw();
+		auto it = chunks.begin();
+		auto end = chunks.end();
+		for (int i = 0; it != end; ++it)
 		{
-			ChunkPtr chunk = pair.second;
-			if (chunk && chunk->IsVisible(*cam) &&
-				glm::distance(cam->GetPos(), glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE)) < 200)
+			ChunkPtr chunk = it->second;
+			if (chunk 
+				//&& chunk->IsVisible(*cam) 
+				//&& glm::distance(cam->GetPos(), glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE)) < 200
+				)
 			{
 				// set some uniforms, etc
-				currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
-				currShader->setVec3("u_pos", Chunk::CHUNK_SIZE * chunk->GetPos());
+				//currShader->setVec3("u_pos", Chunk::CHUNK_SIZE * chunk->GetPos());
 				chunk->Render();
+				drawCalls++;
 			}
-		});
+		}
 	}
 
 
@@ -116,6 +124,7 @@ namespace NuRenderer
 
 		currShader->setVec3("u_viewpos", cam->GetPos());
 
+		currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
 		currShader->setMat4("u_invProj", glm::inverse(proj));
 		currShader->setMat4("u_invView", glm::inverse(view));
 
@@ -131,12 +140,12 @@ namespace NuRenderer
 		{
 			ChunkPtr chunk = pair.second;
 			if (chunk && chunk->IsVisible(*cam) &&
-				glm::distance(cam->GetPos(), glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE)) >= 00)
+				glm::distance(cam->GetPos(), glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE)) >= 200)
 			{
 				// set some uniforms, etc
-				currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
 				currShader->setVec3("u_pos", Chunk::CHUNK_SIZE * chunk->GetPos());
 				chunk->RenderSplat();
+				drawCalls++;
 			}
 		});
 	}
@@ -147,10 +156,13 @@ namespace NuRenderer
 
 	}
 
-
+	GLuint gIndirectBuffer = 0;
+	std::vector<DrawElementsIndirectCommand> drawCommands;
 	void generateDrawCommands()
 	{
-		std::vector<DrawElementsIndirectCommand> drawCommands;
+		ASSERT(0);
+		drawCommands.clear();
+
 		GLuint baseVert = 0;
 		
 		auto& chunks = ChunkStorage::GetMapRaw();
@@ -159,12 +171,13 @@ namespace NuRenderer
 		for (int i = 0; it != end; ++it)
 		{
 			Chunk* chunk = it->second;
-			DrawElementsIndirectCommand cmd = chunk->GetMesh().GetDrawCommand(baseVert, i);
-			drawCommands.push_back(cmd);
+			//DrawElementsIndirectCommand cmd = chunk->GetMesh().GetDrawCommand(baseVert, i);
+			//drawCommands.push_back(cmd);
 		}
 
 		//feed the draw command data to the gpu
-		//glBindBuffer(GL_DRAW_INDIRECT_BUFFER, gIndirectBuffer);
+		glGenBuffers(1, &gIndirectBuffer);
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, gIndirectBuffer);
 		glBufferData(GL_DRAW_INDIRECT_BUFFER, drawCommands.size() * sizeof(DrawElementsIndirectCommand), drawCommands.data(), GL_DYNAMIC_DRAW);
 
 		//feed the instance id to the shader. (not needed in this case)
@@ -177,6 +190,11 @@ namespace NuRenderer
 
 	void drawChunksMultiIndirect()
 	{
-
+		glMultiDrawElementsIndirect(
+			GL_TRIANGLES,
+			GL_UNSIGNED_INT,
+			(void*)0,
+			drawCommands.size(),
+			0); // draw commands are tightly packed
 	}
 }
