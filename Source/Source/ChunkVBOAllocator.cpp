@@ -5,10 +5,10 @@
 ChunkVBOAllocator::ChunkVBOAllocator(GLsizei size)
 {
 	// allocate uninitialized memory in VRAM
-	vbo_ = std::make_unique<VBO>(nullptr, size, GL_STATIC_DRAW);
+	//vbo_ = std::make_unique<VBO>(nullptr, size, GL_STATIC_DRAW);
 
 	// make one big null allocation
-	allocs_.push_back({ nullptr, 0, size });
+	allocs_.push_back({ nullptr, 0, size, glfwGetTime() });
 }
 
 
@@ -41,19 +41,21 @@ bool ChunkVBOAllocator::Allocate(Chunk* chunk, void* data, GLsizei size)
 	newAlloc.chunk = chunk;
 	newAlloc.offset = small->offset;
 	newAlloc.size = size;
+	newAlloc.time = glfwGetTime();
 
 	small->offset += newAlloc.size;
 	small->size -= newAlloc.size;
 
 	allocs_.insert(small, newAlloc);
-
-	glNamedBufferSubData(vbo_->GetID(), newAlloc.offset, newAlloc.size, data);
+	
+	//glNamedBufferSubData(vbo_->GetID(), newAlloc.offset, newAlloc.size, data);
 	return true;
 }
 
 
 bool ChunkVBOAllocator::Free(Chunk* chunk)
 {
+	if (chunk == nullptr) return false;
 	auto it = std::find_if(allocs_.begin(), allocs_.end(), [&](const auto& a) { return a.chunk == chunk; });
 	if (it == allocs_.end()) // failed to free
 		return false;
@@ -64,13 +66,38 @@ bool ChunkVBOAllocator::Free(Chunk* chunk)
 }
 
 
+bool ChunkVBOAllocator::FreeOldest()
+{
+	// find and free the oldest allocation
+	Iterator old = allocs_.end();
+	for (int i = 0; i < allocs_.size(); i++)
+	{
+		if (allocs_[i].chunk != nullptr)
+		{
+			if (old == allocs_.end())
+				old = allocs_.begin() + i;
+			else if (allocs_[i].time < old->time)
+				old = allocs_.begin() + i;
+		}
+	}
+
+	// failed to find old node to free
+	if (old == allocs_.end())
+		return false;
+
+	old->chunk = nullptr;
+	maybeMerge(old);
+	return true;
+}
+
+
 void ChunkVBOAllocator::maybeMerge(Iterator it)
 {
 	bool removeIt = false;
 	bool removeNext = false;
 	
 	// merge with next alloc
-	if (it != allocs_.end())
+	if (it != allocs_.end() - 1)
 	{
 		Iterator next = it + 1;
 		if (next->chunk == nullptr)
@@ -93,9 +120,9 @@ void ChunkVBOAllocator::maybeMerge(Iterator it)
 
 	// erase merged allocations
 	if (removeIt && removeNext)
-		allocs_.erase(it, it + 1); // this and next
+		allocs_.erase(it, it + 2); // this and next
 	else if (removeIt)
-		allocs_.erase(it);         // just this
+		allocs_.erase(it - 1);     // just this
 	else if (removeNext)
-		allocs_.erase(it + 1);     // just next
+		allocs_.erase(it);         // just next
 }

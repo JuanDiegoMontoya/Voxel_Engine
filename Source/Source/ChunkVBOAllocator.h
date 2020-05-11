@@ -11,12 +11,15 @@ public:
 
 	bool Allocate(Chunk* chunk, void* data, GLsizei size);
 	bool Free(Chunk* chunk);
+	bool FreeOldest();
+
 private:
 	struct allocationData
 	{
 		Chunk* chunk;
 		GLsizei offset; // offset from beginning of this memory
 		GLsizei size;   // allocation size
+		GLdouble time;  // time of allocation
 	};
 
 	std::vector<allocationData> allocs_;
