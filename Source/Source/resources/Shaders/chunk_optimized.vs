@@ -6,12 +6,12 @@
 // vertex = x, y, z from 0-32 (supports up to 63)
 // normal = 0 - 5 index into "normals" table
 // texcoord = texture index (0 - 512), corner index (0 - 3)
-layout (location = 0) in float aEncoded; // encoded uint as float (per vertex)
+layout (location = 0) in uint aEncoded; // encoded uint as float (per vertex)
 
 // aLighting layout
 // 0 - 15   16 - 19   20 - 23   24 - 27   28 - 31
 // unused     R         G         B         Sun
-layout (location = 1) in float aLighting;// encoded uint as float (per vertex)
+layout (location = 1) in uint aLighting;// encoded uint as float (per vertex)
 
 layout (location = 2) in vec3 u_pos; // (per instance) 
 
@@ -86,9 +86,9 @@ void Decode(in uint encoded, out vec4 lighting)
 void main()
 {
   vec3 modelPos;
-  Decode(floatBitsToUint(aEncoded), modelPos, vNormal, vTexCoord);
+  Decode(aEncoded, modelPos, vNormal, vTexCoord);
   vPos = modelPos + u_pos;
-  Decode(floatBitsToUint(aLighting), vLighting);
+  Decode(aLighting, vLighting);
   //vColor = aColor;
 
   gl_Position = u_viewProj * vec4(vPos, 1.0);

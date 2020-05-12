@@ -301,6 +301,9 @@
     <ClInclude Include="ChunkVBOAllocator.h">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="ChunkRenderer.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -484,6 +487,9 @@
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="ChunkVBOAllocator.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkRenderer.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
   </ItemGroup>

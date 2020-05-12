@@ -19,6 +19,8 @@ namespace Interface
 {
 	void Init()
 	{
+		Interface::activeCursor = false;
+		glfwSetInputMode(Engine::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		Engine::PushRenderCallback(DrawImGui, 1);
 		Engine::PushRenderCallback(Update, 2);
 	}
@@ -26,8 +28,17 @@ namespace Interface
 	void Update()
 	{
 		if (Input::Keyboard().pressed[GLFW_KEY_GRAVE_ACCENT])
+		{
 			Interface::activeCursor = !Interface::activeCursor;
-		glfwSetInputMode(Engine::GetWindow(), GLFW_CURSOR, Interface::activeCursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+		}
+		if (Interface::activeCursor)
+		{
+			glfwSetInputMode(Engine::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		else
+		{
+			glfwSetInputMode(Engine::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
 	}
 
 	void DrawImGui()

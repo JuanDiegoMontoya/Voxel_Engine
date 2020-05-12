@@ -32,6 +32,7 @@
 #include "FixedSizeWorld.h"
 #include "ChunkStorage.h"
 #include "WorldGen2.h"
+//#include "ChunkVBOAllocator.h"
 
 using namespace std::chrono;
 
@@ -50,6 +51,7 @@ namespace World
 		cam->SetPos({ 0, 5, 0 });
 		Renderer::GetPipeline()->AddCamera(cam);
 
+		//ChunkMesh::InitAllocator();
 
 		high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
@@ -71,6 +73,9 @@ namespace World
 		//std::cout << benchmark_duration_.count() << std::endl;
 		sun_ = new Sun();
 
+		Renderer::SetDirLight(&sun_->GetDirLight());
+		Renderer::SetSun(sun_);
+
 		Engine::PushUpdateCallback(Update, 0);
 		Engine::PushRenderCallback([] { hud_.Update(); }, 5);
 	}
@@ -90,8 +95,10 @@ namespace World
 	{
 		// update each camera
 		if (!Interface::activeCursor)
+		{
 			for (auto& cam : Renderer::GetPipeline()->GetAllCameras())
 				cam->Update(Engine::GetDT());
+		}
 
 		if (doCollisionTick)
 			CheckCollision();
@@ -99,8 +106,6 @@ namespace World
 		chunkManager_.Update();
 		CheckInteraction();
 		sun_->Update();
-		Renderer::SetDirLight(&sun_->GetDirLight());
-		Renderer::SetSun(sun_);
 		
 		//Renderer::DrawAll();
 		Editor::Update();

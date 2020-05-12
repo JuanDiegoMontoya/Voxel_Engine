@@ -1,4 +1,5 @@
 #pragma once
+#include <dib.h>
 
 class VBO;
 struct Chunk;
@@ -12,6 +13,10 @@ public:
 	bool Allocate(Chunk* chunk, void* data, GLsizei size);
 	bool Free(Chunk* chunk);
 	bool FreeOldest();
+	std::unique_ptr<VBO>& GetVBO() { return vbo_; }
+
+	std::vector<DrawArraysIndirectCommand> GetCommands();
+	std::vector<glm::vec3> GetChunkPositions();
 
 private:
 	struct allocationData

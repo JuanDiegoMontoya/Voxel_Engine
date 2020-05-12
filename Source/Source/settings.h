@@ -1,23 +1,10 @@
 #pragma once
 
 #include "stdafx.h"
-//#include "Serialization.h
-//#include "GameObject.h"
-//#include "SoundEvent.h"
 
 // TODO: refactor this
 namespace Settings
 {
-	struct CTL
-	{
-		int keyUp = GLFW_KEY_W;
-		int keyUpAlt = GLFW_KEY_SPACE;
-		int keyLeft = GLFW_KEY_A;
-		int keyRight = GLFW_KEY_D;
-		int keyDown = GLFW_KEY_S;
-		int keySprint = GLFW_KEY_LEFT_SHIFT;
-	};
-
 	struct GFX
 	{
 		bool vsync = true;
@@ -54,27 +41,6 @@ namespace Settings
 		float ambient = 1;  // environment, background, etc.
 	};
 
-	struct EDT
-	{
-		bool BSP = false;					// efficient collision algorithm
-		bool radiusCheck = true;	// collision broadphase check
-		bool priorityCheck = true;// collision broadphase check
-		bool throwMode = false;		// throw held objects
-		bool danglyBits = true;		// scaling squares on the edges of the selected object
-	};
-
-	// world settings
-	struct WLD
-	{
-
-	};
-
-	static typename GFX Graphics;
-	static typename CTL Controls;
-	static typename SND Sound;
-	static typename EDT Editor;
-	static typename WLD World;
-
-//bool DrawOptions();
-//void reinitializeDatMfGlfwContextBruh();
+	static inline typename GFX Graphics;
+	static inline typename SND Sound;
 }

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ChunkVBOAllocator.h"
 #include <vbo.h>
+#include "chunk.h"
+#include "ChunkMesh.h"
 
 ChunkVBOAllocator::ChunkVBOAllocator(GLsizei size)
 {
@@ -125,4 +127,37 @@ void ChunkVBOAllocator::maybeMerge(Iterator it)
 		allocs_.erase(it - 1);     // just this
 	else if (removeNext)
 		allocs_.erase(it);         // just next
+}
+
+
+std::vector<DrawArraysIndirectCommand> ChunkVBOAllocator::GetCommands()
+{
+	std::vector<DrawArraysIndirectCommand> commands;
+	int baseInstance = 0;
+
+	for (const allocationData& alloc : allocs_)
+	{
+		if (alloc.chunk != nullptr)
+		{
+			DrawArraysIndirectCommand cmd;
+			cmd.count = alloc.chunk->GetMesh().GetVertexCount();
+			cmd.instanceCount = 1;
+			cmd.firstIndex = alloc.offset;
+			cmd.baseInstance = baseInstance++;
+		}
+	}
+
+	return commands;
+}
+
+
+std::vector<glm::vec3> ChunkVBOAllocator::GetChunkPositions()
+{
+	std::vector<glm::vec3> res;
+	for (const auto& alloc : allocs_)
+	{
+		if (alloc.chunk != nullptr)
+			res.push_back(alloc.chunk->GetPos());
+	}
+	return res;
 }

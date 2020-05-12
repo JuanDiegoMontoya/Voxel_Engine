@@ -2,7 +2,6 @@
 #include "ChunkMesh.h"
 #include <vao.h>
 #include <vbo.h>
-#include <ibo.h>
 #include <dib.h>
 #include <iomanip>
 #include "chunk.h"
@@ -10,6 +9,8 @@
 #include "ChunkStorage.h"
 #include <Vertices.h>
 #include "settings.h"
+#include "ChunkVBOAllocator.h"
+#include "ChunkRenderer.h"
 
 
 void ChunkMesh::Render()
@@ -22,7 +23,9 @@ void ChunkMesh::Render()
 		//void* i[1] = { (void*)0 };
 		//glMultiDrawElements(GL_TRIANGLES, &indexCount_, GL_UNSIGNED_INT, i, 1);
 		//glDrawElementsInstanced(GL_TRIANGLES, indexCount_, GL_UNSIGNED_INT, (void*)0, 1);
-		glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)0);
+		//glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)0);
+		glDrawArraysIndirect(GL_TRIANGLES, (void*)0);
+		//glDrawArraysInstanced(GL_TRIANGLES, 0, vertexCount_, 1);
 	}
 }
 
@@ -55,7 +58,6 @@ void ChunkMesh::BuildBuffers()
 	std::lock_guard lk(mtx);
 
 	vertexCount_ = encodedStuffArr.size();
-	indexCount_ = tIndices.size();
 	pointCount_ = sPosArr.size();
 
 	// nothing emitted, don't try to make buffers
@@ -66,15 +68,14 @@ void ChunkMesh::BuildBuffers()
 		vao_ = std::make_unique<VAO>();
 
 	vao_->Bind();
-	ibo_ = std::make_unique<IBO>(&tIndices[0], tIndices.size());
 	encodedStuffVbo_ = std::make_unique<VBO>(encodedStuffArr.data(), sizeof(GLfloat) * encodedStuffArr.size());
 	encodedStuffVbo_->Bind();
-	glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0); // encoded stuff
+	glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, 0, (void*)0); // encoded stuff
 	glEnableVertexAttribArray(0);
 
 	lightingVbo_ = std::make_unique<VBO>(lightingArr.data(), sizeof(GLfloat) * lightingArr.size());
 	lightingVbo_->Bind();
-	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0); // encoded lighting
+	glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, 0, (void*)0); // encoded lighting
 	glEnableVertexAttribArray(1);
 
 	glm::vec3 pos = Chunk::CHUNK_SIZE * parent->GetPos();
@@ -96,18 +97,32 @@ void ChunkMesh::BuildBuffers()
 	glEnableVertexAttribArray(0);
 
 	// INDIRECT STUFF
-	DrawElementsIndirectCommand cmd;
-	cmd.count = indexCount_;
+	DrawArraysIndirectCommand cmd;
+	cmd.count = vertexCount_;
 	cmd.instanceCount = 1;
 	cmd.firstIndex = 0;
-	cmd.baseVertex = 0;
 	cmd.baseInstance = 0; // must be zero for glDrawElementsIndirect
-	dib_ = std::make_unique<DIB>(&cmd, 1);
+	dib_ = std::make_unique<DIB>(&cmd, sizeof(DrawArraysIndirectCommand));
 
-	tIndices.clear();
 	encodedStuffArr.clear();
 	lightingArr.clear();
 	sPosArr.clear();
+}
+
+
+void ChunkMesh::BuildBuffers2()
+{
+	std::lock_guard lk(mtx);
+	ChunkRenderer::allocator->Free(this->parent);
+
+	vertexCount_ = encodedStuffArr.size();
+	pointCount_ = sPosArr.size();
+
+	// nothing emitted, don't try to make buffers
+	if (pointCount_ == 0)
+		return;
+
+
 }
 
 
@@ -250,10 +265,12 @@ inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face
 
 	// add 4 vertices representing a quad
 	float aoValues[4] = { 0, 0, 0, 0 }; // AO for each quad
-	int aoValuesIndex = 0;
+	GLuint encodeds[4] = { 0 };
+	GLuint lightdeds[4] = { 0 };
+	//int aoValuesIndex = 0;
 	const GLfloat* data = Vertices::cube_light;
 	int endQuad = (face + 1) * 12;
-	for (int i = face * 12; i < endQuad; i += 3)
+	for (int i = face * 12, cindex = 0; i < endQuad; i += 3, cindex++)
 	{
 		using namespace ChunkHelpers;
 		// transform vertices relative to chunk
@@ -264,38 +281,31 @@ inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face
 
 		// compress attributes into 32 bits
 		GLuint encoded = Encode(finalVert, normalIdx, texIdx, cornerIdx);
+		encodeds[cindex] = encoded;
 
 		int invOcclusion = 6;
 		if (Settings::Graphics.blockAO)
 			invOcclusion = 2 * vertexFaceAO(lpos, vert, faces[face]);
 		
-		aoValues[aoValuesIndex++] = invOcclusion;
+		aoValues[cindex] = invOcclusion;
 		invOcclusion = 6 - invOcclusion;
 		auto tLight = light;
 		tLight.Set(tLight.Get() - glm::min(tLight.Get(), glm::u8vec4(invOcclusion)));
 		lighting = tLight.Raw();
-
-		// preserve bit ordering
-		encodedStuffArr.push_back(glm::uintBitsToFloat(encoded));
-		lightingArr.push_back(glm::uintBitsToFloat(lighting));
+		lightdeds[cindex] = lighting;
 	}
 
-	// add 6 indices defining 2 triangles from that quad
-	int endIndices = (face + 1) * 6;
+	const GLuint indicesB[6] = { 0, 1, 2, 2, 3, 0 }; // anisotropy fix
+	const GLuint indicesA[6] = { 0, 1, 3, 3, 1, 2 }; // normal indices
+	const GLuint* indices = indicesA;
+	// partially solve anisotropy issue
 	if (aoValues[0] + aoValues[2] > aoValues[1] + aoValues[3])
+		indices = indicesB;
+	for (int i = 0; i < 6; i++)
 	{
-		for (int i = face * 6; i < endIndices; i++)
-		{
-			tIndices.push_back(Vertices::cube_indices_light_cw_anisotropic[i] + encodedStuffArr.size() - 4);
-		}
-	}
-	else
-	{
-		for (int i = face * 6; i < endIndices; i++)
-		{
-			// refer to just placed vertices (4 of them)
-			tIndices.push_back(Vertices::cube_indices_light_cw[i] + encodedStuffArr.size() - 4);
-		}
+		// preserve bit ordering
+		encodedStuffArr.push_back(encodeds[indices[i]]);
+		lightingArr.push_back(lightdeds[indices[i]]);
 	}
 }
 
