@@ -13,7 +13,7 @@ layout (location = 0) in uint aEncoded; // encoded uint as float (per vertex)
 // unused     R         G         B         Sun
 layout (location = 1) in uint aLighting;// encoded uint as float (per vertex)
 
-layout (location = 2) in vec3 u_pos; // (per instance) 
+layout (location = 2) in ivec3 u_pos; // (per instance) 
 
 // global info
 uniform mat4 u_viewProj;

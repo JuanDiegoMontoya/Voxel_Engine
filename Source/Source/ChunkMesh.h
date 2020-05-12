@@ -59,9 +59,9 @@ private:
 	std::unique_ptr<VBO> posVbo_;
 
 	// vertex data (held until buffers are sent to GPU)
-	std::vector<GLuint> encodedStuffArr;
-	std::vector<GLuint> lightingArr;
-	std::vector<GLuint> interleavedArr;
+	std::vector<GLint> encodedStuffArr;
+	std::vector<GLint> lightingArr;
+	std::vector<GLint> interleavedArr;
 
 	GLsizei vertexCount_ = 0; // number of block vertices
 

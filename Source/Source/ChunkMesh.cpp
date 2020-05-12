@@ -68,6 +68,8 @@ void ChunkMesh::BuildBuffers()
 		vao_ = std::make_unique<VAO>();
 
 	vao_->Bind();
+
+#if 0
 	encodedStuffVbo_ = std::make_unique<VBO>(encodedStuffArr.data(), sizeof(GLfloat) * encodedStuffArr.size());
 	encodedStuffVbo_->Bind();
 	glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, 0, (void*)0); // encoded stuff
@@ -78,13 +80,28 @@ void ChunkMesh::BuildBuffers()
 	glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, 0, (void*)0); // encoded lighting
 	glEnableVertexAttribArray(1);
 
-	glm::vec3 pos = Chunk::CHUNK_SIZE * parent->GetPos();
+	glm::ivec3 pos = Chunk::CHUNK_SIZE * parent->GetPos();
 	posVbo_ = std::make_unique<VBO>(glm::value_ptr(pos), sizeof(glm::vec3));
 	posVbo_->Bind();
 	glEnableVertexAttribArray(2);
 	glVertexAttribDivisor(2, 1);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0);
+	glVertexAttribIPointer(2, 3, GL_INT, sizeof(GLint), (void*)0);
+#else
+	encodedStuffVbo_ = std::make_unique<VBO>(interleavedArr.data(), sizeof(GLint) * interleavedArr.size());
+	encodedStuffVbo_->Bind();
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glVertexAttribDivisor(2, 1); // only 1 instance of a chunk should render, so divisor *should* be infinity
+	GLuint offset = 0;
+	glVertexAttribIPointer(2, 3, GL_INT, 0, (void*)offset); // chunk position (one per instance)
+	offset += 3 * sizeof(glm::ivec3);
 
+	glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, 2 * sizeof(GLuint), (void*)offset); // encoded data
+	offset += 1 * sizeof(GLfloat);
+
+	glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, 2 * sizeof(GLuint), (void*)offset); // lighting
+#endif
 
 	// SPLATTING STUFF
 	if (!svao_)
@@ -107,12 +124,14 @@ void ChunkMesh::BuildBuffers()
 	encodedStuffArr.clear();
 	lightingArr.clear();
 	sPosArr.clear();
+	interleavedArr.clear();
 }
 
 
 void ChunkMesh::BuildBuffers2()
 {
 	std::lock_guard lk(mtx);
+
 	ChunkRenderer::allocator->Free(this->parent);
 
 	vertexCount_ = encodedStuffArr.size();
@@ -121,8 +140,8 @@ void ChunkMesh::BuildBuffers2()
 	// nothing emitted, don't try to make buffers
 	if (pointCount_ == 0)
 		return;
-
-
+	
+	interleavedArr.clear();
 }
 
 
@@ -138,6 +157,11 @@ void ChunkMesh::BuildMesh()
 
 
 	mtx.lock();
+
+	glm::ivec3 ap = parent->GetPos() * Chunk::CHUNK_SIZE;
+	interleavedArr.push_back(ap.x);
+	interleavedArr.push_back(ap.y);
+	interleavedArr.push_back(ap.z);
 
 	glm::ivec3 pos;
 	for (pos.z = 0; pos.z < Chunk::CHUNK_SIZE; pos.z++)
@@ -295,8 +319,8 @@ inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face
 		lightdeds[cindex] = lighting;
 	}
 
-	const GLuint indicesB[6] = { 0, 1, 2, 2, 3, 0 }; // anisotropy fix
 	const GLuint indicesA[6] = { 0, 1, 3, 3, 1, 2 }; // normal indices
+	const GLuint indicesB[6] = { 0, 1, 2, 2, 3, 0 }; // anisotropy fix
 	const GLuint* indices = indicesA;
 	// partially solve anisotropy issue
 	if (aoValues[0] + aoValues[2] > aoValues[1] + aoValues[3])
@@ -306,6 +330,8 @@ inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face
 		// preserve bit ordering
 		encodedStuffArr.push_back(encodeds[indices[i]]);
 		lightingArr.push_back(lightdeds[indices[i]]);
+		interleavedArr.push_back(encodeds[indices[i]]);
+		interleavedArr.push_back(lightdeds[indices[i]]);
 	}
 }
 

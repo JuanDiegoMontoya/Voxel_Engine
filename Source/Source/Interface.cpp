@@ -161,7 +161,6 @@ namespace Interface
 			int nonNull = 0;
 			int active = 0;
 			int numVerts = 0;
-			int numIndices = 0;
 			int numPoints = 0;
 			for (auto& p : ChunkStorage::GetMapRaw())
 			{
@@ -169,7 +168,6 @@ namespace Interface
 				{
 					nonNull++;
 					numVerts += p.second->GetMesh().GetVertexCount();
-					numIndices += p.second->GetMesh().GetIndexCount();
 					numPoints += p.second->GetMesh().GetPointCount();
 				}
 			}
@@ -180,7 +178,6 @@ namespace Interface
 			
 			ImGui::NewLine();
 			ImGui::Text("Vertices: %d", numVerts);
-			ImGui::Text("Indices:  %d", numIndices);
 			ImGui::Text("Points:   %d", numPoints);
 			ImGui::NewLine();
 			
