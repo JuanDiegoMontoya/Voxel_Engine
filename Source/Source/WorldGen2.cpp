@@ -65,7 +65,7 @@ namespace WorldGen2
 
 							//double density = noise.GetValue(wpos.x, wpos.y, wpos.z); // chunks are different
 							double density = noise.GetValue(pos.x, pos.y, pos.z); // same chunk every time
-
+							//density = 0;
 							if (density > .8)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bStone);

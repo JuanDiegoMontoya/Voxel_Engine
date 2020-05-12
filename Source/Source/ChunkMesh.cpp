@@ -16,8 +16,11 @@ void ChunkMesh::Render()
 {
 	if (vao_)
 	{
+		if (pointCount_ == 0) return;
 		vao_->Bind();
 		dib_->Bind();
+		//void* i[1] = { (void*)0 };
+		//glMultiDrawElements(GL_TRIANGLES, &indexCount_, GL_UNSIGNED_INT, i, 1);
 		//glDrawElementsInstanced(GL_TRIANGLES, indexCount_, GL_UNSIGNED_INT, (void*)0, 1);
 		glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)0);
 	}
@@ -49,11 +52,18 @@ void ChunkMesh::RenderSplat()
 
 void ChunkMesh::BuildBuffers()
 {
-	mtx.lock();
+	std::lock_guard lk(mtx);
+
+	vertexCount_ = encodedStuffArr.size();
+	indexCount_ = tIndices.size();
+	pointCount_ = sPosArr.size();
+
+	// nothing emitted, don't try to make buffers
+	if (pointCount_ == 0)
+		return;
 
 	if (!vao_)
 		vao_ = std::make_unique<VAO>();
-
 
 	vao_->Bind();
 	ibo_ = std::make_unique<IBO>(&tIndices[0], tIndices.size());
@@ -75,12 +85,6 @@ void ChunkMesh::BuildBuffers()
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0);
 
 
-	vertexCount_ = encodedStuffArr.size();
-	indexCount_ = tIndices.size();
-	tIndices.clear();
-	encodedStuffArr.clear();
-	lightingArr.clear();
-
 	// SPLATTING STUFF
 	if (!svao_)
 		svao_ = std::make_unique<VAO>();
@@ -90,8 +94,6 @@ void ChunkMesh::BuildBuffers()
 	svbo_->Bind();
 	glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat), (void*)0);
 	glEnableVertexAttribArray(0);
-	pointCount_ = sPosArr.size();
-	sPosArr.clear();
 
 	// INDIRECT STUFF
 	DrawElementsIndirectCommand cmd;
@@ -102,7 +104,10 @@ void ChunkMesh::BuildBuffers()
 	cmd.baseInstance = 0; // must be zero for glDrawElementsIndirect
 	dib_ = std::make_unique<DIB>(&cmd, 1);
 
-	mtx.unlock();
+	tIndices.clear();
+	encodedStuffArr.clear();
+	lightingArr.clear();
+	sPosArr.clear();
 }
 
 

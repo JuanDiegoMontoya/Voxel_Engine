@@ -149,19 +149,30 @@ namespace Interface
 			ImGui::Text("Chunk size: %d", Chunk::CHUNK_SIZE);
 			int nonNull = 0;
 			int active = 0;
+			int numVerts = 0;
+			int numIndices = 0;
+			int numPoints = 0;
 			for (auto& p : ChunkStorage::GetMapRaw())
 			{
 				if (p.second)
 				{
 					nonNull++;
+					numVerts += p.second->GetMesh().GetVertexCount();
+					numIndices += p.second->GetMesh().GetIndexCount();
+					numPoints += p.second->GetMesh().GetPointCount();
 				}
 			}
 			ImGui::Text("Total chunks:    %d", ChunkStorage::GetMapRaw().size());
 			ImGui::Text("Non-null chunks: %d", nonNull);
 			ImGui::Text("Drawn chunks:    %d", NuRenderer::drawCalls);
 			ImGui::Text("Culled chunks:   %d", nonNull - NuRenderer::drawCalls);
-
+			
 			ImGui::NewLine();
+			ImGui::Text("Vertices: %d", numVerts);
+			ImGui::Text("Indices:  %d", numIndices);
+			ImGui::Text("Points:   %d", numPoints);
+			ImGui::NewLine();
+			
 			// displaying zero just means the queue was taken, not finished!
 			ImGui::Text("Gen queue:    %d", World::chunkManager_.generation_queue_.size());
 			ImGui::Text("Mesh queue:   %-4d (%d)", World::chunkManager_.mesher_queue_.size(), World::chunkManager_.debug_cur_pool_left.load());

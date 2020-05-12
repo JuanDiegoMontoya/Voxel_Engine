@@ -5,7 +5,7 @@
 ChunkVBOAllocator::ChunkVBOAllocator(GLsizei size)
 {
 	// allocate uninitialized memory in VRAM
-	//vbo_ = std::make_unique<VBO>(nullptr, size, GL_STATIC_DRAW);
+	vbo_ = std::make_unique<VBO>(nullptr, size, GL_STATIC_DRAW);
 
 	// make one big null allocation
 	allocs_.push_back({ nullptr, 0, size, glfwGetTime() });
@@ -48,7 +48,7 @@ bool ChunkVBOAllocator::Allocate(Chunk* chunk, void* data, GLsizei size)
 
 	allocs_.insert(small, newAlloc);
 	
-	//glNamedBufferSubData(vbo_->GetID(), newAlloc.offset, newAlloc.size, data);
+	glNamedBufferSubData(vbo_->GetID(), newAlloc.offset, newAlloc.size, data);
 	return true;
 }
 

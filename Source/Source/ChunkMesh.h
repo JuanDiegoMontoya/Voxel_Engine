@@ -3,6 +3,7 @@
 //#include "chunk.h"
 #include "NuRenderer.h"
 #include <dib.h>
+#include "ChunkVBOAllocator.h"
 
 class VAO;
 class VBO;
@@ -19,6 +20,10 @@ public:
 	void BuildBuffers();
 	void BuildMesh();
 	void SetParent(Chunk*);
+
+	GLsizei GetVertexCount() { return vertexCount_; }
+	GLsizei GetIndexCount() { return indexCount_; }
+	GLsizei GetPointCount() { return pointCount_; }
 
 	// debug
 	static inline bool debug_ignore_light_level = false;

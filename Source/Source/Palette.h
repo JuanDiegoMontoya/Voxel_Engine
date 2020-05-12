@@ -40,7 +40,7 @@ public:
 
 	void SetVal(int index, T val)
 	{
-		std::unique_lock w(mtx);
+		std::lock_guard w(mtx);
 		Palette<T, _Size>::SetVal(index, val);
 	}
 
