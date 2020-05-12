@@ -142,8 +142,12 @@ std::vector<DrawArraysIndirectCommand> ChunkVBOAllocator::GetCommands()
 			DrawArraysIndirectCommand cmd;
 			cmd.count = alloc.chunk->GetMesh().GetVertexCount();
 			cmd.instanceCount = 1;
-			cmd.firstIndex = alloc.offset;
-			cmd.baseInstance = baseInstance++;
+
+			// need to be bytes in VERTICES, which means we need to allocate vertex size-aligned blocks
+			ASSERT_MSG(0, "reminder to fix this");
+			cmd.first = alloc.offset; 
+			//cmd.baseInstance = baseInstance++;
+			cmd.baseInstance = 0;
 		}
 	}
 

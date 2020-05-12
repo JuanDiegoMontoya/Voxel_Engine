@@ -27,9 +27,9 @@ namespace ChunkRenderer
 		vao->Bind();
 		
 		/* :::::::::::BUFFER FORMAT:::::::::::
-		                 CHUNK 1                                 CHUNK 2
-		| cpos, encoded+lighting, encoded+lighting, ... | cpos, encoded+lighting, ... |
-		
+		                        CHUNK 1                                    CHUNK 2                   NULL                   CHUNK 3
+		       | cpos, encoded+lighting, encoded+lighting, ... | cpos, encoded+lighting, ... | null (any length) | cpos, encoded+lighting, ... |
+		First:   offset(CHUNK 1)=0                               offset(CHUNK 2)                                   offset(CHUNK 3)
 		Draw commands will specify where in memory the draw call starts. This will account for variable offsets.
 
 		   :::::::::::BUFFER FORMAT:::::::::::*/
@@ -42,13 +42,13 @@ namespace ChunkRenderer
 		glEnableVertexAttribArray(2);
 		glVertexAttribDivisor(2, 1); // only 1 instance of a chunk should render, so divisor *should* be infinity
 		GLuint offset = 0;
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)offset); // chunk position (one per instance)
-		offset += 3 * sizeof(glm::vec3);
+		glVertexAttribIPointer(2, 3, GL_INT, 0, (void*)offset); // chunk position (one per instance)
+		offset += 3 * sizeof(glm::ivec3);
 
-		glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)offset); // encoded data
+		glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, 2 * sizeof(GLuint), (void*)offset); // encoded data
 		offset += 1 * sizeof(GLfloat);
 
-		glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)offset); // lighting
+		glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, 2 * sizeof(GLuint), (void*)offset); // lighting
 	}
 
 	void GenerateDrawCommands()
