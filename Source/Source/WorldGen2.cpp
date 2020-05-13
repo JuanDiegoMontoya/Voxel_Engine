@@ -12,7 +12,9 @@ namespace WorldGen2
 	namespace
 	{
 		glm::ivec3 lowChunkDim{ -3, -3, -3 };
-		glm::ivec3 highChunkDim{ 4, 10, 4 };
+		glm::ivec3 highChunkDim{ 40, 10, 40 };
+		//glm::ivec3 lowChunkDim{ 0, 0, 0 };
+		//glm::ivec3 highChunkDim{ 2, 1, 1 };
 	}
 
 	// init chunks that we finna modify
@@ -42,7 +44,7 @@ namespace WorldGen2
 		module::Checkerboard checky;
 		noise.SetLacunarity(2.);
 		noise.SetOctaveCount(5);
-		noise.SetFrequency(.04);
+		noise.SetFrequency(.01);
 		
 		auto& chunks = ChunkStorage::GetMapRaw();
 		std::for_each(std::execution::par, chunks.begin(), chunks.end(),
@@ -63,10 +65,10 @@ namespace WorldGen2
 							int index = pos.x + yczcsq;
 							wpos = ChunkHelpers::chunkPosToWorldPos(pos, pair.first);
 
-							//double density = noise.GetValue(wpos.x, wpos.y, wpos.z); // chunks are different
-							double density = noise.GetValue(pos.x, pos.y, pos.z); // same chunk every time
+							double density = noise.GetValue(wpos.x, wpos.y, wpos.z); // chunks are different
+							//double density = noise.GetValue(pos.x, pos.y, pos.z); // same chunk every time
 							//density = 0;
-							if (density > .8)
+							if (density > .95)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bStone);
 							}
@@ -74,7 +76,7 @@ namespace WorldGen2
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bDirt);
 							}
-							if (density <= .8)
+							if (density <= .95)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bAir);
 							}

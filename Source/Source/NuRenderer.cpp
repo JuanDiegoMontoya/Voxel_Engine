@@ -8,6 +8,7 @@
 #include <input.h>
 #include "ChunkStorage.h"
 #include <dib.h>
+#include "ChunkRenderer.h"
 
 namespace NuRenderer
 {
@@ -92,6 +93,22 @@ namespace NuRenderer
 		currShader->setFloat("fogEnd", loadD - Chunk::CHUNK_SIZE * 1.44f); // cuberoot(3)
 		currShader->setVec3("fogColor", skyColor);
 		currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
+
+
+
+
+		static bool meme = true;
+		//if (meme == true)
+		{
+			ChunkRenderer::GenerateDrawCommands();
+			meme = false;
+		}
+		ChunkRenderer::Render();
+		return;
+
+
+
+
 
 
 		auto& chunks = ChunkStorage::GetMapRaw();

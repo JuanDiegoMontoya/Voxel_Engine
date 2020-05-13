@@ -3,14 +3,36 @@
 #include <vbo.h>
 #include "chunk.h"
 #include "ChunkMesh.h"
+#include "ChunkStorage.h"
 
-ChunkVBOAllocator::ChunkVBOAllocator(GLsizei size)
+ChunkVBOAllocator::ChunkVBOAllocator(GLsizei size, GLsizei alignment) : align_(alignment)
 {
 	// allocate uninitialized memory in VRAM
+	size += (align_ - (size % align_)) % align_;
 	vbo_ = std::make_unique<VBO>(nullptr, size, GL_STATIC_DRAW);
 
 	// make one big null allocation
-	allocs_.push_back({ nullptr, 0, size, glfwGetTime() });
+	allocs_.push_back({ 0, size, nullptr, 0 });
+
+	//// TODO: move this part into out of here
+	//// init shader buffer for storing line segments
+	//glGenBuffers(1, &posSSBO);
+	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, posSSBO);
+	//// store 100000 (ivec3) positions
+	//glBufferData(GL_SHADER_STORAGE_BUFFER, 100000 * sizeof(glm::ivec3), nullptr, GL_STATIC_DRAW);
+	//// bind to location 0
+	//glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, posSSBO);
+	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+	//const auto& chunkmap = ChunkStorage::GetMapRaw();
+	//GLuint posMapIndex = 0;
+	//for (auto pair : chunkmap)
+	//{
+	//	posToIntMap[pair.first] = posMapIndex;
+	//	glNamedBufferSubData(posSSBO, posMapIndex * sizeof(glm::ivec3),
+	//		sizeof(glm::ivec3), glm::value_ptr(pair.first));
+	//	posMapIndex++;
+	//}
 }
 
 
@@ -21,6 +43,7 @@ ChunkVBOAllocator::~ChunkVBOAllocator()
 
 bool ChunkVBOAllocator::Allocate(Chunk* chunk, void* data, GLsizei size)
 {
+	size += (align_ - (size % align_)) % align_;
 	// find smallest NULL allocation that will fit
 	Iterator small = allocs_.end();
 	for (int i = 0; i < allocs_.size(); i++)
@@ -51,6 +74,7 @@ bool ChunkVBOAllocator::Allocate(Chunk* chunk, void* data, GLsizei size)
 	allocs_.insert(small, newAlloc);
 	
 	glNamedBufferSubData(vbo_->GetID(), newAlloc.offset, newAlloc.size, data);
+	ASSERT(dbgVerify());
 	return true;
 }
 
@@ -64,6 +88,7 @@ bool ChunkVBOAllocator::Free(Chunk* chunk)
 
 	it->chunk = nullptr;
 	maybeMerge(it);
+	ASSERT(dbgVerify());
 	return true;
 }
 
@@ -89,6 +114,8 @@ bool ChunkVBOAllocator::FreeOldest()
 
 	old->chunk = nullptr;
 	maybeMerge(old);
+
+	ASSERT(dbgVerify());
 	return true;
 }
 
@@ -105,7 +132,7 @@ void ChunkVBOAllocator::maybeMerge(Iterator it)
 		if (next->chunk == nullptr)
 		{
 			it->size += next->size;
-			removeIt = true;
+			removeNext = true;
 		}
 	}
 
@@ -116,7 +143,7 @@ void ChunkVBOAllocator::maybeMerge(Iterator it)
 		if (prev->chunk == nullptr)
 		{
 			prev->size += it->size;
-			removeNext = true;
+			removeIt = true;
 		}
 	}
 
@@ -124,9 +151,9 @@ void ChunkVBOAllocator::maybeMerge(Iterator it)
 	if (removeIt && removeNext)
 		allocs_.erase(it, it + 2); // this and next
 	else if (removeIt)
-		allocs_.erase(it - 1);     // just this
+		allocs_.erase(it);     // just this
 	else if (removeNext)
-		allocs_.erase(it);         // just next
+		allocs_.erase(it + 1);         // just next
 }
 
 
@@ -142,12 +169,13 @@ std::vector<DrawArraysIndirectCommand> ChunkVBOAllocator::GetCommands()
 			DrawArraysIndirectCommand cmd;
 			cmd.count = alloc.chunk->GetMesh().GetVertexCount();
 			cmd.instanceCount = 1;
-
-			// need to be bytes in VERTICES, which means we need to allocate vertex size-aligned blocks
-			ASSERT_MSG(0, "reminder to fix this");
-			cmd.first = alloc.offset; 
+			cmd.first = alloc.offset / align_;
+			//cmd.first = alloc.offset;
 			//cmd.baseInstance = baseInstance++;
-			cmd.baseInstance = 0;
+			//cmd.baseInstance = 0;
+			//cmd.baseInstance = posToIntMap[alloc.chunk->GetPos()];
+			cmd.baseInstance = cmd.first; // same stride as vertices technically
+			commands.push_back(cmd);
 		}
 	}
 
@@ -164,4 +192,30 @@ std::vector<glm::vec3> ChunkVBOAllocator::GetChunkPositions()
 			res.push_back(alloc.chunk->GetPos());
 	}
 	return res;
+}
+
+
+bool ChunkVBOAllocator::dbgVerify()
+{
+	void* prevPtr = (void*)1;
+	GLsizei sumSize = 0;
+	for (const auto& alloc : allocs_)
+	{
+		// check there are never two null blocks in a row
+		if (prevPtr == nullptr && alloc.chunk == nullptr)
+			return false;
+		prevPtr = alloc.chunk;
+
+		// check offset is equal to total size so far
+		if (alloc.offset != sumSize)
+			return false;
+		sumSize += alloc.size;
+
+		// check alignment
+		if (alloc.offset % align_ != 0)
+			return false;
+	}
+
+	// all checks passed
+	return true;
 }

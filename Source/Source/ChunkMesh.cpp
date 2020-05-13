@@ -95,7 +95,7 @@ void ChunkMesh::BuildBuffers()
 	glVertexAttribDivisor(2, 1); // only 1 instance of a chunk should render, so divisor *should* be infinity
 	GLuint offset = 0;
 	glVertexAttribIPointer(2, 3, GL_INT, 0, (void*)offset); // chunk position (one per instance)
-	offset += 3 * sizeof(glm::ivec3);
+	offset += sizeof(glm::ivec3);
 
 	glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, 2 * sizeof(GLuint), (void*)offset); // encoded data
 	offset += 1 * sizeof(GLfloat);
@@ -117,7 +117,7 @@ void ChunkMesh::BuildBuffers()
 	DrawArraysIndirectCommand cmd;
 	cmd.count = vertexCount_;
 	cmd.instanceCount = 1;
-	cmd.firstIndex = 0;
+	cmd.first = 0;
 	cmd.baseInstance = 0; // must be zero for glDrawElementsIndirect
 	dib_ = std::make_unique<DIB>(&cmd, sizeof(DrawArraysIndirectCommand));
 
@@ -132,15 +132,31 @@ void ChunkMesh::BuildBuffers2()
 {
 	std::lock_guard lk(mtx);
 
-	ChunkRenderer::allocator->Free(this->parent);
+	namespace CR = ChunkRenderer;
+	CR::allocator->Free(this->parent);
 
 	vertexCount_ = encodedStuffArr.size();
 	pointCount_ = sPosArr.size();
+
+	CR::allocator->Free(parent);
 
 	// nothing emitted, don't try to make buffers
 	if (pointCount_ == 0)
 		return;
 	
+	// free oldest allocations until there is enough space to allocate this buffer
+	bool success = true;
+	do
+	{
+		if (!success)
+			CR::allocator->FreeOldest();
+		success = CR::allocator->Allocate(this->parent, 
+			interleavedArr.data(), interleavedArr.size() * sizeof(GLint));
+	} while (!success);
+
+	encodedStuffArr.clear();
+	lightingArr.clear();
+	sPosArr.clear();
 	interleavedArr.clear();
 }
 
@@ -162,6 +178,7 @@ void ChunkMesh::BuildMesh()
 	interleavedArr.push_back(ap.x);
 	interleavedArr.push_back(ap.y);
 	interleavedArr.push_back(ap.z);
+	interleavedArr.push_back(69); // padding
 
 	glm::ivec3 pos;
 	for (pos.z = 0; pos.z < Chunk::CHUNK_SIZE; pos.z++)

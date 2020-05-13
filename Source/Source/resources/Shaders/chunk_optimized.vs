@@ -1,4 +1,6 @@
 #version 450 core
+#define normalDraw
+#define MAX_CHUNKS 100000
 
 // aEncoded layout (left to right bits):
 // 0 - 17   18 - 20   21 - 31
@@ -13,7 +15,15 @@ layout (location = 0) in uint aEncoded; // encoded uint as float (per vertex)
 // unused     R         G         B         Sun
 layout (location = 1) in uint aLighting;// encoded uint as float (per vertex)
 
-layout (location = 2) in ivec3 u_pos; // (per instance) 
+#ifdef normalDraw
+layout (location = 2) in ivec3 u_pos; // (per instance)
+#else
+layout (location = 2) in uint drawID;
+layout (std430, binding = 0) buffer chunk_positions
+{
+  ivec3 positions[MAX_CHUNKS];
+};
+#endif
 
 // global info
 uniform mat4 u_viewProj;
@@ -87,7 +97,11 @@ void main()
 {
   vec3 modelPos;
   Decode(aEncoded, modelPos, vNormal, vTexCoord);
+#ifdef normalDraw
   vPos = modelPos + u_pos;
+#else
+  vPos = modelPos + positions[drawID];
+#endif
   Decode(aLighting, vLighting);
   //vColor = aColor;
 

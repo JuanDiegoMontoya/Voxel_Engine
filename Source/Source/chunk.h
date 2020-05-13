@@ -138,7 +138,8 @@ public:
 
 	void BuildBuffers()
 	{
-		mesh.BuildBuffers();
+		//mesh.BuildBuffers();
+		mesh.BuildBuffers2();
 	}
 
 	void Render()

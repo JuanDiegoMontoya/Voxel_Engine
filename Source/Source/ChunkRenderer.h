@@ -8,4 +8,5 @@ namespace ChunkRenderer
 	void Render();
 
 	inline std::unique_ptr<ChunkVBOAllocator> allocator;
+	inline std::unique_ptr<ChunkVBOAllocator> posAllocator;
 }

@@ -33,6 +33,7 @@
 #include "ChunkStorage.h"
 #include "WorldGen2.h"
 //#include "ChunkVBOAllocator.h"
+#include "ChunkRenderer.h"
 
 using namespace std::chrono;
 
@@ -65,6 +66,7 @@ namespace World
 		//FixedSizeWorld::GenWorld({ -3, -2, -3 }, { 3, 2, 3 });
 		WorldGen2::Init();
 		WorldGen2::GenerateWorld();
+		ChunkRenderer::InitAllocator();
 		WorldGen2::InitMeshes();
 		WorldGen2::InitBuffers();
 		chunkManager_.Init();
