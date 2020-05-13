@@ -1,5 +1,6 @@
 #pragma once
-class ChunkVBOAllocator;
+#include "BufferAllocator.h"
+//class BufferAllocator;
 
 namespace ChunkRenderer
 {
@@ -7,6 +8,5 @@ namespace ChunkRenderer
 	void GenerateDrawCommands();
 	void Render();
 
-	inline std::unique_ptr<ChunkVBOAllocator> allocator;
-	inline std::unique_ptr<ChunkVBOAllocator> posAllocator;
+	inline std::unique_ptr<BufferAllocator> allocator;
 }

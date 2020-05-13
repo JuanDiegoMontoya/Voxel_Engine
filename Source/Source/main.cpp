@@ -4,9 +4,10 @@
 #include "World.h"
 #include "Renderer.h"
 #include "NuRenderer.h"
+
 #include "BitArray.h"
 //#include <bitset>
-#include "ChunkVBOAllocator.h"
+#include "BufferAllocator.h"
 
 int main()
 {

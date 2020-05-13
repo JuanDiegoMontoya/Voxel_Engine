@@ -3,7 +3,6 @@
 //#include "chunk.h"
 #include "NuRenderer.h"
 #include <dib.h>
-#include "ChunkVBOAllocator.h"
 
 class VAO;
 class VBO;
@@ -64,7 +63,7 @@ private:
 	std::vector<GLint> interleavedArr;
 
 	GLsizei vertexCount_ = 0; // number of block vertices
-
+	uint64_t bufferHandle = NULL;
 
 	// SPLATTING STUFF
 	std::unique_ptr<VAO> svao_;

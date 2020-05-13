@@ -3,7 +3,7 @@
 #include <dib.h>
 #include <vao.h>
 #include <vbo.h>
-#include "ChunkVBOAllocator.h"
+#include "BufferAllocator.h"
 
 namespace ChunkRenderer
 {
@@ -22,7 +22,7 @@ namespace ChunkRenderer
 	{
 		// allocate big buffer (1GB)
 		// TODO: vary the allocation size based on some user setting
-		allocator = std::make_unique<ChunkVBOAllocator>(2'000'000'000, 2 * sizeof(GLint));
+		allocator = std::make_unique<BufferAllocator>(1'000'000'000, 2 * sizeof(GLint));
 
 		vao = std::make_unique<VAO>();
 
@@ -38,7 +38,7 @@ namespace ChunkRenderer
 
 
 		// bind big data buffer (interleaved)
-		allocator->GetVBO()->Bind();
+		glBindBuffer(GL_ARRAY_BUFFER, allocator->GetGPUHandle());
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
@@ -56,7 +56,24 @@ namespace ChunkRenderer
 
 	void GenerateDrawCommands()
 	{
-		commands = allocator->GetCommands();
+		commands.clear();
+
+		int baseInstance = 0;
+
+		const auto& allocs_ = allocator->GetAllocs();
+		for (const auto& alloc : allocs_)
+		{
+			if (alloc.handle != NULL)
+			{
+				DrawArraysIndirectCommand cmd;
+				cmd.count = (alloc.size / allocator->align_) - 2; // first two vertices are reserved
+				cmd.instanceCount = 1;
+				cmd.first = alloc.offset / allocator->align_;
+				cmd.baseInstance = cmd.first; // same stride as vertices technically
+				commands.push_back(cmd);
+			}
+		}
+
 		dib = std::make_unique<DIB>(commands.data(), commands.size() * sizeof(DrawArraysIndirectCommand));
 	}
 

@@ -9,7 +9,7 @@
 #include "ChunkStorage.h"
 #include <Vertices.h>
 #include "settings.h"
-#include "ChunkVBOAllocator.h"
+#include "BufferAllocator.h"
 #include "ChunkRenderer.h"
 
 
@@ -133,26 +133,25 @@ void ChunkMesh::BuildBuffers2()
 	std::lock_guard lk(mtx);
 
 	namespace CR = ChunkRenderer;
-	CR::allocator->Free(this->parent);
 
 	vertexCount_ = encodedStuffArr.size();
 	pointCount_ = sPosArr.size();
 
-	CR::allocator->Free(parent);
+	CR::allocator->Free(bufferHandle);
 
 	// nothing emitted, don't try to make buffers
 	if (pointCount_ == 0)
 		return;
 	
 	// free oldest allocations until there is enough space to allocate this buffer
-	bool success = true;
+	bufferHandle = 1;
 	do
 	{
-		if (!success)
+		if (bufferHandle == NULL)
 			CR::allocator->FreeOldest();
-		success = CR::allocator->Allocate(this->parent, 
+		bufferHandle = CR::allocator->Allocate(
 			interleavedArr.data(), interleavedArr.size() * sizeof(GLint));
-	} while (!success);
+	} while (bufferHandle == NULL);
 
 	encodedStuffArr.clear();
 	lightingArr.clear();

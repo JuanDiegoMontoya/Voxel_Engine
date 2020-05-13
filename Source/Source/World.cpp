@@ -32,7 +32,6 @@
 #include "FixedSizeWorld.h"
 #include "ChunkStorage.h"
 #include "WorldGen2.h"
-//#include "ChunkVBOAllocator.h"
 #include "ChunkRenderer.h"
 
 using namespace std::chrono;

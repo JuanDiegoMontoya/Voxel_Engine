@@ -298,10 +298,10 @@
     <ClInclude Include="Engine\Source\dib.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="ChunkVBOAllocator.h">
+    <ClInclude Include="ChunkRenderer.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="ChunkRenderer.h">
+    <ClInclude Include="BufferAllocator.h">
       <Filter>Graphics</Filter>
     </ClInclude>
   </ItemGroup>
@@ -486,10 +486,10 @@
     <ClCompile Include="Engine\Source\dib.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="ChunkVBOAllocator.cpp">
+    <ClCompile Include="ChunkRenderer.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="ChunkRenderer.cpp">
+    <ClCompile Include="BufferAllocator.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
   </ItemGroup>
