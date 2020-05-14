@@ -138,6 +138,7 @@ void ChunkMesh::BuildBuffers2()
 	pointCount_ = sPosArr.size();
 
 	CR::allocator->Free(bufferHandle);
+	CR::allocatorSplat->Free(bufferHandle);
 
 	// nothing emitted, don't try to make buffers
 	if (pointCount_ == 0)
@@ -150,8 +151,17 @@ void ChunkMesh::BuildBuffers2()
 		if (bufferHandle == NULL)
 			CR::allocator->FreeOldest();
 		bufferHandle = CR::allocator->Allocate(
-			interleavedArr.data(), interleavedArr.size() * sizeof(GLint));
+			interleavedArr.data(), interleavedArr.size() * sizeof(GLint), this->parent);
 	} while (bufferHandle == NULL);
+
+	bufferHandleSplat = 1;
+	do
+	{
+		if (bufferHandleSplat == NULL)
+			CR::allocator->FreeOldest();
+		bufferHandleSplat = CR::allocatorSplat->Allocate(
+			sPosArr.data(), sPosArr.size() * sizeof(GLint), this->parent);
+	} while (bufferHandleSplat == NULL);
 
 	encodedStuffArr.clear();
 	lightingArr.clear();
@@ -177,7 +187,11 @@ void ChunkMesh::BuildMesh()
 	interleavedArr.push_back(ap.x);
 	interleavedArr.push_back(ap.y);
 	interleavedArr.push_back(ap.z);
-	interleavedArr.push_back(69); // padding
+	interleavedArr.push_back(42069); // padding
+	sPosArr.push_back(ap.x);
+	sPosArr.push_back(ap.y);
+	sPosArr.push_back(ap.z);
+	// no padding necessary
 
 	glm::ivec3 pos;
 	for (pos.z = 0; pos.z < Chunk::CHUNK_SIZE; pos.z++)
@@ -291,15 +305,13 @@ inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face
 {
 	if (voxelReady_)
 	{
-		//if (block != BlockType::bStone)
-		//	__debugbreak();
-		sPosArr.push_back(glm::uintBitsToFloat(ChunkHelpers::EncodeSplat(lpos, 
-			glm::vec3(Block::PropertiesTable[uint16_t(block)].color))));
+		sPosArr.push_back(ChunkHelpers::EncodeSplat(lpos, 
+			glm::vec3(Block::PropertiesTable[uint16_t(block)].color)));
 		voxelReady_ = false;
 	}
 
 	int normalIdx = face;
-	int texIdx = 100; // temp
+	int texIdx = 100; // temp value
 	uint16_t lighting = light.Raw();
 	light.SetS(15);
 

@@ -8,24 +8,22 @@ BufferAllocator::BufferAllocator(GLsizei size, GLsizei alignment) : align_(align
 
 	// allocate uninitialized memory in VRAM
 	glGenBuffers(1, &gpuHandle);
-	glBindBuffer(GL_ARRAY_BUFFER, gpuHandle);
+	glBindBuffer(GL_ARRAY_BUFFER, gpuHandle); // bind to some random target so next command works
 	glNamedBufferData(gpuHandle, size, NULL, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// make one big null allocation
-	allocs_.push_back({ NULL, 0, size, 0 });
+	allocs_.push_back({ NULL, 0, size, 0, NULL });
 }
 
 
 BufferAllocator::~BufferAllocator()
 {
-	sizeof(BufferAllocator);
-	alignof(BufferAllocator);
 	glDeleteBuffers(1, &gpuHandle);
 }
 
 
-uint64_t BufferAllocator::Allocate(void* data, GLsizei size)
+uint64_t BufferAllocator::Allocate(void* data, GLsizei size, void* userdata)
 {
 	size += (align_ - (size % align_)) % align_;
 	// find smallest NULL allocation that will fit
@@ -51,6 +49,7 @@ uint64_t BufferAllocator::Allocate(void* data, GLsizei size)
 	newAlloc.offset = small->offset;
 	newAlloc.size = size;
 	newAlloc.time = glfwGetTime();
+	newAlloc.userdata = userdata;
 
 	small->offset += newAlloc.size;
 	small->size -= newAlloc.size;
@@ -62,7 +61,8 @@ uint64_t BufferAllocator::Allocate(void* data, GLsizei size)
 		allocs_.insert(small, newAlloc);
 
 	glNamedBufferSubData(gpuHandle, newAlloc.offset, newAlloc.size, data);
-	ASSERT(dbgVerify());
+	++numActiveAllocs_;
+	DEBUG_DO(dbgVerify());
 	return newAlloc.handle;
 }
 
@@ -76,7 +76,8 @@ bool BufferAllocator::Free(uint64_t handle)
 
 	it->handle = NULL;
 	maybeMerge(it);
-	ASSERT(dbgVerify());
+	--numActiveAllocs_;
+	DEBUG_DO(dbgVerify());
 	return true;
 }
 
@@ -102,8 +103,8 @@ bool BufferAllocator::FreeOldest()
 
 	old->handle = NULL;
 	maybeMerge(old);
-
-	ASSERT(dbgVerify());
+	--numActiveAllocs_;
+	DEBUG_DO(dbgVerify());
 	return true;
 }
 
@@ -139,53 +140,40 @@ void BufferAllocator::maybeMerge(Iterator it)
 	if (removeIt && removeNext)
 		allocs_.erase(it, it + 2); // this and next
 	else if (removeIt)
-		allocs_.erase(it);     // just this
+		allocs_.erase(it);         // just this
 	else if (removeNext)
-		allocs_.erase(it + 1);         // just next
+		allocs_.erase(it + 1);     // just next
 }
 
 
-bool BufferAllocator::dbgVerify()
+void BufferAllocator::dbgVerify()
 {
 	uint64_t prevPtr = 1;
 	GLsizei sumSize = 0;
+	GLuint active = 0;
 	for (const auto& alloc : allocs_)
 	{
+		if (alloc.handle != NULL)
+			active++;
 		// check there are never two null blocks in a row
-		if (prevPtr == NULL && alloc.handle == NULL)
-		{
-			printf("\nVerify failed: two null blocks in a row!\n");
-			ASSERT(0);
-			return false;
-		}
+		ASSERT_MSG(!(prevPtr == NULL && alloc.handle == NULL),
+			"Verify failed: two null blocks in a row!");
 		prevPtr = alloc.handle;
 
 		// check offset is equal to total size so far
-		if (alloc.offset != sumSize)
-		{
-			printf("\nVerify failed: size/offset discrepancy!\n");
-			ASSERT(0);
-			return false;
-		}
+		ASSERT_MSG(alloc.offset == sumSize,
+			"Verify failed: size/offset discrepancy!");
 		sumSize += alloc.size;
 
 		// check alignment
-		if (alloc.offset % align_ != 0)
-		{
-			printf("\nVerify failed: block alignment mismatch!\n");
-			ASSERT(0);
-			return false;
-		}
+		ASSERT_MSG(alloc.offset % align_ == 0,
+			"Verify failed: block alignment mismatch!");
 
 		// check degenerate (0-size) allocation
-		if (alloc.size == 0)
-		{
-			printf("\nVerify failed: 0-size allocation!\n");
-			ASSERT(0);
-			return false;
-		}
+		ASSERT_MSG(alloc.size != 0,
+			"Verify failed: 0-size allocation!");
 	}
 
-	// all checks passed
-	return true;
+	ASSERT_MSG(active == numActiveAllocs_,
+		"Verify failed: active allocations mismatch!");
 }

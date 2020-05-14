@@ -1,10 +1,12 @@
 #version 450 core
 
-layout (location = 0) in float aEncoded;
+// model pos(6 * 3 bits) + color (4 * 3 bits)
+layout (location = 0) in uint aEncoded;
+layout (location = 1) in ivec3 u_pos;
 
-// chunk-wide info
+// per-chunk info
+//uniform ivec3 u_pos;
 uniform mat4 u_viewProj;
-uniform vec3 u_pos;
 uniform vec2 u_viewportSize;
 
 out flat vec3 vPos;
@@ -40,7 +42,7 @@ void SetPointSizeFancy(vec4 glPos)
 void main()
 {
   vec3 modelPos;
-  Decode(floatBitsToUint(aEncoded), modelPos, vColor);
+  Decode(aEncoded, modelPos, vColor);
   vPos = modelPos + u_pos;
   vPos += 0.5;
   gl_Position = u_viewProj * vec4(vPos, 1.0);

@@ -64,11 +64,12 @@ private:
 
 	GLsizei vertexCount_ = 0; // number of block vertices
 	uint64_t bufferHandle = NULL;
+	uint64_t bufferHandleSplat = NULL;
 
 	// SPLATTING STUFF
 	std::unique_ptr<VAO> svao_;
 	std::unique_ptr<VBO> svbo_;
-	std::vector<GLfloat> sPosArr; // point positions (optimize later)
+	std::vector<GLint> sPosArr; // point positions
 	GLsizei pointCount_ = 0;
 	bool voxelReady_ = true; // hack to prevent same voxel from being added multiple times
 

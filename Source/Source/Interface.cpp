@@ -44,8 +44,8 @@ namespace Interface
 	void DrawImGui()
 	{
 		{
-			ImGui::Begin("Sun");
-
+			ImGui::Begin("Sun", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
+			ImGuiWindowFlags f;
 			glm::vec3 pos = World::sun_->GetPos();
 			if (ImGui::DragFloat3("Sun Pos", &pos[0], 1, -500, 500, "%.0f"))
 				World::sun_->SetPos(pos);
@@ -133,7 +133,7 @@ namespace Interface
 
 		{
 
-			ImGui::Begin("Info");
+			ImGui::Begin("Info", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 			ImGui::Text("FPS: %.0f (%.1f ms)", 1.f / Engine::GetDT(), Engine::GetDT() * 1000);
 
 			ImGui::NewLine();
@@ -253,7 +253,7 @@ namespace Interface
 
 		// TODO: make toggling shadows/reflections ACTUALLY disable them completely
 		{
-			ImGui::Begin("Global Settings");
+			ImGui::Begin("Global Settings", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 			if (ImGui::Checkbox("Compute baked AO", &Settings::GFX::blockAO))
 				World::chunkManager_.ReloadAllChunks();
 			if (ImGui::Checkbox("Skip lighting", &ChunkMesh::debug_ignore_light_level))
@@ -273,7 +273,7 @@ namespace Interface
 
 		if (debug_graphs)
 		{
-			ImGui::Begin("Graphs");
+			ImGui::Begin("Graphs", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 			ImGui::Text("Avg Mesh Time: %.3f", ChunkMesh::accumtime / ChunkMesh::accumcount);
 			ImGui::PlotVar("Frametime", Engine::GetDT(), FLT_MAX, FLT_MAX, 300, ImVec2(300, 100));
 
@@ -292,7 +292,7 @@ namespace Interface
 		}
 
 		{
-			ImGui::Begin("Debug");
+			ImGui::Begin("Debug", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 			ImGui::Checkbox("Display Graphs", &debug_graphs);
 			ImGui::End();
 		}

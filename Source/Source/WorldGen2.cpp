@@ -12,7 +12,7 @@ namespace WorldGen2
 	namespace
 	{
 		glm::ivec3 lowChunkDim{ -3, -3, -3 };
-		glm::ivec3 highChunkDim{ 4, 10, 4 };
+		glm::ivec3 highChunkDim{ 40, 10, 40 };
 		//glm::ivec3 lowChunkDim{ 0, 0, 0 };
 		//glm::ivec3 highChunkDim{ 2, 1, 1 };
 	}
@@ -44,7 +44,7 @@ namespace WorldGen2
 		module::Checkerboard checky;
 		noise.SetLacunarity(2.);
 		noise.SetOctaveCount(5);
-		noise.SetFrequency(.01);
+		noise.SetFrequency(.04);
 		
 		auto& chunks = ChunkStorage::GetMapRaw();
 		std::for_each(std::execution::par, chunks.begin(), chunks.end(),
@@ -52,7 +52,8 @@ namespace WorldGen2
 		{
 			if (pair.second)
 			{
-				printf("(%d, %d, %d)\n", pair.first.x, pair.first.y, pair.first.z);
+				//printf("(%d, %d, %d)\n", pair.first.x, pair.first.y, pair.first.z);
+				printf(".");
 				glm::ivec3 pos, wpos;
 				for (pos.z = 0; pos.z < Chunk::CHUNK_SIZE; pos.z++)
 				{
@@ -72,7 +73,7 @@ namespace WorldGen2
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bStone);
 							}
-							if (density > .95)
+							if (density > .98)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bDirt);
 							}

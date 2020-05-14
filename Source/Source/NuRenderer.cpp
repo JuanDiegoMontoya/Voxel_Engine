@@ -54,8 +54,8 @@ namespace NuRenderer
 		}
 
 		Renderer::drawSky();
-		drawChunks();
-		//splatChunks();
+		//drawChunks();
+		splatChunks();
 		//drawChunksMultiIndirect();
 		drawChunksWater();
 		Renderer::drawAxisIndicators();
@@ -97,12 +97,7 @@ namespace NuRenderer
 
 
 
-		static bool meme = true;
-		//if (meme == true)
-		{
-			ChunkRenderer::GenerateDrawCommands();
-			meme = false;
-		}
+		ChunkRenderer::GenerateDrawCommands();
 		ChunkRenderer::Render();
 		return;
 
@@ -151,6 +146,19 @@ namespace NuRenderer
 		GLint vp[4];
 		glGetIntegerv(GL_VIEWPORT, vp);
 		currShader->setVec2("u_viewportSize", glm::vec2(vp[2], vp[3]));
+
+
+
+
+
+		ChunkRenderer::GenerateDrawCommandsSplat();
+		ChunkRenderer::RenderSplat();
+		return;
+
+
+
+
+
 
 		std::for_each(ChunkStorage::GetMapRaw().begin(), ChunkStorage::GetMapRaw().end(),
 			[&](const std::pair<glm::ivec3, Chunk*>& pair)

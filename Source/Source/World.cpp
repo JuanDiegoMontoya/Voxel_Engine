@@ -121,7 +121,7 @@ namespace World
 	void World::CheckCollision()
 	{
 		auto cam = Renderer::GetPipeline()->GetCamera(0);
-		ImGui::Begin("Collision");
+		ImGui::Begin("Collision", 0, Interface::activeCursor ? ImGuiWindowFlags_NoMouseInputs : 0);
 		Box camBox(*cam);
 		auto min = glm::ivec3(glm::floor(camBox.min));
 		auto max = glm::ivec3(glm::ceil(camBox.max));
