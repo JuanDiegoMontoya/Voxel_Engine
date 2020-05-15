@@ -24,6 +24,7 @@ public:
 		GLdouble time;  // time of allocation
 		void* userdata; // user-defined data
 	};
+
 private:
 	std::vector<allocationData> allocs_;
 	using Iterator = decltype(allocs_.begin());

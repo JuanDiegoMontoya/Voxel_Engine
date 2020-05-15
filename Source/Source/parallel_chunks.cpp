@@ -49,7 +49,7 @@ void ChunkManager::chunk_mesher_thread_task()
 		sorted.insert(sorted.begin(), temp.begin(), temp.end());
 
 		// TODO: this is temp solution to load near chunks to camera first
-		std::sort(sorted.begin(), sorted.end(), Utils::ChunkPtrKeyEq());
+		std::sort(std::execution::par_unseq ,sorted.begin(), sorted.end(), Utils::ChunkPtrKeyEq());
 		std::for_each(std::execution::par, sorted.begin(), sorted.end(), [this](ChunkPtr chunk)
 		{
 			//SetThreadAffinityMask(GetCurrentThread(), ~1);

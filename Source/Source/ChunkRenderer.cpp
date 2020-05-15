@@ -9,6 +9,7 @@
 #include <Pipeline.h>
 #include "Renderer.h"
 #include <execution>
+#include "vendor/ctpl_stl.h"
 
 namespace ChunkRenderer
 {
@@ -21,16 +22,54 @@ namespace ChunkRenderer
 		std::unique_ptr<DIB> dibSplat;
 		int renderCount = 0;
 		int renderCountSplat = 0;
+
+		std::unique_ptr<ctpl::thread_pool> threads;
+		int maxConcurrency;
+		std::vector<std::future<void>> futures;
+		std::atomic_int nextIdx;
+	}
+
+
+	void genCommands(int id, int start,
+		DrawArraysIndirectCommand* cmds, int numThreads, Camera* cam) // atomic_int& no worky
+	{
+		int stride = numThreads;
+		const auto& allocs_ = allocator->GetAllocs();
+		int aaa = 0;
+		for (int i = start; i < allocs_.size(); i += stride)
+		{
+			const auto& alloc = allocs_[i];
+			if (alloc.handle != NULL)
+			{
+				Chunk* chunk = reinterpret_cast<Chunk*>(alloc.userdata);
+				if (glm::distance(glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE), cam->GetPos()) > 800)
+					continue;
+				if (!chunk->IsVisible(*cam))
+					continue;
+
+				DrawArraysIndirectCommand cmd;
+				cmd.count = (alloc.size / allocator->align_) - 2; // first 2 vertices are reserved
+				cmd.instanceCount = 1;
+				cmd.first = alloc.offset / allocator->align_;
+				cmd.baseInstance = cmd.first; // same stride as vertices
+
+				int idxx = nextIdx.fetch_add(1);
+				cmds[idxx] = cmd;
+			}
+		}
 	}
 
 
 	// call after all chunks are initialized
 	void InitAllocator()
 	{
+		maxConcurrency = glm::max(std::thread::hardware_concurrency(), 1u);
+		threads = std::make_unique<ctpl::thread_pool>(maxConcurrency);
+
 		// allocate big buffer (1GB)
 		// TODO: vary the allocation size based on some user setting
-		allocator = std::make_unique<BufferAllocator>(1'000'000'000, 2 * sizeof(GLint));
-		allocatorSplat = std::make_unique<BufferAllocator>(500'000'000, sizeof(GLint));
+		allocator = std::make_unique<BufferAllocator>(2'000'000'000, 2 * sizeof(GLint));
+		allocatorSplat = std::make_unique<BufferAllocator>(200'000'000, sizeof(GLint));
 
 
 		
@@ -73,43 +112,74 @@ namespace ChunkRenderer
 		vaoSplat->Unbind();
 	}
 
+
 	void GenerateDrawCommands()
 	{
 		PERF_BENCHMARK_START;
-		auto cam = Renderer::GetPipeline()->GetCamera(0);
-		std::atomic_int index = 0;
+
 		DrawArraysIndirectCommand* comms = new DrawArraysIndirectCommand[allocator->ActiveAllocs()];
+		Camera* cam = Renderer::GetPipeline()->GetCamera(0);
 
-		int baseInstance = 0;
-
-		const auto& allocs_ = allocator->GetAllocs();
-		std::for_each(std::execution::par_unseq, // parallel and vectorization-safe
-			allocs_.begin(), allocs_.end(), [&](const auto& alloc)
+		int threadNum = 12;
+		for (int i = 0; i < threadNum; i++)
 		{
-			if (alloc.handle != NULL)
-			{
-				Chunk* chunk = reinterpret_cast<Chunk*>(alloc.userdata);
-				if (glm::distance(glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE), cam->GetPos()) > 800)
-					return;
-				if (!chunk->IsVisible(*cam))
-					return;
+			futures.push_back(threads->push(genCommands, i, comms, threadNum, cam));
+		}
 
-				DrawArraysIndirectCommand cmd;
-				cmd.count = (alloc.size / allocator->align_) - 2; // first two vertices are reserved
-				cmd.instanceCount = 1;
-				cmd.first = alloc.offset / allocator->align_;
-				cmd.baseInstance = cmd.first; // same stride as vertices
 
-				int i = index.fetch_add(1);
-				comms[i] = cmd;
-			}
-		});
 
-		renderCount = index;
-		dib = std::make_unique<DIB>(comms, index * sizeof(DrawArraysIndirectCommand));
+		// TODO: "finish" or "sync" function that does all this cleanup stuff
+		// (also allows us to begin generating commands early and not have to immediately join
+		for (auto& fut : futures)
+		{
+			fut.get();
+		}
+
+		renderCount = nextIdx;
+		dib = std::make_unique<DIB>(comms, renderCount * sizeof(DrawArraysIndirectCommand));
 		delete[] comms;
+		nextIdx.store(0);
+		futures.clear();
+
 		PERF_BENCHMARK_END;
 	}
+
+
+	//void GenerateDrawCommands()
+	//{
+	//	PERF_BENCHMARK_START;
+	//	DrawArraysIndirectCommand* comms = new DrawArraysIndirectCommand[allocator->ActiveAllocs()];
+	//	Camera* cam = Renderer::GetPipeline()->GetCamera(0);
+	//	std::atomic_int index = 0;
+
+	//	const auto& allocs_ = allocator->GetAllocs();
+	//	std::for_each(std::execution::par_unseq, // parallel and vectorization-safe
+	//		allocs_.begin(), allocs_.end(), [&](const auto& alloc)
+	//	{
+	//		if (alloc.handle != NULL)
+	//		{
+	//			Chunk* chunk = reinterpret_cast<Chunk*>(alloc.userdata);
+	//			if (glm::distance(glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE), cam->GetPos()) > 800)
+	//				return;
+	//			if (!chunk->IsVisible(*cam))
+	//				return;
+
+	//			DrawArraysIndirectCommand cmd;
+	//			cmd.count = (alloc.size / allocator->align_) - 2; // first 2 vertices are reserved
+	//			cmd.instanceCount = 1;
+	//			cmd.first = alloc.offset / allocator->align_;
+	//			cmd.baseInstance = cmd.first; // same stride as vertices
+
+	//			int i = index.fetch_add(1);
+	//			comms[i] = cmd;
+	//		}
+	//	});
+
+	//	renderCount = index;
+	//	dib = std::make_unique<DIB>(comms, renderCount * sizeof(DrawArraysIndirectCommand));
+	//	delete[] comms;
+	//	PERF_BENCHMARK_END;
+	//}
 
 
 	void GenerateDrawCommandsSplat()

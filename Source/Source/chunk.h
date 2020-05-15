@@ -74,11 +74,12 @@ public:
 		pos_ = pos;
 		model_ = glm::translate(glm::mat4(1.f), glm::vec3(pos_) * (float)CHUNK_SIZE);
 		bounds.min = glm::vec3(pos_ * CHUNK_SIZE);
-		bounds.max = glm::vec3(pos_ * CHUNK_SIZE + CHUNK_SIZE - 0);
+		bounds.max = glm::vec3(pos_ * CHUNK_SIZE + CHUNK_SIZE);
 	}
 
-	const glm::ivec3& GetPos() { return pos_; }
-	bool IsVisible(Camera& cam) const
+	inline const glm::ivec3& GetPos() { return pos_; }
+
+	inline bool IsVisible(Camera& cam) const
 	{
 		return cam.GetFrustum()->IsInside(bounds) >= Frustum::Visibility::Partial;
 	}

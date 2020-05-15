@@ -13,7 +13,7 @@ namespace WorldGen2
 	namespace
 	{
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
-		glm::ivec3 highChunkDim{ 5, 5, 5 };
+		glm::ivec3 highChunkDim{ 5, 10, 5 };
 		//glm::ivec3 lowChunkDim{ 0, 0, 0 };
 		//glm::ivec3 highChunkDim{ 2, 1, 1 };
 	}
@@ -37,6 +37,12 @@ namespace WorldGen2
 		}
 	}
 
+	// Parameters: (density > .05) == solid
+	//   lacunarity = 2, octaves = 5
+	// Value noise: good for structured, geometric looking locations
+	//   generates consistently sized caverns with good connectivity
+	// Fractal perlin: grand, lumpy, almost chiseled-like terrain
+	//   big rocky areas, good connectivity
 
 	// does the thing
 	void GenerateWorld()
@@ -47,7 +53,11 @@ namespace WorldGen2
 		noise.SetOctaveCount(5);
 		noise.SetFrequency(.04);
 		FastNoiseSIMD* noisey = FastNoiseSIMD::NewFastNoiseSIMD();
+		noisey->SetFractalLacunarity(2.0);
+		noisey->SetFractalOctaves(5);
+		//noisey->SetFrequency(.04);
 
+		
 		auto& chunks = ChunkStorage::GetMapRaw();
 		std::for_each(std::execution::par, chunks.begin(), chunks.end(),
 			[&](auto pair)
@@ -55,19 +65,19 @@ namespace WorldGen2
 			if (pair.second)
 			{
 				glm::ivec3 st = pair.first * Chunk::CHUNK_SIZE;
-				float* noiseSet = noisey->GetSimplexSet(st.x, st.y, st.z, 
+				float* noiseSet = noisey->GetCubicFractalSet(st.z, st.y, st.x, 
 					Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE, 1);
 				int idx = 0;
 
 				printf(".");
 				glm::ivec3 pos, wpos;
-				for (pos.x = 0; pos.x < Chunk::CHUNK_SIZE; pos.x++)
+				for (pos.z = 0; pos.z < Chunk::CHUNK_SIZE; pos.z++)
 				{
 					//int zcsq = pos.z * Chunk::CHUNK_SIZE_SQRED;
 					for (pos.y = 0; pos.y < Chunk::CHUNK_SIZE; pos.y++)
 					{
 						//int yczcsq = pos.y * Chunk::CHUNK_SIZE + zcsq;
-						for (pos.z = 0; pos.z < Chunk::CHUNK_SIZE; pos.z++)
+						for (pos.x = 0; pos.x < Chunk::CHUNK_SIZE; pos.x++)
 						{
 							//int index = pos.x + yczcsq;
 							wpos = ChunkHelpers::chunkPosToWorldPos(pos, pair.first);
@@ -76,30 +86,18 @@ namespace WorldGen2
 							//double density = noise.GetValue(pos.x, pos.y, pos.z); // same chunk every time
 							//density = 0;
 							float density = noiseSet[idx++];
-							if (density > -.05)
+							if (density > .05)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bStone);
 							}
-							if (density > -.03)
+							if (density < -.03)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bDirt);
 							}
-							if (density <= -.05)
+							if (density >= -.05)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bAir);
 							}
-							//if (wpos.y < -10)
-							//{
-							//	ChunkStorage::SetBlockType(wpos, BlockType::bStone);
-							//}
-							//else if (wpos.y <= 0)
-							//{
-							//	ChunkStorage::SetBlockType(wpos, BlockType::bDirt);
-							//}
-							//else if (wpos.y == 1)
-							//{
-							//	ChunkStorage::SetBlockType(wpos, BlockType::bGrass);
-							//}
 						}
 					}
 				}
