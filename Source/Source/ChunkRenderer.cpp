@@ -75,6 +75,7 @@ namespace ChunkRenderer
 
 	void GenerateDrawCommands()
 	{
+		PERF_BENCHMARK_START;
 		auto cam = Renderer::GetPipeline()->GetCamera(0);
 		std::atomic_int index = 0;
 		DrawArraysIndirectCommand* comms = new DrawArraysIndirectCommand[allocator->ActiveAllocs()];
@@ -87,28 +88,33 @@ namespace ChunkRenderer
 		{
 			if (alloc.handle != NULL)
 			{
+				Chunk* chunk = reinterpret_cast<Chunk*>(alloc.userdata);
+				if (glm::distance(glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE), cam->GetPos()) > 800)
+					return;
+				if (!chunk->IsVisible(*cam))
+					return;
+
 				DrawArraysIndirectCommand cmd;
 				cmd.count = (alloc.size / allocator->align_) - 2; // first two vertices are reserved
 				cmd.instanceCount = 1;
 				cmd.first = alloc.offset / allocator->align_;
 				cmd.baseInstance = cmd.first; // same stride as vertices
 
-				if (reinterpret_cast<Chunk*>(alloc.userdata)->IsVisible(*cam))
-				{
-					int i = index.fetch_add(1);
-					comms[i] = cmd;
-				}
+				int i = index.fetch_add(1);
+				comms[i] = cmd;
 			}
 		});
 
 		renderCount = index;
 		dib = std::make_unique<DIB>(comms, index * sizeof(DrawArraysIndirectCommand));
 		delete[] comms;
+		PERF_BENCHMARK_END;
 	}
 
 
 	void GenerateDrawCommandsSplat()
 	{
+		PERF_BENCHMARK_START;
 		auto cam = Renderer::GetPipeline()->GetCamera(0);
 		std::atomic_int index = 0;
 		DrawArraysIndirectCommand* comms = new DrawArraysIndirectCommand[allocatorSplat->ActiveAllocs()];
@@ -121,23 +127,27 @@ namespace ChunkRenderer
 		{
 			if (alloc.handle != NULL)
 			{
+				Chunk* chunk = reinterpret_cast<Chunk*>(alloc.userdata);
+				if (glm::distance(glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE), cam->GetPos()) <= 800)
+					return;
+				if (!chunk->IsVisible(*cam))
+					return;
+
 				DrawArraysIndirectCommand cmd;
 				cmd.count = (alloc.size / allocatorSplat->align_) - 3; // first three vertices are reserved
 				cmd.instanceCount = 1;
 				cmd.first = alloc.offset / allocatorSplat->align_;
 				cmd.baseInstance = cmd.first; // same stride as vertices
 
-				if (reinterpret_cast<Chunk*>(alloc.userdata)->IsVisible(*cam))
-				{
-					int i = index.fetch_add(1);
-					comms[i] = cmd;
-				}
+				int i = index.fetch_add(1);
+				comms[i] = cmd;
 			}
 		});
 
 		renderCountSplat = index;
 		dibSplat = std::make_unique<DIB>(comms, index * sizeof(DrawArraysIndirectCommand));
 		delete[] comms;
+		PERF_BENCHMARK_END;
 	}
 
 

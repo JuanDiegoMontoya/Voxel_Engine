@@ -54,7 +54,7 @@ namespace NuRenderer
 		}
 
 		Renderer::drawSky();
-		//drawChunks();
+		drawChunks();
 		splatChunks();
 		//drawChunksMultiIndirect();
 		drawChunksWater();

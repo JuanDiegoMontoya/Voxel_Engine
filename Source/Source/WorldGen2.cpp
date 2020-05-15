@@ -6,13 +6,14 @@
 #include <execution>
 #include <noise/noise.h>
 #include "vendor/noiseutils.h"
+#include "vendor/FastNoiseSIMD/FastNoiseSIMD.h"
 
 namespace WorldGen2
 {
 	namespace
 	{
-		glm::ivec3 lowChunkDim{ -3, -3, -3 };
-		glm::ivec3 highChunkDim{ 40, 10, 40 };
+		glm::ivec3 lowChunkDim{ 0, 0, 0 };
+		glm::ivec3 highChunkDim{ 5, 5, 5 };
 		//glm::ivec3 lowChunkDim{ 0, 0, 0 };
 		//glm::ivec3 highChunkDim{ 2, 1, 1 };
 	}
@@ -45,39 +46,45 @@ namespace WorldGen2
 		noise.SetLacunarity(2.);
 		noise.SetOctaveCount(5);
 		noise.SetFrequency(.04);
-		
+		FastNoiseSIMD* noisey = FastNoiseSIMD::NewFastNoiseSIMD();
+
 		auto& chunks = ChunkStorage::GetMapRaw();
 		std::for_each(std::execution::par, chunks.begin(), chunks.end(),
-			[&](auto pair) 
+			[&](auto pair)
 		{
 			if (pair.second)
 			{
-				//printf("(%d, %d, %d)\n", pair.first.x, pair.first.y, pair.first.z);
+				glm::ivec3 st = pair.first * Chunk::CHUNK_SIZE;
+				float* noiseSet = noisey->GetSimplexSet(st.x, st.y, st.z, 
+					Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE, 1);
+				int idx = 0;
+
 				printf(".");
 				glm::ivec3 pos, wpos;
-				for (pos.z = 0; pos.z < Chunk::CHUNK_SIZE; pos.z++)
+				for (pos.x = 0; pos.x < Chunk::CHUNK_SIZE; pos.x++)
 				{
-					int zcsq = pos.z * Chunk::CHUNK_SIZE_SQRED;
+					//int zcsq = pos.z * Chunk::CHUNK_SIZE_SQRED;
 					for (pos.y = 0; pos.y < Chunk::CHUNK_SIZE; pos.y++)
 					{
-						int yczcsq = pos.y * Chunk::CHUNK_SIZE + zcsq;
-						for (pos.x = 0; pos.x < Chunk::CHUNK_SIZE; pos.x++)
+						//int yczcsq = pos.y * Chunk::CHUNK_SIZE + zcsq;
+						for (pos.z = 0; pos.z < Chunk::CHUNK_SIZE; pos.z++)
 						{
-							int index = pos.x + yczcsq;
+							//int index = pos.x + yczcsq;
 							wpos = ChunkHelpers::chunkPosToWorldPos(pos, pair.first);
 
-							double density = noise.GetValue(wpos.x, wpos.y, wpos.z); // chunks are different
+							//double density = noise.GetValue(wpos.x, wpos.y, wpos.z); // chunks are different
 							//double density = noise.GetValue(pos.x, pos.y, pos.z); // same chunk every time
 							//density = 0;
-							if (density > .95)
+							float density = noiseSet[idx++];
+							if (density > -.05)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bStone);
 							}
-							if (density > .98)
+							if (density > -.03)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bDirt);
 							}
-							if (density <= .95)
+							if (density <= -.05)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bAir);
 							}
@@ -96,12 +103,16 @@ namespace WorldGen2
 						}
 					}
 				}
+
+				FastNoiseSIMD::FreeNoiseSet(noiseSet);
 			}
 			else
 			{
 				printf("null chunk doe\n");
 			}
 		});
+
+		delete noisey;
 	}
 
 
