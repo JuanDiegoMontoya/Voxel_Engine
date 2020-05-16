@@ -10,6 +10,6 @@ namespace ChunkRenderer
 	void Render();
 	void RenderSplat();
 
-	inline std::unique_ptr<BufferAllocator> allocator;
-	inline std::unique_ptr<BufferAllocator> allocatorSplat;
+	inline std::unique_ptr<BufferAllocator<void*>> allocator;
+	inline std::unique_ptr<BufferAllocator<void*>> allocatorSplat;
 }

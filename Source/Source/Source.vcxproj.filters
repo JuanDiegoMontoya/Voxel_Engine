@@ -536,5 +536,8 @@
     <None Include="Palette.inl">
       <Filter>Utilities</Filter>
     </None>
+    <None Include="BufferAllocation.inl">
+      <Filter>Graphics</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -29,7 +29,6 @@ namespace ChunkRenderer
 		std::atomic_int nextIdx;
 	}
 
-
 	void genCommands(int id, int start,
 		DrawArraysIndirectCommand* cmds, int numThreads, Camera* cam) // atomic_int& no worky
 	{
@@ -68,8 +67,8 @@ namespace ChunkRenderer
 
 		// allocate big buffer (1GB)
 		// TODO: vary the allocation size based on some user setting
-		allocator = std::make_unique<BufferAllocator>(2'000'000'000, 2 * sizeof(GLint));
-		allocatorSplat = std::make_unique<BufferAllocator>(200'000'000, sizeof(GLint));
+		allocator = std::make_unique<BufferAllocator<void*>>(2'000'000'000, 2 * sizeof(GLint));
+		allocatorSplat = std::make_unique<BufferAllocator<void*>>(200'000'000, sizeof(GLint));
 
 
 		
@@ -180,7 +179,6 @@ namespace ChunkRenderer
 	//	delete[] comms;
 	//	PERF_BENCHMARK_END;
 	//}
-
 
 	void GenerateDrawCommandsSplat()
 	{

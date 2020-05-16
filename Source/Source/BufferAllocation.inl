@@ -1,8 +1,9 @@
-#include "stdafx.h"
+#pragma once
 #include "BufferAllocator.h"
 
 
-BufferAllocator::BufferAllocator(GLsizei size, GLsizei alignment) : align_(alignment)
+template<typename UserT>
+BufferAllocator<UserT>::BufferAllocator<UserT>(GLsizei size, GLsizei alignment) : align_(alignment)
 {
 	size += (align_ - (size % align_)) % align_;
 
@@ -13,17 +14,23 @@ BufferAllocator::BufferAllocator(GLsizei size, GLsizei alignment) : align_(align
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// make one big null allocation
-	allocs_.push_back({ NULL, 0, size, 0, NULL });
+	allocationData<UserT> phalloc;
+	phalloc.handle = NULL;
+	phalloc.offset = 0;
+	phalloc.size = size;
+	phalloc.time = 0;
+	allocs_.push_back(phalloc);
 }
 
 
-BufferAllocator::~BufferAllocator()
+template<typename UserT>
+BufferAllocator<UserT>::~BufferAllocator<UserT>()
 {
 	glDeleteBuffers(1, &gpuHandle);
 }
 
-
-uint64_t BufferAllocator::Allocate(void* data, GLsizei size, void* userdata)
+template<typename UserT>
+uint64_t BufferAllocator<UserT>::Allocate(void* data, GLsizei size, UserT userdata)
 {
 	size += (align_ - (size % align_)) % align_;
 	// find smallest NULL allocation that will fit
@@ -38,18 +45,17 @@ uint64_t BufferAllocator::Allocate(void* data, GLsizei size, void* userdata)
 				small = allocs_.begin() + i;
 		}
 	}
-
 	// allocation failure
 	if (small == allocs_.end())
 		return NULL;
 
 	// split free allocation
-	allocationData newAlloc;
+	allocationData<UserT> newAlloc(userdata);
 	newAlloc.handle = nextHandle++;
 	newAlloc.offset = small->offset;
 	newAlloc.size = size;
 	newAlloc.time = glfwGetTime();
-	newAlloc.userdata = userdata;
+	//newAlloc.userdata = userdata;
 
 	small->offset += newAlloc.size;
 	small->size -= newAlloc.size;
@@ -67,7 +73,8 @@ uint64_t BufferAllocator::Allocate(void* data, GLsizei size, void* userdata)
 }
 
 
-bool BufferAllocator::Free(uint64_t handle)
+template<typename UserT>
+bool BufferAllocator<UserT>::Free(uint64_t handle)
 {
 	if (handle == NULL) return false;
 	auto it = std::find_if(allocs_.begin(), allocs_.end(), [&](const auto& a) { return a.handle == handle; });
@@ -82,7 +89,8 @@ bool BufferAllocator::Free(uint64_t handle)
 }
 
 
-bool BufferAllocator::FreeOldest()
+template<typename UserT>
+bool BufferAllocator<UserT>::FreeOldest()
 {
 	// find and free the oldest allocation
 	Iterator old = allocs_.end();
@@ -109,7 +117,8 @@ bool BufferAllocator::FreeOldest()
 }
 
 
-void BufferAllocator::maybeMerge(Iterator it)
+template<typename UserT>
+void BufferAllocator<UserT>::maybeMerge(Iterator it)
 {
 	bool removeIt = false;
 	bool removeNext = false;
@@ -146,7 +155,8 @@ void BufferAllocator::maybeMerge(Iterator it)
 }
 
 
-void BufferAllocator::dbgVerify()
+template<typename UserT>
+void BufferAllocator<UserT>::dbgVerify()
 {
 	uint64_t prevPtr = 1;
 	GLsizei sumSize = 0;
