@@ -12,10 +12,13 @@ namespace WorldGen2
 {
 	namespace
 	{
+#if 1
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
-		glm::ivec3 highChunkDim{ 50, 10, 50 };
-		//glm::ivec3 lowChunkDim{ 0, 0, 0 };
-		//glm::ivec3 highChunkDim{ 2, 1, 1 };
+		glm::ivec3 highChunkDim{ 5, 10, 5 };
+#else
+		glm::ivec3 lowChunkDim{ 0, 0, 0 };
+		glm::ivec3 highChunkDim{ 2, 1, 1 };
+#endif
 	}
 
 	// init chunks that we finna modify

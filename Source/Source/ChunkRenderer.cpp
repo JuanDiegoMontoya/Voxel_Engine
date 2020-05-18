@@ -6,6 +6,7 @@
 #include "BufferAllocator.h"
 #include "chunk.h"
 #include <camera.h>
+#include <Frustum.h>
 #include <Pipeline.h>
 #include "Renderer.h"
 #include <execution>
@@ -29,6 +30,7 @@ namespace ChunkRenderer
 		std::atomic_int nextIdx;
 	}
 
+
 	void genCommands(int id, int start,
 		DrawArraysIndirectCommand* cmds, int numThreads, Camera* cam) // atomic_int& no worky
 	{
@@ -40,10 +42,16 @@ namespace ChunkRenderer
 			const auto& alloc = allocs_[i];
 			if (alloc.handle != NULL)
 			{
-				Chunk* chunk = reinterpret_cast<Chunk*>(alloc.userdata);
-				if (glm::distance(glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE), cam->GetPos()) > 800)
+				//Chunk* chunk = reinterpret_cast<Chunk*>(alloc.userdata);
+				//if (glm::distance(glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE), cam->GetPos()) > 800)
+				//	continue;
+				//if (!chunk->IsVisible(*cam))
+				//	continue;
+				AABB box = alloc.userdata;
+				glm::vec3 cpos = (box.min + box.max) / 2.f;
+				if (glm::distance(cpos, cam->GetPos()) > 800)
 					continue;
-				if (!chunk->IsVisible(*cam))
+				if (cam->GetFrustum()->IsInside(box) == Frustum::Visibility::Invisible)
 					continue;
 
 				DrawArraysIndirectCommand cmd;
@@ -67,8 +75,8 @@ namespace ChunkRenderer
 
 		// allocate big buffer (1GB)
 		// TODO: vary the allocation size based on some user setting
-		allocator = std::make_unique<BufferAllocator<void*>>(2'000'000'000, 2 * sizeof(GLint));
-		allocatorSplat = std::make_unique<BufferAllocator<void*>>(200'000'000, sizeof(GLint));
+		allocator = std::make_unique<BufferAllocator<AABB>>(2'000'000'000, 2 * sizeof(GLint));
+		allocatorSplat = std::make_unique<BufferAllocator<AABB>>(200'000'000, sizeof(GLint));
 
 
 		
@@ -195,10 +203,16 @@ namespace ChunkRenderer
 		{
 			if (alloc.handle != NULL)
 			{
-				Chunk* chunk = reinterpret_cast<Chunk*>(alloc.userdata);
-				if (glm::distance(glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE), cam->GetPos()) <= 800)
+				//Chunk* chunk = reinterpret_cast<Chunk*>(alloc.userdata);
+				//if (glm::distance(glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE), cam->GetPos()) <= 800)
+				//	return;
+				//if (!chunk->IsVisible(*cam))
+				//	return;
+				AABB box = alloc.userdata;
+				glm::vec3 cpos = (box.min + box.max) / 2.f;
+				if (glm::distance(cpos, cam->GetPos()) <= 800)
 					return;
-				if (!chunk->IsVisible(*cam))
+				if (cam->GetFrustum()->IsInside(box) == Frustum::Visibility::Invisible)
 					return;
 
 				DrawArraysIndirectCommand cmd;

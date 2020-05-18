@@ -1,5 +1,6 @@
 #pragma once
 #include "BufferAllocator.h"
+#include <Shapes.h>
 //class BufferAllocator;
 
 namespace ChunkRenderer
@@ -10,6 +11,6 @@ namespace ChunkRenderer
 	void Render();
 	void RenderSplat();
 
-	inline std::unique_ptr<BufferAllocator<void*>> allocator;
-	inline std::unique_ptr<BufferAllocator<void*>> allocatorSplat;
+	inline std::unique_ptr<BufferAllocator<AABB>> allocator;
+	inline std::unique_ptr<BufferAllocator<AABB>> allocatorSplat;
 }

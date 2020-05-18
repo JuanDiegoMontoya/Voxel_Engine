@@ -228,7 +228,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
   <ItemGroup>
     <ClCompile Include="biome.cpp" />
     <ClCompile Include="block.cpp" />
-    <ClCompile Include="BufferAllocator.cpp" />
     <ClCompile Include="chunk.cpp" />
     <ClCompile Include="ChunkMesh.cpp" />
     <ClCompile Include="ChunkRenderer.cpp" />

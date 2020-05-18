@@ -151,7 +151,7 @@ void ChunkMesh::BuildBuffers2()
 		if (bufferHandle == NULL)
 			CR::allocator->FreeOldest();
 		bufferHandle = CR::allocator->Allocate(
-			interleavedArr.data(), interleavedArr.size() * sizeof(GLint), this->parent);
+			interleavedArr.data(), interleavedArr.size() * sizeof(GLint), this->parent->GetAABB());
 	} while (bufferHandle == NULL);
 
 	bufferHandleSplat = 1;
@@ -160,7 +160,7 @@ void ChunkMesh::BuildBuffers2()
 		if (bufferHandleSplat == NULL)
 			CR::allocator->FreeOldest();
 		bufferHandleSplat = CR::allocatorSplat->Allocate(
-			sPosArr.data(), sPosArr.size() * sizeof(GLint), this->parent);
+			sPosArr.data(), sPosArr.size() * sizeof(GLint), this->parent->GetAABB());
 	} while (bufferHandleSplat == NULL);
 
 	encodedStuffArr.clear();

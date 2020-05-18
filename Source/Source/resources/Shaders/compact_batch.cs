@@ -3,12 +3,25 @@
 struct Frustum
 {
   //...
+
+};
+
+struct AABB
+{
+  vec3 min;
+  vec3 max;
 };
 
 struct InDrawInfo
 {
   //...
-
+  uint _pad01;
+  uint _pad02;
+  uint _pad03;
+  uint _pad04;
+  uint offset;
+  uint size;
+  vec3 
 };
 
 struct DrawArraysCommand

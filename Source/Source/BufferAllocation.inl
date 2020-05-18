@@ -3,7 +3,7 @@
 
 
 template<typename UserT>
-BufferAllocator<UserT>::BufferAllocator<UserT>(GLsizei size, GLsizei alignment) : align_(alignment)
+BufferAllocator<UserT>::BufferAllocator<UserT>(GLuint size, GLuint alignment) : align_(alignment)
 {
 	size += (align_ - (size % align_)) % align_;
 
@@ -30,7 +30,7 @@ BufferAllocator<UserT>::~BufferAllocator<UserT>()
 }
 
 template<typename UserT>
-uint64_t BufferAllocator<UserT>::Allocate(void* data, GLsizei size, UserT userdata)
+uint64_t BufferAllocator<UserT>::Allocate(void* data, GLuint size, UserT userdata)
 {
 	size += (align_ - (size % align_)) % align_;
 	// find smallest NULL allocation that will fit

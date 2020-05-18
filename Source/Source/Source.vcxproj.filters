@@ -483,9 +483,6 @@
     <ClCompile Include="ChunkRenderer.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="BufferAllocator.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD.cpp">
       <Filter>vendor\FastNoiseSIMD</Filter>
     </ClCompile>

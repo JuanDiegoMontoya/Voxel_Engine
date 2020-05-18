@@ -1,14 +1,16 @@
 #pragma once
 
-template<typename UserDataT>
+// Generic GPU buffer that can store
+// up to 4GB of data
+template<typename UserT>
 class BufferAllocator
 {
 public:
 
-	BufferAllocator(GLsizei size, GLsizei alignment);
+	BufferAllocator(GLuint size, GLuint alignment);
 	~BufferAllocator();
 
-	uint64_t Allocate(void* data, GLsizei size, UserDataT userdata = {});
+	uint64_t Allocate(void* data, GLuint size, UserT userdata = {});
 	bool Free(uint64_t handle);
 	bool FreeOldest();
 	GLuint GetGPUHandle() { return gpuHandle; }
@@ -24,10 +26,10 @@ public:
 		allocationData() = default;
 		allocationData(UT u) : userdata(u) {}
 		uint64_t handle;// "pointer"
-		GLsizei offset; // offset from beginning of this memory
-		GLsizei size;   // allocation size
-		GLdouble time;  // time of allocation
-		UT userdata; // user-defined data
+		double time;    // time of allocation
+		GLuint offset;  // offset from beginning of this memory
+		GLuint size;    // allocation size
+		UT userdata;    // user-defined data
 	};
 
 	// no userdata specialization
@@ -38,13 +40,13 @@ public:
 		allocationData() = default;
 		allocationData(Empty_) {}
 		uint64_t handle;// "pointer"
-		GLsizei offset; // offset from beginning of this memory
-		GLsizei size;   // allocation size
-		GLdouble time;  // time of allocation
+		GLuint offset;  // offset from beginning of this memory
+		GLuint size;    // allocation size
+		double time;    // time of allocation
 	};
 
 private:
-	std::vector<allocationData<UserDataT>> allocs_;
+	std::vector<allocationData<UserT>> allocs_;
 	using Iterator = decltype(allocs_.begin());
 
 
