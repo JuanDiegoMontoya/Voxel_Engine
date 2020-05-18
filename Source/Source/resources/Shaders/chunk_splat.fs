@@ -121,7 +121,7 @@ void main()
     fragColor.xyz = vColor * max(sunAngle, .01);
     fragColor.xyz *= 1 - darken;
 
-    // do some thing to figure out the proper depth (doens't really matter)
+    // do some thing to figure out the proper depth (doens't really matter when all splatted stuff is super far away)
     //vec4 v_clip_coord = u_viewProj * vec4(vPos, 1.0);
     //float f_ndc_depth = v_clip_coord.z / v_clip_coord.w;
     //gl_FragDepth = (gl_DepthRange.far - gl_DepthRange.near) * 0.5 * f_ndc_depth + (gl_DepthRange.far + gl_DepthRange.near) * 0.5;

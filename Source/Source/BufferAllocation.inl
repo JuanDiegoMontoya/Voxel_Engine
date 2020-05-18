@@ -5,6 +5,8 @@
 template<typename UserT>
 BufferAllocator<UserT>::BufferAllocator<UserT>(GLuint size, GLuint alignment) : align_(alignment)
 {
+	// add to size the distance to next aligned boundary
+	// TODO: simplify (use align_ - 1 thing)
 	size += (align_ - (size % align_)) % align_;
 
 	// allocate uninitialized memory in VRAM
@@ -28,6 +30,7 @@ BufferAllocator<UserT>::~BufferAllocator<UserT>()
 {
 	glDeleteBuffers(1, &gpuHandle);
 }
+
 
 template<typename UserT>
 uint64_t BufferAllocator<UserT>::Allocate(void* data, GLuint size, UserT userdata)

@@ -11,6 +11,6 @@ namespace ChunkRenderer
 	void Render();
 	void RenderSplat();
 
-	inline std::unique_ptr<BufferAllocator<AABB>> allocator;
-	inline std::unique_ptr<BufferAllocator<AABB>> allocatorSplat;
+	inline std::unique_ptr<BufferAllocator<AABB16>> allocator;
+	inline std::unique_ptr<BufferAllocator<AABB16>> allocatorSplat;
 }

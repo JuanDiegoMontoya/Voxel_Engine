@@ -47,7 +47,7 @@ namespace ChunkRenderer
 				//	continue;
 				//if (!chunk->IsVisible(*cam))
 				//	continue;
-				AABB box = alloc.userdata;
+				AABB16 box = alloc.userdata;
 				glm::vec3 cpos = (box.min + box.max) / 2.f;
 				if (glm::distance(cpos, cam->GetPos()) > 800)
 					continue;
@@ -75,8 +75,8 @@ namespace ChunkRenderer
 
 		// allocate big buffer (1GB)
 		// TODO: vary the allocation size based on some user setting
-		allocator = std::make_unique<BufferAllocator<AABB>>(2'000'000'000, 2 * sizeof(GLint));
-		allocatorSplat = std::make_unique<BufferAllocator<AABB>>(200'000'000, sizeof(GLint));
+		allocator = std::make_unique<BufferAllocator<AABB16>>(2'000'000'000, 2 * sizeof(GLint));
+		allocatorSplat = std::make_unique<BufferAllocator<AABB16>>(200'000'000, sizeof(GLint));
 
 
 		

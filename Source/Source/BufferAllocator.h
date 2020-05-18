@@ -1,7 +1,7 @@
 #pragma once
 
 // Generic GPU buffer that can store
-// up to 4GB of data
+//   up to 4GB (UINT_MAX) of data
 template<typename UserT>
 class BufferAllocator
 {
@@ -17,8 +17,7 @@ public:
 	const auto& GetAllocs() { return allocs_; }
 	GLuint ActiveAllocs() { return numActiveAllocs_; }
 
-	const GLsizei align_;
-
+	const GLsizei align_; // allocation alignment
 
 	template<typename UT>
 	struct allocationData
@@ -40,16 +39,14 @@ public:
 		allocationData() = default;
 		allocationData(Empty_) {}
 		uint64_t handle;// "pointer"
+		double time;    // time of allocation
 		GLuint offset;  // offset from beginning of this memory
 		GLuint size;    // allocation size
-		double time;    // time of allocation
 	};
 
 private:
 	std::vector<allocationData<UserT>> allocs_;
 	using Iterator = decltype(allocs_.begin());
-
-
 
 	// merges adjacent null allocations to iterator
 	void maybeMerge(Iterator it);
