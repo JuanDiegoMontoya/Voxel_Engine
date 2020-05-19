@@ -42,8 +42,9 @@ namespace Renderer
 		//return; // UNCOMMENT WHEN DEBUGGING GRAPHICS
 
 		// ignore non-significant error/warning codes
-		if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
-
+		if (id == 131169 || id == 131185 || id == 131218 || id == 131204
+			|| id == 131188 || id == 131186) return;
+		
 		std::cout << "---------------" << std::endl;
 		std::cout << "Debug message (" << id << "): " << message << std::endl;
 

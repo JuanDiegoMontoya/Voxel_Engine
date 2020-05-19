@@ -9,7 +9,7 @@ struct Frustum
   float data_[6][4];
 };
 
-struct AABB
+struct AABB16
 {
   vec4 min;
   vec4 max;
@@ -20,7 +20,7 @@ struct InDrawInfo
   uvec4 _pad01;
   uint offset;
   uint size;
-  AABB box;
+  AABB16 box;
   //vec4 bMin;
   //vec4 bMax;
 };
@@ -37,38 +37,45 @@ struct DrawArraysCommand
 layout(std140, binding = 0) readonly buffer inData
 {
   InDrawInfo inDrawData[];
-}
+};
 
-layout(std140, binding = 1) buffer outCmds
+layout(std140, binding = 1) writeonly buffer outCmds
 {
   DrawArraysCommand outDrawCommands[];
-}
+};
 
 layout(binding = 0, offset = 0) uniform atomic_uint nextIdx;
 
 uniform vec3 u_viewpos;
 uniform Frustum u_viewfrustum;
-uniform uint u_vertexsize; // size of vertex in bytes
+uniform uint u_vertexSize; // size of vertex in bytes
+uniform float u_cullMinDist;
+uniform float u_cullMaxDist;
+uniform uint u_reservedVertices; // amt of reserved space (in vertices) before vertices for instanced attributes 
 
-bool CullDistance(in AABB box, in vec3 pos, float minDist, float maxDist);
-int CullFrustum(in AABB box, in Frustum frustum);
+bool CullDistance(in AABB16 box, in vec3 pos, float minDist, float maxDist);
+int CullFrustum(in AABB16 box, in Frustum frustum);
 
-layout(local_size_variable) in;
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main()
 {
-  int index;
-  int stride;
+  int index = 0;
+  int stride = 1;
 
   for (int i = index; i < inDrawData.length(); i += stride)
+  //for (int i = index; i < 1; i += stride)
   {
     InDrawInfo alloc = inDrawData[i];
-    if (condition)
+    bool condition = // all conditions must be true to draw chunk
+      CullDistance(alloc.box, u_viewpos, u_cullMinDist, u_cullMaxDist) &&
+      CullFrustum(alloc.box, u_viewfrustum) >= VISIBILITY_PARTIAL;
+    if (condition == true)
     {
       DrawArraysCommand cmd;
-      //cmd.count = ...;
+      cmd.count = (alloc.size / u_vertexSize) - u_reservedVertices;
       cmd.instanceCount = 1;
-      //cmd.first = ...;
-      //cmd.baseInstance = ...;
+      cmd.first = alloc.offset / u_vertexSize;
+      cmd.baseInstance = cmd.first;
 
       uint insert = atomicCounterAdd(nextIdx, 1);
       outDrawCommands[insert] = cmd;
@@ -77,7 +84,7 @@ void main()
 }
 
 
-bool CullDistance(in AABB box, in vec3 pos, float minDist, float maxDist)
+bool CullDistance(in AABB16 box, in vec3 pos, float minDist, float maxDist)
 {
   vec3 bp = (box.max.xyz + box.min.xyz) / 2.0;
   float dist = distance(bp, pos);
@@ -92,7 +99,7 @@ vec4 GetPlane(int plane, in Frustum frustum)
 }
 
 
-int GetVisibility(in vec4 clip, AABB box)
+int GetVisibility(in vec4 clip, in AABB16 box)
 {
   float x0 = box.min.x * clip.x;
   float x1 = box.max.x * clip.x;
@@ -122,7 +129,7 @@ int GetVisibility(in vec4 clip, AABB box)
 }
 
 
-int CullFrustum(in AABB box, in Frustum frustum)
+int CullFrustum(in AABB16 box, in Frustum frustum)
 {
   int v0 = GetVisibility(GetPlane(0, frustum), box);
   if (v0 == VISIBILITY_NONE)

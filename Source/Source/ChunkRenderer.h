@@ -7,6 +7,7 @@ namespace ChunkRenderer
 {
 	void InitAllocator();
 	void GenerateDrawCommands();
+	void GenerateDrawCommandsGPU();
 	void GenerateDrawCommandsSplat();
 	void Render();
 	void RenderSplat();

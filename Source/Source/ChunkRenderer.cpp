@@ -11,6 +11,8 @@
 #include "Renderer.h"
 #include <execution>
 #include "vendor/ctpl_stl.h"
+#include <shader.h>
+#include <abo.h>
 
 namespace ChunkRenderer
 {
@@ -28,6 +30,8 @@ namespace ChunkRenderer
 		int maxConcurrency;
 		std::vector<std::future<void>> futures;
 		std::atomic_int nextIdx;
+
+		std::unique_ptr<ABO> drawCounter;
 	}
 
 
@@ -73,11 +77,13 @@ namespace ChunkRenderer
 		maxConcurrency = glm::max(std::thread::hardware_concurrency(), 1u);
 		threads = std::make_unique<ctpl::thread_pool>(maxConcurrency);
 
-		// allocate big buffer (1GB)
+		drawCounter = std::make_unique<ABO>(1); // one atomic uint
+		drawCounter->Reset();
+
+		// allocate big buffer
 		// TODO: vary the allocation size based on some user setting
 		allocator = std::make_unique<BufferAllocator<AABB16>>(2'000'000'000, 2 * sizeof(GLint));
 		allocatorSplat = std::make_unique<BufferAllocator<AABB16>>(200'000'000, sizeof(GLint));
-
 
 		
 		/* :::::::::::BUFFER FORMAT:::::::::::
@@ -133,8 +139,6 @@ namespace ChunkRenderer
 			futures.push_back(threads->push(genCommands, i, comms, threadNum, cam));
 		}
 
-
-
 		// TODO: "finish" or "sync" function that does all this cleanup stuff
 		// (also allows us to begin generating commands early and not have to immediately join
 		for (auto& fut : futures)
@@ -150,6 +154,54 @@ namespace ChunkRenderer
 
 		PERF_BENCHMARK_END;
 	}
+
+#pragma optimize("", off)
+	void GenerateDrawCommandsGPU()
+	{
+		Camera* cam = Renderer::GetPipeline()->GetCamera(0);
+		// make buffer sized as if every allocation was non-null
+		ShaderPtr sdr = Shader::shaders["compact_batch"];
+		sdr->Use();
+		sdr->setVec3("u_viewpos", cam->GetPos());
+		Frustum fr = *cam->GetFrustum();
+		using namespace std;
+		//float frd[6]
+		for (int i = 0; i < 5; i++) // ignore near plane
+			//for (int j = 0; j < 4; j++)
+		{
+			string uname = "u_viewfrustum.data_[" + to_string(i) + "]";
+			sdr->set1FloatArray(uname.c_str(), fr.GetData()[i], 4);
+		}
+		sdr->setFloat("u_cullMinDist", 0);
+		sdr->setFloat("u_cullMaxDist", 800);
+		sdr->setUInt("u_reservedVertices", 2);
+
+		drawCounter->Bind(0);
+		drawCounter->Reset();
+
+		GLuint indata;
+		glGenBuffers(1, &indata);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, indata);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, indata);
+		const auto& allocs = allocator->GetAllocs();
+		glBufferData(GL_SHADER_STORAGE_BUFFER, allocator->AllocSize() * allocs.size(), allocs.data(), GL_STATIC_COPY);
+
+		// setup draw indirect buffer as an out SSBO
+		dib = std::make_unique<DIB>(
+			nullptr, 
+			allocator->GetAllocs().size() * sizeof(DrawArraysIndirectCommand),
+			GL_STATIC_COPY);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, dib->GetID());
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, dib->GetID());
+		glDispatchCompute(1, 1, 1);
+		//glFinish();
+		glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+		//glMemoryBarrier(GL_ALL_BARRIER_BITS);
+		//drawCounter->Set(0, 4);
+		renderCount = drawCounter->Get(0);
+		glDeleteBuffers(1, &indata);
+	}
+#pragma optimize("", on)
 
 
 	//void GenerateDrawCommands()

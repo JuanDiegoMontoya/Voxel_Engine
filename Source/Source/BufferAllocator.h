@@ -44,6 +44,8 @@ public:
 		GLuint size;    // allocation size
 	};
 
+	GLsizei AllocSize() const { return sizeof(UserT); }
+
 private:
 	std::vector<allocationData<UserT>> allocs_;
 	using Iterator = decltype(allocs_.begin());

@@ -23,6 +23,7 @@ namespace NuRenderer
 	{
 		Shader::shaders["chunk_optimized"] = new Shader("chunk_optimized.vs", "chunk_optimized.fs");
 		Shader::shaders["chunk_splat"] = new Shader("chunk_splat.vs", "chunk_splat.fs");
+		Shader::shaders["compact_batch"] = new Shader("compact_batch.cs");
 	}
 
 
@@ -97,7 +98,8 @@ namespace NuRenderer
 
 
 
-		ChunkRenderer::GenerateDrawCommands();
+		//ChunkRenderer::GenerateDrawCommands();
+		ChunkRenderer::GenerateDrawCommandsGPU();
 		ChunkRenderer::Render();
 		return;
 
