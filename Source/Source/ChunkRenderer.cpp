@@ -162,18 +162,17 @@ namespace ChunkRenderer
 		// make buffer sized as if every allocation was non-null
 		ShaderPtr sdr = Shader::shaders["compact_batch"];
 		sdr->Use();
+#if 0
 		sdr->setVec3("u_viewpos", cam->GetPos());
 		Frustum fr = *cam->GetFrustum();
-		using namespace std;
-		//float frd[6]
 		for (int i = 0; i < 5; i++) // ignore near plane
-			//for (int j = 0; j < 4; j++)
 		{
-			string uname = "u_viewfrustum.data_[" + to_string(i) + "]";
+			std::string uname = "u_viewfrustum.data_[" + std::to_string(i) + "]";
 			sdr->set1FloatArray(uname.c_str(), fr.GetData()[i], 4);
 		}
 		sdr->setFloat("u_cullMinDist", 0);
 		sdr->setFloat("u_cullMaxDist", 800);
+#endif
 		sdr->setUInt("u_reservedVertices", 2);
 
 		drawCounter->Bind(0);
@@ -194,8 +193,8 @@ namespace ChunkRenderer
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, dib->GetID());
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, dib->GetID());
 		glDispatchCompute(1, 1, 1);
-		//glFinish();
 		glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+		glFinish();
 		//glMemoryBarrier(GL_ALL_BARRIER_BITS);
 		//drawCounter->Set(0, 4);
 		renderCount = drawCounter->Get(0);

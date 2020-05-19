@@ -66,9 +66,13 @@ void main()
   //for (int i = index; i < 1; i += stride)
   {
     InDrawInfo alloc = inDrawData[i];
+#if 1
+    bool condition = alloc._pad01.xy != uvec2(0);
+#else
     bool condition = // all conditions must be true to draw chunk
       CullDistance(alloc.box, u_viewpos, u_cullMinDist, u_cullMaxDist) &&
       CullFrustum(alloc.box, u_viewfrustum) >= VISIBILITY_PARTIAL;
+#endif
     if (condition == true)
     {
       DrawArraysCommand cmd;
