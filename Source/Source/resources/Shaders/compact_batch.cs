@@ -18,6 +18,7 @@ struct AABB16
 struct InDrawInfo
 {
   uvec4 _pad01;
+  uvec2 _pad02;
   uint offset;
   uint size;
   AABB16 box;
@@ -62,6 +63,8 @@ void main()
   int index = 0;
   int stride = 1;
 
+  //atomicCounterAdd(nextIdx, inDrawData.length());
+
   for (int i = index; i < inDrawData.length(); i += stride)
   //for (int i = index; i < 1; i += stride)
   {
@@ -82,7 +85,8 @@ void main()
       cmd.baseInstance = cmd.first;
 
       uint insert = atomicCounterAdd(nextIdx, 1);
-      outDrawCommands[insert] = cmd;
+      //uint insert = 0;
+      outDrawCommands[0] = cmd;
     }
   }
 }

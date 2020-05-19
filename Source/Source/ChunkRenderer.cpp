@@ -188,7 +188,7 @@ namespace ChunkRenderer
 		// setup draw indirect buffer as an out SSBO
 		dib = std::make_unique<DIB>(
 			nullptr, 
-			allocator->GetAllocs().size() * sizeof(DrawArraysIndirectCommand),
+			allocator->ActiveAllocs() * sizeof(DrawArraysIndirectCommand),
 			GL_STATIC_COPY);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, dib->GetID());
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, dib->GetID());

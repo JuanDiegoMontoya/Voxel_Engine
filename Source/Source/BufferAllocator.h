@@ -24,8 +24,10 @@ public:
 	{
 		allocationData() = default;
 		allocationData(UT u) : userdata(u) {}
+
 		uint64_t handle;// "pointer"
 		double time;    // time of allocation
+		glm::uvec2 _pad;//
 		GLuint offset;  // offset from beginning of this memory
 		GLuint size;    // allocation size
 		UT userdata;    // user-defined data
@@ -38,13 +40,14 @@ public:
 	{
 		allocationData() = default;
 		allocationData(Empty_) {}
+
 		uint64_t handle;// "pointer"
 		double time;    // time of allocation
 		GLuint offset;  // offset from beginning of this memory
 		GLuint size;    // allocation size
 	};
 
-	GLsizei AllocSize() const { return sizeof(UserT); }
+	GLsizei AllocSize() const { return sizeof(allocationData<UserT>); }
 
 private:
 	std::vector<allocationData<UserT>> allocs_;
