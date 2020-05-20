@@ -162,7 +162,7 @@ namespace ChunkRenderer
 		// make buffer sized as if every allocation was non-null
 		ShaderPtr sdr = Shader::shaders["compact_batch"];
 		sdr->Use();
-#if 0
+#if 1
 		sdr->setVec3("u_viewpos", cam->GetPos());
 		Frustum fr = *cam->GetFrustum();
 		for (int i = 0; i < 5; i++) // ignore near plane
@@ -174,10 +174,12 @@ namespace ChunkRenderer
 		sdr->setFloat("u_cullMaxDist", 800);
 #endif
 		sdr->setUInt("u_reservedVertices", 2);
+		sdr->setUInt("u_vertexSize", sizeof(GLuint) * 2);
 
 		drawCounter->Bind(0);
 		drawCounter->Reset();
 
+		// copy input data to buffer at binding 0
 		GLuint indata;
 		glGenBuffers(1, &indata);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, indata);
@@ -185,19 +187,20 @@ namespace ChunkRenderer
 		const auto& allocs = allocator->GetAllocs();
 		glBufferData(GL_SHADER_STORAGE_BUFFER, allocator->AllocSize() * allocs.size(), allocs.data(), GL_STATIC_COPY);
 
-		// setup draw indirect buffer as an out SSBO
+		// make DIB output SSBO (binding 1) for the shader
 		dib = std::make_unique<DIB>(
 			nullptr, 
 			allocator->ActiveAllocs() * sizeof(DrawArraysIndirectCommand),
 			GL_STATIC_COPY);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, dib->GetID());
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, dib->GetID());
+		// TODO: more than a single block lmao
 		glDispatchCompute(1, 1, 1);
-		glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+		glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT | GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
 		glFinish();
-		//glMemoryBarrier(GL_ALL_BARRIER_BITS);
 		//drawCounter->Set(0, 4);
 		renderCount = drawCounter->Get(0);
+		ASSERT(renderCount <= allocator->ActiveAllocs());
 		glDeleteBuffers(1, &indata);
 	}
 #pragma optimize("", on)
@@ -283,16 +286,19 @@ namespace ChunkRenderer
 		PERF_BENCHMARK_END;
 	}
 
-
+#pragma optimize("", off)
 	void Render()
 	{
-		if (renderCount == 0)
-			return;
+		//if (renderCount == 0)
+		//	return;
 
+		//glFinish();
 		vao->Bind();
 		dib->Bind();
 		glMultiDrawArraysIndirect(GL_TRIANGLES, (void*)0, renderCount, 0);
+		//glMultiDrawArraysIndirect(GL_TRIANGLES, (void*)0, 250, 0);
 	}
+#pragma optimize("", on)
 
 
 	void RenderSplat()

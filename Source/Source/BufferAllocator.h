@@ -27,7 +27,7 @@ public:
 
 		uint64_t handle;// "pointer"
 		double time;    // time of allocation
-		glm::uvec2 _pad;//
+		glm::uvec2 _pad;// 
 		GLuint offset;  // offset from beginning of this memory
 		GLuint size;    // allocation size
 		UT userdata;    // user-defined data

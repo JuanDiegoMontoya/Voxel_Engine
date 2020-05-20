@@ -4,6 +4,7 @@
 #define VISIBILITY_PARTIAL 1
 #define VISIBILITY_FULL    2
 
+// only first 5 of 6 planes used- don't set 6th plane uniform
 struct Frustum
 {
   float data_[6][4];
@@ -13,12 +14,14 @@ struct AABB16
 {
   vec4 min;
   vec4 max;
+  // renderdoc thinks 8 xints of padding is here- that is not the case
 };
 
 struct InDrawInfo
 {
-  uvec4 _pad01;
-  uvec2 _pad02;
+  uvec2 data01; // .xy contains handle, .zw contains time (as a double)
+  double data02;
+  uvec2 _pad01;
   uint offset;
   uint size;
   AABB16 box;
@@ -35,12 +38,12 @@ struct DrawArraysCommand
   uint baseInstance;
 };
 
-layout(std140, binding = 0) readonly buffer inData
+layout(std430, binding = 0) readonly buffer inData
 {
   InDrawInfo inDrawData[];
 };
 
-layout(std140, binding = 1) writeonly buffer outCmds
+layout(std430, binding = 1) writeonly buffer outCmds
 {
   DrawArraysCommand outDrawCommands[];
 };
@@ -69,10 +72,11 @@ void main()
   //for (int i = index; i < 1; i += stride)
   {
     InDrawInfo alloc = inDrawData[i];
-#if 1
-    bool condition = alloc._pad01.xy != uvec2(0);
+#if 0
+    bool condition = alloc.data01.xy != uvec2(0);
 #else
     bool condition = // all conditions must be true to draw chunk
+      alloc.data01.xy != uvec2(0) &&
       CullDistance(alloc.box, u_viewpos, u_cullMinDist, u_cullMaxDist) &&
       CullFrustum(alloc.box, u_viewfrustum) >= VISIBILITY_PARTIAL;
 #endif
@@ -86,7 +90,7 @@ void main()
 
       uint insert = atomicCounterAdd(nextIdx, 1);
       //uint insert = 0;
-      outDrawCommands[0] = cmd;
+      outDrawCommands[insert] = cmd;
     }
   }
 }
