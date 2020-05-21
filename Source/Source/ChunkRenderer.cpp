@@ -32,6 +32,8 @@ namespace ChunkRenderer
 		std::atomic_int nextIdx;
 
 		std::unique_ptr<ABO> drawCounter;
+
+		const int blockSize = 64; // defined in compact_batch.cs
 	}
 
 
@@ -155,9 +157,11 @@ namespace ChunkRenderer
 		PERF_BENCHMARK_END;
 	}
 
-#pragma optimize("", off)
+//#pragma optimize("", off)
 	void GenerateDrawCommandsGPU()
 	{
+		PERF_BENCHMARK_START;
+
 		Camera* cam = Renderer::GetPipeline()->GetCamera(0);
 		// make buffer sized as if every allocation was non-null
 		ShaderPtr sdr = Shader::shaders["compact_batch"];
@@ -171,7 +175,7 @@ namespace ChunkRenderer
 			sdr->set1FloatArray(uname.c_str(), fr.GetData()[i], 4);
 		}
 		sdr->setFloat("u_cullMinDist", 0);
-		sdr->setFloat("u_cullMaxDist", 800);
+		sdr->setFloat("u_cullMaxDist", 8000);
 #endif
 		sdr->setUInt("u_reservedVertices", 2);
 		sdr->setUInt("u_vertexSize", sizeof(GLuint) * 2);
@@ -194,16 +198,20 @@ namespace ChunkRenderer
 			GL_STATIC_COPY);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, dib->GetID());
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, dib->GetID());
-		// TODO: more than a single block lmao
-		glDispatchCompute(1, 1, 1);
-		glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT | GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
-		glFinish();
-		//drawCounter->Set(0, 4);
-		renderCount = drawCounter->Get(0);
+		
+		{
+			int numBlocks = (allocs.size() + blockSize - 1) / blockSize;
+			glDispatchCompute(numBlocks, 1, 1);
+			glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+		}
+
+		renderCount = drawCounter->Get(0); // sync point
 		ASSERT(renderCount <= allocator->ActiveAllocs());
 		glDeleteBuffers(1, &indata);
+
+		PERF_BENCHMARK_END;
 	}
-#pragma optimize("", on)
+//#pragma optimize("", on)
 
 
 	//void GenerateDrawCommands()

@@ -19,14 +19,12 @@ struct AABB16
 
 struct InDrawInfo
 {
-  uvec2 data01; // .xy contains handle, .zw contains time (as a double)
-  double data02;
+  uvec2 data01; // handle
+  double data02;// allocation time
   uvec2 _pad01;
   uint offset;
   uint size;
   AABB16 box;
-  //vec4 bMin;
-  //vec4 bMax;
 };
 
 // this struct's layout cannot change
@@ -60,16 +58,15 @@ uniform uint u_reservedVertices; // amt of reserved space (in vertices) before v
 bool CullDistance(in AABB16 box, in vec3 pos, float minDist, float maxDist);
 int CullFrustum(in AABB16 box, in Frustum frustum);
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 void main()
 {
-  int index = 0;
-  int stride = 1;
+  uint index = gl_GlobalInvocationID.x;
+  uint stride = gl_NumWorkGroups.x * gl_WorkGroupSize.x;
 
   //atomicCounterAdd(nextIdx, inDrawData.length());
 
-  for (int i = index; i < inDrawData.length(); i += stride)
-  //for (int i = index; i < 1; i += stride)
+  for (uint i = index; i < inDrawData.length(); i += stride)
   {
     InDrawInfo alloc = inDrawData[i];
 #if 0
@@ -89,7 +86,6 @@ void main()
       cmd.baseInstance = cmd.first;
 
       uint insert = atomicCounterAdd(nextIdx, 1);
-      //uint insert = 0;
       outDrawCommands[insert] = cmd;
     }
   }
