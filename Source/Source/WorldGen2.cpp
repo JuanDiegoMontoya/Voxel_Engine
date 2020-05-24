@@ -53,7 +53,7 @@ namespace WorldGen2
 		module::Perlin noise;
 		module::Checkerboard checky;
 		noise.SetLacunarity(2.);
-		noise.SetOctaveCount(5);
+		noise.SetOctaveCount(2);
 		noise.SetFrequency(.04);
 		FastNoiseSIMD* noisey = FastNoiseSIMD::NewFastNoiseSIMD();
 		noisey->SetFractalLacunarity(2.0);
@@ -89,7 +89,7 @@ namespace WorldGen2
 							//double density = noise.GetValue(pos.x, pos.y, pos.z); // same chunk every time
 							//density = 0;
 							float density = noiseSet[idx++];
-							if (density > .05)
+							if (density > -.03)
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bStone);
 							}

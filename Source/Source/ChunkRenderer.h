@@ -1,7 +1,6 @@
 #pragma once
 #include "BufferAllocator.h"
 #include <Shapes.h>
-//class BufferAllocator;
 
 namespace ChunkRenderer
 {
@@ -9,9 +8,19 @@ namespace ChunkRenderer
 	void GenerateDrawCommands();
 	void GenerateDrawCommandsGPU();
 	void GenerateDrawCommandsSplat();
+	void GenerateDrawCommandsSplatGPU();
 	void Render();
 	void RenderSplat();
 
 	inline std::unique_ptr<BufferAllocator<AABB16>> allocator;
 	inline std::unique_ptr<BufferAllocator<AABB16>> allocatorSplat;
+
+	struct Settings
+	{
+		// visibility
+		float normalMin = 0;
+		float normalMax = 800;
+		float splatMin = 800;
+		float splatMax = 8000;
+	}inline settings;
 }

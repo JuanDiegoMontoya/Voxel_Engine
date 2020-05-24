@@ -14,6 +14,7 @@
 #include "ChunkStorage.h"
 #include "ChunkHelpers.h"
 #include "ChunkMesh.h"
+#include "ChunkRenderer.h"
 
 namespace Interface
 {
@@ -52,6 +53,47 @@ namespace Interface
 
 		if (renderUI)
 		{
+			{
+				ImGui::Begin("Chunk Info");
+
+				ImGui::Text("Chunk size: %d", Chunk::CHUNK_SIZE);
+				static bool countChunks = true;
+				ImGui::Checkbox("Count chunks (slow)", &countChunks);
+				if (countChunks)
+				{
+					int nonNull = 0;
+					int active = 0;
+					int numVerts = 0;
+					int numPoints = 0;
+					// this causes lag with many chunks
+					for (auto& p : ChunkStorage::GetMapRaw())
+					{
+						if (p.second)
+						{
+							nonNull++;
+							numVerts += p.second->GetMesh().GetVertexCount();
+							numPoints += p.second->GetMesh().GetPointCount();
+						}
+					}
+					ImGui::Text("Total chunks:    %d", ChunkStorage::GetMapRaw().size());
+					ImGui::Text("Non-null chunks: %d", nonNull);
+					ImGui::Text("Drawn chunks:    %d", NuRenderer::drawCalls);
+					ImGui::Text("Culled chunks:   %d", nonNull - NuRenderer::drawCalls);
+
+					ImGui::NewLine();
+					ImGui::Text("Vertices: %d", numVerts);
+					ImGui::Text("Points:   %d", numPoints);
+					ImGui::NewLine();
+				}
+
+				// displaying zero just means the queue was taken, not finished!
+				ImGui::Text("Gen queue:    %d", World::chunkManager_.generation_queue_.size());
+				ImGui::Text("Mesh queue:   %-4d (%d)", World::chunkManager_.mesher_queue_.size(), World::chunkManager_.debug_cur_pool_left.load());
+				ImGui::Text("Buffer queue: %d", World::chunkManager_.buffer_queue_.size());
+				
+				ImGui::End();
+			}
+
 
 			{
 				ImGui::Begin("Sun", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
@@ -141,6 +183,7 @@ namespace Interface
 				ImGui::End();
 			}
 
+			// big thing
 			{
 
 				ImGui::Begin("Info", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
@@ -167,34 +210,6 @@ namespace Interface
 				ImGui::Text("In block pos: (%d, %d, %d)", local.block_pos.x, local.block_pos.y, local.block_pos.z);
 
 				ImGui::NewLine();
-				ImGui::Text("Chunk size: %d", Chunk::CHUNK_SIZE);
-				int nonNull = 0;
-				int active = 0;
-				int numVerts = 0;
-				int numPoints = 0;
-				for (auto& p : ChunkStorage::GetMapRaw())
-				{
-					if (p.second)
-					{
-						nonNull++;
-						numVerts += p.second->GetMesh().GetVertexCount();
-						numPoints += p.second->GetMesh().GetPointCount();
-					}
-				}
-				ImGui::Text("Total chunks:    %d", ChunkStorage::GetMapRaw().size());
-				ImGui::Text("Non-null chunks: %d", nonNull);
-				ImGui::Text("Drawn chunks:    %d", NuRenderer::drawCalls);
-				ImGui::Text("Culled chunks:   %d", nonNull - NuRenderer::drawCalls);
-
-				ImGui::NewLine();
-				ImGui::Text("Vertices: %d", numVerts);
-				ImGui::Text("Points:   %d", numPoints);
-				ImGui::NewLine();
-
-				// displaying zero just means the queue was taken, not finished!
-				ImGui::Text("Gen queue:    %d", World::chunkManager_.generation_queue_.size());
-				ImGui::Text("Mesh queue:   %-4d (%d)", World::chunkManager_.mesher_queue_.size(), World::chunkManager_.debug_cur_pool_left.load());
-				ImGui::Text("Buffer queue: %d", World::chunkManager_.buffer_queue_.size());
 
 				ImGui::NewLine();
 				ImGui::Text("Flying: %s", activeCursor ? "False" : "True");
@@ -261,36 +276,33 @@ namespace Interface
 				ImGui::End();
 			}
 
-			// TODO: make toggling shadows/reflections ACTUALLY disable them completely
+			// render
 			{
-				ImGui::Begin("Global Settings", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
+				ImGui::Begin("Render Settings", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 				if (ImGui::Checkbox("Compute baked AO", &Settings::GFX::blockAO))
 					World::chunkManager_.ReloadAllChunks();
 				if (ImGui::Checkbox("Skip lighting", &ChunkMesh::debug_ignore_light_level))
 					World::chunkManager_.ReloadAllChunks();
-				if (ImGui::Checkbox("Shadows", &Renderer::renderShadows))
-					Renderer::ClearCSM();
-				if (ImGui::Checkbox("Reflections", &Renderer::doGeometryPass))
-					Renderer::ClearGGuffer();
-				ImGui::NewLine();
-				ImGui::Text("Post processing:");
-				ImGui::Checkbox("Sharpen Filter", &Renderer::ppSharpenFilter);
-				ImGui::Checkbox("Blur Filter", &Renderer::ppBlurFilter);
-				ImGui::Checkbox("Edge detection", &Renderer::ppEdgeDetection);
-				ImGui::Checkbox("Chromatic Aberration", &Renderer::ppChromaticAberration);
+				ImGui::Text("Render distance:");
+				ImGui::SliderFloat("normalMin", &ChunkRenderer::settings.normalMin, 0, 5000);
+				ImGui::SliderFloat("normalMax", &ChunkRenderer::settings.normalMax, 0, 5000);
+				ImGui::SliderFloat("splatMin", &ChunkRenderer::settings.splatMin, 0, 5000);
+				ImGui::SliderFloat("splatMax", &ChunkRenderer::settings.splatMax, 0, 5000);
 				ImGui::End();
 			}
 
+			// graphs
 			if (debug_graphs)
 			{
 				ImGui::Begin("Graphs", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 				ImGui::Text("Avg Mesh Time: %.3f", ChunkMesh::accumtime / ChunkMesh::accumcount);
-				ImGui::PlotVar("Frametime", Engine::GetDT(), FLT_MAX, FLT_MAX, 300, ImVec2(300, 100));
+				ImGui::PlotVar("Frametime", Engine::GetDT(), 0, .05, 240, ImVec2(300, 100));
 
 				if (Renderer::nvUsageEnabled)
 				{
 					GLint totalMemoryKb = 0;
-					glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &totalMemoryKb);
+					//glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &totalMemoryKb);
+					glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &totalMemoryKb);
 
 					GLint currentMemoryKb = 0;
 					glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &currentMemoryKb);

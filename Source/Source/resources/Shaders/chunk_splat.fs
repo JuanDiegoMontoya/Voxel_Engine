@@ -89,7 +89,7 @@ vec3 WorldPosFromDepth(float depth)
 
 void main()
 {
-  const bool debug = false; // display splat points
+  const bool debug = true; // display splat points
 
   vec3 ro = WorldPosFromDepth(0);
   vec3 rd = normalize(ro - u_viewpos);
@@ -122,13 +122,20 @@ void main()
     fragColor.xyz *= 1 - darken;
 
     // do some thing to figure out the proper depth (doens't really matter when all splatted stuff is super far away)
-    //vec4 v_clip_coord = u_viewProj * vec4(vPos, 1.0);
-    //float f_ndc_depth = v_clip_coord.z / v_clip_coord.w;
-    //gl_FragDepth = (gl_DepthRange.far - gl_DepthRange.near) * 0.5 * f_ndc_depth + (gl_DepthRange.far + gl_DepthRange.near) * 0.5;
+    vec3 pp = ro + rd * dist;
+    vec4 v_clip_coord = u_viewProj * vec4(pp, 1.0);
+    float f_ndc_depth = v_clip_coord.z / v_clip_coord.w;
+    gl_FragDepth = (
+      (gl_DepthRange.diff * f_ndc_depth) +
+      gl_DepthRange.near + gl_DepthRange.far) * .5;
   }
-  else if (!debug)
-    discard;
   else
-    fragColor.xyz = vec3(1);
+  {
+    gl_FragDepth = gl_DepthRange.far;
+    if (!debug)
+      discard;
+    else
+      fragColor.xyz = vec3(1);
+  }
 #endif
 }

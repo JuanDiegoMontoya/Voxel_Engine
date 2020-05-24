@@ -36,7 +36,7 @@ void SetPointSizeFancy(vec4 glPos)
   );
   reduce -= 0.13; // affects overdraw near edges
   float size = (u_viewportSize.y * 1.1) / glPos.z * max(reduce, 1.0);
-  gl_PointSize = size * 1.0 + 2.0;
+  gl_PointSize = size * 0.8 + 3.0;
 }
 
 void main()
@@ -47,8 +47,6 @@ void main()
   vPos += 0.5;
   gl_Position = u_viewProj * vec4(vPos, 1.0);
 
-  // extremely unscientific pointsize calculation
-  // let's just say it was done in the name of performance
   //gl_PointSize = 2400.0 / gl_Position.z;
   SetPointSizeFancy(gl_Position);
   //gl_PointSize = 4;

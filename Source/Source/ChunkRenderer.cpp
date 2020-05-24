@@ -32,8 +32,10 @@ namespace ChunkRenderer
 		std::atomic_int nextIdx;
 
 		std::unique_ptr<ABO> drawCounter;
+		std::unique_ptr<ABO> drawCounterSplat;
 
 		const int blockSize = 64; // defined in compact_batch.cs
+
 	}
 
 
@@ -81,6 +83,8 @@ namespace ChunkRenderer
 
 		drawCounter = std::make_unique<ABO>(1); // one atomic uint
 		drawCounter->Reset();
+		drawCounterSplat = std::make_unique<ABO>(1); // one atomic uint
+		drawCounterSplat->Reset();
 
 		// allocate big buffer
 		// TODO: vary the allocation size based on some user setting
@@ -158,6 +162,7 @@ namespace ChunkRenderer
 	}
 
 //#pragma optimize("", off)
+#pragma optimize("", off)
 	void GenerateDrawCommandsGPU()
 	{
 		PERF_BENCHMARK_START;
@@ -174,8 +179,8 @@ namespace ChunkRenderer
 			std::string uname = "u_viewfrustum.data_[" + std::to_string(i) + "]";
 			sdr->set1FloatArray(uname.c_str(), fr.GetData()[i], 4);
 		}
-		sdr->setFloat("u_cullMinDist", 0);
-		sdr->setFloat("u_cullMaxDist", 8000);
+		sdr->setFloat("u_cullMinDist", settings.normalMin);
+		sdr->setFloat("u_cullMaxDist", settings.normalMax);
 #endif
 		sdr->setUInt("u_reservedVertices", 2);
 		sdr->setUInt("u_vertexSize", sizeof(GLuint) * 2);
@@ -202,9 +207,8 @@ namespace ChunkRenderer
 		{
 			int numBlocks = (allocs.size() + blockSize - 1) / blockSize;
 			glDispatchCompute(numBlocks, 1, 1);
-			glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+			glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 		}
-
 		renderCount = drawCounter->Get(0); // sync point
 		ASSERT(renderCount <= allocator->ActiveAllocs());
 		glDeleteBuffers(1, &indata);
@@ -294,19 +298,71 @@ namespace ChunkRenderer
 		PERF_BENCHMARK_END;
 	}
 
-#pragma optimize("", off)
+
+	void GenerateDrawCommandsSplatGPU()
+	{
+		PERF_BENCHMARK_START;
+
+		Camera* cam = Renderer::GetPipeline()->GetCamera(0);
+		// make buffer sized as if every allocation was non-null
+		ShaderPtr sdr = Shader::shaders["compact_batch"];
+		sdr->Use();
+#if 1
+		sdr->setVec3("u_viewpos", cam->GetPos());
+		Frustum fr = *cam->GetFrustum();
+		for (int i = 0; i < 5; i++) // ignore near plane
+		{
+			std::string uname = "u_viewfrustum.data_[" + std::to_string(i) + "]";
+			sdr->set1FloatArray(uname.c_str(), fr.GetData()[i], 4);
+		}
+		sdr->setFloat("u_cullMinDist", settings.splatMin);
+		sdr->setFloat("u_cullMaxDist", settings.splatMax);
+#endif
+		sdr->setUInt("u_reservedVertices", 3);
+		sdr->setUInt("u_vertexSize", sizeof(GLuint) * 1);
+
+		drawCounterSplat->Bind(0);
+		drawCounterSplat->Reset();
+
+		// copy input data to buffer at binding 0
+		GLuint indata;
+		glGenBuffers(1, &indata);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, indata);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, indata);
+		const auto& allocs = allocatorSplat->GetAllocs();
+		glBufferData(GL_SHADER_STORAGE_BUFFER, allocatorSplat->AllocSize() * allocs.size(), allocs.data(), GL_STATIC_COPY);
+
+		// make DIB output SSBO (binding 1) for the shader
+		dibSplat = std::make_unique<DIB>(
+			nullptr,
+			allocatorSplat->ActiveAllocs() * sizeof(DrawArraysIndirectCommand),
+			GL_STATIC_COPY);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, dibSplat->GetID());
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, dibSplat->GetID());
+
+		{
+			int numBlocks = (allocs.size() + blockSize - 1) / blockSize;
+			glDispatchCompute(numBlocks, 1, 1);
+			glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
+		}
+
+		renderCountSplat = drawCounterSplat->Get(0); // sync point
+		ASSERT(renderCountSplat <= allocatorSplat->ActiveAllocs());
+		glDeleteBuffers(1, &indata);
+
+		PERF_BENCHMARK_END;
+	}
+
+
 	void Render()
 	{
-		//if (renderCount == 0)
-		//	return;
+		if (renderCount == 0)
+			return;
 
-		//glFinish();
 		vao->Bind();
 		dib->Bind();
 		glMultiDrawArraysIndirect(GL_TRIANGLES, (void*)0, renderCount, 0);
-		//glMultiDrawArraysIndirect(GL_TRIANGLES, (void*)0, 250, 0);
 	}
-#pragma optimize("", on)
 
 
 	void RenderSplat()
@@ -319,3 +375,4 @@ namespace ChunkRenderer
 		glMultiDrawArraysIndirect(GL_POINTS, (void*)0, renderCountSplat, 0);
 	}
 }
+#pragma optimize("", on)

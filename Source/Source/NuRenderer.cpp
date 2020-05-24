@@ -56,7 +56,7 @@ namespace NuRenderer
 
 		Renderer::drawSky();
 		drawChunks();
-		//splatChunks();
+		splatChunks();
 		//drawChunksMultiIndirect();
 		drawChunksWater();
 		Renderer::drawAxisIndicators();
@@ -140,7 +140,7 @@ namespace NuRenderer
 
 		currShader->setVec3("u_viewpos", cam->GetPos());
 
-		currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
+		currShader->setMat4("u_viewProj", proj * view);
 		currShader->setMat4("u_invProj", glm::inverse(proj));
 		currShader->setMat4("u_invView", glm::inverse(view));
 
@@ -155,7 +155,9 @@ namespace NuRenderer
 
 
 
-		ChunkRenderer::GenerateDrawCommandsSplat();
+		//ChunkRenderer::GenerateDrawCommandsSplat();
+		ChunkRenderer::GenerateDrawCommandsSplatGPU();
+		currShader->Use();
 		ChunkRenderer::RenderSplat();
 		return;
 

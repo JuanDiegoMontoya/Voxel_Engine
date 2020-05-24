@@ -49,6 +49,7 @@ namespace World
 		auto cam = new Camera(CameraType::kControlCam);
 		cam->scrollMove = false;
 		cam->SetPos({ 0, 5, 0 });
+		cam->SetFar(3000.0f);
 		Renderer::GetPipeline()->AddCamera(cam);
 
 		//ChunkMesh::InitAllocator();
@@ -59,7 +60,7 @@ namespace World
 		Editor::chunkManager = &chunkManager_;
 		PrefabManager::InitPrefabs();
 		BiomeManager::InitializeBiomes();
-		chunkManager_.SetLoadDistance(200.f);
+		chunkManager_.SetLoadDistance(3000.f);
 		chunkManager_.SetUnloadLeniency(100.f);
 
 		//FixedSizeWorld::GenWorld({ -3, -2, -3 }, { 3, 2, 3 });

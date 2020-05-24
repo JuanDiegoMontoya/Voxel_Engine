@@ -17,6 +17,7 @@ struct AABB16
   // renderdoc thinks 8 xints of padding is here- that is not the case
 };
 
+// 
 struct InDrawInfo
 {
   uvec2 data01; // handle
