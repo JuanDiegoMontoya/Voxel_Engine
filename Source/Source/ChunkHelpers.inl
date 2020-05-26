@@ -55,6 +55,26 @@ namespace ChunkHelpers
 		{ 1, 0 }
 	};
 
+#pragma optimize("", off)
+	inline void Decode(GLuint encoded, glm::uvec3& modelPos, glm::vec3& normal, glm::vec3& texCoord)
+	{
+		// decode vertex position
+		modelPos.x = encoded >> 26;
+		modelPos.y = (encoded >> 20) & 0x3F; // = 0b111111
+		modelPos.z = (encoded >> 14) & 0x3F; // = 0b111111
+
+		// decode normal
+		GLuint normalIdx = (encoded >> 11) & 0x7; // = 0b111
+		normal = faces[normalIdx];
+
+		// decode texture index and UV
+		GLuint textureIdx = (encoded >> 2) & 0x1FF; // = 0b1111111111
+		GLuint cornerIdx = (encoded >> 0) & 0x3; // = 0b11
+
+		texCoord = glm::vec3(tex_corners[cornerIdx], textureIdx);
+	}
+
+
 	inline GLuint Encode(const glm::uvec3& modelPos, GLuint normalIdx, GLuint texIdx, GLuint cornerIdx)
 	{
 		GLuint encoded = 0;
@@ -71,29 +91,18 @@ namespace ChunkHelpers
 		encoded |= texIdx << 2;
 		encoded |= cornerIdx << 0;
 
+#if 0 // debug
+		glm::uvec3 mdl;
+		glm::vec3 nml, txc;
+		Decode(encoded, mdl, nml, txc);
+		ASSERT(mdl == modelPos);
+		ASSERT(texIdx == txc.z);
+		ASSERT(faces[normalIdx] == nml)
+#endif
+
 		return encoded;
 	}
-
-
-	inline void Decode(GLuint encoded, glm::uvec3& modelPos, glm::vec3& normal, glm::vec2& texCoord)
-	{
-		// decode vertex position
-		modelPos.x = encoded >> 26;
-		modelPos.y = (encoded >> 20) & 0x3F; // = 0b111111
-		modelPos.z = (encoded >> 14) & 0x3F; // = 0b111111
-
-		// decode normal
-		GLuint normalIdx = (encoded >> 11) & 0x7; // = 0b111
-		normal = faces[normalIdx];
-
-		// decode texture index and UV
-		GLuint textureIdx = (encoded >> 2) & 0x1FF; // = 0b1111111111
-		GLuint cornerIdx = (encoded >> 0) & 0x3; // = 0b11
-		glm::vec2 corner = tex_corners[cornerIdx];
-
-		// sample from texture using knowledge of texture dimensions and block index
-		// texCoord = ...
-	}
+#pragma optimize("", on)
 
 
 	inline GLuint EncodeSplat(const glm::uvec3& modelPos, const glm::vec3& color)

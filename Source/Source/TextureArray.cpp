@@ -4,10 +4,10 @@
 #include <filesystem>
 
 // maybe get rid of this include
-#include "block.h"
+//#include "block.h"
 
-
-TextureArray::TextureArray(const std::vector<const char*> textures)
+#pragma optimize("", off)
+TextureArray::TextureArray(const std::vector<const char*>& textures)
 {
 	const GLsizei layerCount = textures.size();
 	glGenTextures(1, &id_);
@@ -19,11 +19,14 @@ TextureArray::TextureArray(const std::vector<const char*> textures)
 	{
 		bool hasTex = std::filesystem::exists(texPath + tex);
 
-		// TODO: gen mipmaps (increment mip level each iteration)
+		// TODO: gen mipmaps (increment mip level each mip iteration)
 		if (hasTex)
 		{
+			ASSERT(0); // this shouldn't be hit yet!
+
 			int width, height, n;
 			auto pixels = (unsigned char*)stbi_load(tex, &width, &height, &n, 3);
+			ASSERT(pixels != nullptr);
 			ASSERT(width == dim && height == dim);
 
 
@@ -41,12 +44,18 @@ TextureArray::TextureArray(const std::vector<const char*> textures)
 		else // the given texture wasn't found- use a replacement
 		{
 			// checkered 2x2 purple texture
+			//const GLubyte texels[] =
+			//{
+			//	255, 255, 255,
+			//	0, 0, 0,
+			//	255, 255, 255,
+			//	0, 0, 0,
+			//};
 			const GLubyte texels[] =
 			{
-				255, 0, 255,
-				0, 0, 0,
-				0, 0, 0,
-				255, 0, 255,
+				rand() % 256, rand() % 256, rand() % 256,
+				rand() % 256, rand() % 256, rand() % 256,
+				rand() % 256, rand() % 256, rand() % 256,
 			};
 
 			glTexSubImage3D(
@@ -58,6 +67,7 @@ TextureArray::TextureArray(const std::vector<const char*> textures)
 				GL_UNSIGNED_BYTE, 
 				texels);
 		}
+
 		i++;
 	}
 
@@ -68,6 +78,7 @@ TextureArray::TextureArray(const std::vector<const char*> textures)
 
 	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
+#pragma optimize("", on)
 
 
 TextureArray::~TextureArray()

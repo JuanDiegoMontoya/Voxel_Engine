@@ -4,7 +4,7 @@
 //in vec4 vColor;
 in vec3 vPos;
 in vec3 vNormal;
-in vec2 vTexCoord;
+in vec3 vTexCoord;
 in vec4 vLighting; // RGBSun
 
 uniform vec3 viewPos;   // world space
@@ -14,6 +14,8 @@ uniform sampler2D textureAtlas;
 uniform float fogStart; // world space
 uniform float fogEnd;   // world space
 uniform vec3 fogColor;
+
+uniform sampler2DArray textures;
 
 out vec4 fragColor;
 
@@ -33,6 +35,7 @@ void main()
 {
   //vec3 color = vColor.rgb;
   vec3 tempColor = vNormal * .5 + .5;
+  tempColor = texture(textures, vTexCoord).rgb;
 
   vec4 lighting = vLighting;
   lighting.a *= sunAngle;

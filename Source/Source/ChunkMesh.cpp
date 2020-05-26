@@ -311,7 +311,7 @@ inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face
 	}
 
 	int normalIdx = face;
-	int texIdx = 100; // temp value
+	int texIdx = (int)block; // temp value
 	uint16_t lighting = light.Raw();
 	light.SetS(15);
 
@@ -322,17 +322,15 @@ inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face
 	//int aoValuesIndex = 0;
 	const GLfloat* data = Vertices::cube_light;
 	int endQuad = (face + 1) * 12;
-	for (int i = face * 12, cindex = 0; i < endQuad; i += 3, cindex++)
+	for (int i = face * 12, cindex = 0; i < endQuad; i += 3, cindex++) // cindex = corner index
 	{
 		using namespace ChunkHelpers;
 		// transform vertices relative to chunk
 		glm::vec3 vert(data[i + 0], data[i + 1], data[i + 2]);
 		glm::uvec3 finalVert = glm::ceil(vert) + glm::vec3(lpos);// +0.5f;
 
-		int cornerIdx = 2; // temp
-
 		// compress attributes into 32 bits
-		GLuint encoded = Encode(finalVert, normalIdx, texIdx, cornerIdx);
+		GLuint encoded = Encode(finalVert, normalIdx, texIdx, cindex);
 		encodeds[cindex] = encoded;
 
 		int invOcclusion = 6;
@@ -348,14 +346,13 @@ inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face
 	}
 
 	const GLuint indicesA[6] = { 0, 1, 3, 3, 1, 2 }; // normal indices
-	const GLuint indicesB[6] = { 0, 1, 2, 2, 3, 0 }; // anisotropy fix
+	const GLuint indicesB[6] = { 0, 1, 2, 2, 3, 0 }; // anisotropy fix (flip tris)
 	const GLuint* indices = indicesA;
 	// partially solve anisotropy issue
 	if (aoValues[0] + aoValues[2] > aoValues[1] + aoValues[3])
 		indices = indicesB;
 	for (int i = 0; i < 6; i++)
 	{
-		// preserve bit ordering
 		encodedStuffArr.push_back(encodeds[indices[i]]);
 		lightingArr.push_back(lightdeds[indices[i]]);
 		interleavedArr.push_back(encodeds[indices[i]]);

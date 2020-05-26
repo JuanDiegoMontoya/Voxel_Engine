@@ -5,10 +5,9 @@
 // visual properties (for now)
 struct BlockProperties
 {
-	BlockProperties(const char* n, float s, glm::vec4 c, glm::uvec4 e, const char* tx = "")
-	: name(n), color(c), specular(s), invisible(c.a == 0), emittance(e), texture(tx) {}
+	BlockProperties(const char* n, glm::vec4 c, glm::uvec4 e, const char* tx = "<null>")
+	: name(n), color(c), invisible(c.a == 0), emittance(e), texture(tx) {}
 	const char* name;
-	float specular;         // shininess
 	glm::vec4 color;        // diffuse color
 	bool invisible;         // skip rendering if true
 	glm::u8vec4 emittance;	// light

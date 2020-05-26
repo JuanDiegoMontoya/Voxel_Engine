@@ -3,16 +3,16 @@
 in flat vec3 vPos;
 in vec3 vColor;
 
-uniform vec3 u_viewpos;
-uniform mat4 u_invProj;
-uniform mat4 u_invView;
-uniform vec2 u_viewportSize;
-uniform float sunAngle;
-uniform mat4 u_viewProj;
+uniform vec3 u_viewpos;     // camera position
+uniform mat4 u_invProj;     // inverse projection matrix
+uniform mat4 u_invView;     // inverse view matrix
+uniform vec2 u_viewportSize;// x,y pixel dim of viewport
+uniform float sunAngle;     // time of day brightness
+uniform mat4 u_viewProj;    // view-projection matrix
 
 out vec4 fragColor;
 
-// TODO: get position of ray hit to write to depth buffer (gl_FragDepth...)
+
 bool AABBIntersect(vec3 ro, vec3 rd, vec3 minV, vec3 maxV)
 {
   // inverse of ray direction
@@ -121,7 +121,7 @@ void main()
     fragColor.xyz = vColor * max(sunAngle, .01);
     fragColor.xyz *= 1 - darken;
 
-    // do some thing to figure out the proper depth (doens't really matter when all splatted stuff is super far away)
+    // set the depth using the actual world position of ray hit
     vec3 pp = ro + rd * dist;
     vec4 v_clip_coord = u_viewProj * vec4(pp, 1.0);
     float f_ndc_depth = v_clip_coord.z / v_clip_coord.w;
@@ -129,7 +129,7 @@ void main()
       (gl_DepthRange.diff * f_ndc_depth) +
       gl_DepthRange.near + gl_DepthRange.far) * .5;
   }
-  else
+  else // ray miss
   {
     gl_FragDepth = gl_DepthRange.far;
     if (!debug)

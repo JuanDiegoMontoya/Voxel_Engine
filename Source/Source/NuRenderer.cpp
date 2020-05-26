@@ -9,11 +9,25 @@
 #include "ChunkStorage.h"
 #include <dib.h>
 #include "ChunkRenderer.h"
+#include "block.h"
+#include "TextureArray.h"
 
 namespace NuRenderer
 {
+	namespace
+	{
+		std::unique_ptr<TextureArray> textures;
+	}
+
 	void Init()
 	{
+		std::vector<const char*> texs;
+		for (const auto& prop : Block::PropertiesTable)
+		{
+			texs.push_back(prop.texture);
+		}
+		textures = std::make_unique<TextureArray>(texs);
+
 		CompileShaders();
 		Engine::PushRenderCallback(DrawAll, 0);
 	}
@@ -63,6 +77,7 @@ namespace NuRenderer
 		//Renderer::postProcess();
 
 		glDisable(GL_FRAMEBUFFER_SRGB);
+
 		PERF_BENCHMARK_END;
 	}
 
@@ -96,6 +111,8 @@ namespace NuRenderer
 		currShader->setVec3("fogColor", skyColor);
 		currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
 
+		textures->Bind(0);
+		currShader->setInt("textures", 0);
 
 
 

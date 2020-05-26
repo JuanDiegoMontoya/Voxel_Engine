@@ -14,7 +14,7 @@ namespace WorldGen2
 	{
 #if 1
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
-		glm::ivec3 highChunkDim{ 40, 10, 40 };
+		glm::ivec3 highChunkDim{ 4, 10, 4 };
 #else
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
 		glm::ivec3 highChunkDim{ 2, 1, 1 };

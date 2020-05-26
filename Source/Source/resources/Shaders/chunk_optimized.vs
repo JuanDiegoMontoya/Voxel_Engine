@@ -23,7 +23,7 @@ uniform mat4 u_viewProj;
 
 out vec3 vPos;
 out vec3 vNormal;
-out vec2 vTexCoord;
+out vec3 vTexCoord;
 out vec4 vLighting; // RGBSun
 
 out vec4 vColor;
@@ -50,7 +50,7 @@ const vec2 tex_corners[] =
 // decodes vertex, normal, and texcoord info from encoded data
 // returns usable data (i.e. fully processed)
 void Decode(in uint encoded,
-  out vec3 modelPos, out vec3 normal, out vec2 texCoord)
+  out vec3 modelPos, out vec3 normal, out vec3 texCoord)
 {
   // decode vertex position
   modelPos.x = encoded >> 26;
@@ -65,10 +65,8 @@ void Decode(in uint encoded,
   // decode texture index and UV
   uint textureIdx = (encoded >> 2) & 0x1FF; // = 0b1111111111
   uint cornerIdx = (encoded >> 0) & 0x3; // = 0b11
-  vec2 corner = tex_corners[cornerIdx];
 
-  // sample from texture using knowledge of texture dimensions and block index
-  // texCoord = ...
+  texCoord = vec3(tex_corners[cornerIdx], textureIdx);
 }
 
 

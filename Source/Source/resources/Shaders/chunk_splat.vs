@@ -4,8 +4,6 @@
 layout (location = 0) in uint aEncoded;
 layout (location = 1) in ivec3 u_pos;
 
-// per-chunk info
-//uniform ivec3 u_pos;
 uniform mat4 u_viewProj;
 uniform vec2 u_viewportSize;
 
