@@ -6,67 +6,73 @@
 // maybe get rid of this include
 //#include "block.h"
 
-#pragma optimize("", off)
+//#pragma optimize("", off)
 TextureArray::TextureArray(const std::vector<const char*>& textures)
 {
 	const GLsizei layerCount = textures.size();
 	glGenTextures(1, &id_);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, id_);
 	glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipCount_, GL_RGB8, dim, dim, layerCount);
+	//glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB8, dim, dim, layerCount, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	//glTexStorage3D();
+	stbi_set_flip_vertically_on_load(true);
 
 	int i = 0;
-	for (auto tex : textures)
+	for (auto texture : textures)
 	{
-		bool hasTex = std::filesystem::exists(texPath + tex);
+		std::string tex = texPath + texture;
+		bool hasTex = std::filesystem::exists(texPath + texture);
 
 		// TODO: gen mipmaps (increment mip level each mip iteration)
-		if (hasTex)
+		if (hasTex == false)
 		{
-			ASSERT(0); // this shouldn't be hit yet!
-
-			int width, height, n;
-			auto pixels = (unsigned char*)stbi_load(tex, &width, &height, &n, 3);
-			ASSERT(pixels != nullptr);
-			ASSERT(width == dim && height == dim);
-
-
-			glTexSubImage3D(
-				GL_TEXTURE_2D_ARRAY, 
-				0,           // mip level 0
-				0, 0, i,     // image start layer
-				dim, dim, 1, // x, y, z size (z = 1 b/c it's just a single layer)
-				GL_RGB, 
-				GL_UNSIGNED_BYTE, 
-				pixels);
-
-			stbi_image_free(pixels);
+			std::cout << "Failed to load texture " << texture << ", using fallback.\n";
+			tex = texPath + "error.png";
 		}
-		else // the given texture wasn't found- use a replacement
-		{
-			// checkered 2x2 purple texture
-			//const GLubyte texels[] =
-			//{
-			//	255, 255, 255,
-			//	0, 0, 0,
-			//	255, 255, 255,
-			//	0, 0, 0,
-			//};
-			const GLubyte texels[] =
-			{
-				rand() % 256, rand() % 256, rand() % 256,
-				rand() % 256, rand() % 256, rand() % 256,
-				rand() % 256, rand() % 256, rand() % 256,
-			};
 
-			glTexSubImage3D(
-				GL_TEXTURE_2D_ARRAY, 
-				0, 
-				0, 0, i, 
-				2, 2, 1, 
-				GL_RGB, 
-				GL_UNSIGNED_BYTE, 
-				texels);
-		}
+		int width, height, n;
+		auto pixels = (unsigned char*)stbi_load(tex.c_str(), &width, &height, &n, 4);
+		ASSERT(pixels != nullptr);
+		ASSERT(width == dim && height == dim);
+
+		glTexSubImage3D(
+			GL_TEXTURE_2D_ARRAY,
+			0,           // mip level 0
+			0, 0, i,     // image start layer
+			dim, dim, 1, // x, y, z size (z = 1 b/c it's just a single layer)
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
+			pixels);
+
+		stbi_image_free(pixels);
+
+		//else // the given texture wasn't found- use a replacement
+		//{
+		//	// checkered 2x2 purple texture
+		//	GLubyte texels[] =
+		//	{
+		//		255, 0, 255,
+		//		0, 0, 0,
+		//		255, 255, // these do nothing?
+		//		0, 0, 0,
+		//		255, 0, 255,
+		//	};
+
+		//	GLubyte texels2[4 * 4];
+		//	for (int i = 0; i < 4 * 4; i++)
+		//	{
+
+		//	}
+
+		//	glTexSubImage3D(
+		//		GL_TEXTURE_2D_ARRAY, 
+		//		0, 
+		//		0, 0, i, 
+		//		dim, dim, 1, 
+		//		GL_RGB, 
+		//		GL_UNSIGNED_BYTE, 
+		//		texels);
+		//}
 
 		i++;
 	}
@@ -78,7 +84,7 @@ TextureArray::TextureArray(const std::vector<const char*>& textures)
 
 	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
-#pragma optimize("", on)
+//#pragma optimize("", on)
 
 
 TextureArray::~TextureArray()

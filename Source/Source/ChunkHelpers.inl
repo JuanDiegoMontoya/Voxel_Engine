@@ -46,13 +46,13 @@ namespace ChunkHelpers
 		return glm::ivec3(local + (cpos * CHUNK_SIZE));
 	}
 
-	// clockwise from bottom left texture coordinates
+	// counterclockwise from bottom right texture coordinates
 	inline const glm::vec2 tex_corners[] =
 	{
-		{ 0, 0 },
-		{ 0, 1 },
+		{ 1, 0 },
 		{ 1, 1 },
-		{ 1, 0 }
+		{ 0, 1 },
+		{ 0, 0 },
 	};
 
 #pragma optimize("", off)

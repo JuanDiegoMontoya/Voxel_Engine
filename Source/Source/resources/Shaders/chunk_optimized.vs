@@ -38,13 +38,14 @@ const vec3 normals[] =
   { 0,-1, 0 }  // 'bottom' face (-y direction)
 };
 
-// clockwise from bottom left texture coordinates
+
+// counterclockwise from bottom right texture coordinates
 const vec2 tex_corners[] =
 {
-  { 0, 0 },
-  { 0, 1 },
+  { 1, 0 },
   { 1, 1 },
-  { 1, 0 }
+  { 0, 1 },
+  { 0, 0 },
 };
 
 // decodes vertex, normal, and texcoord info from encoded data
