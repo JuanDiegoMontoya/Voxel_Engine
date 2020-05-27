@@ -21,7 +21,7 @@ namespace NuRenderer
 
 	void Init()
 	{
-		std::vector<const char*> texs;
+		std::vector<std::string_view> texs;
 		for (const auto& prop : Block::PropertiesTable)
 		{
 			texs.push_back(prop.texture);

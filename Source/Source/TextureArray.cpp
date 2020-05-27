@@ -7,21 +7,21 @@
 //#include "block.h"
 
 //#pragma optimize("", off)
-TextureArray::TextureArray(const std::vector<const char*>& textures)
+TextureArray::TextureArray(const std::vector<std::string_view>& textures)
 {
 	const GLsizei layerCount = textures.size();
 	glGenTextures(1, &id_);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, id_);
 	glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipCount_, GL_RGB8, dim, dim, layerCount);
-	//glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB8, dim, dim, layerCount, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	//glTexStorage3D();
+
 	stbi_set_flip_vertically_on_load(true);
 
 	int i = 0;
 	for (auto texture : textures)
 	{
-		std::string tex = texPath + texture;
-		bool hasTex = std::filesystem::exists(texPath + texture);
+		std::string tex = texPath + texture.data();
+		bool hasTex = std::filesystem::exists(texPath + texture.data());
+		hasTex = false;
 
 		// TODO: gen mipmaps (increment mip level each mip iteration)
 		if (hasTex == false)
@@ -43,6 +43,17 @@ TextureArray::TextureArray(const std::vector<const char*>& textures)
 			GL_RGBA,
 			GL_UNSIGNED_BYTE,
 			pixels);
+
+		//for (int i = 0; i < mipCount_; i++)
+		{
+			//glTexImage3D(GL_TEXTURE_2D_ARRAY, 
+			//	i, 
+			//	GL_RGB8, 
+			//	dim / (i * 2), dim / (i * 2), layerCount, 
+			//	0, 
+			//	GL_RGBA,
+			//	GL_UNSIGNED_BYTE,)
+		}
 
 		stbi_image_free(pixels);
 
@@ -77,10 +88,21 @@ TextureArray::TextureArray(const std::vector<const char*>& textures)
 		i++;
 	}
 
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	// sets the anisotropic filtering texture paramter to the highest supported by the system
+	// TODO: make this parameter user-selectable
+	GLint a;
+	glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &a);
+	glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_ANISOTROPY_EXT, a);
+
+	// TODO: play with this parameter for optimal looks, maybe make it user-selectable
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// use OpenGL to generate mipmaps for us
+	glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
 	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
