@@ -6,8 +6,8 @@
 // maybe get rid of this include
 //#include "block.h"
 
-//#pragma optimize("", off)
-TextureArray::TextureArray(const std::vector<std::string_view>& textures)
+#pragma optimize("", off)
+TextureArray::TextureArray(const std::vector<std::string>& textures)
 {
 	const GLsizei layerCount = textures.size();
 	glGenTextures(1, &id_);
@@ -19,9 +19,8 @@ TextureArray::TextureArray(const std::vector<std::string_view>& textures)
 	int i = 0;
 	for (auto texture : textures)
 	{
-		std::string tex = texPath + texture.data();
-		bool hasTex = std::filesystem::exists(texPath + texture.data());
-		hasTex = false;
+		std::string tex = texPath + texture;
+		bool hasTex = std::filesystem::exists(texPath + texture);
 
 		// TODO: gen mipmaps (increment mip level each mip iteration)
 		if (hasTex == false)
@@ -90,8 +89,8 @@ TextureArray::TextureArray(const std::vector<std::string_view>& textures)
 
 	// sets the anisotropic filtering texture paramter to the highest supported by the system
 	// TODO: make this parameter user-selectable
-	GLint a;
-	glGetIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &a);
+	GLfloat a;
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &a);
 	glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_ANISOTROPY, a);
 
 	// TODO: play with this parameter for optimal looks, maybe make it user-selectable
@@ -106,7 +105,7 @@ TextureArray::TextureArray(const std::vector<std::string_view>& textures)
 
 	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
-//#pragma optimize("", on)
+#pragma optimize("", on)
 
 
 TextureArray::~TextureArray()

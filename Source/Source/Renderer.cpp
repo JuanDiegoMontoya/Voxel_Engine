@@ -37,7 +37,7 @@ namespace Renderer
 			GLenum severity,
 			GLsizei length,
 			const GLchar* message,
-			const void* userParam)
+			[[maybe_unused]] const void* userParam)
 	{
 		//return; // UNCOMMENT WHEN DEBUGGING GRAPHICS
 

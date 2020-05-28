@@ -33,9 +33,8 @@ float FogCalculation()
 
 void main()
 {
-  //vec3 color = vColor.rgb;
-  vec3 tempColor = vNormal * .5 + .5;
-  tempColor = texture(textures, vTexCoord).rgb;
+  vec3 texColor = texture(textures, vTexCoord).rgb;
+  vec3 tempColor = texColor;
 
   vec4 lighting = vLighting;
   lighting.a *= sunAngle;
@@ -44,5 +43,6 @@ void main()
   // fog is applied last
   tempColor = mix(tempColor, fogColor, FogCalculation());
   fragColor = vec4(tempColor, 1.0); // alpha is always 100% or 0%
+  //fragColor.rgb = texColor + fragColor.rgb * .0001;
   //fragColor = vec4(.0001 * tempColor + lighting.aaa, 1.0);
 }

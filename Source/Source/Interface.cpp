@@ -53,10 +53,17 @@ namespace Interface
 
 		if (renderUI)
 		{
+			// chunk info
 			{
-				ImGui::Begin("Chunk Info");
+				ImGui::Begin("Chunk Info", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 
 				ImGui::Text("Chunk size: %d", Chunk::CHUNK_SIZE);
+
+				// displaying zero just means the queue was taken, not finished!
+				ImGui::Text("Gen queue:    %d", World::chunkManager_.generation_queue_.size());
+				ImGui::Text("Mesh queue:   %-4d (%d)", World::chunkManager_.mesher_queue_.size(), World::chunkManager_.debug_cur_pool_left.load());
+				ImGui::Text("Buffer queue: %d", World::chunkManager_.buffer_queue_.size());
+
 				static bool countChunks = true;
 				ImGui::Checkbox("Count chunks (slow)", &countChunks);
 				if (countChunks)
@@ -85,11 +92,6 @@ namespace Interface
 					ImGui::Text("Points:   %d", numPoints);
 					ImGui::NewLine();
 				}
-
-				// displaying zero just means the queue was taken, not finished!
-				ImGui::Text("Gen queue:    %d", World::chunkManager_.generation_queue_.size());
-				ImGui::Text("Mesh queue:   %-4d (%d)", World::chunkManager_.mesher_queue_.size(), World::chunkManager_.debug_cur_pool_left.load());
-				ImGui::Text("Buffer queue: %d", World::chunkManager_.buffer_queue_.size());
 				
 				ImGui::End();
 			}
@@ -283,6 +285,8 @@ namespace Interface
 					World::chunkManager_.ReloadAllChunks();
 				if (ImGui::Checkbox("Skip lighting", &ChunkMesh::debug_ignore_light_level))
 					World::chunkManager_.ReloadAllChunks();
+				ImGui::Checkbox("Gamma correction", &NuRenderer::settings.gammaCorrection);
+
 				ImGui::Text("Render distance:");
 				ImGui::SliderFloat("normalMin", &ChunkRenderer::settings.normalMin, 0, 5000);
 				ImGui::SliderFloat("normalMax", &ChunkRenderer::settings.normalMax, 0, 5000);

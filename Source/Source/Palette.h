@@ -28,7 +28,7 @@ private:
 
 	BitArray data_;
 	std::vector<PaletteEntry> palette_;
-	size_t paletteEntryLength_ = 1;
+	unsigned paletteEntryLength_ = 1;
 };
 
 

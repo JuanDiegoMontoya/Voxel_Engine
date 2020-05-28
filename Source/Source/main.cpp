@@ -18,7 +18,7 @@ int main()
 
 
 	EngineConfig cfg;
-	cfg.verticalSync = true;
+	cfg.verticalSync = 0;
 	Engine::Init(cfg);
 
 	//ChunkVBOAllocator allocator(25001, 8);

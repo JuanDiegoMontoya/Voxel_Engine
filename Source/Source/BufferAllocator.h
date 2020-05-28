@@ -65,4 +65,4 @@ private:
 	GLuint numActiveAllocs_ = 0;
 };
 
-#include "BufferAllocation.inl"
+#include "BufferAllocator.inl"

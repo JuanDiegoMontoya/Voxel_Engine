@@ -16,15 +16,16 @@ namespace NuRenderer
 {
 	namespace
 	{
+		// block textures
 		std::unique_ptr<TextureArray> textures;
 	}
 
 	void Init()
 	{
-		std::vector<std::string_view> texs;
+		std::vector<std::string> texs;
 		for (const auto& prop : Block::PropertiesTable)
 		{
-			texs.push_back(prop.texture);
+			texs.push_back(std::string(prop.name) + ".png");
 		}
 		textures = std::make_unique<TextureArray>(texs);
 
@@ -55,8 +56,8 @@ namespace NuRenderer
 		PERF_BENCHMARK_START;
 
 		Clear();
-		glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
-		glEnable(GL_PROGRAM_POINT_SIZE);
+		if (settings.gammaCorrection)
+			glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
 		if (Input::Keyboard().down[GLFW_KEY_LEFT_SHIFT])
 		{
@@ -71,7 +72,6 @@ namespace NuRenderer
 		Renderer::drawSky();
 		drawChunks();
 		splatChunks();
-		//drawChunksMultiIndirect();
 		drawChunksWater();
 		Renderer::drawAxisIndicators();
 		//Renderer::postProcess();
@@ -120,6 +120,7 @@ namespace NuRenderer
 		ChunkRenderer::GenerateDrawCommandsGPU();
 		currShader->Use();
 		ChunkRenderer::Render();
+		drawCalls++;
 		return;
 
 
@@ -149,6 +150,7 @@ namespace NuRenderer
 
 	void splatChunks()
 	{
+		glEnable(GL_PROGRAM_POINT_SIZE);
 		Camera* cam = Renderer::GetPipeline()->GetCamera(0);
 		auto proj = cam->GetProj();
 		auto view = cam->GetView();
@@ -176,6 +178,7 @@ namespace NuRenderer
 		ChunkRenderer::GenerateDrawCommandsSplatGPU();
 		currShader->Use();
 		ChunkRenderer::RenderSplat();
+		drawCalls++;
 		return;
 
 
@@ -202,47 +205,5 @@ namespace NuRenderer
 	void drawChunksWater()
 	{
 
-	}
-
-	GLuint gIndirectBuffer = 0;
-	std::vector<DrawElementsIndirectCommand> drawCommands;
-	void generateDrawCommands()
-	{
-		ASSERT(0);
-		drawCommands.clear();
-
-		GLuint baseVert = 0;
-		
-		auto& chunks = ChunkStorage::GetMapRaw();
-		auto it = chunks.begin();
-		auto end = chunks.end();
-		for (int i = 0; it != end; ++it)
-		{
-			Chunk* chunk = it->second;
-			//DrawElementsIndirectCommand cmd = chunk->GetMesh().GetDrawCommand(baseVert, i);
-			//drawCommands.push_back(cmd);
-		}
-
-		//feed the draw command data to the gpu
-		glGenBuffers(1, &gIndirectBuffer);
-		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, gIndirectBuffer);
-		glBufferData(GL_DRAW_INDIRECT_BUFFER, drawCommands.size() * sizeof(DrawElementsIndirectCommand), drawCommands.data(), GL_DYNAMIC_DRAW);
-
-		//feed the instance id to the shader. (not needed in this case)
-		//glBindBuffer(GL_ARRAY_BUFFER, gIndirectBuffer);
-		//glEnableVertexAttribArray(2);
-		//glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(SDrawElementsCommand), (void*)(offsetof(DrawElementsIndirectCommand, baseInstance)));
-		//glVertexAttribDivisor(2, 1); //only once per instance
-	}
-
-
-	void drawChunksMultiIndirect()
-	{
-		glMultiDrawElementsIndirect(
-			GL_TRIANGLES,
-			GL_UNSIGNED_INT,
-			(void*)0,
-			drawCommands.size(),
-			0); // draw commands are tightly packed
 	}
 }

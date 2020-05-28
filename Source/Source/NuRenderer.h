@@ -11,8 +11,10 @@ namespace NuRenderer
 	void splatChunks();
 	void drawChunksWater();
 
-	void generateDrawCommands();
-	void drawChunksMultiIndirect();
-
 	inline int drawCalls = 0;
+
+	struct Settings
+	{
+		bool gammaCorrection = true;
+	}inline settings;
 }
