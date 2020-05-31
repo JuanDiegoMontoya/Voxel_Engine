@@ -246,9 +246,11 @@ namespace Renderer
 		if (blockHoverVao == nullptr)
 		{
 			blockHoverVao = new VAO();
-			blockHoverVbo = new VBO(Vertices::cube, sizeof(Vertices::cube));
+			blockHoverVbo = new VBO(Vertices::cube_norm_tex, sizeof(Vertices::cube_norm_tex));
 			VBOlayout layout;
 			layout.Push<float>(3);
+			layout.Push<float>(3);
+			layout.Push<float>(2);
 			blockHoverVao->AddBuffer(*blockHoverVbo, layout);
 		}
 		//glClear(GL_DEPTH_BUFFER_BIT);

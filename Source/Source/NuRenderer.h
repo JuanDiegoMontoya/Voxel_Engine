@@ -1,7 +1,11 @@
 #pragma once
 
+class TextureArray;
+
 namespace NuRenderer
 {
+	TextureArray* GetBlockTextures();
+
 	void Init();
 	void CompileShaders();
 	void Clear();

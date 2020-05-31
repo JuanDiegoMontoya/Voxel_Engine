@@ -33,8 +33,9 @@ float FogCalculation()
 
 void main()
 {
-  vec3 texColor = texture(textures, vTexCoord).rgb;
-  vec3 tempColor = texColor;
+  vec4 texColor = texture(textures, vTexCoord).rgba;
+  if (texColor.a == 0) discard;
+  vec3 tempColor = texColor.rgb;
 
   vec4 lighting = vLighting;
   lighting.a *= sunAngle;

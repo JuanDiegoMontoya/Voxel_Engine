@@ -20,6 +20,13 @@ namespace NuRenderer
 		std::unique_ptr<TextureArray> textures;
 	}
 
+
+	TextureArray* GetBlockTextures()
+	{
+		return textures.get();
+	}
+
+
 	void Init()
 	{
 		std::vector<std::string> texs;
@@ -39,6 +46,7 @@ namespace NuRenderer
 		Shader::shaders["chunk_optimized"] = new Shader("chunk_optimized.vs", "chunk_optimized.fs");
 		Shader::shaders["chunk_splat"] = new Shader("chunk_splat.vs", "chunk_splat.fs");
 		Shader::shaders["compact_batch"] = new Shader("compact_batch.cs");
+		Shader::shaders["textured_array"] = new Shader("textured_array.vs", "textured_array.fs");
 	}
 
 

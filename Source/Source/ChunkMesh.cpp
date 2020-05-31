@@ -211,7 +211,7 @@ void ChunkMesh::BuildMesh()
 
 				// skip fully transparent blocks
 				BlockType block = parent->BlockTypeAt(index);
-				if (Block::PropertiesTable[uint16_t(block)].invisible)
+				if (Block::PropertiesTable[uint16_t(block)].visibility == Visibility::Invisible)
 					continue;
 
 				voxelReady_ = true;
@@ -281,7 +281,8 @@ inline void ChunkMesh::buildBlockFace(
 	//Light light = nearChunk->LightAtCheap(nearblock.block_pos);
 
 	// this block is water and other block isn't water and is above this block
-	if (block2.GetType() != BlockType::bWater && block == BlockType::bWater && (nearblock.block_pos - blockPos).y > 0)
+	if ((block2.GetType() != BlockType::bWater && block == BlockType::bWater && (nearblock.block_pos - blockPos).y > 0) ||
+		Block::PropertiesTable[block2.GetTypei()].visibility > Visibility::Opaque)
 	{
 		addQuad(blockPos, block, face, nearChunk, light);
 		return;
@@ -293,7 +294,7 @@ inline void ChunkMesh::buildBlockFace(
 	if (block2.GetType() == BlockType::bWater && block == BlockType::bWater)
 		return;
 	// this block is invisible - don't add mesh
-	if (Block::PropertiesTable[uint16_t(block)].invisible)
+	if (Block::PropertiesTable[uint16_t(block)].visibility == Visibility::Invisible)
 		return;
 
 	// if all tests are passed, generate this face of the block
@@ -306,7 +307,7 @@ inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face
 	if (voxelReady_)
 	{
 		sPosArr.push_back(ChunkHelpers::EncodeSplat(lpos, 
-			glm::vec3(Block::PropertiesTable[uint16_t(block)].color)));
+			glm::vec3(1)));
 		voxelReady_ = false;
 	}
 

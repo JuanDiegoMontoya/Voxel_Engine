@@ -2,16 +2,26 @@
 #include "serialize.h"
 #include "light.h"
 
+enum class Visibility
+{
+	Opaque = 0,
+	Partial = 1,
+	Invisible = 2
+};
+
 // visual properties (for now)
 struct BlockProperties
 {
-	BlockProperties(const char* n, glm::vec4 c, glm::uvec4 e, const char* tx = "<null>")
-	: name(n), color(c), invisible(c.a == 0), emittance(e), texture(tx) {}
+	BlockProperties(
+		const char* n, 
+		glm::uvec4 e, 
+		Visibility vis = Visibility::Opaque, 
+		const char* tx = "<null>")
+	: name(n), visibility(vis), emittance(e), texture(tx) {}
 	const char* name;
-	glm::vec4 color;        // diffuse color
-	bool invisible;         // skip rendering if true
-	glm::u8vec4 emittance;	// light
-	const char* texture;    // path to texture
+	Visibility visibility; // skip rendering if true
+	glm::u8vec4 emittance; // light
+	const char* texture;   // path to texture (default to name)
 };
 
 

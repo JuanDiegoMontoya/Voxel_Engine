@@ -401,7 +401,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 			//ASSERT(light != nullptr);
 
 			// if neighbor is solid block, skip dat boi
-			if (Block::PropertiesTable[block->GetTypei()].color.a == 1)
+			if (Block::PropertiesTable[block->GetTypei()].visibility == Visibility::Opaque)
 				continue;
 
 			// iterate over R, G, B

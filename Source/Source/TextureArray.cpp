@@ -12,7 +12,7 @@ TextureArray::TextureArray(const std::vector<std::string>& textures)
 	const GLsizei layerCount = textures.size();
 	glGenTextures(1, &id_);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, id_);
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipCount_, GL_RGB8, dim, dim, layerCount);
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipCount_, GL_RGBA8, dim, dim, layerCount);
 
 	stbi_set_flip_vertically_on_load(true);
 
