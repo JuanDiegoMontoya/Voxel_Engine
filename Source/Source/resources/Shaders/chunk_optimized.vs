@@ -24,6 +24,7 @@ out vec3 vPos;
 out vec3 vNormal;
 out vec3 vTexCoord;
 out vec4 vLighting; // RGBSun
+out flat vec3 vBlockPos;
 
 out vec4 vColor;
 
@@ -77,6 +78,7 @@ void Decode(in uint encoded, out vec4 lighting, out vec3 dirCent)
   dirCent.x = encoded >> 15;
   dirCent.y = encoded >> 14;
   dirCent.z = encoded >> 13;
+  dirCent = dirCent * 2 - 1; // [0,1] -> [-1,1]
 
   lighting.r = encoded >> 12;
   lighting.g = (encoded >> 8) & 0xF;
@@ -89,10 +91,15 @@ void Decode(in uint encoded, out vec4 lighting, out vec3 dirCent)
 void main()
 {
   vec3 modelPos;
+  vec3 dirCent;
+  
+  // decode general
   Decode(aEncoded, modelPos, vNormal, vTexCoord);
   vPos = modelPos + u_pos;
-  Decode(aLighting, vLighting);
-  //vColor = aColor;
+
+  // decode lighting + misc
+  Decode(aLighting, vLighting, dirCent);
+  vBlockPos = vPos + dirCent; // block position = vertex pos + direction to center of block
 
   gl_Position = u_viewProj * vec4(vPos, 1.0);
 }

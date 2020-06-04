@@ -96,7 +96,6 @@ namespace NuRenderer
 
 	void drawChunks()
 	{
-
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK); // don't forget to reset original culling face
 
@@ -130,7 +129,6 @@ namespace NuRenderer
 
 
 
-		//ChunkRenderer::GenerateDrawCommands();
 		ChunkRenderer::GenerateDrawCommandsGPU();
 		currShader->Use();
 		ChunkRenderer::Render();

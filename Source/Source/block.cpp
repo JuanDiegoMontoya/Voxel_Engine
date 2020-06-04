@@ -6,7 +6,7 @@ const std::vector<BlockProperties> Block::PropertiesTable =
 {
 	{BlockProperties("air",        {0, 0, 0, 0}, Visibility::Invisible)},
 	{BlockProperties("stone",      {0, 0, 0, 0})},
-	{BlockProperties("dirt",       {0, 0, 0, 0})},
+	{BlockProperties("dirt",       {0, 0, 0, 0}, Visibility::Opaque)},
 	{BlockProperties("metal",      {0, 0, 0, 0})},
 	{BlockProperties("grass",      {0, 0, 0, 0})},
 	{BlockProperties("sand",       {0, 0, 0, 0})},

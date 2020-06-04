@@ -55,7 +55,6 @@ namespace ChunkHelpers
 		{ 0, 0 },
 	};
 
-#pragma optimize("", off)
 	inline void Decode(GLuint encoded, glm::uvec3& modelPos, glm::vec3& normal, glm::vec3& texCoord)
 	{
 		// decode vertex position
@@ -102,7 +101,25 @@ namespace ChunkHelpers
 
 		return encoded;
 	}
-#pragma optimize("", on)
+
+
+	// packs direction to center of block with lighting information
+	inline GLuint EncodeLight(GLuint lightCoding, glm::ivec3 dirCent)
+	{
+		GLuint encoded = lightCoding;
+		dirCent = (dirCent + 1) / 2;
+
+		using namespace glm;
+		ASSERT(
+			all(greaterThanEqual(dirCent, ivec3(0, 0, 0))) &&
+			all(lessThanEqual(dirCent, ivec3(1, 1, 1))));
+
+		encoded |= dirCent.x << 15;
+		encoded |= dirCent.y << 14;
+		encoded |= dirCent.z << 13;
+
+		return encoded;
+	}
 
 
 	inline GLuint EncodeSplat(const glm::uvec3& modelPos, const glm::vec3& color)
