@@ -12,15 +12,6 @@
 #include "ChunkHelpers.h"
 #include "ChunkStorage.h"
 
-// Windows-specific thread affinity
-#ifdef _WIN32
-#include <Windows.h>
-#undef near
-#undef max
-#undef min
-#else
-#endif
-
 
 ChunkManager::ChunkManager()
 {
@@ -397,7 +388,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 			if (ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(lightPos).chunk_pos) != nullptr)
 				delayed_update_queue_.insert(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(lightPos).chunk_pos));
 			
-			// invalid light check (should be impossible)
+			// invalid light check
 			//ASSERT(light != nullptr);
 
 			// if neighbor is solid block, skip dat boi

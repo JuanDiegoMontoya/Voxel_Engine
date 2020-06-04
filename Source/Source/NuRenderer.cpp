@@ -11,6 +11,7 @@
 #include "ChunkRenderer.h"
 #include "block.h"
 #include "TextureArray.h"
+#include <texture.h>
 
 namespace NuRenderer
 {
@@ -18,6 +19,7 @@ namespace NuRenderer
 	{
 		// block textures
 		std::unique_ptr<TextureArray> textures;
+		std::unique_ptr<Texture> blueNoise64;
 	}
 
 
@@ -35,6 +37,8 @@ namespace NuRenderer
 			texs.push_back(std::string(prop.name) + ".png");
 		}
 		textures = std::make_unique<TextureArray>(texs);
+
+		blueNoise64 = std::make_unique<Texture>("BlueNoise/64_64/LDR_LLL1_0.png");
 
 		CompileShaders();
 		Engine::PushRenderCallback(DrawAll, 0);
@@ -121,6 +125,8 @@ namespace NuRenderer
 
 		textures->Bind(0);
 		currShader->setInt("textures", 0);
+		blueNoise64->Bind(1);
+		currShader->setInt("blueNoise", 1);
 
 
 

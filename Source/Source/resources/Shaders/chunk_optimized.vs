@@ -6,20 +6,19 @@
 // vertex = x, y, z from 0-32 (supports up to 63)
 // normal = 0 - 5 index into "normals" table
 // texcoord = texture index (0 - 512), corner index (0 - 3)
-layout (location = 0) in uint aEncoded; // encoded uint as float (per vertex)
+layout (location = 0) in uint aEncoded; // (per vertex)
 
 // aLighting layout
-// 0 - 15   16 - 19   20 - 23   24 - 27   28 - 31
-// unused     R         G         B         Sun
-layout (location = 1) in uint aLighting;// encoded uint as float (per vertex)
+// 0 - 12   13 - 15   16 - 19   20 - 23   24 - 27   28 - 31
+// unused    dirCent     R         G         B         Sun
+layout (location = 1) in uint aLighting;// (per vertex)
 
+// per-chunk info
 layout (location = 2) in ivec3 u_pos; // (per instance)
 
 // global info
 uniform mat4 u_viewProj;
 
-// per-chunk info
-//uniform vec3 u_pos;
 
 out vec3 vPos;
 out vec3 vNormal;
@@ -72,8 +71,13 @@ void Decode(in uint encoded,
 
 
 // decodes lighting information into a usable vec4
-void Decode(in uint encoded, out vec4 lighting)
+// also decodes 
+void Decode(in uint encoded, out vec4 lighting, out vec3 dirCent)
 {
+  dirCent.x = encoded >> 15;
+  dirCent.y = encoded >> 14;
+  dirCent.z = encoded >> 13;
+
   lighting.r = encoded >> 12;
   lighting.g = (encoded >> 8) & 0xF;
   lighting.b = (encoded >> 4) & 0xF;
