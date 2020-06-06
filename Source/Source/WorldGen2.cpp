@@ -89,13 +89,17 @@ namespace WorldGen2
 							//double density = noise.GetValue(pos.x, pos.y, pos.z); // same chunk every time
 							//density = 0;
 							float density = noiseSet[idx++];
+							if (density < -.02)
+							{
+								ChunkStorage::SetBlockType(wpos, BlockType::bGrass);
+							}
 							if (density < -.03)
 							{
-								ChunkStorage::SetBlockType(wpos, BlockType::bStone);
+								ChunkStorage::SetBlockType(wpos, BlockType::bDirt);
 							}
 							if (density < -.04)
 							{
-								ChunkStorage::SetBlockType(wpos, BlockType::bDirt);
+								ChunkStorage::SetBlockType(wpos, BlockType::bStone);
 							}
 							//printf("%f\n", density);
 						}
