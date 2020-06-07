@@ -88,7 +88,8 @@ namespace ChunkRenderer
 
 		// allocate big buffer
 		// TODO: vary the allocation size based on some user setting
-		allocator = std::make_unique<BufferAllocator<AABB16>>(2'000'000'000, 2 * sizeof(GLint));
+		//allocator = std::make_unique<BufferAllocator<AABB16>>(2'000'000'000, 2 * sizeof(GLint));
+		allocator = std::make_unique<BufferAllocator<AABB16>>(100'000'000, 2 * sizeof(GLint));
 		allocatorSplat = std::make_unique<BufferAllocator<AABB16>>(200'000'000, sizeof(GLint));
 
 		
@@ -373,6 +374,24 @@ namespace ChunkRenderer
 		vaoSplat->Bind();
 		dibSplat->Bind();
 		glMultiDrawArraysIndirect(GL_POINTS, (void*)0, renderCountSplat, 0);
+	}
+
+
+	void DrawBuffers()
+	{
+		glDisable(GL_DEPTH_TEST);
+
+		ShaderPtr sdr = Shader::shaders["buffer_vis"];
+		sdr->Use();
+		glm::mat4 model(1);
+		model = glm::scale(model, { 1, 1, 1 });
+		model = glm::translate(model, { -.5, -.90, 0 });
+		sdr->setMat4("u_model", model);
+
+		glLineWidth(50);
+		allocator->Draw();
+
+		glEnable(GL_DEPTH_TEST);
 	}
 }
 #pragma optimize("", on)

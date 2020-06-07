@@ -1,9 +1,13 @@
 #pragma once
 #include "BufferAllocator.h"
+#include <vbo.h>
+#include <vao.h>
+#include <vbo_layout.h>
 
 
 template<typename UserT>
-BufferAllocator<UserT>::BufferAllocator<UserT>(GLuint size, GLuint alignment) : align_(alignment)
+BufferAllocator<UserT>::BufferAllocator<UserT>(GLuint size, GLuint alignment)
+	: align_(alignment), capacity_(size)
 {
 	// add to size the distance to next aligned boundary
 	// TODO: simplify (use align_ - 1 thing)
@@ -190,3 +194,46 @@ void BufferAllocator<UserT>::dbgVerify()
 	ASSERT_MSG(active == numActiveAllocs_,
 		"Verify failed: active allocations mismatch!");
 }
+
+
+//#pragma optimize("", off);
+// length = entire screen by default, line width set beforehand by user
+template<typename UserT>
+inline void BufferAllocator<UserT>::Draw()
+{
+	const glm::vec3 free_color{ .2, 1, 1 };  // light cyan
+	const glm::vec3 full_color{ 1, .3, .3 }; // light red
+	bool alternator = true;
+
+	std::unique_ptr<VAO> vao = std::make_unique<VAO>();
+	std::unique_ptr<VBO> vbo;
+	VBOlayout layout;
+	layout.Push<float>(3); // position
+	layout.Push<float>(3); // color
+
+	std::vector<glm::vec3> data;
+	for (const auto& alloc : allocs_)
+	{
+		glm::vec3 color = alloc.handle == NULL ? free_color : full_color;
+		if (color == free_color)
+			alternator = true;
+		color *= (alternator ? 1.f : .5f);
+
+		// position 1
+		data.push_back({ (float)alloc.offset / (float)capacity_, 0, 0 });
+		// color 1
+		data.push_back(color);
+
+		// position 2
+		data.push_back({ (float)(alloc.offset + alloc.size) / (float)capacity_, 0, 0 });
+		// color 2
+		data.push_back(color);
+
+		alternator = !alternator;
+	}
+
+	vbo = std::make_unique<VBO>(&data[0][0], sizeof(glm::vec3) * data.size(), GL_STREAM_DRAW);
+	vao->AddBuffer(*vbo, layout);
+	glDrawArrays(GL_LINES, 0, data.size() / 2);
+}
+//#pragma optimize("", on);

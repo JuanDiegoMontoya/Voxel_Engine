@@ -16,6 +16,7 @@ public:
 	GLuint GetGPUHandle() { return gpuHandle; }
 	const auto& GetAllocs() { return allocs_; }
 	GLuint ActiveAllocs() { return numActiveAllocs_; }
+	void Draw();
 
 	const GLsizei align_; // allocation alignment
 
@@ -63,6 +64,7 @@ private:
 	GLuint gpuHandle;
 	uint64_t nextHandle = 1;
 	GLuint numActiveAllocs_ = 0;
+	const GLuint capacity_; // for fixed size buffers
 };
 
 #include "BufferAllocator.inl"

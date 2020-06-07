@@ -51,6 +51,7 @@ namespace NuRenderer
 		Shader::shaders["chunk_splat"] = new Shader("chunk_splat.vs", "chunk_splat.fs");
 		Shader::shaders["compact_batch"] = new Shader("compact_batch.cs");
 		Shader::shaders["textured_array"] = new Shader("textured_array.vs", "textured_array.fs");
+		Shader::shaders["buffer_vis"] = new Shader("buffer_vis.vs", "buffer_vis.fs");
 	}
 
 
@@ -86,6 +87,7 @@ namespace NuRenderer
 		splatChunks();
 		drawChunksWater();
 		Renderer::drawAxisIndicators();
+		ChunkRenderer::DrawBuffers();
 		//Renderer::postProcess();
 
 		glDisable(GL_FRAMEBUFFER_SRGB);
