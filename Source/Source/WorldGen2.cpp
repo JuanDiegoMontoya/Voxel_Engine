@@ -14,7 +14,7 @@ namespace WorldGen2
 	{
 #if 1
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
-		glm::ivec3 highChunkDim{ 8, 10, 8 };
+		glm::ivec3 highChunkDim{ 5, 10, 5 };
 #else
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
 		glm::ivec3 highChunkDim{ 2, 1, 1 };
@@ -99,7 +99,7 @@ namespace WorldGen2
 							}
 							if (density < -.04)
 							{
-								ChunkStorage::SetBlockType(wpos, BlockType::bStone);
+								ChunkStorage::SetBlockType(wpos, BlockType::bBglass);
 							}
 							//printf("%f\n", density);
 						}

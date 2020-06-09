@@ -343,7 +343,9 @@ inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face
 		auto tLight = light;
 		tLight.Set(tLight.Get() - glm::min(tLight.Get(), glm::u8vec4(invOcclusion)));
 		lighting = tLight.Raw();
-		lightdeds[cindex] = EncodeLight(lighting, lpos - glm::ivec3(finalVert));
+		glm::ivec3 dirCent = glm::vec3(lpos) - glm::vec3(finalVert);
+		//printf("(%d, %d, %d)\n", dirCent.x, dirCent.y, dirCent.z);
+		lightdeds[cindex] = EncodeLight(lighting, dirCent);
 	}
 
 	const GLuint indicesA[6] = { 0, 1, 3, 3, 1, 2 }; // normal indices

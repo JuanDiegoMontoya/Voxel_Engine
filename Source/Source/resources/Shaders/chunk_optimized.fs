@@ -97,7 +97,8 @@ bool clipTransparency(float alpha)
   limit = thresholdMatrix[x][y];
 #else
   ivec2 md = textureSize(blueNoise, 0);
-  vec2 coord = gl_FragCoord.xy + random3(vBlockPos).xy;
+  vec2 coord = gl_FragCoord.xy + 500 * random3(vBlockPos).xy;
+  //vec2 coord = gl_FragCoord.xy;
   ivec2 uv = ivec2(int(coord.x) % md.x, int(coord.y) % md.y);
   float limit = texture(blueNoise, vec2(uv) / vec2(md)).r;
 #endif // blue noise dithering
@@ -124,6 +125,7 @@ void main()
   // fog is applied last
   tempColor = mix(tempColor, fogColor, FogCalculation());
   fragColor = vec4(tempColor, 1.0); // alpha is always 100% or 0% (per fragment)
+  //fragColor.xyz = fragColor.xyz * .1 + random3(vBlockPos / 10).xyz;
   //fragColor.rgb = texColor + fragColor.rgb * .0001;
   //fragColor = vec4(.0001 * tempColor + lighting.aaa, 1.0);
 }

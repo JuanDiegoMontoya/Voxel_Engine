@@ -107,7 +107,8 @@ namespace ChunkHelpers
 	inline GLuint EncodeLight(GLuint lightCoding, glm::ivec3 dirCent)
 	{
 		GLuint encoded = lightCoding;
-		dirCent = (dirCent + 1) / 2;
+		dirCent = (dirCent + 1);
+		//printf("(%d, %d, %d)\n", dirCent.x, dirCent.y, dirCent.z);
 
 		using namespace glm;
 		ASSERT(

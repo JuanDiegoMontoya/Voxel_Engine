@@ -88,8 +88,8 @@ namespace ChunkRenderer
 
 		// allocate big buffer
 		// TODO: vary the allocation size based on some user setting
-		//allocator = std::make_unique<BufferAllocator<AABB16>>(2'000'000'000, 2 * sizeof(GLint));
-		allocator = std::make_unique<BufferAllocator<AABB16>>(100'000'000, 2 * sizeof(GLint));
+		allocator = std::make_unique<BufferAllocator<AABB16>>(2'000'000'000, 2 * sizeof(GLint));
+		//allocator = std::make_unique<BufferAllocator<AABB16>>(100'000'000, 2 * sizeof(GLint));
 		allocatorSplat = std::make_unique<BufferAllocator<AABB16>>(200'000'000, sizeof(GLint));
 
 		
@@ -363,6 +363,7 @@ namespace ChunkRenderer
 		vao->Bind();
 		dib->Bind();
 		glMultiDrawArraysIndirect(GL_TRIANGLES, (void*)0, renderCount, 0);
+		//glMultiDrawArraysIndirectCount()
 	}
 
 

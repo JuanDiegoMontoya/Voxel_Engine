@@ -38,7 +38,8 @@ namespace NuRenderer
 		}
 		textures = std::make_unique<TextureArray>(texs);
 
-		blueNoise64 = std::make_unique<Texture>("BlueNoise/64_64/LDR_LLL1_0.png");
+		//blueNoise64 = std::make_unique<Texture>("BlueNoise/64_64/LDR_LLL1_0.png");
+		blueNoise64 = std::make_unique<Texture>("BlueNoise/256_256/LDR_LLL1_0.png");
 
 		CompileShaders();
 		Engine::PushRenderCallback(DrawAll, 0);

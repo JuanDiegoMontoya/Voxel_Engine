@@ -75,12 +75,12 @@ void Decode(in uint encoded,
 // also decodes 
 void Decode(in uint encoded, out vec4 lighting, out vec3 dirCent)
 {
-  dirCent.x = encoded >> 15;
-  dirCent.y = encoded >> 14;
-  dirCent.z = encoded >> 13;
-  dirCent = dirCent * 2 - 1; // [0,1] -> [-1,1]
+  dirCent.x = encoded >> 15 & 0x1;
+  dirCent.y = encoded >> 14 & 0x1;
+  dirCent.z = encoded >> 13 & 0x1;
+  dirCent -= 0.5; // [0,1] -> [-.5,.5]
 
-  lighting.r = encoded >> 12;
+  lighting.r = encoded >> 12 & 0xF;
   lighting.g = (encoded >> 8) & 0xF;
   lighting.b = (encoded >> 4) & 0xF;
   lighting.a = encoded & 0xF;

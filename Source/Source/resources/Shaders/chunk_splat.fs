@@ -89,7 +89,7 @@ vec3 WorldPosFromDepth(float depth)
 
 void main()
 {
-  const bool debug = true; // display splat points
+  const bool debug = false; // display splat points
 
   vec3 ro = WorldPosFromDepth(0);
   vec3 rd = normalize(ro - u_viewpos);
@@ -131,11 +131,14 @@ void main()
   }
   else // ray miss
   {
-    gl_FragDepth = gl_DepthRange.far;
+    //gl_FragDepth = gl_DepthRange.far;
     if (!debug)
       discard;
     else
-      fragColor.xyz = vec3(1);
+    {
+      fragColor.xyz = vec3(.1);
+      gl_FragDepth = gl_FragCoord.z;
+    }
   }
 #endif
 }
