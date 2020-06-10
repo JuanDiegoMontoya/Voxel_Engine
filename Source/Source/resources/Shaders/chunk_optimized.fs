@@ -73,17 +73,20 @@ vec3 random3(vec3 c)
 }
 
 
+#define RNG_OFFSET 1
+#define USE_KERNEL 0 // if false, will use blue noise
 // dithered transparency
 bool clipTransparency(float alpha)
 {
-  #if 0 // blue noise dithering (if false)
-#if 1 // uniform sampling
-  int x = int(gl_FragCoord.x) % 4;
-  int y = int(gl_FragCoord.y) % 4;
+#if RNG_OFFSET  // rng offset
+  ivec2 offset = ivec2(500 * random3(vBlockPos).xy);
 #else
-  int x = (int(gl_FragCoord.x) + int(3.7 * noise(ivec3(vPos)))) % 4;
-  int y = (int(gl_FragCoord.y) + int(2.1 * noise(ivec3(vPos)))) % 4;
-#endif // uniform sampling
+  ivec2 offset = ivec2(0, 0);
+#endif // rng offset
+
+#if USE_KERNEL // kernel dithering if true
+  int x = (int(gl_FragCoord.x) + offset.x) % 4;
+  int y = (int(gl_FragCoord.y) + offset.y) % 4;
   int index = x + y * 4;
   float limit = 0.0;
 
@@ -94,14 +97,13 @@ bool clipTransparency(float alpha)
     4.0 / 16.0, 12.0 / 16.0,  2.0 / 16.0, 10.0 / 16.0,
     16.0 / 16.0,  8.0 / 16.0, 14.0 / 16.0,  6.0 / 16.0
   );
-  limit = thresholdMatrix[x][y];
+  limit = thresholdMatrix[x][y] + texture(blueNoise, vec2(x, y)).x * .001;
 #else
   ivec2 md = textureSize(blueNoise, 0);
-  vec2 coord = gl_FragCoord.xy + 500 * random3(vBlockPos).xy;
-  //vec2 coord = gl_FragCoord.xy;
+  vec2 coord = gl_FragCoord.xy + offset;
   ivec2 uv = ivec2(int(coord.x) % md.x, int(coord.y) % md.y);
   float limit = texture(blueNoise, vec2(uv) / vec2(md)).r;
-#endif // blue noise dithering
+#endif // kernel dithering
 
   // Is this pixel below the opacity limit? Skip drawing it
   return alpha < limit;

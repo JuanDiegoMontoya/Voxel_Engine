@@ -22,5 +22,7 @@ const std::vector<BlockProperties> Block::PropertiesTable =
 	{BlockProperties("Blight",     {0, 0, 15, 0})},
 	{BlockProperties("Smlight",    {15, 15, 15, 0})},
 	{BlockProperties("Ylight",     {15, 15, 0, 0})},
+	{BlockProperties("RGlass",     {0, 0, 0, 0}, Visibility::Partial)},
+	{BlockProperties("GGlass",     {0, 0, 0, 0}, Visibility::Partial)},
 	{BlockProperties("BGlass",     {0, 0, 0, 0}, Visibility::Partial)},
 };

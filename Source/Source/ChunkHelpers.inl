@@ -115,9 +115,9 @@ namespace ChunkHelpers
 			all(greaterThanEqual(dirCent, ivec3(0, 0, 0))) &&
 			all(lessThanEqual(dirCent, ivec3(1, 1, 1))));
 
-		encoded |= dirCent.x << 15;
-		encoded |= dirCent.y << 14;
-		encoded |= dirCent.z << 13;
+		encoded |= dirCent.x << 18;
+		encoded |= dirCent.y << 17;
+		encoded |= dirCent.z << 16;
 
 		return encoded;
 	}

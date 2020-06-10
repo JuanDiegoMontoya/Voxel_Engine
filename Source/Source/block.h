@@ -46,6 +46,8 @@ enum class BlockType : uint16_t // upgrade when over 2^16 block types
 	bBLight,
 	bSmLight,
 	bYLight,
+	bRglass,
+	bGglass,
 	bBglass,
 
 	bCount
