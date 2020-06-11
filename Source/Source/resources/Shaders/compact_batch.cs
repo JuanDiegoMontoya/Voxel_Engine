@@ -47,7 +47,14 @@ layout(std430, binding = 1) writeonly buffer outCmds
   DrawArraysCommand outDrawCommands[];
 };
 
-layout(binding = 0, offset = 0) uniform atomic_uint nextIdx;
+// parameter buffer style
+layout(std430, binding = 2) buffer parameterBuffer
+{
+  uint nextIdx;
+};
+
+// atomic style
+//layout(binding = 0, offset = 0) uniform atomic_uint nextIdx;
 
 uniform vec3 u_viewpos;
 uniform Frustum u_viewfrustum;
@@ -65,7 +72,6 @@ void main()
   uint index = gl_GlobalInvocationID.x;
   uint stride = gl_NumWorkGroups.x * gl_WorkGroupSize.x;
 
-  //atomicCounterAdd(nextIdx, inDrawData.length());
 
   for (uint i = index; i < inDrawData.length(); i += stride)
   {
@@ -86,7 +92,7 @@ void main()
       cmd.first = alloc.offset / u_vertexSize;
       cmd.baseInstance = cmd.first;
 
-      uint insert = atomicCounterAdd(nextIdx, 1);
+      uint insert = atomicAdd(nextIdx, 1);
       outDrawCommands[insert] = cmd;
     }
   }

@@ -13,6 +13,8 @@
 #include "vendor/ctpl_stl.h"
 #include <shader.h>
 #include <abo.h>
+#include <param_bo.h>
+#include "ChunkStorage.h"
 
 namespace ChunkRenderer
 {
@@ -31,7 +33,8 @@ namespace ChunkRenderer
 		std::vector<std::future<void>> futures;
 		std::atomic_int nextIdx;
 
-		std::unique_ptr<ABO> drawCounter;
+		//std::unique_ptr<ABO> drawCounter;
+		std::unique_ptr<Param_BO> drawCountGPU;
 		std::unique_ptr<ABO> drawCounterSplat;
 
 		const int blockSize = 64; // defined in compact_batch.cs
@@ -81,8 +84,9 @@ namespace ChunkRenderer
 		maxConcurrency = glm::max(std::thread::hardware_concurrency(), 1u);
 		threads = std::make_unique<ctpl::thread_pool>(maxConcurrency);
 
-		drawCounter = std::make_unique<ABO>(1); // one atomic uint
-		drawCounter->Reset();
+		//drawCounter = std::make_unique<ABO>(1); // one atomic uint
+		//drawCounter->Reset();
+		drawCountGPU = std::make_unique<Param_BO>();
 		drawCounterSplat = std::make_unique<ABO>(1); // one atomic uint
 		drawCounterSplat->Reset();
 
@@ -186,8 +190,9 @@ namespace ChunkRenderer
 		sdr->setUInt("u_reservedVertices", 2);
 		sdr->setUInt("u_vertexSize", sizeof(GLuint) * 2);
 
-		drawCounter->Bind(0);
-		drawCounter->Reset();
+		//drawCounter->Bind(0);
+		//drawCounter->Reset();
+		drawCountGPU->Reset();
 
 		// copy input data to buffer at binding 0
 		GLuint indata;
@@ -204,15 +209,20 @@ namespace ChunkRenderer
 			GL_STATIC_COPY);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, dib->GetID());
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, dib->GetID());
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, drawCountGPU->GetID());
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, drawCountGPU->GetID());
 		
 		{
 			int numBlocks = (allocs.size() + blockSize - 1) / blockSize;
 			glDispatchCompute(numBlocks, 1, 1);
-			glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
+			//glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 		}
-		renderCount = drawCounter->Get(0); // sync point
-		ASSERT(renderCount <= allocator->ActiveAllocs());
+		//renderCount = drawCounter->Get(0); // sync point
+		//ASSERT(renderCount <= allocator->ActiveAllocs());
 		glDeleteBuffers(1, &indata);
+
+		drawCountGPU->Unbind();
 
 		PERF_BENCHMARK_END;
 	}
@@ -357,13 +367,15 @@ namespace ChunkRenderer
 
 	void Render()
 	{
-		if (renderCount == 0)
-			return;
+		//if (renderCount == 0)
+		//	return;
 
 		vao->Bind();
 		dib->Bind();
-		glMultiDrawArraysIndirect(GL_TRIANGLES, (void*)0, renderCount, 0);
-		//glMultiDrawArraysIndirectCount()
+		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+		//glMultiDrawArraysIndirect(GL_TRIANGLES, (void*)0, renderCount, 0);
+		drawCountGPU->Bind();
+		glMultiDrawArraysIndirectCount(GL_TRIANGLES, (void*)0, (GLintptr)0, allocator->ActiveAllocs(), 0);
 	}
 
 

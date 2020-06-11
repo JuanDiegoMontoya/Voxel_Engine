@@ -322,6 +322,9 @@
     <ClInclude Include="TextureArray.h">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Source\param_bo.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -533,6 +536,9 @@
     </ClCompile>
     <ClCompile Include="TextureArray.cpp">
       <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\param_bo.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

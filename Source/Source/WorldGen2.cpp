@@ -14,7 +14,7 @@ namespace WorldGen2
 	{
 #if 1
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
-		glm::ivec3 highChunkDim{ 10, 10, 10 };
+		glm::ivec3 highChunkDim{ 50, 10, 50 };
 #else
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
 		glm::ivec3 highChunkDim{ 2, 1, 1 };
@@ -59,7 +59,9 @@ namespace WorldGen2
 		noisey->SetFractalLacunarity(2.0);
 		noisey->SetFractalOctaves(5);
 		//noisey->SetFrequency(.04);
-
+		//noisey->SetPerturbType(FastNoiseSIMD::Gradient);
+		//noisey->SetPerturbAmp(0.4);
+		//noisey->SetPerturbFrequency(0.4);
 		
 		auto& chunks = ChunkStorage::GetMapRaw();
 		std::for_each(std::execution::par, chunks.begin(), chunks.end(),
