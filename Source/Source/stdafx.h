@@ -45,3 +45,8 @@ using namespace std::chrono;
 #include <mutex>
 #include <shared_mutex>
 #include <optional>
+
+#ifdef TRACY_ENABLE
+#include <Tracy.hpp>
+#include <TracyOpenGL.hpp>
+#endif // TRACY_ENABLE

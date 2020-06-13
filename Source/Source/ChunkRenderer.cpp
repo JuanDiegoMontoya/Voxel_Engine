@@ -166,11 +166,12 @@ namespace ChunkRenderer
 		PERF_BENCHMARK_END;
 	}
 
-//#pragma optimize("", off)
-#pragma optimize("", off)
 	void GenerateDrawCommandsGPU()
 	{
 		PERF_BENCHMARK_START;
+#ifdef TRACY_ENABLE
+		TracyGpuZone("Gen draw commands norm");
+#endif
 
 		Camera* cam = Renderer::GetPipeline()->GetCamera(0);
 		// make buffer sized as if every allocation was non-null
@@ -226,7 +227,6 @@ namespace ChunkRenderer
 
 		PERF_BENCHMARK_END;
 	}
-//#pragma optimize("", on)
 
 
 	//void GenerateDrawCommands()
@@ -313,6 +313,9 @@ namespace ChunkRenderer
 	void GenerateDrawCommandsSplatGPU()
 	{
 		PERF_BENCHMARK_START;
+#ifdef TRACY_ENABLE
+		TracyGpuZone("Gen draw commands splat");
+#endif
 
 		Camera* cam = Renderer::GetPipeline()->GetCamera(0);
 		// make buffer sized as if every allocation was non-null
@@ -367,6 +370,9 @@ namespace ChunkRenderer
 
 	void Render()
 	{
+#ifdef TRACY_ENABLE
+		TracyGpuZone("Render chunks normal");
+#endif
 		//if (renderCount == 0)
 		//	return;
 
@@ -381,6 +387,9 @@ namespace ChunkRenderer
 
 	void RenderSplat()
 	{
+#ifdef TRACY_ENABLE
+		TracyGpuZone("Render chunks splat");
+#endif
 		if (renderCountSplat == 0)
 			return;
 	
@@ -407,4 +416,3 @@ namespace ChunkRenderer
 		glEnable(GL_DEPTH_TEST);
 	}
 }
-#pragma optimize("", on)

@@ -5,9 +5,6 @@
 #include "Renderer.h"
 #include "NuRenderer.h"
 
-#include "BitArray.h"
-//#include <bitset>
-#include "BufferAllocator.h"
 
 int main()
 {
@@ -16,9 +13,8 @@ int main()
 	//std::bitset<8> bb(coom.GetSequence(5, 8));
 	//std::cout << bb << std::endl;
 
-
 	EngineConfig cfg;
-	cfg.verticalSync = 0;
+	cfg.verticalSync = false;
 	Engine::Init(cfg);
 
 	//ChunkVBOAllocator allocator(25001, 8);

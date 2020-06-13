@@ -32,12 +32,15 @@ namespace Interface
 		{
 			Interface::activeCursor = !Interface::activeCursor;
 		}
+
 		if (Interface::activeCursor)
 		{
+			glfwSetInputMode(Engine::GetWindow(), GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
 			glfwSetInputMode(Engine::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 		else
 		{
+			glfwSetInputMode(Engine::GetWindow(), GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 			glfwSetInputMode(Engine::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 	}

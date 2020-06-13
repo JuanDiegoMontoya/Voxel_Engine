@@ -61,6 +61,9 @@
     <Filter Include="vendor\imgui">
       <UniqueIdentifier>{94ebe352-4b94-4586-9517-9ed7c9ce90e2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="vendor\tracy">
+      <UniqueIdentifier>{e2865684-5b58-42df-8f99-bb74dec03205}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="settings.h">
@@ -539,6 +542,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Source\param_bo.cpp">
       <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\tracy\TracyClient.cpp">
+      <Filter>vendor\tracy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
