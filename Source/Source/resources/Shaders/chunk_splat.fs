@@ -1,6 +1,9 @@
 #version 450 core
 
-in flat vec3 vPos;
+#define JITTERED 0
+#define CUSTOM_DEPTH 0
+
+in vec3 vPos;
 in vec3 vColor;
 
 uniform vec3 u_viewpos;     // camera position
@@ -49,7 +52,7 @@ struct Ray
 };
 
 float maxv(vec3 v) { return max(max(v.x, v.y), v.z); }
-bool ourIntersectBox(Box box, Ray ray, out float distance, out vec3 normal)
+bool ourIntersectBox(in Box box, in Ray ray, out float distance, out vec3 normal)
 {
   ray.origin = ray.origin - box.center;
 
@@ -70,11 +73,30 @@ bool ourIntersectBox(Box box, Ray ray, out float distance, out vec3 normal)
 }
 
 
+// returns random vec3 with values in (-1, 1)
+vec3 random3(vec3 c)
+{
+  float j = 4096.0*sin(dot(c,vec3(17.0, 59.4, 15.0)));
+  vec3 r;
+  r.z = fract(512.0*j);
+  j *= .125;
+  r.x = fract(512.0*j);
+  j *= .125;
+  r.y = fract(512.0*j);
+  return r-0.5;
+}
+
+
 // this function actually works wtf
 vec3 WorldPosFromDepth(float depth)
 {
   float z = depth * 2.0 - 1.0;
-  vec2 TexCoord = gl_FragCoord.xy / u_viewportSize;
+#if JITTERED
+  vec2 fragCoord = gl_FragCoord.xy + (random3(gl_FragCoord.xyz).xy / 2.0);
+#else
+  vec2 fragCoord = gl_FragCoord.xy;
+#endif
+  vec2 TexCoord = fragCoord / u_viewportSize;
   vec4 clipSpacePosition = vec4(TexCoord * 2.0 - 1.0, z, 1.0);
   vec4 viewSpacePosition = u_invProj * clipSpacePosition;
 
@@ -121,6 +143,7 @@ void main()
     fragColor.xyz = vColor * max(sunAngle, .01);
     fragColor.xyz *= 1 - darken;
 
+#if CUSTOM_DEPTH
     // set the depth using the actual world position of ray hit
     vec3 pp = ro + rd * dist;
     vec4 v_clip_coord = u_viewProj * vec4(pp, 1.0);
@@ -128,6 +151,7 @@ void main()
     gl_FragDepth = (
       (gl_DepthRange.diff * f_ndc_depth) +
       gl_DepthRange.near + gl_DepthRange.far) * .5;
+#endif
   }
   else // ray miss
   {
@@ -137,7 +161,9 @@ void main()
     else
     {
       fragColor.xyz = vec3(.1);
+#if CUSTOM_DEPTH
       gl_FragDepth = gl_FragCoord.z;
+#endif
     }
   }
 #endif

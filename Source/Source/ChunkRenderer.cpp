@@ -34,8 +34,9 @@ namespace ChunkRenderer
 		std::atomic_int nextIdx;
 
 		//std::unique_ptr<ABO> drawCounter;
+		//std::unique_ptr<ABO> drawCounterSplat;
 		std::unique_ptr<Param_BO> drawCountGPU;
-		std::unique_ptr<ABO> drawCounterSplat;
+		std::unique_ptr<Param_BO> drawCountGPUSplat;
 
 		const int blockSize = 64; // defined in compact_batch.cs
 
@@ -87,8 +88,9 @@ namespace ChunkRenderer
 		//drawCounter = std::make_unique<ABO>(1); // one atomic uint
 		//drawCounter->Reset();
 		drawCountGPU = std::make_unique<Param_BO>();
-		drawCounterSplat = std::make_unique<ABO>(1); // one atomic uint
-		drawCounterSplat->Reset();
+		//drawCounterSplat = std::make_unique<ABO>(1); // one atomic uint
+		//drawCounterSplat->Reset();
+		drawCountGPUSplat = std::make_unique<Param_BO>();
 
 		// allocate big buffer
 		// TODO: vary the allocation size based on some user setting
@@ -335,8 +337,9 @@ namespace ChunkRenderer
 		sdr->setUInt("u_reservedVertices", 3);
 		sdr->setUInt("u_vertexSize", sizeof(GLuint) * 1);
 
-		drawCounterSplat->Bind(0);
-		drawCounterSplat->Reset();
+		//drawCounterSplat->Bind(0);
+		//drawCounterSplat->Reset();
+		drawCountGPUSplat->Reset();
 
 		// copy input data to buffer at binding 0
 		GLuint indata;
@@ -354,15 +357,19 @@ namespace ChunkRenderer
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, dibSplat->GetID());
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, dibSplat->GetID());
 
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, drawCountGPUSplat->GetID());
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, drawCountGPUSplat->GetID());
+
 		{
 			int numBlocks = (allocs.size() + blockSize - 1) / blockSize;
 			glDispatchCompute(numBlocks, 1, 1);
-			glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
+			//glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 		}
-
-		renderCountSplat = drawCounterSplat->Get(0); // sync point
-		ASSERT(renderCountSplat <= allocatorSplat->ActiveAllocs());
+		//renderCountSplat = drawCounterSplat->Get(0); // sync point
+		//ASSERT(renderCountSplat <= allocatorSplat->ActiveAllocs());
 		glDeleteBuffers(1, &indata);
+
+		drawCountGPUSplat->Unbind();
 
 		PERF_BENCHMARK_END;
 	}
@@ -390,12 +397,14 @@ namespace ChunkRenderer
 #ifdef TRACY_ENABLE
 		TracyGpuZone("Render chunks splat");
 #endif
-		if (renderCountSplat == 0)
-			return;
+		//if (renderCountSplat == 0)
+		//	return;
 	
 		vaoSplat->Bind();
 		dibSplat->Bind();
-		glMultiDrawArraysIndirect(GL_POINTS, (void*)0, renderCountSplat, 0);
+		drawCountGPUSplat->Bind();
+		//glMultiDrawArraysIndirect(GL_POINTS, (void*)0, renderCountSplat, 0);
+		glMultiDrawArraysIndirectCount(GL_POINTS, (void*)0, (GLintptr)0, allocatorSplat->ActiveAllocs(), 0);
 	}
 
 
