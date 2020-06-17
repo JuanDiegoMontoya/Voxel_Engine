@@ -138,7 +138,7 @@ void ChunkMesh::BuildBuffers2()
 	pointCount_ = sPosArr.size();
 
 	CR::allocator->Free(bufferHandle);
-	CR::allocatorSplat->Free(bufferHandle);
+	CR::allocatorSplat->Free(bufferHandleSplat);
 
 	// nothing emitted, don't try to make buffers
 	if (pointCount_ == 0)

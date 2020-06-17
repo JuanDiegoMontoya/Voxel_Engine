@@ -1,5 +1,8 @@
 #pragma once
 
+// no userdata specialization
+struct Empty_ {};
+
 // Generic GPU buffer that can store
 //   up to 4GB (UINT_MAX) of data
 template<typename UserT>
@@ -34,8 +37,6 @@ public:
 		UT userdata;    // user-defined data
 	};
 
-	// no userdata specialization
-	struct Empty_ {};
 	template<>
 	struct allocationData<Empty_>
 	{
@@ -62,6 +63,7 @@ private:
 	void dbgVerify();
 
 	GLuint gpuHandle;
+	GLuint dibHandle;
 	uint64_t nextHandle = 1;
 	GLuint numActiveAllocs_ = 0;
 	const GLuint capacity_; // for fixed size buffers

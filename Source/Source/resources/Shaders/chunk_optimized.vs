@@ -48,6 +48,11 @@ const vec2 tex_corners[] =
   { 0, 0 },
 };
 
+float layer2coord(uint capacity, uint layer)
+{
+  return max(0, min(float(capacity - 1), floor(float(layer) + 0.5)));
+}
+
 // decodes vertex, normal, and texcoord info from encoded data
 // returns usable data (i.e. fully processed)
 void Decode(in uint encoded,
@@ -67,7 +72,7 @@ void Decode(in uint encoded,
   uint textureIdx = (encoded >> 2) & 0x1FF; // = 0b1111111111
   uint cornerIdx = (encoded >> 0) & 0x3; // = 0b11
 
-  texCoord = vec3(tex_corners[cornerIdx], textureIdx);
+  texCoord = vec3(tex_corners[cornerIdx], layer2coord(1024, textureIdx));
 }
 
 

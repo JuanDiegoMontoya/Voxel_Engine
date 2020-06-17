@@ -16,6 +16,7 @@ namespace ChunkRenderer
 
 	inline std::unique_ptr<BufferAllocator<AABB16>> allocator;
 	inline std::unique_ptr<BufferAllocator<AABB16>> allocatorSplat;
+	inline std::unique_ptr<BufferAllocator<Empty_>> allocatorCull;
 
 	struct Settings
 	{

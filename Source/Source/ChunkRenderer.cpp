@@ -23,8 +23,10 @@ namespace ChunkRenderer
 	{
 		std::unique_ptr<VAO> vao;
 		std::unique_ptr<VAO> vaoSplat;
+		std::unique_ptr<VAO> vaoCull;
 		std::unique_ptr<DIB> dib;
 		std::unique_ptr<DIB> dibSplat;
+		std::unique_ptr<DIB> dibCull;
 		int renderCount = 0;
 		int renderCountSplat = 0;
 
@@ -38,8 +40,8 @@ namespace ChunkRenderer
 		std::unique_ptr<Param_BO> drawCountGPU;
 		std::unique_ptr<Param_BO> drawCountGPUSplat;
 
+		// size of block (not voxel) for the compute shader
 		const int blockSize = 64; // defined in compact_batch.cs
-
 	}
 
 
@@ -97,7 +99,7 @@ namespace ChunkRenderer
 		allocator = std::make_unique<BufferAllocator<AABB16>>(2'000'000'000, 2 * sizeof(GLint));
 		//allocator = std::make_unique<BufferAllocator<AABB16>>(100'000'000, 2 * sizeof(GLint));
 		allocatorSplat = std::make_unique<BufferAllocator<AABB16>>(200'000'000, sizeof(GLint));
-
+		allocatorCull = std::make_unique<BufferAllocator<Empty_>>(100'000'000, sizeof(GLint));
 		
 		/* :::::::::::BUFFER FORMAT:::::::::::
 		                        CHUNK 1                                    CHUNK 2                   NULL                   CHUNK 3
