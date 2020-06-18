@@ -134,7 +134,7 @@ namespace NuRenderer
 
 		ChunkRenderer::GenerateDrawCommandsGPU();
 		currShader->Use();
-		ChunkRenderer::Render();
+		ChunkRenderer::RenderNorm();
 		drawCalls++;
 		return;
 
