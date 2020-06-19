@@ -82,7 +82,8 @@ void main()
     bool condition = // all conditions must be true to draw chunk
       alloc.data01.xy != uvec2(0) &&
       CullDistance(alloc.box, u_viewpos, u_cullMinDist, u_cullMaxDist) &&
-      CullFrustum(alloc.box, u_viewfrustum) >= VISIBILITY_PARTIAL;
+      CullFrustum(alloc.box, u_viewfrustum) >= VISIBILITY_PARTIAL &&
+      alloc.size > u_vertexSize * u_reservedVertices;
 #endif
     if (condition == true)
     {

@@ -187,7 +187,7 @@ void ChunkMesh::BuildMesh()
 	interleavedArr.push_back(ap.x);
 	interleavedArr.push_back(ap.y);
 	interleavedArr.push_back(ap.z);
-	interleavedArr.push_back(42069); // padding
+	interleavedArr.push_back(42069); // necessary padding
 	sPosArr.push_back(ap.x);
 	sPosArr.push_back(ap.y);
 	sPosArr.push_back(ap.z);

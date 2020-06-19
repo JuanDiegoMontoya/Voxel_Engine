@@ -15,6 +15,7 @@
 #include <abo.h>
 #include <param_bo.h>
 #include "ChunkStorage.h"
+#include <Vertices.h>
 
 namespace ChunkRenderer
 {
@@ -33,8 +34,10 @@ namespace ChunkRenderer
 		const int blockSize = 64; // defined in compact_batch.cs
 
 		// resets each frame BEFORE the culling phase
-		GLuint allocDataBuffer = 0;
+		//GLuint allocDataBuffer = 0;
 		std::unique_ptr<VAO> vaoCull;
+		std::unique_ptr<VBO> vboCull; // stores only cube vertices
+		std::unique_ptr<DIB> dibCull;
 	}
 
 
@@ -86,6 +89,23 @@ namespace ChunkRenderer
 		glVertexAttribIPointer(1, 3, GL_INT, sizeof(GLuint), (void*)0);
 		glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, sizeof(GLuint), (void*)(3 * sizeof(GLint)));
 		vaoSplat->Unbind();
+
+		// setup vertex buffer for cube that will be used for culling
+		vaoCull = std::make_unique<VAO>();
+		vaoCull->Bind();
+		vboCull = std::make_unique<VBO>(Vertices::cube, sizeof(Vertices::cube));
+		vboCull->Bind();
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glEnableVertexAttribArray(0);
+		vboCull->Unbind();
+		vaoCull->Unbind();
+
+		DrawArraysIndirectCommand cmd;
+		cmd.count = 36; // vertices on cube
+		cmd.instanceCount = 0; // will be incremented - reset every frame
+		cmd.first = 0;
+		cmd.baseInstance = 0;
+		dibCull = std::make_unique<DIB>(&cmd, sizeof(cmd), GL_STATIC_COPY);
 	}
 
 
@@ -264,6 +284,50 @@ namespace ChunkRenderer
 
 		glEnable(GL_DEPTH_TEST);
 	}
+	
+	void Render()
+	{
+		vao->Bind();
+		dib->Bind();
+		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+		//glMultiDrawArraysIndirect(GL_TRIANGLES, (void*)0, renderCount, 0);
+		drawCountGPU->Bind();
+		glMultiDrawArraysIndirectCount(GL_TRIANGLES, (void*)0, (GLintptr)0, allocator->ActiveAllocs(), 0);
+	}
+
+
+	void GenerateDIB()
+	{
+		GenerateDrawCommandsGPU();
+	}
+
+
+#pragma optimize("", off);
+	void RenderOcclusion()
+	{
+		ShaderPtr sr = Shader::shaders["chunk_render_cull"];
+		sr->Use();
+
+		Camera* cam = Renderer::GetPipeline()->GetCamera(0);
+		const glm::mat4 viewProj = cam->GetProj() * cam->GetView();
+		sr->setMat4("u_viewProj", viewProj);
+		sr->setUInt("u_chunk_size", Chunk::CHUNK_SIZE);
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, allocator->GetGPUHandle());
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, allocator->GetGPUHandle());
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, dib->GetID());
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, dib->GetID());
+		
+		// copy # of chunks being drawn (parameter buffer) to instance count (DIB)
+		dibCull->Bind();
+		vaoCull->Bind();
+		GLint offset = offsetof(DrawArraysIndirectCommand, instanceCount);
+		glCopyNamedBufferSubData(drawCountGPU->GetID(), dibCull->GetID(), 0, offset, sizeof(GLuint));
+		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+		glMultiDrawArraysIndirect(GL_TRIANGLES, (void*)0, 1, 0);
+	}
+#pragma optimize("", on);
 }
 
 
