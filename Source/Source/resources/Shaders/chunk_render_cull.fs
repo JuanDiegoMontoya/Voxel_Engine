@@ -25,7 +25,7 @@ out vec4 fragColor;
 void main()
 {
 #if DEBUG_VIEW
-  fragColor = vec4(1, 1, 0, 1);
+  fragColor = vec4(1, 0, 1, 1);
 #endif
   drawCommands[vID].instanceCount = 1;
 }
