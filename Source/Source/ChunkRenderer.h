@@ -44,5 +44,6 @@ namespace ChunkRenderer
 		float normalMax = 800;
 		float splatMin = 800;
 		float splatMax = 8000;
+		bool freezeOcclusionCulling = false;
 	}inline settings;
 }

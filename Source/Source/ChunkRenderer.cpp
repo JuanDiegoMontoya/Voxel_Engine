@@ -287,6 +287,9 @@ namespace ChunkRenderer
 	
 	void Render()
 	{
+		if (!dib)
+			return;
+
 		vao->Bind();
 		dib->Bind();
 		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -298,6 +301,9 @@ namespace ChunkRenderer
 
 	void GenerateDIB()
 	{
+		if (settings.freezeOcclusionCulling)
+			return;
+
 		GenerateDrawCommandsGPU();
 	}
 
@@ -305,6 +311,11 @@ namespace ChunkRenderer
 #pragma optimize("", off);
 	void RenderOcclusion()
 	{
+		if (settings.freezeOcclusionCulling)
+			return;
+
+		glColorMask(false, false, false, false); // false = can't be written
+		glDepthMask(false);
 		ShaderPtr sr = Shader::shaders["chunk_render_cull"];
 		sr->Use();
 
@@ -326,6 +337,8 @@ namespace ChunkRenderer
 		glCopyNamedBufferSubData(drawCountGPU->GetID(), dibCull->GetID(), 0, offset, sizeof(GLuint));
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		glMultiDrawArraysIndirect(GL_TRIANGLES, (void*)0, 1, 0);
+		glDepthMask(true);
+		glColorMask(true, true, true, true);
 	}
 #pragma optimize("", on);
 }

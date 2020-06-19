@@ -133,9 +133,10 @@ namespace NuRenderer
 
 
 
-		ChunkRenderer::GenerateDrawCommandsGPU();
-		//currShader->Use();
+		currShader->Use();
 		//ChunkRenderer::RenderNorm();
+		ChunkRenderer::Render();
+		ChunkRenderer::GenerateDIB();
 		ChunkRenderer::RenderOcclusion();
 		drawCalls++;
 		return;

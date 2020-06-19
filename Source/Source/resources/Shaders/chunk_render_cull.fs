@@ -1,7 +1,7 @@
 #version 460 core
-#define DEBUG_VIEW 1
+#define DEBUG_VIEW 0
 
-//layout (early_fragment_tests) in;
+layout (early_fragment_tests) in;
 
 struct DrawArraysCommand
 {

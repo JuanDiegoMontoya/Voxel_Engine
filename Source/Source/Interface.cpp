@@ -155,6 +155,11 @@ namespace Interface
 					delete Shader::shaders["chunk_splat"];
 					Shader::shaders["chunk_splat"] = new Shader("chunk_splat.vs", "chunk_splat.fs");
 				}
+				if (ImGui::Button("Recompile Render Cull Shader"))
+				{
+					delete Shader::shaders["chunk_render_cull"];
+					Shader::shaders["chunk_render_cull"] = new Shader("chunk_render_cull.vs", "chunk_render_cull.fs");
+				}
 
 				if (ImGui::Button("Delete far chunks (unsafe)"))
 				{
@@ -289,6 +294,7 @@ namespace Interface
 				if (ImGui::Checkbox("Skip lighting", &ChunkMesh::debug_ignore_light_level))
 					World::chunkManager_.ReloadAllChunks();
 				ImGui::Checkbox("Gamma correction", &NuRenderer::settings.gammaCorrection);
+				ImGui::Checkbox("Freeze Occ. Culling", &ChunkRenderer::settings.freezeOcclusionCulling);
 
 				ImGui::Text("Render distance:");
 				ImGui::SliderFloat("normalMin", &ChunkRenderer::settings.normalMin, 0, 5000);

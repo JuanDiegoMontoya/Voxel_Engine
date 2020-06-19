@@ -89,7 +89,7 @@ void main()
     {
       DrawArraysCommand cmd;
       cmd.count = (alloc.size / u_vertexSize) - u_reservedVertices;
-      cmd.instanceCount = 1;
+      cmd.instanceCount = 0;
       cmd.first = alloc.offset / u_vertexSize;
       cmd.baseInstance = cmd.first;
 
