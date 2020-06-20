@@ -17,6 +17,7 @@
 #include <cereal/archives/binary.hpp>
 #include <Pipeline.h>
 #include "Renderer.h"
+#include "ChunkStorage.h"
 
 namespace Editor
 {
@@ -50,10 +51,10 @@ namespace Editor
 					for (int z = min.z; z <= max.z; z++)
 					{
 						// TODO: make bottom-middle of prefab be the origin
-						Block b = chunkManager->GetBlock(glm::ivec3(x, y, z));
+						Block b = ChunkStorage::AtWorldC(glm::ivec3(x, y, z));
 						if (skipAir && b.GetType() == BlockType::bAir)
 							continue;
-						b.SetWriteStrength(0x0F);
+						//b.SetWriteStrength(0x0F);
 						newPfb.Add(
 							glm::ivec3(x - min.x, y - min.y, z - min.z), b);
 					}
@@ -204,9 +205,9 @@ namespace Editor
 					Renderer::GetPipeline()->GetCamera(0)->GetPos(),
 					Renderer::GetPipeline()->GetCamera(0)->front,
 					pickLength,
-					[&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
+					[&](glm::vec3 pos, Block block, glm::vec3 side)->bool
 				{
-					if (!block || block->GetType() == BlockType::bAir)
+					if (block.GetType() == BlockType::bAir)
 						return false;
 					if (selectedPositions == 0)
 						hposition = pos;

@@ -24,7 +24,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Source</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Source</ProjectName>
+    <ProjectName>Voxels</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -88,8 +88,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)lib\FMOD\studio\inc;$(SolutionDir)lib\rapidjson;$(SolutionDir)lib\FMOD\lowlevel\inc;$(SolutionDir)lib\lua-5.3.5\include;$(SolutionDir)lib\freetype\include;$(SolutionDir)lib\freetype\include\freetype;$(SolutionDir)lib\freetype\include\freetype\config;$(SolutionDir)lib\glew-2.0.0\include;$(SolutionDir)lib\glfw-3.3.bin.WIN64\include;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\stb;$(SolutionDir)lib\libnoise\include;$(SolutionDir)lib\cereal-1.2.2\include;$(SolutionDir)Source\Engine\Source;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib\FMOD\studio\lib;$(SolutionDir)lib\FMOD\lowlevel\lib;$(SolutionDir)\lib\rapidjson;$(SolutionDir)lib\lua-5.3.5\lib;$(SolutionDir)lib\freetype\lib\win64;$(SolutionDir)lib\glew-2.0.0\lib\Release\x64;$(SolutionDir)lib\glfw-3.3.bin.WIN64\lib-vc2015;$(SolutionDir)lib\SOIL;$(SolutionDir)lib\libnoise\bin;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)lib\FMOD\studio\inc;$(SolutionDir)lib\rapidjson;$(SolutionDir)lib\FMOD\lowlevel\inc;$(SolutionDir)lib\lua-5.3.5\include;$(SolutionDir)lib\freetype\include;$(SolutionDir)lib\freetype\include\freetype;$(SolutionDir)lib\freetype\include\freetype\config;$(SolutionDir)lib\glew-2.1.0\include;$(SolutionDir)lib\glfw-3.3.bin.WIN64\include;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\stb;$(SolutionDir)lib\libnoise\include;$(SolutionDir)lib\cereal-1.2.2\include;$(SolutionDir)Source\Engine\Source;$(SolutionDir)lib\tracy;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\FMOD\studio\lib;$(SolutionDir)lib\FMOD\lowlevel\lib;$(SolutionDir)\lib\rapidjson;$(SolutionDir)lib\lua-5.3.5\lib;$(SolutionDir)lib\freetype\lib\win64;$(SolutionDir)lib\glew-2.1.0\lib\Release\x64;$(SolutionDir)lib\glfw-3.3.bin.WIN64\lib-vc2015;$(SolutionDir)lib\SOIL;$(SolutionDir)lib\libnoise\bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -193,20 +193,23 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;TRACY_ENABLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <OpenMPSupport>false</OpenMPSupport>
       <AdditionalOptions>/Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <MinimalRebuild>true</MinimalRebuild>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fmodL_vc.lib;fmodstudioL_vc.lib;opengl32.lib;glew32.lib;glfw3dll.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;lua5.3.lib;freetype.lib;soil2-debug.lib;LibNoise64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmodL_vc.lib;fmodstudioL_vc.lib;opengl32.lib;glfw3dll.lib;glew32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;lua5.3.lib;freetype.lib;soil2-debug.lib;LibNoise64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)lib\zlib1.dll" "$(TargetDir)zlib1.dll" /Y
@@ -218,7 +221,7 @@ copy "$(SolutionDir)lib\FMOD\lowlevel\lib\fmodL.dll" "$(TargetDir)fmodL.dll" /Y
 
 copy "$(SolutionDir)lib\FMOD\studio\lib\fmodstudioL.dll" "$(TargetDir)fmodstudioL.dll" /Y
 
-copy "$(SolutionDir)lib\glew-2.0.0\bin\Release\x64\glew32.dll" "$(TargetDir)glew32.dll" /Y
+copy "$(SolutionDir)lib\glew-2.1.0\bin\Release\x64\glew32.dll" "$(TargetDir)glew32.dll" /Y
 copy "$(SolutionDir)lib\glfw-3.3.bin.WIN64\lib-vc2015\glfw3.dll" "$(TargetDir)glfw3.dll" /Y
 copy "$(SolutionDir)lib\lua-5.3.5\lua5.3.dll" "$(TargetDir)lua5.3.dll" /Y
 copy "$(SolutionDir)lib\freetype\lib\win64\freetype.dll" "$(TargetDir)freetype.dll" /Y
@@ -226,86 +229,104 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\lib\tracy\TracyClient.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="biome.cpp" />
     <ClCompile Include="block.cpp" />
     <ClCompile Include="chunk.cpp" />
+    <ClCompile Include="ChunkMesh.cpp" />
+    <ClCompile Include="ChunkRenderer.cpp" />
     <ClCompile Include="chunk_manager.cpp" />
     <ClCompile Include="chunk_manager_base.cpp" />
     <ClCompile Include="collision_check.cpp" />
     <ClCompile Include="directional_light.cpp" />
     <ClCompile Include="Editor.cpp" />
-    <ClCompile Include="Engine\Source\camera.cpp">
+    <ClCompile Include="Engine\Source\abo.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\camera.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\debug.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\dib.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\Engine.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\engine_assert.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\Frustum.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\ibo.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\imgui_impl.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\input.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\load_image.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\math_utils.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\mesh.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\misc_utils.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\param_bo.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\Pipeline.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\shader.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\sys_window.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\texture.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\vao.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Engine\Source\vbo.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="FixedSizeWorld.cpp" />
     <ClCompile Include="hud.cpp" />
     <ClCompile Include="ImGuiBonus.cpp" />
     <ClCompile Include="infinite_chunk_manager.cpp" />
@@ -314,6 +335,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="march_cubes.cpp" />
     <ClCompile Include="generation.cpp" />
     <ClCompile Include="mesh_comp.cpp" />
+    <ClCompile Include="NuRenderer.cpp" />
     <ClCompile Include="parallel_chunks.cpp" />
     <ClCompile Include="physics_comp.cpp" />
     <ClCompile Include="pick.cpp" />
@@ -323,10 +345,35 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     </ClCompile>
     <ClCompile Include="render_data.cpp" />
     <ClCompile Include="sun.cpp" />
+    <ClCompile Include="TextureArray.cpp" />
     <ClCompile Include="transform.cpp" />
     <ClCompile Include="game_object.cpp" />
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_avx2.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_avx512.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_internal.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_neon.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_sse2.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_sse41.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="World.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="main.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="serialize.cpp" />
     <ClCompile Include="settings.cpp" />
@@ -396,14 +443,25 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="WorldGen2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="biome.h" />
+    <ClInclude Include="BitArray.h" />
     <ClInclude Include="block.h" />
+    <ClInclude Include="BlockStorage.h" />
+    <ClInclude Include="BufferAllocator.h" />
+    <ClInclude Include="ChunkHelpers.h" />
+    <ClInclude Include="ChunkMesh.h" />
+    <ClInclude Include="ChunkRenderer.h" />
+    <ClInclude Include="ChunkStorage.h" />
+    <ClInclude Include="Engine\Source\abo.h" />
     <ClInclude Include="Engine\Source\camera.h" />
+    <ClInclude Include="Engine\Source\dib.h" />
     <ClInclude Include="Engine\Source\Frustum.h" />
     <ClInclude Include="Engine\Source\load_image.h" />
     <ClInclude Include="Engine\Source\mesh.h" />
+    <ClInclude Include="Engine\Source\param_bo.h" />
     <ClInclude Include="Engine\Source\Shapes.h" />
     <ClInclude Include="chunk.h" />
     <ClInclude Include="chunk_manager.h" />
@@ -431,6 +489,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="Engine\Source\vbo_layout.h" />
     <ClInclude Include="Engine\Source\Vertices.h" />
     <ClInclude Include="FixedQueue.h" />
+    <ClInclude Include="FixedSizeWorld.h" />
     <ClInclude Include="frustum.h" />
     <ClInclude Include="generation.h" />
     <ClInclude Include="hud.h" />
@@ -439,6 +498,8 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="Interface.h" />
     <ClInclude Include="light.h" />
     <ClInclude Include="mesh_comp.h" />
+    <ClInclude Include="NuRenderer.h" />
+    <ClInclude Include="Palette.h" />
     <ClInclude Include="parallel_chunks.h" />
     <ClInclude Include="physics_comp.h" />
     <ClInclude Include="pick.h" />
@@ -446,8 +507,11 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="prefab.h" />
     <ClInclude Include="render_data.h" />
     <ClInclude Include="sun.h" />
+    <ClInclude Include="TextureArray.h" />
     <ClInclude Include="transform.h" />
     <ClInclude Include="game_object.h" />
+    <ClInclude Include="vendor\FastNoiseSIMD\FastNoiseSIMD.h" />
+    <ClInclude Include="vendor\FastNoiseSIMD\FastNoiseSIMD_internal.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="math_utils.h" />
     <ClInclude Include="misc_utils.h" />
@@ -469,6 +533,13 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="vendor\imgui\stb_textedit.h" />
     <ClInclude Include="vendor\imgui\stb_truetype.h" />
     <ClInclude Include="vendor\noiseutils.h" />
+    <ClInclude Include="WorldGen2.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BlockStorage.inl" />
+    <None Include="BufferAllocator.inl" />
+    <None Include="ChunkHelpers.inl" />
+    <None Include="Palette.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -19,7 +19,7 @@ public:
 
 	void Set(glm::u8vec4 L)
 	{
-		ASSERT(L.r < 16 && L.g < 16 && L.b < 16 && L.a < 16);
+		ASSERT(glm::all(glm::lessThan(L, glm::u8vec4(16))));
 		raw_ = (L.r << 12) | (L.g << 8) | (L.b << 4) | L.a;
 	}
 	void SetR(uint8_t r) { ASSERT(r < 16); raw_ = (raw_ & 0x0FFF) | (r << 12); }

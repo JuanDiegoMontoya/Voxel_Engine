@@ -1,24 +1,32 @@
 #pragma once
-//#include "level.h"
-//#include "pipeline.h"
 #include "serialize.h"
-//#include "utilities.h"
+#include "light.h"
+
+enum class Visibility
+{
+	Opaque = 0,
+	Partial = 1,
+	Invisible = 2
+};
 
 // visual properties (for now)
 struct BlockProperties
 {
-	BlockProperties(const char* n, float s, glm::vec4 c, glm::uvec4 e)
-	: name(n), color(c), specular(s), invisible(c.a == 0), emittance(e) {}
+	BlockProperties(
+		const char* n, 
+		glm::uvec4 e, 
+		Visibility vis = Visibility::Opaque, 
+		const char* tx = "<null>")
+	: name(n), visibility(vis), emittance(e), texture(tx) {}
 	const char* name;
-	float specular;					// shininess
-	glm::vec4 color;				// diffuse color
-	bool invisible;					// skip rendering if true
-	glm::u8vec4 emittance;	// light
+	Visibility visibility; // skip rendering if true
+	glm::u8vec4 emittance; // light
+	const char* texture;   // path to texture (default to name)
 };
 
 
 // defines various block properties and behaviors
-enum class BlockType : uint8_t // upgrade when over 256 block types
+enum class BlockType : uint16_t // upgrade when over 2^16 block types
 {
 	bAir = 0, // default type
 	bStone,
@@ -37,59 +45,43 @@ enum class BlockType : uint8_t // upgrade when over 256 block types
 	bGLight,
 	bBLight,
 	bSmLight,
+	bYLight,
+	bRglass,
+	bGglass,
 	bBglass,
 
 	bCount
 };
 
 
-// a 1x1x1 cube
-//#pragma pack(push, 1)
-typedef class Block
+typedef struct Block
 {
 public:
 	
-	Block(BlockType t = BlockType::bAir, unsigned char w = 0, unsigned char l = 0)
-		: type_(t)
-	{
-		SetWriteStrength(w);
-		SetLightValue(l);
-	}
+	Block(BlockType t = BlockType::bAir) : type_(t) {}
+	Block(BlockType t, Light l) : type_(t), light_(l) {}
 
 	// Getters
 	BlockType GetType() const { return type_; }
 	int GetTypei() const { return int(type_); }
 	const char* GetName() const { return Block::PropertiesTable[unsigned(type_)].name; }
-	unsigned char WriteStrength() const { return (wlValues_ & 0xF0) >> 4; }
-	unsigned char LightValue() const { return wlValues_ & 0x0F; }
+	Light& GetLightRef() { return light_; }
+	Light GetLight() const { return light_; }
 
 	// Setters
-	void SetType(BlockType ty, unsigned char write) { type_ = ty; SetWriteStrength(write); }
-	void SetWriteStrength(unsigned char w)
-	{
-		ASSERT(w <= 0xf);
-		wlValues_ = (wlValues_ & 0x0F) | (w << 4);
-	}
-	void SetLightValue(unsigned char l)
-	{
-		ASSERT(l <= 0xf);
-		wlValues_ = (wlValues_ & 0xF0) | (l);
-	}
+	void SetType(BlockType ty) { type_ = ty; }
 
 	// Serialization
 	template <class Archive>
 	void serialize(Archive& ar)
 	{
-		ar(type_, wlValues_);
+		uint8_t fake;
+		ar(type_, fake);
 	}
 
 	static const std::vector<BlockProperties> PropertiesTable;
 private:
-	BlockType type_;
+	BlockType type_; // could probably shove extra data in this
+	Light light_;
 
-	// left 4 bits = writeStrength; right 4 bits = lightValue
-	// the lighting information can be derived at runtime, but
-	// the write strength should be serialized in the future
-	uint8_t wlValues_;
 }Block, *BlockPtr;
-//#pragma pack(pop)

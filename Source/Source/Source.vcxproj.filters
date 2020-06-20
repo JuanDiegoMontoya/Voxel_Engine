@@ -49,6 +49,21 @@
     <Filter Include="Engine">
       <UniqueIdentifier>{743f078a-5283-40f5-9bfb-0ead862dbdc1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Voxel Engine\Chunks">
+      <UniqueIdentifier>{39f2c382-fdfb-4702-a311-794e55352318}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Voxel Engine\World Generation">
+      <UniqueIdentifier>{ea3919bb-71c7-46d8-a42d-44c4af54f0e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\FastNoiseSIMD">
+      <UniqueIdentifier>{45563d52-873b-48f4-ac9e-c0c2ae0bf2ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\imgui">
+      <UniqueIdentifier>{94ebe352-4b94-4586-9517-9ed7c9ce90e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\tracy">
+      <UniqueIdentifier>{e2865684-5b58-42df-8f99-bb74dec03205}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="settings.h">
@@ -66,30 +81,6 @@
     </ClInclude>
     <ClInclude Include="math_utils.h">
       <Filter>Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imconfig.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imgui.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imgui_impl_glfw.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imgui_impl_opengl3.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imgui_internal.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imstb_rectpack.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imstb_textedit.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imstb_truetype.h">
-      <Filter>vendor</Filter>
     </ClInclude>
     <ClInclude Include="vendor\imgui\stb_rect_pack.h">
       <Filter>vendor</Filter>
@@ -121,9 +112,6 @@
     <ClInclude Include="block.h">
       <Filter>Voxel Engine</Filter>
     </ClInclude>
-    <ClInclude Include="chunk.h">
-      <Filter>Voxel Engine</Filter>
-    </ClInclude>
     <ClInclude Include="frustum.h">
       <Filter>Graphics</Filter>
     </ClInclude>
@@ -132,9 +120,6 @@
     </ClInclude>
     <ClInclude Include="vendor\ctpl_stl.h">
       <Filter>vendor\ctpl</Filter>
-    </ClInclude>
-    <ClInclude Include="generation.h">
-      <Filter>Voxel Engine</Filter>
     </ClInclude>
     <ClInclude Include="vendor\noiseutils.h">
       <Filter>vendor</Filter>
@@ -262,6 +247,87 @@
     <ClInclude Include="Engine\Source\texture.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="NuRenderer.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkStorage.h">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </ClInclude>
+    <ClInclude Include="BlockStorage.h">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </ClInclude>
+    <ClInclude Include="BitArray.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="chunk.h">
+      <Filter>Voxel Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkHelpers.h">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkMesh.h">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </ClInclude>
+    <ClInclude Include="FixedSizeWorld.h">
+      <Filter>Voxel Engine\Chunk Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="generation.h">
+      <Filter>Voxel Engine\World Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldGen2.h">
+      <Filter>Voxel Engine\World Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="Palette.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\dib.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkRenderer.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="BufferAllocator.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\FastNoiseSIMD\FastNoiseSIMD.h">
+      <Filter>vendor\FastNoiseSIMD</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\FastNoiseSIMD\FastNoiseSIMD_internal.h">
+      <Filter>vendor\FastNoiseSIMD</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui_impl_glfw.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui_impl_opengl3.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui_internal.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imstb_rectpack.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imstb_textedit.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imstb_truetype.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imconfig.h">
+      <Filter>vendor\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\abo.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureArray.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Source\param_bo.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -272,24 +338,6 @@
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui.cpp">
-      <Filter>vendor</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_demo.cpp">
-      <Filter>vendor</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_draw.cpp">
-      <Filter>vendor</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_impl_glfw.cpp">
-      <Filter>vendor</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_impl_opengl3.cpp">
-      <Filter>vendor</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_widgets.cpp">
-      <Filter>vendor</Filter>
     </ClCompile>
     <ClCompile Include="game_object.cpp">
       <Filter>Game\ECS</Filter>
@@ -309,14 +357,8 @@
     <ClCompile Include="block.cpp">
       <Filter>Voxel Engine</Filter>
     </ClCompile>
-    <ClCompile Include="chunk.cpp">
-      <Filter>Voxel Engine</Filter>
-    </ClCompile>
     <ClCompile Include="sun.cpp">
       <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="generation.cpp">
-      <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="vendor\noiseutils.cpp">
       <Filter>vendor</Filter>
@@ -429,5 +471,94 @@
     <ClCompile Include="Engine\Source\texture.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="NuRenderer.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="chunk.cpp">
+      <Filter>Voxel Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkMesh.cpp">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </ClCompile>
+    <ClCompile Include="FixedSizeWorld.cpp">
+      <Filter>Voxel Engine\Chunk Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="generation.cpp">
+      <Filter>Voxel Engine\World Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldGen2.cpp">
+      <Filter>Voxel Engine\World Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\dib.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkRenderer.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD.cpp">
+      <Filter>vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_avx2.cpp">
+      <Filter>vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_avx512.cpp">
+      <Filter>vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_internal.cpp">
+      <Filter>vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_neon.cpp">
+      <Filter>vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_sse2.cpp">
+      <Filter>vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_sse41.cpp">
+      <Filter>vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_impl_glfw.cpp">
+      <Filter>vendor\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_draw.cpp">
+      <Filter>vendor\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_impl_opengl3.cpp">
+      <Filter>vendor\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_widgets.cpp">
+      <Filter>vendor\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui_demo.cpp">
+      <Filter>vendor\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui.cpp">
+      <Filter>vendor\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\abo.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureArray.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Source\param_bo.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lib\tracy\TracyClient.cpp">
+      <Filter>vendor\tracy</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BlockStorage.inl">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </None>
+    <None Include="ChunkHelpers.inl">
+      <Filter>Voxel Engine\Chunks</Filter>
+    </None>
+    <None Include="Palette.inl">
+      <Filter>Utilities</Filter>
+    </None>
+    <None Include="BufferAllocator.inl">
+      <Filter>Graphics</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -29,6 +29,10 @@
 #include <Pipeline.h>
 #include "Renderer.h"
 #include "Interface.h"
+#include "FixedSizeWorld.h"
+#include "ChunkStorage.h"
+#include "WorldGen2.h"
+#include "ChunkRenderer.h"
 
 using namespace std::chrono;
 
@@ -42,37 +46,40 @@ namespace World
 	// for now this function is where we declare objects
 	void World::Init()
 	{
-		//cameras_.push_back(new Camera(kControlCam));
-		//cameras_.push_back(new Camera(CameraType::kControlCam));
 		auto cam = new Camera(CameraType::kControlCam);
+		cam->scrollMove = false;
 		cam->SetPos({ 0, 5, 0 });
+		cam->SetFar(3000.0f);
 		Renderer::GetPipeline()->AddCamera(cam);
 
-		//config = std::make_shared<btDefaultCollisionConfiguration>();
-		//dispatcher = std::make_shared<btCollisionDispatcher>(config.get());
-		//btInterface = std::make_shared<btSimpleBroadphase>();
-
+		//ChunkMesh::InitAllocator();
 
 		high_resolution_clock::time_point benchmark_clock_ = high_resolution_clock::now();
 
-		chunkManager_.Init();
 		WorldGen::InitNoiseFuncs();
-		//Editor::level = this;
 		Editor::chunkManager = &chunkManager_;
-		//Editor::renderer = &renderer_;
 		PrefabManager::InitPrefabs();
 		BiomeManager::InitializeBiomes();
-		//chunkManager_.SetCurrentLevel(this);
-		chunkManager_.SetLoadDistance(200.f);
+		chunkManager_.SetLoadDistance(3000.f);
 		chunkManager_.SetUnloadLeniency(100.f);
-		//renderer_.Init();
-		//renderer_.chunkManager_ = &chunkManager_;
+
+		//FixedSizeWorld::GenWorld({ -3, -2, -3 }, { 3, 2, 3 });
+		WorldGen2::Init();
+		WorldGen2::GenerateWorld();
+		ChunkRenderer::InitAllocator();
+		WorldGen2::InitMeshes();
+		WorldGen2::InitBuffers();
+		chunkManager_.Init();
 
 		duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
-		std::cout << benchmark_duration_.count() << std::endl;
+		//std::cout << benchmark_duration_.count() << std::endl;
 		sun_ = new Sun();
 
+		Renderer::SetDirLight(&sun_->GetDirLight());
+		Renderer::SetSun(sun_);
+
 		Engine::PushUpdateCallback(Update, 0);
+		Engine::PushRenderCallback([] { hud_.Update(); }, 5);
 	}
 
 	void Shutdown()
@@ -90,8 +97,10 @@ namespace World
 	{
 		// update each camera
 		if (!Interface::activeCursor)
+		{
 			for (auto& cam : Renderer::GetPipeline()->GetAllCameras())
 				cam->Update(Engine::GetDT());
+		}
 
 		if (doCollisionTick)
 			CheckCollision();
@@ -99,12 +108,10 @@ namespace World
 		chunkManager_.Update();
 		CheckInteraction();
 		sun_->Update();
-		Renderer::SetDirLight(&sun_->GetDirLight());
-		Renderer::SetSun(sun_);
 		
 		//Renderer::DrawAll();
 		Editor::Update();
-		hud_.Update();
+		//hud_.Update();
 		//DrawImGui();
 	}
 
@@ -115,7 +122,7 @@ namespace World
 	void World::CheckCollision()
 	{
 		auto cam = Renderer::GetPipeline()->GetCamera(0);
-		ImGui::Begin("Collision");
+		ImGui::Begin("Collision", 0, Interface::activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 		Box camBox(*cam);
 		auto min = glm::ivec3(glm::floor(camBox.min));
 		auto max = glm::ivec3(glm::ceil(camBox.max));
@@ -139,7 +146,7 @@ namespace World
 		for (auto& blockBox : blocks)
 		{
 			auto pos = blockBox.blockpos;
-			if (GetBlockAt(pos).GetType() != BlockType::bAir)
+			if (ChunkStorage::AtWorldC(pos).GetType() != BlockType::bAir)
 			{
 				// the normal of each face.
 				constexpr glm::vec3 faces[6] =
@@ -190,7 +197,7 @@ namespace World
 				auto refl = glm::normalize(glm::reflect(glm::normalize(cam->GetPos() - cam->oldPos + .000001f), -collisionNormal));
 				//refl[normalComp] /= 2;
 				glm::vec3 newPos = cam->GetPos();
-				if (GetBlockAt(pos).GetType() == BlockType::bWater)
+				if (ChunkStorage::AtWorldC(pos).GetType() == BlockType::bWater)
 				{
 					cam->velocity_.y *= glm::pow(.987f, Engine::GetDT() * 100);
 					if (Input::Keyboard().down[GLFW_KEY_SPACE])
@@ -227,7 +234,7 @@ namespace World
 	void World::UpdateBlockAt(glm::ivec3 wpos, Block bl)
 	{
 		Block block = bl;
-		block.SetWriteStrength(0xf);
+		//block.SetWriteStrength(0xf);
 		chunkManager_.UpdateBlock(wpos, block);
 	}
 
@@ -241,13 +248,8 @@ namespace World
 
 	void World::GenerateBlockAtCheap(glm::ivec3 wpos, Block b)
 	{
+		//ASSERT(0);
 		chunkManager_.UpdateBlockCheap(wpos, b);
-	}
-
-
-	Block World::GetBlockAt(glm::ivec3 wpos)
-	{
-		return chunkManager_.GetBlock(wpos);
 	}
 
 
@@ -259,13 +261,13 @@ namespace World
 				Renderer::GetPipeline()->GetCamera(0)->GetPos(),
 				Renderer::GetPipeline()->GetCamera(0)->front,
 				5,
-				std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
-				([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
+				std::function<bool(glm::vec3, Block, glm::vec3)>
+				([&](glm::vec3 pos, Block block, glm::vec3 side)->bool
 			{
-				if (!block || block->GetType() == BlockType::bAir)
+				if (block.GetType() == BlockType::bAir)
 					return false;
 
-				UpdateBlockAt(pos + side, hud_.selected_);
+				UpdateBlockAt(pos + side, hud_.GetSelected());
 
 				return true;
 			}
@@ -285,10 +287,10 @@ namespace World
 				Renderer::GetPipeline()->GetCamera(0)->GetPos(),
 				Renderer::GetPipeline()->GetCamera(0)->front,
 				5,
-				std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
-				([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
+				std::function<bool(glm::vec3, Block, glm::vec3)>
+				([&](glm::vec3 pos, Block block, glm::vec3 side)->bool
 			{
-				if (!block || block->GetType() == BlockType::bAir)
+				if (block.GetType() == BlockType::bAir)
 					return false;
 
 				UpdateBlockAt(pos, BlockType::bAir);
@@ -311,13 +313,13 @@ namespace World
 				Renderer::GetPipeline()->GetCamera(0)->GetPos(),
 				Renderer::GetPipeline()->GetCamera(0)->front,
 				5,
-				std::function<bool(glm::vec3, BlockPtr, glm::vec3)>
-				([&](glm::vec3 pos, BlockPtr block, glm::vec3 side)->bool
+				std::function<bool(glm::vec3, Block, glm::vec3)>
+				([&](glm::vec3 pos, Block block, glm::vec3 side)->bool
 			{
-				if (!block || block->GetType() == BlockType::bAir)
+				if (block.GetType() == BlockType::bAir)
 					return false;
 
-				hud_.selected_ = block->GetType();
+				hud_.SetSelected(block.GetType());
 
 				return true;
 			}

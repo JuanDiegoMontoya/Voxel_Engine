@@ -1,4 +1,6 @@
 #pragma once
+#include <camera.h>
+#include <Frustum.h>
 #include "block.h"
 #include "light.h"
 #include "biome.h"
@@ -7,6 +9,10 @@
 #include <concurrent_unordered_map.h> // TODO: temp solution to concurrent chunk access
 #include <atomic>
 #include <Shapes.h>
+
+#include "ChunkHelpers.h"
+#include "BlockStorage.h"
+#include "ChunkMesh.h"
 
 #include <cereal/archives/binary.hpp>
 
@@ -20,18 +26,6 @@ class VAO;
 class VBO;
 class IBO;
 
-struct localpos
-{
-	localpos() : chunk_pos(0), block_pos(0) {}
-	localpos(const glm::ivec3& chunk, const glm::ivec3& block)
-		: chunk_pos(chunk), block_pos(block) {}
-	localpos(glm::ivec3&& chunk, glm::ivec3&& block)
-		: chunk_pos(std::move(chunk)), block_pos(std::move(block)) {}
-	glm::ivec3 chunk_pos; // within world
-	glm::ivec3 block_pos; // within chunk
-};
-
-
 //typedef std::pair<glm::ivec3, glm::ivec3> localpos;
 
 /*
@@ -44,23 +38,13 @@ struct localpos
 	6: +x+y-z
 	7: -x+y-z
 */
-typedef struct
-{
-	glm::vec3 p[8]; // corner positions
-	double val[8]; // density values
-} cell;
-
-typedef struct
-{
-	glm::vec3 ps[3];
-} tri;
 
 // TODO: clean this up a lot
 typedef struct Chunk
 {
 private:
 public:
-	Chunk(bool active = true);
+	Chunk();
 	~Chunk();
 	Chunk(const Chunk& other);
 	Chunk& operator=(const Chunk& rhs);
@@ -68,7 +52,6 @@ public:
 	/*################################
 						Global Chunk Info
 	################################*/
-	static constexpr int GetChunkSize() { return CHUNK_SIZE; }
 	static constexpr int CHUNK_SIZE			  = 32;
 	static constexpr int CHUNK_SIZE_SQRED = CHUNK_SIZE * CHUNK_SIZE;
 	static constexpr int CHUNK_SIZE_CUBED = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
@@ -79,10 +62,6 @@ public:
 						Draw Functions
 	################################*/
 	void Update();
-	void Render();
-	void RenderWater();
-	void BuildBuffers();
-	void BuildMesh();
 
 
 	/*################################
@@ -95,99 +74,56 @@ public:
 		pos_ = pos;
 		model_ = glm::translate(glm::mat4(1.f), glm::vec3(pos_) * (float)CHUNK_SIZE);
 		bounds.min = glm::vec3(pos_ * CHUNK_SIZE);
-		bounds.max = glm::vec3(pos_ * CHUNK_SIZE + CHUNK_SIZE - 0);
+		bounds.max = glm::vec3(pos_ * CHUNK_SIZE + CHUNK_SIZE);
 	}
 
-	const glm::ivec3& GetPos() { return pos_; }
-	void SetActive(bool e) { active_ = e; }
-	bool IsActive() { return active_; }
-	bool IsVisible() const { return visible_; }
-	void SetVisible(bool b) { visible_ = b; }
+	inline const glm::ivec3& GetPos() { return pos_; }
 
-
-	/*################################
-					Coordinate Functions
-	################################*/
-	// may need to upgrade parameter to glm::i64vec3 if worldgen at far distances is fug'd
-	// "origin" chunk goes from 0-CHUNK_SIZE rather than -CHUNK_SIZE/2-CHUNK_SIZE/2
-	// chunk at (0,0,0) spans 0-CHUNK_SIZE
-	static localpos worldBlockToLocalPos(const glm::ivec3 wpos)
+	inline bool IsVisible(Camera& cam) const
 	{
-		localpos ret;
-		fastWorldBlockToLocalPos(wpos, ret);
-		return ret;
+		return cam.GetFrustum()->IsInside(bounds) >= Frustum::Visibility::Partial;
 	}
 
-	// improves speed by avoiding local copies and returning
-	static void fastWorldBlockToLocalPos(const glm::ivec3& wpos, localpos& ret)
+	inline Block BlockAt(const glm::ivec3& p)
 	{
-		// compute the modulus of wpos and chunk size (bitwise AND method only works for powers of 2)
-		// to find the relative block position in the chunk
-		ret.block_pos.x = wpos.x & CHUNK_SIZE - 1;
-		ret.block_pos.y = wpos.y & CHUNK_SIZE - 1;
-		ret.block_pos.z = wpos.z & CHUNK_SIZE - 1;
-		// find the chunk position using integer floor method
-		ret.chunk_pos.x = wpos.x / CHUNK_SIZE;
-		ret.chunk_pos.y = wpos.y / CHUNK_SIZE;
-		ret.chunk_pos.z = wpos.z / CHUNK_SIZE;
-		// subtract (floor) if negative w/ non-zero modulus
-		if (wpos.x < 0 && ret.block_pos.x) ret.chunk_pos.x--;
-		if (wpos.y < 0 && ret.block_pos.y) ret.chunk_pos.y--;
-		if (wpos.z < 0 && ret.block_pos.z) ret.chunk_pos.z--;
-		// shift local block position forward by chunk size if negative
-		if (ret.block_pos.x < 0) ret.block_pos.x += CHUNK_SIZE;
-		if (ret.block_pos.y < 0) ret.block_pos.y += CHUNK_SIZE;
-		if (ret.block_pos.z < 0) ret.block_pos.z += CHUNK_SIZE;
+		return storage.GetBlock(ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE));
 	}
 
-	// gives the true world position of a block within a chunk
-	glm::ivec3 chunkBlockToWorldPos(const glm::ivec3 local)
+	inline Block BlockAt(int index)
 	{
-		return glm::ivec3(local + (pos_ * CHUNK_SIZE));
+		return storage.GetBlock(index);
 	}
 
-	Block& At(const glm::ivec3 p)
+	inline BlockType BlockTypeAt(const glm::ivec3& p)
 	{
-		return blocks[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+		return storage.GetBlockType(ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE));
 	}
 
-	Block& At(int x, int y, int z)
+	inline BlockType BlockTypeAt(int index)
 	{
-		return blocks[ID3D(x, y, z, CHUNK_SIZE, CHUNK_SIZE)];
+		return storage.GetBlockType(index);
 	}
 
-	inline Block BlockAtCheap(const glm::ivec3 p)
+	inline void SetBlockTypeAt(const glm::ivec3& lpos, BlockType type)
 	{
-		return blocks[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+		storage.SetBlock(
+			ID3D(lpos.x, lpos.y, lpos.z, CHUNK_SIZE, CHUNK_SIZE), type);
 	}
 
-	Light& LightAt(const glm::ivec3 p)
+	inline void SetLightAt(const glm::ivec3& lpos, Light light)
 	{
-		return lightMap[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+		storage.SetLight(
+			ID3D(lpos.x, lpos.y, lpos.z, CHUNK_SIZE, CHUNK_SIZE), light);
 	}
 
-	Light LightAtCheap(const glm::ivec3 p)
+	inline Light LightAt(const glm::ivec3& p)
 	{
-		return lightMap[ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE)];
+		return storage.GetLight(ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE));
 	}
 
-	// block at a position in world space
-	static BlockPtr AtWorld(const glm::ivec3 p)
+	inline Light LightAt(int index)
 	{
-		localpos w = worldBlockToLocalPos(p);
-		ChunkPtr cnk = chunks[w.chunk_pos];
-		if (cnk)
-			return &cnk->At(w.block_pos);
-		return nullptr;
-	}
-
-	static LightPtr LightAtWorld(const glm::ivec3 p)
-	{
-		localpos w = worldBlockToLocalPos(p);
-		ChunkPtr cnk = chunks[w.chunk_pos];
-		if (cnk)
-			return &cnk->LightAt(w.block_pos);
-		return nullptr;
+		return storage.GetLight(index);
 	}
 
 	AABB GetAABB() const
@@ -195,137 +131,48 @@ public:
 		return bounds;
 	}
 
-	/*################################
-						Raw Block Data
-	################################*/
-	Block blocks[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
-	Light lightMap[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
-	//static inline std::unordered_map<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
-	static inline Concurrency::concurrent_unordered_map // TODO: make CustomGrow(tm) concurrent map solution to be more portable
-		<glm::ivec3, Chunk*, Utils::ivec3Hash> chunks;
-	
-	// debug
-	static inline bool debug_ignore_light_level = false;
-	static inline std::atomic<double> accumtime = 0;
-	static inline std::atomic<unsigned> accumcount = 0;
 
-	static cell buildCellFromVoxel(const glm::vec3& wpos);
+	void BuildMesh()
+	{
+		mesh.BuildMesh();
+	}
+
+	void BuildBuffers()
+	{
+		//mesh.BuildBuffers();
+		mesh.BuildBuffers2();
+	}
+
+	void Render()
+	{
+		mesh.Render();
+	}
+
+	void RenderSplat()
+	{
+		mesh.RenderSplat();
+	}
+
+	ChunkMesh& GetMesh()
+	{
+		return mesh;
+	}
 
 	// Serialization
 	template <class Archive>
 	void serialize(Archive& ar)
 	{
 		// save position, block, and lighting data
-		ar(pos_, cereal::binary_data(blocks, sizeof(blocks)), cereal::binary_data(lightMap, sizeof(lightMap)));
+		//ar(pos_, cereal::binary_data(blocks, sizeof(blocks)), cereal::binary_data(lightMap, sizeof(lightMap)));
 	}
 
-	friend class WorldGen;
-	friend class ChunkManager;
-	//friend class Renderer;
-
 private:
-	enum
-	{
-		Far,
-		Near,
-		Left,
-		Right,
-		Top,
-		Bottom,
-
-		fCount
-	};
-
-	static inline const glm::ivec3 faces[6] =
-	{
-		{ 0, 0, 1 }, // 'far' face    (-z direction)
-		{ 0, 0,-1 }, // 'near' face   (+z direction)
-		{-1, 0, 0 }, // 'left' face   (-x direction)
-		{ 1, 0, 0 }, // 'right' face  (+x direction)
-		{ 0, 1, 0 }, // 'top' face    (+y direction)
-		{ 0,-1, 0 }, // 'bottom' face (-y direction)
-	};
-
-	void buildBlockVertices_normal(
-		const glm::ivec3& pos,
-		Block block);
-	void buildBlockFace(
-		int face,
-		const glm::ivec3& blockPos,
-		Block block);
-	// adds quad at given location
-	void addQuad(const glm::ivec3& lpos, Block block, 
-		int face, ChunkPtr nearChunk, Light light);
-
-	// returns inverse of occludedness
-	float computeBlockAO(
-		Block block,
-		const glm::ivec3& blockPos,
-		const glm::vec3& corner,
-		const glm::ivec3& nearFace);
-	float vertexFaceAO(
-		const glm::vec3& corner,
-		const glm::ivec3& faceNorm);
-
-	void buildBlockVertices_marched_cubes(
-		glm::ivec3 pos,
-		Block block);
-	size_t polygonize(const glm::ivec3& pos, const Block&);
-	glm::vec3 VertexInterp(double isolevel, glm::vec3 p1, glm::vec3 p2, double valp1, double valp2);
-	//glm::vec3 VertexInterp2(glm::vec3 p1, glm::vec3 p2, double value);
-
-	/*
-		Used for marching cubes. Determines the minimum density of a point
-		for it to be considered solid or not.
-	*/
-	static double isolevel; // between 0 and 1
-
 	glm::mat4 model_;
 	glm::ivec3 pos_;	// position relative to other chunks (1 chunk = 1 index)
-	bool active_;			// unused
 	bool visible_;		// used in frustum culling
-	std::mutex mutex_;// used for safe concurrent access
+	AABB bounds{};
 
-	std::mutex vertex_buffer_mutex_;
-
-	// buffers
-	IBO* ibo_ = nullptr;
-	VAO* vao_ = nullptr;
-	VBO* positions_ = nullptr;
-	VBO* normals_ = nullptr;
-	VBO* colors_ = nullptr;
-	VBO* speculars_ = nullptr;
-	VBO* sunlight_ = nullptr;
-	VBO* blocklight_ = nullptr;
-	IBO* wibo_ = nullptr;
-	VAO* wvao_ = nullptr;
-	VBO* wpositions_ = nullptr;
-	VBO* wnormals_ = nullptr;
-	VBO* wcolors_ = nullptr;
-	VBO* wspeculars_ = nullptr;
-	VBO* wsunlight_ = nullptr;
-	VBO* wblocklight_ = nullptr;
-	// vertex data (held until buffers are sent to GPU)
-	std::vector<GLuint> tIndices;
-	std::vector<glm::vec3> tPositions;
-	std::vector<glm::vec3> tNormals;
-	std::vector<glm::vec4> tColors;
-	std::vector<float> tSpeculars;
-	//std::vector<float> tSunlight;
-	std::vector<GLint> tLighting;
-	std::vector<GLuint> wtIndices;
-	std::vector<glm::vec3> wtPositions;
-	std::vector<glm::vec3> wtNormals;
-	std::vector<glm::vec4> wtColors;
-	std::vector<float>		 wtSpeculars;
-	//std::vector<float> wtSunlight;
-	std::vector<GLint> wtLighting;
-	GLsizei wvertexCount_ = 0;// number of transparent block vertices
-	GLsizei vertexCount_ = 0; // number of opaque block vertices
-	GLsizei windexCount_ = 0;// number of transparent block vertices
-	GLsizei indexCount_ = 0; // number of opaque block vertices
-
-	AABB bounds;
+	//ArrayBlockStorage<CHUNK_SIZE_CUBED> storage;
+	PaletteBlockStorage<CHUNK_SIZE_CUBED> storage;
+	ChunkMesh mesh;
 }Chunk, *ChunkPtr;
-
-void TestCoordinateStuff();

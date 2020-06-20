@@ -30,18 +30,10 @@ namespace Renderer
 
 
 	// broad-phase rendering
-	void drawShadows(); // construct shadow map(s)
 	void drawSky();
-	void drawNormal();	// draw what we see
-	void drawWater();
 	void drawPostProcessing(); // apply post processing effects
-	void drawDebug();
 
 	// narrow-phase rendering
-	void drawChunks(bool cullFrustum, 
-		DrawCB predraw_cb,
-		ModelCB draw_cb,
-		DrawCB postdraw_cb);
 	void drawBillboard(VAO* vao, size_t count, DrawCB uniform_cb);
 	void drawQuad();
 
@@ -51,7 +43,6 @@ namespace Renderer
 
 	// deferred rendering
 	void initDeferredBuffers();
-	void geometryPass();
 	void lightingPass();
 
 	// post processing

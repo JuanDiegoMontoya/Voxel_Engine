@@ -9,6 +9,7 @@
 #include <noise/noise.h>
 #include "vendor/noiseutils.h"
 #include <execution>
+#include "ChunkStorage.h"
 
 int maxHeight = 255;
 
@@ -25,7 +26,7 @@ void WorldGen::GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse
 		{
 			for (int zc = 0; zc < zSize; zc++)
 			{
-				Chunk* init = Chunk::chunks[glm::ivec3(xc, yc, zc)] = new Chunk(true);
+				Chunk* init = ChunkStorage::GetMapRaw()[glm::ivec3(xc, yc, zc)] = new Chunk();
 				init->SetPos(glm::ivec3(xc, yc, zc));
 				updateList.push_back(init);
 					
@@ -37,7 +38,7 @@ void WorldGen::GenerateSimpleWorld(int xSize, int ySize, int zSize, float sparse
 						{
 							if (Utils::get_random(0, 1) > sparse)
 								continue;
-							init->At(x, y, z).SetType(BlockType(int(Utils::get_random(1.f, float(BlockType::bCount)))), false);
+							init->SetBlockTypeAt({ x, y, z }, BlockType(int(Utils::get_random(1.f, float(BlockType::bCount)))));
 						}
 					}
 				}
@@ -413,9 +414,9 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos)
 
 				// TODO: make rivers have sand around/under them
 				if (worldY > actualHeight && worldY < y - 1)
-					World::GenerateBlockAt(wpos, BlockType::bWater);
+					World::GenerateBlockAtCheap(wpos, BlockType::bWater);
 				if (worldY < 0 && worldY > actualHeight) // make ocean
-					World::GenerateBlockAt(wpos, BlockType::bWater);
+					World::GenerateBlockAtCheap(wpos, BlockType::bWater);
 
 				// top cover
 				if (worldY == actualHeight)
@@ -436,12 +437,12 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos)
 				}
 				// just under top cover
 				if (worldY >= actualHeight - 3 && worldY < actualHeight)
-					World::GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), BlockType::bDirt);
+					World::GenerateBlockAtCheap(glm::ivec3(worldX, worldY, worldZ), BlockType::bDirt);
 
 				// generate subsurface layer (rocks)
 				if (worldY >= -30 && worldY < actualHeight - 3)
 				{
-					World::GenerateBlockAt(glm::ivec3(worldX, worldY, worldZ), BlockType::bStone);
+					World::GenerateBlockAtCheap(glm::ivec3(worldX, worldY, worldZ), BlockType::bStone);
 					if (Utils::get_random_svr(wpos, 0, 1) < 1.0f / 100000.0f) // one in ten thousand chance per block
 						GeneratePrefab(PrefabManager::GetPrefab(PrefabName::DungeonSmall), wpos);
 				}
@@ -458,7 +459,7 @@ void WorldGen::GenerateChunk(glm::ivec3 cpos)
 			{
 				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 				double val = tunneler.GetValue(pos.x, pos.y, pos.z);
-				if (val > .9 && World::GetBlockAt(pos).GetType() != BlockType::bWater)
+				if (val > .9 && ChunkStorage::AtWorldC(pos).GetType() != BlockType::bWater)
 					World::GenerateBlockAtCheap(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
 					//level->GenerateBlockAt(glm::ivec3(pos.x, pos.y, pos.z), BlockType::bAir);
 			}
@@ -517,26 +518,26 @@ void WorldGen::GeneratePrefab(const Prefab& prefab, glm::ivec3 wpos)
 static double magic = .2; // increase isolevel by this amount (makes it somewhat accurate)
 void WorldGen::Generate3DNoiseChunk(glm::ivec3 cpos)
 {
-	for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
-	{
-		for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
-		{
-			for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
-			{
-				glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
+	//for (int xb = 0; xb < Chunk::CHUNK_SIZE; xb++)
+	//{
+	//	for (int yb = 0; yb < Chunk::CHUNK_SIZE; yb++)
+	//	{
+	//		for (int zb = 0; zb < Chunk::CHUNK_SIZE; zb++)
+	//		{
+	//			glm::dvec3 pos = (cpos * Chunk::CHUNK_SIZE) + glm::ivec3(xb, yb, zb);
 
-				// method 2
-				World::GenerateBlockAt(glm::ivec3(pos), BlockType::bAir); // air by default
-				cell Cell = Chunk::buildCellFromVoxel(pos);
-				for (double& density : Cell.val)
-					if (Utils::mapToRange(density, -1.f, 1.f, 0.f, 1.f) > Chunk::isolevel + magic)
-					{
-						World::GenerateBlockAt(glm::ivec3(pos), BlockType::bGrass); // replace by grass
-						continue;
-					}
-			}
-		}
-	}
+	//			// method 2
+	//			World::GenerateBlockAt(glm::ivec3(pos), BlockType::bAir); // air by default
+	//			cell Cell = Chunk::buildCellFromVoxel(pos);
+	//			for (double& density : Cell.val)
+	//				if (Utils::mapToRange(density, -1.f, 1.f, 0.f, 1.f) > Chunk::isolevel + magic)
+	//				{
+	//					World::GenerateBlockAt(glm::ivec3(pos), BlockType::bGrass); // replace by grass
+	//					continue;
+	//				}
+	//		}
+	//	}
+	//}
 }
 
 

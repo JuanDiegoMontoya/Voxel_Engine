@@ -26,7 +26,6 @@ namespace World
 	void UpdateBlockAt(glm::ivec3 wpos, Block bl);
 	void GenerateBlockAt(glm::ivec3 wpos, Block b); // updates a block at a position IF it isn't written yet
 	void GenerateBlockAtCheap(glm::ivec3 wpos, Block b);
-	Block GetBlockAt(glm::ivec3 wpos);
 
 	//inline void SetBgColor(glm::vec3 c) { World::bgColor_ = c; }
 

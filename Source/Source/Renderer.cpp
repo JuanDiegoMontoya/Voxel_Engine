@@ -37,13 +37,15 @@ namespace Renderer
 			GLenum severity,
 			GLsizei length,
 			const GLchar* message,
-			const void* userParam)
+			[[maybe_unused]] const void* userParam)
 	{
 		//return; // UNCOMMENT WHEN DEBUGGING GRAPHICS
 
 		// ignore non-significant error/warning codes
-		if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
-
+		if (id == 131169 || id == 131185 || id == 131218 || id == 131204
+			)//|| id == 131188 || id == 131186)
+			return;
+		
 		std::cout << "---------------" << std::endl;
 		std::cout << "Debug message (" << id << "): " << message << std::endl;
 
@@ -92,21 +94,21 @@ namespace Renderer
 		Shader::shaders["axis"] = new Shader("axis.vs", "axis.fs");
 		Shader::shaders["flat_color"] = new Shader("flat_color.vs", "flat_color.fs");
 
-		Shader::shaders["chunk_water"] = new Shader("chunk_water.vs", "chunk_water.fs");
-		Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
+		//Shader::shaders["chunk_water"] = new Shader("chunk_water.vs", "chunk_water.fs");
+		//Shader::shaders["chunk_shaded"] = new Shader("chunk_smooth_light.vs", "chunk_smooth_light.fs");
 		Shader::shaders["chunk_geometry"] = new Shader("chunk_gBuffer.vs", "chunk_gBuffer.fs");
 		std::vector<int> values = { 0, 1, 2 };
 		//std::vector<int> values = { 1, 2, 3 };
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[0]", 0);
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[1]", 1);
 		//Shader::shaders["chunk_shaded"]->setInt("shadowMap[2]", 2);
-		Shader::shaders["chunk_shaded"]->Use();
-		Shader::shaders["chunk_shaded"]->setIntArray("shadowMap", values);
-		Shader::shaders["chunk_water"]->Use();
-		Shader::shaders["chunk_water"]->setIntArray("shadowMap", values);
-		Shader::shaders["chunk_water"]->setInt("ssr_positions", 3);
+		//Shader::shaders["chunk_shaded"]->Use();
+		//Shader::shaders["chunk_shaded"]->setIntArray("shadowMap", values);
+		//Shader::shaders["chunk_water"]->Use();
+		//Shader::shaders["chunk_water"]->setIntArray("shadowMap", values);
+		//Shader::shaders["chunk_water"]->setInt("ssr_positions", 3);
 		//Shader::shaders["chunk_water"]->setInt("ssr_normals", 4);
-		Shader::shaders["chunk_water"]->setInt("ssr_albedoSpec", 5);
+		//Shader::shaders["chunk_water"]->setInt("ssr_albedoSpec", 5);
 		//Shader::shaders["chunk_water"]->setInt("ssr_depth", 6);
 
 
@@ -157,14 +159,14 @@ namespace Renderer
 		for (GLint i = 0; i < count; ++i)
 		{
 			const char* extension = (const char*)glGetStringi(GL_EXTENSIONS, i);
-			if (!strcmp(extension, "GL_NVX_gpu_memory_info"))
+			if (strcmp(extension, "GL_NVX_gpu_memory_info") == 0)
 				nvUsageEnabled = true;
 		}
 
 		CompileShaders();
 		//pipeline.AddCamera()
 
-		Engine::PushRenderCallback(DrawAll, 0);
+		//Engine::PushRenderCallback(DrawAll, 0);
 		//Engine::PushUpdateCallback(Update, 0);
 	}
 
@@ -180,14 +182,6 @@ namespace Renderer
 		//std::cout << "RENDER" << std::endl;
 
 		//glBindFramebuffer(GL_FRAMEBUFFER, pBuffer);
-		if (doGeometryPass)
-			geometryPass();
-
-		if (renderShadows)
-			drawShadows();
-		drawSky();
-		drawNormal();
-		drawWater();
 		drawAxisIndicators();
 		drawDepthMapsDebug();
 
@@ -236,8 +230,6 @@ namespace Renderer
 		glClearTexSubImage(gDepth, 0, 0, 0, 0, scrX, scrY, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	}
 
-	static VAO* blockHoverVao = nullptr;
-	static VBO* blockHoverVbo = nullptr;
 	void SetDirLight(DirLight* d)
 	{
 		activeDirLight_ = d;
@@ -249,12 +241,16 @@ namespace Renderer
 
 	void DrawCube()
 	{
+		static VAO* blockHoverVao = nullptr;
+		static VBO* blockHoverVbo = nullptr;
 		if (blockHoverVao == nullptr)
 		{
 			blockHoverVao = new VAO();
-			blockHoverVbo = new VBO(Vertices::cube, sizeof(Vertices::cube));
+			blockHoverVbo = new VBO(Vertices::cube_norm_tex, sizeof(Vertices::cube_norm_tex));
 			VBOlayout layout;
 			layout.Push<float>(3);
+			layout.Push<float>(3);
+			layout.Push<float>(2);
 			blockHoverVao->AddBuffer(*blockHoverVbo, layout);
 		}
 		//glClear(GL_DEPTH_BUFFER_BIT);
@@ -265,277 +261,11 @@ namespace Renderer
 		//glEnable(GL_CULL_FACE);
 	}
 
-	void drawShadows()
-	{
-		{
-			//DrawCB preDrawCB =
-			//	[this]()
-			//{
-			//	// 1. render depth of scene to texture (from light's perspective)
-			//	//glDisable(GL_CULL_FACE);
-			//	//glCullFace(GL_FRONT);
-
-			//	ShaderPtr currShader = Shader::shaders["shadow"];
-			//	currShader->Use();
-
-			//	glViewport(0, 0, activeDirLight_->GetShadowSize().x, activeDirLight_->GetShadowSize().y);
-			//	for (unsigned i = 0; i < activeDirLight_->GetNumCascades(); i++)
-			//	{
-			//		activeDirLight_->bindForWriting(i);
-			//		glClear(GL_DEPTH_BUFFER_BIT);
-			//		currShader->setMat4("lightSpaceMatrix", activeDirLight_->GetShadowOrthoProjMtxs()[i]);// *dirLight.GetView());
-			//	}
-			//};
-
-			//ModelCB drawCB =
-			//	[](const glm::mat4& model)
-			//{
-			//	Shader::shaders["shadow"]->setMat4("model", model);
-			//};
-
-			//DrawCB postDrawCB =
-			//	[]()
-			//{
-			//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			//	glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
-			//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			//};
-
-			//drawChunks(false, preDrawCB, drawCB, postDrawCB);
-		}
-
-		// 1. render depth of scene to texture (from light's perspective)
-		//glDisable(GL_CULL_FACE);
-		//glCullFace(GL_FRONT);
-		glViewport(0, 0, activeDirLight_->GetShadowSize().x, activeDirLight_->GetShadowSize().y);
-
-		//https://github.com/niley1nov/cascaded-exponential-shadow-mapping/blob/master/src/main8.cpp#L363
-		// CSM stuff
-		view = GetPipeline()->GetCamera(0)->GetView();
-		LitDir = glm::normalize(-activeDirLight_->GetPos());
-		right = glm::normalize(glm::cross(LitDir, glm::vec3(0.0f, 1.0f, 0.0f)));
-		up = glm::normalize(glm::cross(right, LitDir));
-		LitViewFam = glm::lookAt(activeDirLight_->GetPos(), GetPipeline()->GetCamera(0)->GetPos(), up);
-		cascadEnds = activeDirLight_->GetCascadeEnds();
-		projection = GetPipeline()->GetCamera(0)->GetProj();
-		cascadeEndsClipSpace =
-			glm::vec3((projection * glm::vec4(0.0f, 0.0f, -cascadEnds[1], 1.0f)).z,
-			(projection * glm::vec4(0.0f, 0.0f, -cascadEnds[2], 1.0f)).z,
-				(projection * glm::vec4(0.0f, 0.0f, -cascadEnds[3], 1.0f)).z);
-		ratios = glm::vec3(
-			activeDirLight_->GetRatio(vView[0], 0),
-			activeDirLight_->GetRatio(vView[1], 1),
-			activeDirLight_->GetRatio(vView[2], 2)
-		);
-		activeDirLight_->calcOrthoProjs(LitViewFam);
-		for (unsigned int i = 0; i < 3; ++i)
-		{
-			vView[i] = glm::lookAt(activeDirLight_->GetModlCent(i), activeDirLight_->GetModlCent(i) + LitDir * .2f, up);
-		}
-
-
-
-		ShaderPtr currShader = Shader::shaders["shadow"];
-		currShader->Use();
-
-		for (unsigned i = 0; i < activeDirLight_->GetNumCascades(); i++)
-		{
-			activeDirLight_->bindForWriting(i);
-			glClear(GL_DEPTH_BUFFER_BIT);
-
-			//currShader->setMat4("lightSpaceMatrix", activeDirLight_->GetShadowOrthoProjMtxs()[i]);
-			currShader->setMat4("lightSpaceMatrix", activeDirLight_->GetProjMat(vView[i], i) * vView[i]);
-
-			// draw objects in world
-			std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
-				[&](std::pair<glm::ivec3, Chunk*> chunk)
-			{
-				if (chunk.second)// && chunk.second->IsVisible())
-				{
-					currShader->setMat4("model", chunk.second->GetModel());
-					chunk.second->Render();
-					//chunk.second->RenderWater();
-				}
-			});
-		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, Settings::Graphics.screenX, Settings::Graphics.screenY);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	}
 
 	// draw sky objects (then clear the depth buffer)
 	void drawSky()
 	{
 		activeSun_->Render();
-	}
-
-	// draw solid objects in each chunk
-	void drawNormal()
-	{
-		DrawCB preDrawCB =
-			[]()
-		{
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK); // don't forget to reset original culling face
-
-			// render blocks in each active chunk
-			ShaderPtr currShader = Shader::shaders["chunk_shaded"];
-			currShader->Use();
-			currShader->setMat4("u_view", GetPipeline()->GetCamera(0)->GetView());
-			currShader->setMat4("u_proj", GetPipeline()->GetCamera(0)->GetProj());
-			currShader->setVec3("viewPos",GetPipeline()->GetCamera(0)->GetPos());
-			currShader->setVec3("lightPos", activeDirLight_->GetPos());
-			//currShader->setVec3("ratios", ratios);
-			float loadD = World::chunkManager_.GetLoadDistance();
-			float loadL = World::chunkManager_.GetUnloadLeniency();
-			// undo gamma correction
-			static glm::vec3 skyColor(
-				glm::pow(.529f, 2.2f),
-				glm::pow(.808f, 2.2f),
-				glm::pow(.922f, 2.2f));
-			currShader->setFloat("fogStart", loadD - loadD / 2.f);
-			currShader->setFloat("fogEnd", loadD - Chunk::CHUNK_SIZE * 1.44f); // cuberoot(3)
-			currShader->setVec3("fogColor", skyColor);
-
-			glm::mat4 liteMats[3];
-			liteMats[0] = activeDirLight_->GetProjMat(vView[0], 0) * vView[0];
-			liteMats[1] = activeDirLight_->GetProjMat(vView[1], 1) * vView[1];
-			liteMats[2] = activeDirLight_->GetProjMat(vView[2], 2) * vView[2];
-			glUniformMatrix4fv(currShader->Uniforms["lightSpaceMatrix"],
-				3, GL_FALSE,
-				&liteMats[0][0][0]);
-			glUniform1fv(currShader->Uniforms["cascadeEndClipSpace"], 3, &cascadeEndsClipSpace[0]);
-			//glUniform1fv(currShader->Uniforms["cascadeEndClipSpace"], 3, &zVals[0]);
-
-			//currShader->set1FloatArray("cascadeEndClipSpace", zVals, zVals.size());
-			//glUniformMatrix4fv(currShader->Uniforms["lightSpaceMatrix"], 
-			//	activeDirLight_->GetNumCascades(), GL_FALSE, 
-			//	&activeDirLight_->GetShadowOrthoProjMtxs()[0][0][0]);
-			//currShader->setMat4("lightSpaceMatrix[0]", activeDirLight_->GetShadowOrthoProjMtxs()[0]);
-			//currShader->setVec3("dirLight.direction", dirLight.GetDir());
-			currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
-			currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-			currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-			currShader->setVec3("dirLight.direction", activeSun_->GetDir());
-			currShader->setBool("computeShadow", renderShadows);
-			activeDirLight_->bindForReading();
-		};
-
-		ModelCB drawCB =
-			[](const glm::mat4& model)
-		{
-			Shader::shaders["chunk_shaded"]->setMat4("u_model", model);
-		};
-
-		DrawCB postDrawCB = []() {}; // does nothing (yet)
-
-		drawChunks(true, preDrawCB, drawCB, postDrawCB);
-	}
-
-	// draw water in each chunk
-	void drawWater()
-	{
-		glDisable(GL_CULL_FACE);
-		//glDisable(GL_BLEND); // TODO: only skip blending between other water blocks (prolly just use another framebuffer)
-
-		ShaderPtr currShader = Shader::shaders["chunk_water"];
-		currShader->Use();
-		std::vector<int> values = { 0, 1, 2 };
-		currShader->setIntArray("shadowMap", values);
-		currShader->setInt("ssr_positions", 3);
-		//currShader->setInt("ssr_normals", 4);
-		currShader->setInt("ssr_albedoSpec", 5);
-		currShader->setInt("ssr_depth", 6);
-
-		glm::mat4 vView[3];
-		glm::vec3 LitDir = glm::normalize(activeDirLight_->GetPos());
-		glm::vec3 right = glm::normalize(glm::cross(LitDir, glm::vec3(0.0f, 1.0f, 0.0f)));
-		glm::vec3 up = glm::normalize(glm::cross(right, LitDir));
-		for (unsigned int i = 0; i < 3; ++i)
-		{
-			vView[i] = glm::lookAt(activeDirLight_->GetModlCent(i), activeDirLight_->GetModlCent(i) + LitDir * .2f, up);
-		}
-		glm::mat4 projection = GetPipeline()->GetCamera(0)->GetProj();
-		glm::vec4 cascadEnds = activeDirLight_->GetCascadeEnds();
-		glm::vec3 cascadeEndsClipSpace =
-			glm::vec3((projection * glm::vec4(0.0f, 0.0f, -cascadEnds[1], 1.0f)).z,
-			(projection * glm::vec4(0.0f, 0.0f, -cascadEnds[2], 1.0f)).z,
-				(projection * glm::vec4(0.0f, 0.0f, -cascadEnds[3], 1.0f)).z);
-		glm::vec3 ratios(
-			activeDirLight_->GetRatio(vView[0], 0),
-			activeDirLight_->GetRatio(vView[1], 1),
-			activeDirLight_->GetRatio(vView[2], 2)
-		);
-
-		currShader->setFloat("u_time", (float)glfwGetTime());
-		currShader->setMat4("u_view", GetPipeline()->GetCamera(0)->GetView());
-		currShader->setMat4("u_proj", GetPipeline()->GetCamera(0)->GetProj());
-		currShader->setMat4("inv_projection", glm::inverse(GetPipeline()->GetCamera(0)->GetProj()));
-		currShader->setVec3("viewPos", GetPipeline()->GetCamera(0)->GetPos());
-		currShader->setVec3("lightPos", activeDirLight_->GetPos());
-		currShader->setBool("computeSSR", doGeometryPass);
-		currShader->setBool("computeShadow", renderShadows);
-
-		// fog
-		float loadD = World::chunkManager_.GetLoadDistance();
-		float loadL = World::chunkManager_.GetUnloadLeniency();
-		// undo gamma correction
-		static glm::vec3 skyColor(
-			glm::pow(.529f, 2.2f),
-			glm::pow(.808f, 2.2f),
-			glm::pow(.922f, 2.2f));
-		currShader->setFloat("fogStart", loadD - loadD / 2.f);
-		currShader->setFloat("fogEnd", loadD - Chunk::CHUNK_SIZE * 1.44f); // cuberoot(3)
-		currShader->setVec3("fogColor", skyColor);
-
-		//currShader->setVec3("ssr_skyColor", glm::vec3(.529f, .808f, .922f));
-
-		std::vector<float> zVals;
-		for (int i = 0; i < activeDirLight_->GetNumCascades(); i++)
-		{
-			glm::vec4 vView(0, 0, activeDirLight_->GetCascadeEnds()[i + 1], 1);
-			glm::vec4 vClip = GetPipeline()->GetCamera(0)->GetProj() * vView;
-			zVals.push_back(vClip.z);
-		}
-
-		glm::mat4 liteMats[3];
-		liteMats[0] = activeDirLight_->GetProjMat(vView[0], 0) * vView[0];
-		liteMats[1] = activeDirLight_->GetProjMat(vView[1], 1) * vView[1];
-		liteMats[2] = activeDirLight_->GetProjMat(vView[2], 2) * vView[2];
-		glUniformMatrix4fv(currShader->Uniforms["lightSpaceMatrix"],
-			3, GL_FALSE,
-			&liteMats[0][0][0]);
-		glUniform1fv(currShader->Uniforms["cascadeEndClipSpace"], 3, &cascadeEndsClipSpace[0]);
-
-		currShader->setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
-		currShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-		currShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-		currShader->setVec3("dirLight.direction", activeSun_->GetDir());
-		activeDirLight_->bindForReading();
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, gPosition);
-		glActiveTexture(GL_TEXTURE4);
-		glBindTexture(GL_TEXTURE_2D, gNormal);
-		glActiveTexture(GL_TEXTURE5);
-		glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-		glActiveTexture(GL_TEXTURE6);
-		glBindTexture(GL_TEXTURE_2D, gDepth);
-		currShader->setInt("ssr_positions", 3);
-		//currShader->setInt("ssr_normals", 4);
-		currShader->setInt("ssr_albedoSpec", 5);
-
-		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
-			[&](std::pair<glm::ivec3, Chunk*> chunk)
-		{
-			if (chunk.second)// && chunk.second->IsVisible())
-			{
-				currShader->setMat4("u_model", chunk.second->GetModel());
-				chunk.second->RenderWater();
-			}
-		});
-		glEnable(GL_BLEND);
-		glEnable(GL_CULL_FACE);
 	}
 
 	// all post processing effects
@@ -586,28 +316,6 @@ namespace Renderer
 	//		});
 	//}
 
-
-	void drawChunks(
-		bool cullFrustum,
-		DrawCB predraw_cb,
-		ModelCB draw_cb,
-		DrawCB postdraw_cb)
-	{
-		predraw_cb();
-
-		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
-			[&](std::pair<glm::ivec3, Chunk*> chunk)
-		{
-			if (chunk.second && (cullFrustum ? chunk.second->IsVisible() : true))
-			{
-				auto model = chunk.second->GetModel();
-				draw_cb(model);
-				chunk.second->Render();
-			}
-		});
-
-		postdraw_cb();
-	}
 
 	void drawBillboard(VAO* vao, size_t count, DrawCB uniform_cb)
 	{
@@ -807,29 +515,6 @@ namespace Renderer
 		//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
 		ASSERT_MSG(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Incomplete framebuffer!");
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	}
-
-	// render deferred geometry and fully opaque surfaces (aka not-water)
-	void geometryPass()
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		ShaderPtr currShader = Shader::shaders["chunk_geometry"];
-		currShader->Use();
-		currShader->setMat4("projection", GetPipeline()->GetCamera(0)->GetProj());
-		currShader->setMat4("view",       GetPipeline()->GetCamera(0)->GetView());
-
-		std::for_each(Chunk::chunks.begin(), Chunk::chunks.end(),
-			[&](std::pair<glm::ivec3, Chunk*> chunk)
-		{
-			if (chunk.second)// && chunk.second->IsVisible())
-			{
-				currShader->setMat4("model", chunk.second->GetModel());
-				chunk.second->Render();
-				//chunk.second->RenderWater();
-			}
-		});
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
