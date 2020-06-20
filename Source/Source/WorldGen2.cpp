@@ -14,7 +14,7 @@ namespace WorldGen2
 	{
 #if 1
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
-		glm::ivec3 highChunkDim{ 60, 10, 60 };
+		glm::ivec3 highChunkDim{ 50, 10, 50 };
 #else
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
 		glm::ivec3 highChunkDim{ 2, 1, 1 };
@@ -90,6 +90,11 @@ namespace WorldGen2
 							//double density = noise.GetValue(wpos.x, wpos.y, wpos.z); // chunks are different
 							//double density = noise.GetValue(pos.x, pos.y, pos.z); // same chunk every time
 							//density = 0;
+
+							//if (pos.z < 8 && pos.x < 8 && pos.y < 8)
+							//	ChunkStorage::SetBlockType(wpos, BlockType::bStone);
+							//continue;
+
 							float density = noiseSet[idx++];
 							if (density < -.02)
 							{
@@ -103,6 +108,7 @@ namespace WorldGen2
 							{
 								ChunkStorage::SetBlockType(wpos, BlockType::bStone);
 							}
+
 							//printf("%f\n", density);
 						}
 					}

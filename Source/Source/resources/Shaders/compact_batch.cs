@@ -63,7 +63,8 @@ uniform float u_cullMinDist;
 uniform float u_cullMaxDist;
 uniform uint u_reservedVertices; // amt of reserved space (in vertices) before vertices for instanced attributes 
 
-bool CullDistance(in AABB16 box, in vec3 pos, float minDist, float maxDist);
+float GetDistance(in AABB16 box, in vec3 pos);
+bool CullDistance(float dist, float minDist, float maxDist);
 int CullFrustum(in AABB16 box, in Frustum frustum);
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
@@ -79,9 +80,10 @@ void main()
 #if 0
     bool condition = alloc.data01.xy != uvec2(0);
 #else
+    float dist = GetDistance(alloc.box, u_viewpos);
     bool condition = // all conditions must be true to draw chunk
       alloc.data01.xy != uvec2(0) &&
-      CullDistance(alloc.box, u_viewpos, u_cullMinDist, u_cullMaxDist) &&
+      CullDistance(dist, u_cullMinDist, u_cullMaxDist) &&
       CullFrustum(alloc.box, u_viewfrustum) >= VISIBILITY_PARTIAL &&
       alloc.size > u_vertexSize * u_reservedVertices;
 #endif
@@ -90,6 +92,8 @@ void main()
       DrawArraysCommand cmd;
       cmd.count = (alloc.size / u_vertexSize) - u_reservedVertices;
       cmd.instanceCount = 0;
+      if (dist < 32)
+        cmd.instanceCount = 1;
       cmd.first = alloc.offset / u_vertexSize;
       cmd.baseInstance = cmd.first;
 
@@ -100,10 +104,16 @@ void main()
 }
 
 
-bool CullDistance(in AABB16 box, in vec3 pos, float minDist, float maxDist)
+float GetDistance(in AABB16 box, in vec3 pos)
 {
   vec3 bp = (box.max.xyz + box.min.xyz) / 2.0;
   float dist = distance(bp, pos);
+  return dist;
+}
+
+
+bool CullDistance(float dist, float minDist, float maxDist)
+{
   return dist >= minDist && dist <= maxDist;
 }
 

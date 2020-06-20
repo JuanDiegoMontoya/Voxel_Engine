@@ -294,7 +294,10 @@ namespace Interface
 				if (ImGui::Checkbox("Skip lighting", &ChunkMesh::debug_ignore_light_level))
 					World::chunkManager_.ReloadAllChunks();
 				ImGui::Checkbox("Gamma correction", &NuRenderer::settings.gammaCorrection);
-				ImGui::Checkbox("Freeze Occ. Culling", &ChunkRenderer::settings.freezeOcclusionCulling);
+				ImGui::Checkbox("Freeze Culling", &ChunkRenderer::settings.freezeCulling);
+				ImGui::Checkbox("Draw Occ. Culling", &ChunkRenderer::settings.debug_drawOcclusionCulling);
+				ImGui::SliderFloat("Fog Start", &NuRenderer::settings.fogStart, 0, 5000);
+				ImGui::SliderFloat("Fog End", &NuRenderer::settings.fogEnd, 0, 5000);
 
 				ImGui::Text("Render distance:");
 				ImGui::SliderFloat("normalMin", &ChunkRenderer::settings.normalMin, 0, 5000);

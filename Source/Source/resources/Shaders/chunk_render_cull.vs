@@ -34,6 +34,7 @@ void main()
   vID = gl_InstanceID; // index of chunk being drawn
   uint aOffset = drawCommands[vID].first * 2; // ratio between vertex size and int
   vec3 cPos = { vbo[aOffset], vbo[aOffset+1], vbo[aOffset+2] };
-  vPos = cPos + (aPos + .5) * (u_chunk_size);
+  //float err = distance(cPos, u_viewpos) / ...
+  vPos = cPos + (aPos * 1.1 + .5) * (u_chunk_size);
   gl_Position = u_viewProj * vec4(vPos, 1.0);
 }

@@ -86,7 +86,7 @@ namespace NuRenderer
 
 		Renderer::drawSky();
 		drawChunks();
-		splatChunks();
+		//splatChunks();
 		drawChunksWater();
 		Renderer::drawAxisIndicators();
 		ChunkRenderer::DrawBuffers();
@@ -121,8 +121,10 @@ namespace NuRenderer
 			glm::pow(.808f, 2.2f),
 			glm::pow(.922f, 2.2f));
 		currShader->setVec3("viewPos", cam->GetPos());
-		currShader->setFloat("fogStart", loadD - loadD / 2.f);
-		currShader->setFloat("fogEnd", loadD - Chunk::CHUNK_SIZE * 1.44f); // cuberoot(3)
+		//currShader->setFloat("fogStart", loadD - loadD / 2.f);
+		//currShader->setFloat("fogEnd", loadD - Chunk::CHUNK_SIZE * 1.44f); // cuberoot(3)
+		currShader->setFloat("fogStart", settings.fogStart);
+		currShader->setFloat("fogEnd", settings.fogEnd);
 		currShader->setVec3("fogColor", skyColor);
 		currShader->setMat4("u_viewProj", cam->GetProj() * cam->GetView());
 

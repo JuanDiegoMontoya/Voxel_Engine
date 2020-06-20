@@ -20,5 +20,7 @@ namespace NuRenderer
 	struct Settings
 	{
 		bool gammaCorrection = true;
+		float fogStart = 500.f;
+		float fogEnd = 3000.f;
 	}inline settings;
 }

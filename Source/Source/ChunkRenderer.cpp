@@ -38,6 +38,7 @@ namespace ChunkRenderer
 		std::unique_ptr<VAO> vaoCull;
 		std::unique_ptr<VBO> vboCull; // stores only cube vertices
 		std::unique_ptr<DIB> dibCull;
+		GLsizei activeAllocs;
 	}
 
 
@@ -167,6 +168,7 @@ namespace ChunkRenderer
 		glDeleteBuffers(1, &indata);
 
 		drawCountGPU->Unbind();
+		activeAllocs = allocator->ActiveAllocs();
 
 		PERF_BENCHMARK_END;
 	}
@@ -295,27 +297,31 @@ namespace ChunkRenderer
 		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		//glMultiDrawArraysIndirect(GL_TRIANGLES, (void*)0, renderCount, 0);
 		drawCountGPU->Bind();
-		glMultiDrawArraysIndirectCount(GL_TRIANGLES, (void*)0, (GLintptr)0, allocator->ActiveAllocs(), 0);
+		glMultiDrawArraysIndirectCount(GL_TRIANGLES, (void*)0, (GLintptr)0, activeAllocs, 0);
 	}
 
 
 	void GenerateDIB()
 	{
-		if (settings.freezeOcclusionCulling)
+		if (settings.freezeCulling)
 			return;
 
 		GenerateDrawCommandsGPU();
 	}
 
 
-#pragma optimize("", off);
 	void RenderOcclusion()
 	{
-		if (settings.freezeOcclusionCulling)
+		if (settings.freezeCulling)
 			return;
 
-		glColorMask(false, false, false, false); // false = can't be written
-		glDepthMask(false);
+		if (settings.debug_drawOcclusionCulling == false)
+		{
+			glColorMask(false, false, false, false); // false = can't be written
+			glDepthMask(false);
+		}
+		glDisable(GL_CULL_FACE);
+
 		ShaderPtr sr = Shader::shaders["chunk_render_cull"];
 		sr->Use();
 
@@ -323,6 +329,7 @@ namespace ChunkRenderer
 		const glm::mat4 viewProj = cam->GetProj() * cam->GetView();
 		sr->setMat4("u_viewProj", viewProj);
 		sr->setUInt("u_chunk_size", Chunk::CHUNK_SIZE);
+		sr->setBool("u_debugDraw", settings.debug_drawOcclusionCulling);
 
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, allocator->GetGPUHandle());
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, allocator->GetGPUHandle());
@@ -337,10 +344,11 @@ namespace ChunkRenderer
 		glCopyNamedBufferSubData(drawCountGPU->GetID(), dibCull->GetID(), 0, offset, sizeof(GLuint));
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		glMultiDrawArraysIndirect(GL_TRIANGLES, (void*)0, 1, 0);
+
+		glEnable(GL_CULL_FACE);
 		glDepthMask(true);
 		glColorMask(true, true, true, true);
 	}
-#pragma optimize("", on);
 }
 
 

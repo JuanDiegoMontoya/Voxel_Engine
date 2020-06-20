@@ -1,5 +1,5 @@
 #version 460 core
-#define DEBUG_VIEW 0
+#define DEBUG_VIEW 1
 
 layout (early_fragment_tests) in;
 
@@ -20,12 +20,14 @@ in flat int vID;
 
 #if DEBUG_VIEW
 out vec4 fragColor;
+uniform bool u_debugDraw = false;
 #endif
 
 void main()
 {
 #if DEBUG_VIEW
-  fragColor = vec4(1, 0, 1, 1);
+  if (u_debugDraw)
+    fragColor = vec4(1, 0, 1, 1);
 #endif
   drawCommands[vID].instanceCount = 1;
 }
