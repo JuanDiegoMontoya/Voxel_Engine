@@ -38,7 +38,7 @@ Performance was tested on this system for reference:
 - Baked ambient occlusion on blocks
 
 ### Other
-- Easily made portable- libraries would need to be rebuild
+- Easily made portable- libraries would need to be rebuilt and a portable concurrent hash map would be needed
 - Multithreaded mesh building and terrain generation
 - Graphics effects can be toggled dynamically by the user
 
