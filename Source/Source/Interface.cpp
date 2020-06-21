@@ -312,7 +312,7 @@ namespace Interface
 			{
 				ImGui::Begin("Graphs", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 				ImGui::Text("Avg Mesh Time: %.3f", ChunkMesh::accumtime / ChunkMesh::accumcount);
-				ImGui::PlotVar("Frametime", Engine::GetDT(), 0, .05, 240, ImVec2(300, 100));
+				ImGui::PlotVar("Frametime", Engine::GetDT() * 1000.0, 0, .05 * 1000, 240, ImVec2(300, 100));
 
 				if (Renderer::nvUsageEnabled)
 				{

@@ -294,6 +294,10 @@ namespace ChunkRenderer
 		if (!dib)
 			return;
 
+#ifdef TRACY_ENABLE
+		TracyGpuZone("Normal Render");
+#endif
+
 		vao->Bind();
 		dib->Bind();
 		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -316,6 +320,10 @@ namespace ChunkRenderer
 	{
 		if (settings.freezeCulling)
 			return;
+
+#ifdef TRACY_ENABLE
+		TracyGpuZone("Occlusion Render");
+#endif
 
 		if (settings.debug_drawOcclusionCulling == false)
 		{
