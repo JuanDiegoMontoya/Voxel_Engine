@@ -50,7 +50,7 @@ namespace ChunkRenderer
 
 		// allocate big buffer
 		// TODO: vary the allocation size based on some user setting
-		allocator = std::make_unique<BufferAllocator<AABB16>>(2'000'000'000, 2 * sizeof(GLint));
+		allocator = std::make_unique<BufferAllocator<AABB16>>(3'000'000'000, 2 * sizeof(GLint));
 		allocatorSplat = std::make_unique<BufferAllocator<AABB16>>(200'000'000, sizeof(GLint));
 		
 		/* :::::::::::BUFFER FORMAT:::::::::::

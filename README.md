@@ -1,48 +1,44 @@
 # 3D_Voxel_Engine
 Yet another voxel engine. Gallery at the bottom.
 
-This is (currently) a tech demo designed to demonstrate the implementation of various rendering and procedural techniques in a large and dynamic environment.
+Tech demo demonstrating the implementation of various methods to optimize voxel rendering in a large and dynamic environment.
 
 ## Follow
 The trello page for this project [can be found here.](https://trello.com/b/4Ns9jfZc/voxel-engine)
 
 ## Tech
-The project is written in C++ and GLSL. The project also uses OpenGL, GLM, GLFW for window handling, cereal for serialization, and libnoise for procedural noise.  
-The project may, in the future, utilize FMOD, freetype, Lua, and stb for various purposes.
+The project is written in C++ and GLSL. Also used is OpenGL, GLM, GLFW for window handling, cereal for serialization, and libnoise/FastNoiseSIMD for procedural noise.  
 
 Performance was tested on this system for reference:
 - AMD Ryzen 5 2600X CPU
-- 16 GB RAM
+- 16GB DDR4 RAM
 - NVIDIA GeForce GTX 1060 6GB
 
 ## Features
 (*WIP*) indicates that a feature is mostly complete but has some bugs that need to be sorted out. 
 ### Voxels
-- Renders 10+ million voxels at 500+ FPS
-  - Capable of rendering over 270 million voxels (8000 chunks \* 32<sup>3</sup> cubes) with ~30 FPS.
-- Infinite size world
+- Renders 300 million voxels at 300+ FPS
+  - Capable of rendering over ~~270 million~~ 2 billion voxels (56000+ chunks \* 32<sup>3</sup> cubes) with over ~~30~~ 60 FPS.
 - Movement physics and terrain collision
-- Procedurally generated terrain including hills, mountains, plains, rivers, etc.
-- A variety of biomes, each with their own unique properties and features
-- Meandering natural tunnels and caves
 - Block destroying and placing
 - A prefab editor
-- (*WIP*) Lighting, including colored lights
-- (*Temp. removed*) Marching cubes implementation for smooth voxels (in worlds defined by a density field, enabled via preprocessor flag in chunk.h)
+- Colored lighting
 
 ### Graphics
-- Phong illumination model
+- GPU-driven renderer with little CPU synchronization
+  - GPU generates draw commands
+  - GPU performs frustum & raster culling
+- Modern AZDO principles
+  - Texture arrays for block textures
+  - glMultiDrawArraysIndirectCount draws *all* chunks in a single call
+  - Immutable buffer storage
+- Chunk vertices consist of just two (packed) integers
+- Raster-based occlusion culling
 - Frustum culling of chunks
 - Baked ambient occlusion on blocks
-- Realistic water effects
-- Directional environment lighting
-- Deferred rendering pipeline
-- Post processing effects
-- (*WIP*) Screen space water reflections
-- (*WIP*) Cascaded shadow maps
 
 ### Other
-- Portability. Uses (to my knowledge) no platform dependent libraries or headers. (Certain libraries would have to be rebuilt for platforms other than x64 Windows) Note: this is untrue for the near future as I am currently using Microsoft's concurrent map to support multithreading more easily
+- Easily made portable- libraries would need to be rebuild
 - Multithreaded mesh building and terrain generation
 - Graphics effects can be toggled dynamically by the user
 
@@ -56,7 +52,7 @@ Performance was tested on this system for reference:
 - Left Shift will increase camera speed by 10 times
 - Left Control will slow camera speed to 1/10th
 
-#### Prefab editing
+#### Prefab Editing
 - Tab will toggle the prefab editor menu
   - The most recently highlighted block will be highlighted in purple instead of white
   - Pressing 'F' will select the block and begin a region
@@ -66,17 +62,21 @@ Performance was tested on this system for reference:
   - Toggling the prefab editor (Tab x2) will reset the current region if a mistake has been made
 
 ## Notes (and FAQ?)
-- The world will be dark initially. That is because sunlight is not implemented. There are blocks that produce light. To make the whole world bright, enable the "Skip lighting" option in the menu.
-- There may (will) be holes in the world. This is because the mesh for that chunk did not generate or was otherwise deleted. This is a bug related to multithreading that is being worked on. Regenerate the mesh by modifying the chunk or by toggling "Compute Block AO" or "Skip lighting" to regenerate all meshes.
 - There is no gameplay. That is because this is a tech demo/engine, not a game (yet).
+
+## Building the Project
+If you want to build this project, you'll need Visual Studio 2017 or later (earlier version might work).  
+For the build configuration, use **Release** and **x64** (the other configurations aren't... configured).  
+If I remembered to include all the necessary .dlls in git, then it should simply build and run.  
+If you are (understandably) skeptical of the .dlls that come with this project, then you'll need to build or otherwise obtain them yourself. The current list of .dll or .lib dependencies (may be out of date) is:  
+- glew 2.1.0
+- glfw 3.3
+- glm 0.9.9.0
+- libnoise
 
 ## Gallery
 Hover to see detail:
 
-![Image of distant terrain.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/distance03.png "Distant terrain showcasing fog, reflections, and biomes.")
-![Image of distant and near terrain.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/distance02.png "Distant and near terrain showcasing shading and shadows.")
-![Image of snowy cave.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/snow_cave.png "Snow cave.")
-![Image showing marched cubes example.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/marched01.png "Marching cubes implementation with scalar field.")
-![Image of differently colored lights interacting.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/lights_v01.png "Colored lighting.")
-![Image of long render distance.](https://github.com/JuanDiegoMontoya/3D_Voxel_Engine/blob/master/Images/long_render01.png "31 FPS rendering over 270 million voxels (8504*32^3 blocks).")
-test
+![Long](Images/long_render02.png "Distant terrain")
+![Lights](Images/lights01.png "RGB lighting and light mixing")
+![Dither](Images/dithering01.png "Dithering transparency")
