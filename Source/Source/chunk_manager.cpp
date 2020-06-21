@@ -63,15 +63,17 @@ void ChunkManager::Init()
 void ChunkManager::Update()
 {
   PERF_BENCHMARK_START;
-	std::for_each(
-		std::execution::par,
-		ChunkStorage::GetMapRaw().begin(),
-		ChunkStorage::GetMapRaw().end(),
-		[](auto& p)
-	{
-		if (p.second)
-			p.second->Update();
-	});
+
+	// TODO: update a random selection of the chunks per frame
+	//std::for_each(
+	//	std::execution::par,
+	//	ChunkStorage::GetMapRaw().begin(),
+	//	ChunkStorage::GetMapRaw().end(),
+	//	[](auto& p)
+	//{
+	//	if (p.second)
+	//		p.second->Update();
+	//});
 
 	//chunk_gen_mesh_nobuffer();
 	chunk_buffer_task();
