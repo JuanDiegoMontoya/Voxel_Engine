@@ -195,9 +195,19 @@ namespace Interface
 
 			// big thing
 			{
+				static int fakeLag = 0;
+				static double frameTimeExp = 0;
+				static double alpha = .01;
+
+				frameTimeExp = alpha * Engine::GetDT() + (1.0 - alpha) * frameTimeExp;
+				alpha = glm::clamp((float)Engine::GetDT(), 0.0f, 1.0f);
 
 				ImGui::Begin("Info", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
-				ImGui::Text("FPS: %.0f (%.1f ms)", 1.f / Engine::GetDT(), Engine::GetDT() * 1000);
+				ImGui::Text("FPS: %.0f (%.1f ms)", 1.f / frameTimeExp, frameTimeExp * 1000);
+				
+				ImGui::SliderInt("Fake Lag", &fakeLag, 0, 50, "%d ms");
+				if (fakeLag > 0)
+					std::this_thread::sleep_for(milliseconds(fakeLag));
 
 				ImGui::NewLine();
 				glm::vec3 pos = Renderer::GetPipeline()->GetCamera(0)->GetPos();
