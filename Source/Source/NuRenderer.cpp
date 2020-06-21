@@ -43,6 +43,7 @@ namespace NuRenderer
 
 		CompileShaders();
 		Engine::PushRenderCallback(DrawAll, 0);
+		Engine::PushRenderCallback(ChunkRenderer::Update, 3);
 	}
 
 

@@ -34,6 +34,8 @@ namespace ChunkRenderer
 	void RenderOcclusion(); // phase 3
 	void RenderRest();      // phase 4
 
+	void Update();
+
 	inline std::unique_ptr<BufferAllocator<AABB16>> allocator;
 	inline std::unique_ptr<BufferAllocator<AABB16>> allocatorSplat;
 

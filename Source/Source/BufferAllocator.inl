@@ -1,8 +1,8 @@
 #pragma once
 #include "BufferAllocator.h"
+#include <vbo_layout.h>
 #include <vbo.h>
 #include <vao.h>
-#include <vbo_layout.h>
 
 
 template<typename UserT>
@@ -15,9 +15,11 @@ BufferAllocator<UserT>::BufferAllocator<UserT>(GLuint size, GLuint alignment)
 
 	// allocate uninitialized memory in VRAM
 	glGenBuffers(1, &gpuHandle);
-	glBindBuffer(GL_ARRAY_BUFFER, gpuHandle); // bind to some random target so next command works
+	glBindBuffer(GL_COPY_WRITE_BUFFER, gpuHandle); // bind to some random target so next command works
 	glNamedBufferData(gpuHandle, size, NULL, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+
+	glGenBuffers(1, &allocDataGpuHandle_);
 
 	// make one big null allocation
 	allocationData<UserT> phalloc;
@@ -33,6 +35,7 @@ template<typename UserT>
 BufferAllocator<UserT>::~BufferAllocator<UserT>()
 {
 	glDeleteBuffers(1, &gpuHandle);
+	glDeleteBuffers(1, &allocDataGpuHandle_);
 }
 
 
@@ -75,7 +78,7 @@ uint64_t BufferAllocator<UserT>::Allocate(void* data, GLuint size, UserT userdat
 
 	glNamedBufferSubData(gpuHandle, newAlloc.offset, newAlloc.size, data);
 	++numActiveAllocs_;
-	DEBUG_DO(dbgVerify());
+	stateChanged();
 	return newAlloc.handle;
 }
 
@@ -91,7 +94,7 @@ bool BufferAllocator<UserT>::Free(uint64_t handle)
 	it->handle = NULL;
 	maybeMerge(it);
 	--numActiveAllocs_;
-	DEBUG_DO(dbgVerify());
+	stateChanged();
 	return true;
 }
 
@@ -119,10 +122,17 @@ bool BufferAllocator<UserT>::FreeOldest()
 	old->handle = NULL;
 	maybeMerge(old);
 	--numActiveAllocs_;
-	DEBUG_DO(dbgVerify());
+	stateChanged();
 	return true;
 }
 
+
+template<typename UserT>
+inline void BufferAllocator<UserT>::stateChanged()
+{
+	DEBUG_DO(dbgVerify());
+	dirty_ = true;
+}
 
 template<typename UserT>
 void BufferAllocator<UserT>::maybeMerge(Iterator it)
@@ -196,17 +206,25 @@ void BufferAllocator<UserT>::dbgVerify()
 }
 
 
-//#pragma optimize("", off);
-// length = entire screen by default, line width set beforehand by user
+// invalidates existing data in buffer and copies the entire array of data to the GPU
+// maybe not efficient, but it works
 template<typename UserT>
-inline void BufferAllocator<UserT>::Draw()
+inline void BufferAllocator<UserT>::bufferAllocData()
+{
+	glBindBuffer(GL_COPY_WRITE_BUFFER, allocDataGpuHandle_);
+	glNamedBufferData(allocDataGpuHandle_, AllocSize() * allocs_.size(), allocs_.data(), GL_STATIC_COPY);
+	glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+}
+
+
+template<typename UserT>
+inline void BufferAllocator<UserT>::genDrawData()
 {
 	const glm::vec3 free_color{ .2, 1, 1 };  // light cyan
 	const glm::vec3 full_color{ 1, .3, .3 }; // light red
 	bool alternator = true;
 
-	std::unique_ptr<VAO> vao = std::make_unique<VAO>();
-	std::unique_ptr<VBO> vbo;
+	vao_ = std::make_unique<VAO>();
 	VBOlayout layout;
 	layout.Push<float>(3); // position
 	layout.Push<float>(3); // color
@@ -232,8 +250,33 @@ inline void BufferAllocator<UserT>::Draw()
 		alternator = !alternator;
 	}
 
-	vbo = std::make_unique<VBO>(&data[0][0], sizeof(glm::vec3) * data.size(), GL_STREAM_DRAW);
-	vao->AddBuffer(*vbo, layout);
-	glDrawArrays(GL_LINES, 0, data.size() / 2);
+	vbo_ = std::make_unique<VBO>(&data[0][0], sizeof(glm::vec3) * data.size(), GL_STREAM_DRAW);
+	vao_->AddBuffer(*vbo_, layout);
+}
+
+
+//#pragma optimize("", off);
+// length = entire screen by default, line width set beforehand by user
+template<typename UserT>
+inline void BufferAllocator<UserT>::Draw()
+{
+	if (vao_)
+	{
+		int dataSize = allocs_.size() * 4;
+		vao_->Bind();
+		glDrawArrays(GL_LINES, 0, dataSize / 2);
+	}
+}
+
+
+template<typename UserT>
+inline void BufferAllocator<UserT>::Update()
+{
+	if (dirty_)
+	{
+		genDrawData();
+		bufferAllocData();
+		dirty_ = false;
+	}
 }
 //#pragma optimize("", on);

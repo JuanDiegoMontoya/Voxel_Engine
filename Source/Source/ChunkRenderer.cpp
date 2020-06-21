@@ -140,12 +140,14 @@ namespace ChunkRenderer
 		drawCountGPU->Reset();
 
 		// copy input data to buffer at binding 0
-		GLuint indata;
-		glGenBuffers(1, &indata);
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, indata);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, indata);
+		//GLuint indata;
+		//glGenBuffers(1, &indata);
+		//glBindBuffer(GL_SHADER_STORAGE_BUFFER, indata);
+		//glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, indata);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, allocator->GetAllocDataGPUHandle());
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, allocator->GetAllocDataGPUHandle());
 		const auto& allocs = allocator->GetAllocs();
-		glBufferData(GL_SHADER_STORAGE_BUFFER, allocator->AllocSize() * allocs.size(), allocs.data(), GL_STATIC_COPY);
+		//glBufferData(GL_SHADER_STORAGE_BUFFER, allocator->AllocSize() * allocs.size(), allocs.data(), GL_STATIC_COPY);
 
 		// make DIB output SSBO (binding 1) for the shader
 		dib = std::make_unique<DIB>(
@@ -165,7 +167,7 @@ namespace ChunkRenderer
 		}
 		//renderCount = drawCounter->Get(0); // sync point
 		//ASSERT(renderCount <= allocator->ActiveAllocs());
-		glDeleteBuffers(1, &indata);
+		//glDeleteBuffers(1, &indata);
 
 		drawCountGPU->Unbind();
 		activeAllocs = allocator->ActiveAllocs();
@@ -348,6 +350,12 @@ namespace ChunkRenderer
 		glEnable(GL_CULL_FACE);
 		glDepthMask(true);
 		glColorMask(true, true, true, true);
+	}
+
+	void Update()
+	{
+		if (allocator)
+			allocator->Update();
 	}
 }
 
