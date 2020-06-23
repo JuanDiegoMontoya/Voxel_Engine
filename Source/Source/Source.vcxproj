@@ -24,7 +24,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Source</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Voxels</ProjectName>
+    <ProjectName>Client</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -88,8 +88,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)lib\FMOD\studio\inc;$(SolutionDir)lib\rapidjson;$(SolutionDir)lib\FMOD\lowlevel\inc;$(SolutionDir)lib\lua-5.3.5\include;$(SolutionDir)lib\freetype\include;$(SolutionDir)lib\freetype\include\freetype;$(SolutionDir)lib\freetype\include\freetype\config;$(SolutionDir)lib\glew-2.1.0\include;$(SolutionDir)lib\glfw-3.3.bin.WIN64\include;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\stb;$(SolutionDir)lib\libnoise\include;$(SolutionDir)lib\cereal-1.2.2\include;$(SolutionDir)Source\Engine\Source;$(SolutionDir)lib\tracy;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib\FMOD\studio\lib;$(SolutionDir)lib\FMOD\lowlevel\lib;$(SolutionDir)\lib\rapidjson;$(SolutionDir)lib\lua-5.3.5\lib;$(SolutionDir)lib\freetype\lib\win64;$(SolutionDir)lib\glew-2.1.0\lib\Release\x64;$(SolutionDir)lib\glfw-3.3.bin.WIN64\lib-vc2015;$(SolutionDir)lib\SOIL;$(SolutionDir)lib\libnoise\bin;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)lib\glew-2.1.0\include;$(SolutionDir)lib\glfw-3.3.bin.WIN64\include;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\stb;$(SolutionDir)lib\libnoise\include;$(SolutionDir)lib\cereal-1.2.2\include;$(SolutionDir)Source\Engine\Source;$(SolutionDir)lib\tracy;$(SolutionDir)lib\enet-1.3.15\include;$(SolutionDir)vendor;$(SolutionDir)lib\lua-5.3.5\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib\lua-5.3.5\lib;$(SolutionDir)lib\freetype\lib\win64;$(SolutionDir)lib\glew-2.1.0\lib\Release\x64;$(SolutionDir)lib\glfw-3.3.bin.WIN64\lib-vc2015;$(SolutionDir)lib\libnoise\bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -200,7 +200,7 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
       <OpenMPSupport>true</OpenMPSupport>
       <AdditionalOptions>/Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <MinimalRebuild>true</MinimalRebuild>
     </ClCompile>
@@ -209,27 +209,61 @@ copy "$(SolutionDir)lib\freetype\lib\win32\freetype.dll" "$(TargetDir)freetype.d
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fmodL_vc.lib;fmodstudioL_vc.lib;opengl32.lib;glfw3dll.lib;glew32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;lua5.3.lib;freetype.lib;soil2-debug.lib;LibNoise64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3dll.lib;glew32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;lua5.3.lib;freetype.lib;LibNoise64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)lib\zlib1.dll" "$(TargetDir)zlib1.dll" /Y
-copy "$(SolutionDir)lib\FMOD\lowlevel\lib\fmod.dll" "$(TargetDir)fmod.dll" /Y
-
-copy "$(SolutionDir)lib\FMOD\studio\lib\fmodstudio.dll" "$(TargetDir)fmodstudio.dll" /Y
-
-copy "$(SolutionDir)lib\FMOD\lowlevel\lib\fmodL.dll" "$(TargetDir)fmodL.dll" /Y
-
-copy "$(SolutionDir)lib\FMOD\studio\lib\fmodstudioL.dll" "$(TargetDir)fmodstudioL.dll" /Y
-
 copy "$(SolutionDir)lib\glew-2.1.0\bin\Release\x64\glew32.dll" "$(TargetDir)glew32.dll" /Y
 copy "$(SolutionDir)lib\glfw-3.3.bin.WIN64\lib-vc2015\glfw3.dll" "$(TargetDir)glfw3.dll" /Y
 copy "$(SolutionDir)lib\lua-5.3.5\lua5.3.dll" "$(TargetDir)lua5.3.dll" /Y
-copy "$(SolutionDir)lib\freetype\lib\win64\freetype.dll" "$(TargetDir)freetype.dll" /Y
 copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\lib\tracy\TracyClient.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_avx2.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_avx512.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_internal.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_neon.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_sse2.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_sse41.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="..\vendor\imgui\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\vendor\imgui\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\vendor\imgui\imgui_impl_glfw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\vendor\imgui\imgui_impl_opengl3.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\vendor\imgui\imgui_widgets.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\vendor\noiseutils.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="biome.cpp" />
@@ -348,28 +382,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="TextureArray.cpp" />
     <ClCompile Include="transform.cpp" />
     <ClCompile Include="game_object.cpp" />
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_avx2.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
-    </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_avx512.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_internal.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_neon.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_sse2.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_sse41.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="World.cpp" />
     <ClCompile Include="main.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -377,75 +389,24 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="serialize.cpp" />
     <ClCompile Include="settings.cpp" />
-    <ClCompile Include="vendor\imgui\imgui.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"stdafx.h"</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_demo.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"stdafx.h"</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_draw.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"stdafx.h"</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_impl_glfw.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"stdafx.h"</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_impl_opengl3.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"stdafx.h"</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_widgets.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"stdafx.h"</PrecompiledHeaderFile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"stdafx.h"</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="vendor\noiseutils.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="WorldGen2.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\vendor\ctpl_stl.h" />
+    <ClInclude Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD.h" />
+    <ClInclude Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_internal.h" />
+    <ClInclude Include="..\vendor\imgui\imconfig.h" />
+    <ClInclude Include="..\vendor\imgui\imgui.h" />
+    <ClInclude Include="..\vendor\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="..\vendor\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\vendor\imgui\imgui_internal.h" />
+    <ClInclude Include="..\vendor\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\vendor\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\vendor\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\vendor\imgui\stb_rect_pack.h" />
+    <ClInclude Include="..\vendor\imgui\stb_textedit.h" />
+    <ClInclude Include="..\vendor\imgui\stb_truetype.h" />
+    <ClInclude Include="..\vendor\noiseutils.h" />
     <ClInclude Include="biome.h" />
     <ClInclude Include="BitArray.h" />
     <ClInclude Include="block.h" />
@@ -510,8 +471,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="TextureArray.h" />
     <ClInclude Include="transform.h" />
     <ClInclude Include="game_object.h" />
-    <ClInclude Include="vendor\FastNoiseSIMD\FastNoiseSIMD.h" />
-    <ClInclude Include="vendor\FastNoiseSIMD\FastNoiseSIMD_internal.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="math_utils.h" />
     <ClInclude Include="misc_utils.h" />
@@ -520,19 +479,6 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="settings.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="utilities.h" />
-    <ClInclude Include="vendor\ctpl_stl.h" />
-    <ClInclude Include="vendor\imgui\imconfig.h" />
-    <ClInclude Include="vendor\imgui\imgui.h" />
-    <ClInclude Include="vendor\imgui\imgui_impl_glfw.h" />
-    <ClInclude Include="vendor\imgui\imgui_impl_opengl3.h" />
-    <ClInclude Include="vendor\imgui\imgui_internal.h" />
-    <ClInclude Include="vendor\imgui\imstb_rectpack.h" />
-    <ClInclude Include="vendor\imgui\imstb_textedit.h" />
-    <ClInclude Include="vendor\imgui\imstb_truetype.h" />
-    <ClInclude Include="vendor\imgui\stb_rect_pack.h" />
-    <ClInclude Include="vendor\imgui\stb_textedit.h" />
-    <ClInclude Include="vendor\imgui\stb_truetype.h" />
-    <ClInclude Include="vendor\noiseutils.h" />
     <ClInclude Include="WorldGen2.h" />
   </ItemGroup>
   <ItemGroup>

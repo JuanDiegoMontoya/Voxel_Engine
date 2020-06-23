@@ -14,7 +14,7 @@
 #include "sun.h"
 #include <chrono>
 #include <execution>
-#include "vendor/ctpl_stl.h"
+#include "ctpl_stl.h"
 #include "input.h"
 #include "pick.h"
 #include "settings.h"

@@ -16,10 +16,10 @@
 //#include "utilities.h"
 
 // imgui stuff
-#include "vendor/imgui/imgui.h"
-#include "vendor/imgui/imgui_impl_glfw.h"
-#include "vendor/imgui/imgui_impl_opengl3.h"
-#include "vendor/imgui/imgui_internal.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
+#include "imgui/imgui_internal.h"
 
 // Lua scripting
 #include <lua.hpp>

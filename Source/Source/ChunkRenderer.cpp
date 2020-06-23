@@ -10,7 +10,7 @@
 #include <Pipeline.h>
 #include "Renderer.h"
 #include <execution>
-#include "vendor/ctpl_stl.h"
+#include "ctpl_stl.h"
 #include <shader.h>
 #include <abo.h>
 #include <param_bo.h>
@@ -50,7 +50,7 @@ namespace ChunkRenderer
 
 		// allocate big buffer
 		// TODO: vary the allocation size based on some user setting
-		allocator = std::make_unique<BufferAllocator<AABB16>>(3'000'000'000, 2 * sizeof(GLint));
+		allocator = std::make_unique<BufferAllocator<AABB16>>(2'000'000'000, 2 * sizeof(GLint));
 		allocatorSplat = std::make_unique<BufferAllocator<AABB16>>(200'000'000, sizeof(GLint));
 		
 		/* :::::::::::BUFFER FORMAT:::::::::::

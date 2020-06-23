@@ -5,8 +5,8 @@
 #include "ChunkHelpers.h"
 #include <execution>
 #include <noise/noise.h>
-#include "vendor/noiseutils.h"
-#include "vendor/FastNoiseSIMD/FastNoiseSIMD.h"
+#include "noiseutils.h"
+#include "FastNoiseSIMD/FastNoiseSIMD.h"
 
 namespace WorldGen2
 {

@@ -7,7 +7,7 @@
 #include "generation.h"
 #include "chunk_manager.h"
 #include <noise/noise.h>
-#include "vendor/noiseutils.h"
+#include "noiseutils.h"
 #include <execution>
 #include "ChunkStorage.h"
 

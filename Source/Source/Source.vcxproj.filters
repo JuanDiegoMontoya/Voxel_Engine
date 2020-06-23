@@ -19,9 +19,6 @@
     <Filter Include="Utilities">
       <UniqueIdentifier>{41a105f9-0ab4-45fc-abbb-9c60c2cb2ecd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="vendor">
-      <UniqueIdentifier>{1a6c8430-ea70-46fd-bd88-b2e2299e7864}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Game">
       <UniqueIdentifier>{5a514f78-58df-41a9-915c-40c526acd901}</UniqueIdentifier>
     </Filter>
@@ -30,9 +27,6 @@
     </Filter>
     <Filter Include="Game\ECS\Components">
       <UniqueIdentifier>{ab4660b1-84b7-48a4-9281-daa0ba32ff13}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="vendor\ctpl">
-      <UniqueIdentifier>{d94d4b42-3a18-475f-a15a-e49c0985918a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Game\Editor">
       <UniqueIdentifier>{477324d8-310d-447b-9295-86ceaf309d57}</UniqueIdentifier>
@@ -55,14 +49,26 @@
     <Filter Include="Voxel Engine\World Generation">
       <UniqueIdentifier>{ea3919bb-71c7-46d8-a42d-44c4af54f0e9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="vendor\FastNoiseSIMD">
-      <UniqueIdentifier>{45563d52-873b-48f4-ac9e-c0c2ae0bf2ee}</UniqueIdentifier>
+    <Filter Include="Vendor">
+      <UniqueIdentifier>{5b5fd3c1-a9c6-4140-bc15-c56621cc8ca7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="vendor\imgui">
-      <UniqueIdentifier>{94ebe352-4b94-4586-9517-9ed7c9ce90e2}</UniqueIdentifier>
+    <Filter Include="Vendor\FastNoiseSIMD">
+      <UniqueIdentifier>{fee897e0-41fa-4e2c-bfe8-46919cd3ba6f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="vendor\tracy">
-      <UniqueIdentifier>{e2865684-5b58-42df-8f99-bb74dec03205}</UniqueIdentifier>
+    <Filter Include="Vendor\ctpl">
+      <UniqueIdentifier>{6fea1e11-5e6d-40d0-801b-9f40b42110e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendor\ImGui">
+      <UniqueIdentifier>{0b6cd56d-1dc0-49ab-9545-9f2d7d9b3ad9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendor\LibNoise">
+      <UniqueIdentifier>{cdb33ddb-49f9-4b27-88f2-de37f3f0e051}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendor\stb">
+      <UniqueIdentifier>{02bc1b5e-5794-4aae-80a6-874e8335e306}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendor\Tracy">
+      <UniqueIdentifier>{20aa7a8b-4dd0-475a-b3b5-1795e82d3358}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -81,15 +87,6 @@
     </ClInclude>
     <ClInclude Include="math_utils.h">
       <Filter>Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\stb_rect_pack.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\stb_textedit.h">
-      <Filter>vendor</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\stb_truetype.h">
-      <Filter>vendor</Filter>
     </ClInclude>
     <ClInclude Include="component.h">
       <Filter>Game\ECS</Filter>
@@ -117,12 +114,6 @@
     </ClInclude>
     <ClInclude Include="sun.h">
       <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\ctpl_stl.h">
-      <Filter>vendor\ctpl</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\noiseutils.h">
-      <Filter>vendor</Filter>
     </ClInclude>
     <ClInclude Include="biome.h">
       <Filter>Voxel Engine</Filter>
@@ -289,36 +280,6 @@
     <ClInclude Include="BufferAllocator.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="vendor\FastNoiseSIMD\FastNoiseSIMD.h">
-      <Filter>vendor\FastNoiseSIMD</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\FastNoiseSIMD\FastNoiseSIMD_internal.h">
-      <Filter>vendor\FastNoiseSIMD</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imgui_impl_glfw.h">
-      <Filter>vendor\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imgui_impl_opengl3.h">
-      <Filter>vendor\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imgui_internal.h">
-      <Filter>vendor\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imstb_rectpack.h">
-      <Filter>vendor\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imstb_textedit.h">
-      <Filter>vendor\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imstb_truetype.h">
-      <Filter>vendor\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imgui.h">
-      <Filter>vendor\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\imgui\imconfig.h">
-      <Filter>vendor\imgui</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Source\abo.h">
       <Filter>Engine</Filter>
     </ClInclude>
@@ -327,6 +288,51 @@
     </ClInclude>
     <ClInclude Include="Engine\Source\param_bo.h">
       <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\imgui\imconfig.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\imgui\imgui.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\imgui\imgui_impl_glfw.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\imgui\imgui_impl_opengl3.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\imgui\imgui_internal.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\imgui\imstb_rectpack.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\imgui\imstb_textedit.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\imgui\imstb_truetype.h">
+      <Filter>Vendor\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ctpl_stl.h">
+      <Filter>Vendor\ctpl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD.h">
+      <Filter>Vendor\FastNoiseSIMD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_internal.h">
+      <Filter>Vendor\FastNoiseSIMD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\noiseutils.h">
+      <Filter>Vendor\LibNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\imgui\stb_rect_pack.h">
+      <Filter>Vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\imgui\stb_textedit.h">
+      <Filter>Vendor\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\imgui\stb_truetype.h">
+      <Filter>Vendor\stb</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -359,9 +365,6 @@
     </ClCompile>
     <ClCompile Include="sun.cpp">
       <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\noiseutils.cpp">
-      <Filter>vendor</Filter>
     </ClCompile>
     <ClCompile Include="biome.cpp">
       <Filter>Voxel Engine</Filter>
@@ -495,45 +498,6 @@
     <ClCompile Include="ChunkRenderer.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD.cpp">
-      <Filter>vendor\FastNoiseSIMD</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_avx2.cpp">
-      <Filter>vendor\FastNoiseSIMD</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_avx512.cpp">
-      <Filter>vendor\FastNoiseSIMD</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_internal.cpp">
-      <Filter>vendor\FastNoiseSIMD</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_neon.cpp">
-      <Filter>vendor\FastNoiseSIMD</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_sse2.cpp">
-      <Filter>vendor\FastNoiseSIMD</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\FastNoiseSIMD\FastNoiseSIMD_sse41.cpp">
-      <Filter>vendor\FastNoiseSIMD</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_impl_glfw.cpp">
-      <Filter>vendor\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_draw.cpp">
-      <Filter>vendor\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_impl_opengl3.cpp">
-      <Filter>vendor\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_widgets.cpp">
-      <Filter>vendor\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui_demo.cpp">
-      <Filter>vendor\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\imgui\imgui.cpp">
-      <Filter>vendor\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Source\abo.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
@@ -543,8 +507,47 @@
     <ClCompile Include="Engine\Source\param_bo.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="..\vendor\imgui\imgui.cpp">
+      <Filter>Vendor\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\imgui\imgui_draw.cpp">
+      <Filter>Vendor\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\imgui\imgui_impl_glfw.cpp">
+      <Filter>Vendor\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\imgui\imgui_impl_opengl3.cpp">
+      <Filter>Vendor\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\imgui\imgui_widgets.cpp">
+      <Filter>Vendor\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD.cpp">
+      <Filter>Vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_avx2.cpp">
+      <Filter>Vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_avx512.cpp">
+      <Filter>Vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_internal.cpp">
+      <Filter>Vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_neon.cpp">
+      <Filter>Vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_sse2.cpp">
+      <Filter>Vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_sse41.cpp">
+      <Filter>Vendor\FastNoiseSIMD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\noiseutils.cpp">
+      <Filter>Vendor\LibNoise</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\tracy\TracyClient.cpp">
-      <Filter>vendor\tracy</Filter>
+      <Filter>Vendor\Tracy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
