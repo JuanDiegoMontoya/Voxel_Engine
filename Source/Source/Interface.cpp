@@ -50,13 +50,18 @@ namespace Interface
 		PERF_BENCHMARK_START;
 
 		static bool renderUI = true;
-		ImGui::Begin("##joe");
-		ImGui::Checkbox("Show UI", &renderUI);
-		ImGui::End();
+		ImGui::SetNextWindowBgAlpha(.5f);
+		{
+			ImGui::Begin("##joe");
+			ImGui::Checkbox("Show UI", &renderUI);
+			ImGui::Checkbox("Show Plot", &debug_graphs);
+			ImGui::End();
+		}
 
 		if (renderUI)
 		{
 			// chunk info
+			ImGui::SetNextWindowBgAlpha(.5f);
 			{
 				ImGui::Begin("Chunk Info", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 
@@ -100,6 +105,7 @@ namespace Interface
 			}
 
 
+			ImGui::SetNextWindowBgAlpha(.5f);
 			{
 				ImGui::Begin("Sun", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 				ImGuiWindowFlags f;
@@ -194,6 +200,7 @@ namespace Interface
 			}
 
 			// big thing
+			ImGui::SetNextWindowBgAlpha(.5f);
 			{
 				static int fakeLag = 0;
 				static double frameTimeExp = 0;
@@ -297,6 +304,7 @@ namespace Interface
 			}
 
 			// render
+			ImGui::SetNextWindowBgAlpha(.5f);
 			{
 				ImGui::Begin("Render Settings", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 				if (ImGui::Checkbox("Compute baked AO", &Settings::GFX::blockAO))
@@ -318,6 +326,7 @@ namespace Interface
 			}
 
 			// graphs
+			ImGui::SetNextWindowBgAlpha(.5f);
 			if (debug_graphs)
 			{
 				ImGui::Begin("Graphs", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
@@ -332,16 +341,11 @@ namespace Interface
 
 					GLint currentMemoryKb = 0;
 					glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &currentMemoryKb);
-					ImGui::PlotVar("VRAM usage", (totalMemoryKb - currentMemoryKb) / 1000.f, 0, totalMemoryKb / 1000, 300, ImVec2(300, 100));
+					//ImGui::PlotVar("VRAM usage", float(totalMemoryKb - currentMemoryKb) / 1000.f, 0, totalMemoryKb / 1000, 300, ImVec2(300, 100));
+					ImGui::Text("VRAM usage: %.0f / %.0f MB", float(totalMemoryKb - currentMemoryKb) / 1000.f, float(totalMemoryKb) / 1000.f);
 				}
 				else
 					ImGui::Text("VRAM usage graph disabled due to incompatible GPU");
-				ImGui::End();
-			}
-
-			{
-				ImGui::Begin("Debug", 0, activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
-				ImGui::Checkbox("Display Graphs", &debug_graphs);
 				ImGui::End();
 			}
 		}

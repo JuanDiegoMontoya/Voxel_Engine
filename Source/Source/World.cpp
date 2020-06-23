@@ -122,7 +122,7 @@ namespace World
 	void World::CheckCollision()
 	{
 		auto cam = Renderer::GetPipeline()->GetCamera(0);
-		ImGui::Begin("Collision", 0, Interface::activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
+		//ImGui::Begin("Collision", 0, Interface::activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 		Box camBox(*cam);
 		auto min = glm::ivec3(glm::floor(camBox.min));
 		auto max = glm::ivec3(glm::ceil(camBox.max));
@@ -139,7 +139,7 @@ namespace World
 				{
 					Box block({ x, y, z });
 					blocks.insert(block);
-					ImGui::Text("Checking (%d, %d, %d)", x, y, z);
+					//ImGui::Text("Checking (%d, %d, %d)", x, y, z);
 				}
 			}
 		}
@@ -209,16 +209,15 @@ namespace World
 				else
 				{
 					newPos = cam->GetPos() + collisionDepth * -collisionNormal * 1.000f;
-					ImGui::Text("%s", sfaces[collidedFace].c_str());
-					ImGui::Text("Reflection: (%.2f, %.2f, %.2f)", refl.x, refl.y, refl.z);
+					//ImGui::Text("%s", sfaces[collidedFace].c_str());
+					//ImGui::Text("Reflection: (%.2f, %.2f, %.2f)", refl.x, refl.y, refl.z);
 					cam->velocity_[normalComp] = 0;
 				}
 				cam->SetPos(newPos);
 				camBox = Box(*cam);
 			}
 		}
-		//ImGui::NewLine();
-		ImGui::End();
+		//ImGui::End();
 	}
 
 
