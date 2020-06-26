@@ -17,8 +17,8 @@ Performance was tested on this system for reference:
 ## Features
 (*WIP*) indicates that a feature is mostly complete but has some bugs that need to be sorted out. 
 ### Voxels
-- Renders 300 million voxels at 300+ FPS
-  - Capable of rendering over ~~270 million~~ 2 billion voxels (56000+ chunks \* 32<sup>3</sup> cubes) with over ~~30~~ 60 FPS.
+- Capable of rendering a ~~270 million~~ 2 billion voxel world (56000+ chunks \* 32<sup>3</sup> cubes) with ~~30~~ 90-1500 FPS.
+  - Culling aggressively reduces number of rendered chunks to just what is visible to the viewer.
 - Movement physics and terrain collision
 - Block destroying and placing
 - A prefab editor
