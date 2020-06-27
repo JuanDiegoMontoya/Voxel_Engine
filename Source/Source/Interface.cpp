@@ -16,8 +16,11 @@
 #include "ChunkMesh.h"
 #include "ChunkRenderer.h"
 
+#include <zlib.h>
+
 namespace Interface
 {
+#pragma optimize("", off)
 	void Init()
 	{
 		Interface::activeCursor = false;
@@ -25,6 +28,7 @@ namespace Interface
 		Engine::PushRenderCallback(DrawImGui, 1);
 		Engine::PushRenderCallback(Update, 2);
 	}
+#pragma optimize("", on)
 
 	void Update()
 	{
@@ -221,9 +225,9 @@ namespace Interface
 				//ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
 				ImGui::SliderFloat("Render distance", &World::chunkManager_.loadDistance_, 0, 5000, "%.0f");
 				ImGui::SliderFloat("Leniency distance", &World::chunkManager_.unloadLeniency_, 0, 1000, "%.0f");
-				float far = Renderer::GetPipeline()->GetCamera(0)->GetFar();
-				if (ImGui::SliderFloat("Far plane", &far, 0.1f, 5000, "%.0f"))
-					Renderer::GetPipeline()->GetCamera(0)->SetFar(far);
+				float ffar = Renderer::GetPipeline()->GetCamera(0)->GetFar();
+				if (ImGui::SliderFloat("Far plane", &ffar, 0.1f, 5000, "%.0f"))
+					Renderer::GetPipeline()->GetCamera(0)->SetFar(ffar);
 				if (ImGui::InputFloat3("Camera Position", &pos[0], 2))
 					Renderer::GetPipeline()->GetCamera(0)->SetPos(pos);
 				pos = Renderer::GetPipeline()->GetCamera(0)->front;

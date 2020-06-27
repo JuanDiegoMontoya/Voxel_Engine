@@ -14,12 +14,10 @@ BufferAllocator<UserT>::BufferAllocator<UserT>(GLuint size, GLuint alignment)
 	size += (align_ - (size % align_)) % align_;
 
 	// allocate uninitialized memory in VRAM
-	glGenBuffers(1, &gpuHandle);
-	glBindBuffer(GL_COPY_WRITE_BUFFER, gpuHandle); // bind to some random target so next command works
+	glCreateBuffers(1, &gpuHandle);
 	glNamedBufferData(gpuHandle, size, NULL, GL_STATIC_DRAW);
-	glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
 
-	glGenBuffers(1, &allocDataGpuHandle_);
+	glCreateBuffers(1, &allocDataGpuHandle_);
 
 	// make one big null allocation
 	allocationData<UserT> phalloc;
@@ -211,9 +209,7 @@ void BufferAllocator<UserT>::dbgVerify()
 template<typename UserT>
 inline void BufferAllocator<UserT>::bufferAllocData()
 {
-	glBindBuffer(GL_COPY_WRITE_BUFFER, allocDataGpuHandle_);
 	glNamedBufferData(allocDataGpuHandle_, AllocSize() * allocs_.size(), allocs_.data(), GL_STATIC_COPY);
-	glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
 }
 
 

@@ -18,14 +18,14 @@ struct Biome
 
 	// when to spawn this biome
 	float humidity_avg; // -1 to 1
-	float temp_avg;			// -1 to 1
-	TerrainType terrain; // terrain type this biome will spawn on
+	float temp_avg;     // -1 to 1
+	TerrainType terrain;// terrain type this biome will spawn on
 
 	// % chance and name of prefab to spawn
 	BlockType surfaceCover; // sand, dirt, snow, etc.
-	std::vector<std::pair<float, PrefabName>> surfaceFeatures;	// per block
-	std::vector<std::pair<float, PrefabName>> subFeatures;			// per chunk
-	std::vector<std::pair<float, PrefabName>> skyFeatures;			// per chunk
+	std::vector<std::pair<float, PrefabName>> surfaceFeatures;  // per block
+	std::vector<std::pair<float, PrefabName>> subFeatures;      // per chunk
+	std::vector<std::pair<float, PrefabName>> skyFeatures;      // per chunk
 
 	// deletes these biomes when added (for custom biomes)
 	std::vector<std::string> biomeOverride;
@@ -42,22 +42,6 @@ struct Biome
 class BiomeManager
 {
 public:
-	//struct hashfunc
-	//{
-	//	size_t operator()(const Biome& b) const
-	//	{
-	//		return Utils::djb2hash()(b.name.c_str());
-	//	}
-	//};
-
-	//struct keyeq
-	//{
-	//	bool operator()(const Biome& first, const Biome& second) const
-	//	{
-	//		return Utils::charPtrKeyEq()(first.name.c_str(), second.name.c_str());
-	//	}
-	//};
-
 	inline static std::unordered_map<std::string, Biome> biomes;
 
 	const static Biome& GetBiome(float temp, float humid, TerrainType terrain);
