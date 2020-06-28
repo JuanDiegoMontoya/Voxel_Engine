@@ -100,7 +100,7 @@ int main()
     fprintf(stderr, "An error occured while initializing ENet.\n");
     return EXIT_FAILURE;
   }
-
+  
   atexit(enet_deinitialize);
 
   // b. Create a host using enet_host_create
@@ -120,7 +120,7 @@ int main()
 
   while (1)
   {
-    eventStatus = enet_host_service(server, &event, 50000);
+    eventStatus = enet_host_service(server, &event, 1000);
 
     // If we had some event that interested us
     if (eventStatus > 0)

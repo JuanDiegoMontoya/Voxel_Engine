@@ -70,6 +70,9 @@
     <Filter Include="Vendor\Tracy">
       <UniqueIdentifier>{20aa7a8b-4dd0-475a-b3b5-1795e82d3358}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Networking">
+      <UniqueIdentifier>{ff43b7c1-7371-4f3d-a637-baf4f624c64f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="settings.h">
@@ -334,6 +337,12 @@
     <ClInclude Include="..\vendor\imgui\stb_truetype.h">
       <Filter>Vendor\stb</Filter>
     </ClInclude>
+    <ClInclude Include="MainClient.h">
+      <Filter>Networking</Filter>
+    </ClInclude>
+    <ClInclude Include="NetEvent.h">
+      <Filter>Networking</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -548,6 +557,9 @@
     </ClCompile>
     <ClCompile Include="..\lib\tracy\TracyClient.cpp">
       <Filter>Vendor\Tracy</Filter>
+    </ClCompile>
+    <ClCompile Include="MainClient.cpp">
+      <Filter>Networking</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

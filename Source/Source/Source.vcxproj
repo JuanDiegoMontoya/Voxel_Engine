@@ -366,6 +366,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="infinite_chunk_manager.cpp" />
     <ClCompile Include="Interface.cpp" />
     <ClCompile Include="light.cpp" />
+    <ClCompile Include="MainClient.cpp" />
     <ClCompile Include="march_cubes.cpp" />
     <ClCompile Include="generation.cpp" />
     <ClCompile Include="mesh_comp.cpp" />
@@ -458,7 +459,9 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="infinite_chunk_manager.h" />
     <ClInclude Include="Interface.h" />
     <ClInclude Include="light.h" />
+    <ClInclude Include="MainClient.h" />
     <ClInclude Include="mesh_comp.h" />
+    <ClInclude Include="NetEvent.h" />
     <ClInclude Include="NuRenderer.h" />
     <ClInclude Include="Palette.h" />
     <ClInclude Include="parallel_chunks.h" />

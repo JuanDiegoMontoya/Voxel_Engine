@@ -285,6 +285,7 @@ namespace ChunkRenderer
 
 		glLineWidth(50);
 		allocator->Draw();
+		glLineWidth(2);
 
 		glEnable(GL_DEPTH_TEST);
 	}
