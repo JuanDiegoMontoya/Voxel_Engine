@@ -40,5 +40,4 @@ private:
 	GameObjectPtr parent_;	// what object it's attached to
 	ComponentType type_;		// what type of component
 	bool enabled_ = true;		// user var
-
 };
