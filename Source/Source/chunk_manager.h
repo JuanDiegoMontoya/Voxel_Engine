@@ -6,7 +6,10 @@
 #include "Renderer.h"
 
 #include <set>
-#include <unordered_set>
+//#include <unordered_set>
+#pragma warning(disable : 4996)
+#define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
+#include <concurrent_unordered_set.h>
 #include <atomic>
 #include <stack>
 
@@ -82,25 +85,27 @@ public: // TODO: TEMPORARY
 	// generates actual blocks
 	void chunk_generator_thread_task();
 	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> generation_queue_;
-	std::unordered_set<ChunkPtr> generation_queue_;
-	std::mutex chunk_generation_mutex_;
+	Concurrency::concurrent_unordered_set<ChunkPtr> generation_queue_;
+	//std::mutex chunk_generation_mutex_;
 	std::vector<std::thread*> chunk_generator_threads_;
 
 	// generates meshes for ANY UPDATED chunk
 	void chunk_mesher_thread_task();
 	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> mesher_queue_;
 	//std::set<ChunkPtr> mesher_queue_;
-	std::unordered_set<ChunkPtr> mesher_queue_;
-	std::mutex chunk_mesher_mutex_;
+	Concurrency::concurrent_unordered_set<ChunkPtr> mesher_queue_;
+	//std::mutex chunk_mesher_mutex_;
 	std::vector<std::thread*> chunk_mesher_threads_;
 	std::atomic_int debug_cur_pool_left = 0;
 
 	// NOT multithreaded task
 	void chunk_buffer_task();
 	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> buffer_queue_;
-	std::unordered_set<ChunkPtr> buffer_queue_;
-	std::mutex chunk_buffer_mutex_;
+	Concurrency::concurrent_unordered_set<ChunkPtr> buffer_queue_;
+	//std::mutex chunk_buffer_mutex_;
 
+	std::mutex t_mesher_mutex_;
+	Concurrency::concurrent_unordered_set<ChunkPtr> t_mesher_queue_;
 
 	// DEBUG does everything in a serial fashion
 	// chunk_buffer_task must be called after this

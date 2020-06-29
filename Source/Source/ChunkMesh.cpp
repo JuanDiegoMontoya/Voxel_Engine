@@ -167,6 +167,8 @@ void ChunkMesh::BuildBuffers2()
 	lightingArr.clear();
 	sPosArr.clear();
 	interleavedArr.clear();
+
+	//printf("%f: Buffered\n", glfwGetTime());
 }
 
 
@@ -222,6 +224,7 @@ void ChunkMesh::BuildMesh()
 		}
 	}
 
+	//printf("%f: Meshed\n", glfwGetTime());
 	mtx.unlock();
 
 	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);

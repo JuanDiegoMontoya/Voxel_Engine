@@ -58,7 +58,7 @@ void ChunkManager::Init()
 	}
 }
 
-
+#pragma optimize("", off)
 void ChunkManager::Update()
 {
   PERF_BENCHMARK_START;
@@ -74,22 +74,30 @@ void ChunkManager::Update()
 	//		p.second->Update();
 	//});
 
-	//chunk_gen_mesh_nobuffer();
 	chunk_buffer_task();
+	//chunk_gen_mesh_nobuffer();
+	if (t_mesher_queue_.size() > 0)
+	{
+		std::lock_guard<std::mutex> lock1(t_mesher_mutex_);
+		t_mesher_queue_.swap(mesher_queue_);
+		//mesher_queue_.clear();
+	}
 	//removeFarChunks();
 	//createNearbyChunks();
 
 	for (ChunkPtr chunk : delayed_update_queue_)
 		UpdateChunk(chunk);
 	delayed_update_queue_.clear();
+
   PERF_BENCHMARK_END;
 }
+#pragma optimize("", on)
 
 
 void ChunkManager::UpdateChunk(ChunkPtr chunk)
 {
 	ASSERT(chunk != nullptr);
-	std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
+	//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 	mesher_queue_.insert(chunk);
 }
 
@@ -101,7 +109,7 @@ void ChunkManager::UpdateChunk(const glm::ivec3 wpos)
 	auto cptr = ChunkStorage::GetChunk(cpos.chunk_pos);
 	if (cptr)
 	{
-		std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
+		//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 		mesher_queue_.insert(cptr);
 	}
 }
@@ -114,21 +122,12 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 	Block remBlock = ChunkStorage::AtWorldD(p); // store state of removed block to update lighting
 	ChunkPtr chunk = ChunkStorage::GetChunk(p.chunk_pos);
 
-	//if (block)
-	//{
-	//	// write policy: skip if new block is WEAKER than current block (same strength WILL overwrite)
-	//	if (bl.WriteStrength() < block->WriteStrength())
-	//		return;
-	//}
-
 	// create empty chunk if it's null
 	if (!chunk)
 	{
 		// make chunk, then modify changed block
 		ChunkStorage::GetMapRaw()[p.chunk_pos] = chunk = new Chunk();
 		chunk->SetPos(p.chunk_pos);
-		std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
-		generation_queue_.insert(chunk);
 		remBlock = chunk->BlockAt(p.block_pos); // remBlock would've been 0 block cuz null, so it's fix here
 	}
 
@@ -144,7 +143,7 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 
 	// add to update list if it ain't
 	{ // scoped, otherwise deadlock will occur in 'checkUpdateChunkNearBlock'
-		std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
+		//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 		mesher_queue_.insert(chunk);
 	}
 
@@ -185,7 +184,6 @@ void ChunkManager::ReloadAllChunks()
 		if (p.second)
 		{
 			//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
-			std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 			mesher_queue_.insert(p.second);
 		}
 			//if (!isChunkInUpdateList(p.second))
@@ -255,7 +253,7 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 	ChunkPtr cptr = ChunkStorage::GetChunk(p2.chunk_pos);
 	if (cptr)
 	{
-		std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
+		//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
 		mesher_queue_.insert(cptr);
 		delayed_update_queue_.erase(cptr);
 	}
@@ -273,9 +271,9 @@ void ChunkManager::removeFarChunks()
 	{
 		std::vector<ChunkPtr> deleteList;
 		// attempt at safety
-		std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
-		std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
-		std::lock_guard<std::mutex> lock3(chunk_buffer_mutex_);
+		//std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
+		//std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
+		//std::lock_guard<std::mutex> lock3(chunk_buffer_mutex_);
 		Utils::erase_if(
 			ChunkStorage::GetMapRaw(),
 			[&](auto& p)->bool
@@ -328,7 +326,7 @@ void ChunkManager::createNearbyChunks()
 			p.second = new Chunk();
 			p.second->SetPos(p.first);
 //			p.second->generate_ = true;
-			std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
+			//std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
 			generation_queue_.insert(p.second);
 		}
 	});

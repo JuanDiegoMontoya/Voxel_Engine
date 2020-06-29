@@ -129,6 +129,8 @@ int main()
 
 	Engine::Run();
 
+	Client::Shutdown();
+
 	Engine::Cleanup();
 
 	return 0;

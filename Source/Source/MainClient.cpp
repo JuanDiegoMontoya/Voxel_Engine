@@ -18,6 +18,8 @@ namespace Client
 	Concurrency::concurrent_queue<NetEvent> events;
 
 	std::unique_ptr<std::thread> thread;
+
+	bool shutdownThreads = false;
 	void Init()
 	{
 		thread = std::make_unique<std::thread>(MainLoop);
@@ -65,7 +67,7 @@ namespace Client
 		double dt = 0;
 		double accum = 0;
 		double tick = 1.0 / 1.0; // ms
-		while (1)
+		while (!shutdownThreads)
 		{
 			double curr = glfwGetTime();
 			dt = curr - old;
@@ -113,5 +115,11 @@ namespace Client
 				}
 			}
 		}
+	}
+
+	void Shutdown()
+	{
+		shutdownThreads = true;
+		thread->join();
 	}
 }
