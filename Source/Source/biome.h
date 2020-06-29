@@ -1,6 +1,6 @@
 #pragma once
-#include "generation.h"
 #include "misc_utils.h"
+#include "generation.h"
 
 // TODO: add more properties like grass/water color modifier, etc
 //			 sky color,

@@ -94,9 +94,6 @@
     <ClInclude Include="component.h">
       <Filter>Game\ECS</Filter>
     </ClInclude>
-    <ClInclude Include="game_object.h">
-      <Filter>Game\ECS</Filter>
-    </ClInclude>
     <ClInclude Include="transform.h">
       <Filter>Game\ECS\Components</Filter>
     </ClInclude>
@@ -117,9 +114,6 @@
     </ClInclude>
     <ClInclude Include="sun.h">
       <Filter>Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="biome.h">
-      <Filter>Voxel Engine</Filter>
     </ClInclude>
     <ClInclude Include="directional_light.h">
       <Filter>Graphics</Filter>
@@ -265,9 +259,6 @@
     <ClInclude Include="FixedSizeWorld.h">
       <Filter>Voxel Engine\Chunk Manager</Filter>
     </ClInclude>
-    <ClInclude Include="generation.h">
-      <Filter>Voxel Engine\World Generation</Filter>
-    </ClInclude>
     <ClInclude Include="WorldGen2.h">
       <Filter>Voxel Engine\World Generation</Filter>
     </ClInclude>
@@ -343,6 +334,9 @@
     <ClInclude Include="NetEvent.h">
       <Filter>Networking</Filter>
     </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Game\ECS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -353,9 +347,6 @@
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="game_object.cpp">
-      <Filter>Game\ECS</Filter>
     </ClCompile>
     <ClCompile Include="transform.cpp">
       <Filter>Game\ECS\Components</Filter>
@@ -374,9 +365,6 @@
     </ClCompile>
     <ClCompile Include="sun.cpp">
       <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="biome.cpp">
-      <Filter>Voxel Engine</Filter>
     </ClCompile>
     <ClCompile Include="march_cubes.cpp">
       <Filter>Voxel Engine</Filter>
@@ -495,9 +483,6 @@
     <ClCompile Include="FixedSizeWorld.cpp">
       <Filter>Voxel Engine\Chunk Manager</Filter>
     </ClCompile>
-    <ClCompile Include="generation.cpp">
-      <Filter>Voxel Engine\World Generation</Filter>
-    </ClCompile>
     <ClCompile Include="WorldGen2.cpp">
       <Filter>Voxel Engine\World Generation</Filter>
     </ClCompile>
@@ -560,6 +545,9 @@
     </ClCompile>
     <ClCompile Include="MainClient.cpp">
       <Filter>Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Game\ECS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

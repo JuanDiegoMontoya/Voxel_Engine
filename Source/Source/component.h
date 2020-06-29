@@ -20,7 +20,7 @@ enum class ComponentType : unsigned
 
 
 // augments game objects
-typedef class Component
+class Component
 {
 public:
 	void SetType(ComponentType t) { type_ = t; }
@@ -41,4 +41,4 @@ private:
 	ComponentType type_;		// what type of component
 	bool enabled_ = true;		// user var
 
-}Component;
+};

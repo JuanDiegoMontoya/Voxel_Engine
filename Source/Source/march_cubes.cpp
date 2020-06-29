@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "block.h"
 #include "chunk.h"
-#include "generation.h"
 
 //void Chunk::buildBlockVertices_marched_cubes(
 //	glm::ivec3 pos,

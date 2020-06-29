@@ -15,6 +15,7 @@
 #include "ChunkHelpers.h"
 #include "ChunkMesh.h"
 #include "ChunkRenderer.h"
+#include "sun.h"
 
 #include <zlib.h>
 
@@ -245,22 +246,7 @@ namespace Interface
 				ImGui::NewLine();
 				ImGui::Text("Flying: %s", activeCursor ? "False" : "True");
 
-				static bool init = true;
-				if (!init)
-				{
-					ImGui::NewLine();
-					const glm::vec3 camPos = Renderer::GetPipeline()->GetCamera(0)->GetPos();
-					float t = float(WorldGen::GetTemperature(camPos.x, camPos.y, camPos.z));
-					float h = float(WorldGen::GetHumidity(camPos.x, camPos.z));
-					TerrainType tt = WorldGen::GetTerrainType(camPos);
-					ImGui::Text("Biome info: ");
-					ImGui::Text("Temperature: %.2f", t);
-					ImGui::Text("Humidity: %.2f", h);
-					ImGui::Text("Terrain: %d", (unsigned)tt);
-					ImGui::Text("Biome name: %s", BiomeManager::GetBiome(t, h, tt));
-					ImGui::NewLine();
-				}
-				init = false;
+				const glm::vec3 camPos = Renderer::GetPipeline()->GetCamera(0)->GetPos();
 
 				float dist = 5.f;
 				ImGui::Text("Voxel raycast information:");

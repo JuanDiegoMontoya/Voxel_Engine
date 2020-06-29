@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "component.h"
+#include "Component.h"
 #include "World.h"
-#include "game_object.h"
+#include "GameObject.h"
 
 GameObject::GameObject()
 {

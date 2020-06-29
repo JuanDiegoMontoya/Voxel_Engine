@@ -1,8 +1,8 @@
 #pragma once
-#include "component.h"
+#include "Component.h"
 
 
-typedef class GameObject
+class GameObject
 {
 public:
 	template<typename T>
@@ -27,7 +27,7 @@ public:
 
 	bool GetEnabled() const { return enabled_; }
 	Component* GetComponent(unsigned t) { return components_[t]; }
-	Component* const * GetAllComponents() { return components_; }
+	Component* const* GetAllComponents() { return components_; }
 	const std::string& GetName() const { return name_; }
 
 private:
@@ -35,6 +35,6 @@ private:
 	bool enabled_; // user var
 	std::string name_;
 
-}GameObject, *GameObjectPtr;
+};
 
 //using GameObjectPtr = std::shared_ptr<GameObject>;

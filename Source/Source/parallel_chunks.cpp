@@ -20,7 +20,7 @@ void ChunkManager::chunk_generator_thread_task()
 
 		std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
 		{
-			WorldGen::GenerateChunk(chunk->GetPos());
+			//WorldGen::GenerateChunk(chunk->GetPos());
 			std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
 			mesher_queue_.insert(chunk);
 		});
@@ -93,7 +93,7 @@ void ChunkManager::chunk_gen_mesh_nobuffer()
 
 		std::for_each(std::execution::seq, temp.begin(), temp.end(), [this](ChunkPtr chunk)
 			{
-				WorldGen::GenerateChunk(chunk->GetPos());
+				//WorldGen::GenerateChunk(chunk->GetPos());
 				std::lock_guard<std::mutex> lock2(chunk_mesher_mutex_);
 				mesher_queue_.insert(chunk);
 			});

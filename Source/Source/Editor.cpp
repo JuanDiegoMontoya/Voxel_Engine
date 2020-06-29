@@ -7,7 +7,6 @@
 #include "Editor.h"
 #include "shader.h"
 #include "prefab.h"
-#include "generation.h"
 
 #include <fstream>
 #include <functional>
@@ -74,7 +73,7 @@ namespace Editor
 			Prefab oldPfb;
 			archive(oldPfb);
 
-			WorldGen::GeneratePrefab(oldPfb, hposition);
+			//WorldGen::GeneratePrefab(oldPfb, hposition);
 		}
 
 		void CancelSelection()

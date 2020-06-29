@@ -12,6 +12,7 @@
 #include "block.h"
 #include "TextureArray.h"
 #include <texture.h>
+#include "sun.h"
 
 namespace NuRenderer
 {

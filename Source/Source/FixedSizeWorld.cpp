@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "FixedSizeWorld.h"
 #include "ChunkStorage.h"
-#include "generation.h"
 #include <execution>
 
 
@@ -18,7 +17,7 @@ void FixedSizeWorld::GenWorld(glm::ivec3 lowChunkDim, glm::ivec3 highChunkDim)
 				Chunk* newChunk = new Chunk();
 				newChunk->SetPos({ x, y, z });
 				ChunkStorage::GetMapRaw()[{ x, y, z }] = newChunk;
-				WorldGen::GenerateChunk({ x, y, z });
+				//WorldGen::GenerateChunk({ x, y, z });
 			}
 		}
 	}

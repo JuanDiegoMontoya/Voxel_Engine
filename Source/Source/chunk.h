@@ -3,7 +3,6 @@
 #include <Frustum.h>
 #include "block.h"
 #include "light.h"
-#include "biome.h"
 #include "misc_utils.h"
 #include <mutex>
 #include <concurrent_unordered_map.h> // TODO: temp solution to concurrent chunk access
