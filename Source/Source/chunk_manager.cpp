@@ -58,7 +58,6 @@ void ChunkManager::Init()
 	}
 }
 
-#pragma optimize("", off)
 void ChunkManager::Update()
 {
   PERF_BENCHMARK_START;
@@ -76,10 +75,10 @@ void ChunkManager::Update()
 
 	chunk_buffer_task();
 	//chunk_gen_mesh_nobuffer();
-	if (t_mesher_queue_.size() > 0)
+	if (mesher_queue_.size() > 0)
 	{
 		std::lock_guard<std::mutex> lock1(t_mesher_mutex_);
-		t_mesher_queue_.swap(mesher_queue_);
+		mesher_queue_.swap(t_mesher_queue_);
 		//mesher_queue_.clear();
 	}
 	//removeFarChunks();
@@ -91,7 +90,6 @@ void ChunkManager::Update()
 
   PERF_BENCHMARK_END;
 }
-#pragma optimize("", on)
 
 
 void ChunkManager::UpdateChunk(ChunkPtr chunk)

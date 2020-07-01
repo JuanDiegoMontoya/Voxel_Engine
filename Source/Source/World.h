@@ -15,6 +15,7 @@ public:
 	static void Shutdown();
 	static void Update();
 	static void CheckCollision();
+	static void CheckCollision2();
 	static void CheckInteraction();
 
 	// unconditionally updates a block at a position

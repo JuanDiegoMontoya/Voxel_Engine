@@ -1,6 +1,4 @@
-// Server.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
+#include "stdafx.h"
 #include <iostream>
 #include <enet/enet.h>
 
@@ -89,63 +87,64 @@ To sit on my throne as the Prince of Bel Air)100" };
 
 int main()
 {
-  ENetAddress address;
-  ENetHost* server;
-  ENetEvent event;
-  int eventStatus;
+	ENetAddress address;
+	ENetHost* server;
+	ENetEvent event;
+	int eventStatus;
 
-  // a. Initialize enet
-  if (enet_initialize() != 0)
-  {
-    fprintf(stderr, "An error occured while initializing ENet.\n");
-    return EXIT_FAILURE;
-  }
-  
-  atexit(enet_deinitialize);
+	// a. Initialize enet
+	if (enet_initialize() != 0)
+	{
+		printf("An error occured while initializing ENet.\n");
+		return EXIT_FAILURE;
+	}
+	
+	atexit(enet_deinitialize);
 
-  // b. Create a host using enet_host_create
-  address.host = ENET_HOST_ANY;
-  address.port = 1234;
+	// b. Create a host using enet_host_create
+	address.host = ENET_HOST_ANY;
+	address.port = 1234;
 
-  server = enet_host_create(&address, 32, 2, 0, 0);
+	server = enet_host_create(&address, 32, 2, 0, 0);
 
-  if (server == NULL)
-  {
-    fprintf(stderr, "An error occured while trying to create an ENet server host\n");
-    exit(EXIT_FAILURE);
-  }
+	if (server == NULL)
+	{
+		printf("An error occured while trying to create an ENet server host\n");
+		exit(EXIT_FAILURE);
+	}
 
-  // c. Connect and user service
-  eventStatus = 1;
+	// c. Connect and user service
+	eventStatus = 1;
 
-  while (1)
-  {
-    eventStatus = enet_host_service(server, &event, 1000);
+	printf("Server started successfully!");
+	while (1)
+	{
+		eventStatus = enet_host_service(server, &event, 1000);
 
-    // If we had some event that interested us
-    if (eventStatus > 0)
-    {
-      switch (event.type)
-      {
-      case ENET_EVENT_TYPE_CONNECT:
-        printf("(Server) We got a new connection from %x\n",
-          event.peer->address.host);
-        break;
+		// If we had some event that interested us
+		if (eventStatus > 0)
+		{
+			switch (event.type)
+			{
+			case ENET_EVENT_TYPE_CONNECT:
+				printf("(Server) We got a new connection from %x\n",
+					event.peer->address.host);
+				break;
 
-      case ENET_EVENT_TYPE_RECEIVE:
-        printf("(Server) Message from client : %s\n", event.packet->data);
-        // Lets broadcast this message to all
-        enet_host_broadcast(server, 0, event.packet);
-        break;
+			case ENET_EVENT_TYPE_RECEIVE:
+				printf("(Server) Message from client : %s\n", event.packet->data);
+				// Lets broadcast this message to all
+				enet_host_broadcast(server, 0, event.packet);
+				break;
 
-      case ENET_EVENT_TYPE_DISCONNECT:
-        printf("%s disconnected.\n", event.peer->data);
+			case ENET_EVENT_TYPE_DISCONNECT:
+				printf("%s disconnected.\n", event.peer->data);
 
-        // Reset client's information
-        event.peer->data = NULL;
-        break;
+				// Reset client's information
+				event.peer->data = NULL;
+				break;
 
-      }
-    }
-  }
+			}
+		}
+	}
 }

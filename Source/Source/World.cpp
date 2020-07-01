@@ -96,7 +96,10 @@ void World::Update()
 	}
 
 	if (doCollisionTick)
+	{
+		//CheckCollision2();
 		CheckCollision();
+	}
 
 	chunkManager_.Update();
 	CheckInteraction();
@@ -212,6 +215,52 @@ void World::CheckCollision()
 	}
 	//ImGui::End();
 }
+
+
+#pragma optimize("", off)
+void World::CheckCollision2()
+{
+	auto cam = Renderer::GetPipeline()->GetCamera(0);
+	//ImGui::Begin("Collision", 0, Interface::activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
+	SweptAABB camBox;
+	camBox.min = cam->GetPos() - .5f;
+	camBox.max = cam->GetPos() + .5f;
+	camBox.vel = cam->GetPos() - cam->oldPos;
+	Box b = camBox.GetSweptAABB();
+	auto min = glm::ivec3(glm::floor(b.min));
+	auto max = glm::ivec3(glm::ceil(b.max));
+	auto mapcomp = [&camBox](const Box& a, const Box& b)->bool
+	{
+		return glm::distance(camBox.GetPosition(), a.GetPosition()) < glm::distance(camBox.GetPosition(), b.GetPosition());
+	};
+	std::set<Box, decltype(mapcomp)> blocks(mapcomp);
+	for (int x = min.x; x < max.x; x++)
+	{
+		for (int y = min.y; y < max.y; y++)
+		{
+			for (int z = min.z; z < max.z; z++)
+			{
+				if (ChunkStorage::AtWorldC({ x, y, z }).GetType() == BlockType::bAir)
+					continue;
+				Box block({ x, y, z });
+				blocks.insert(block);
+				//ImGui::Text("Checking (%d, %d, %d)", x, y, z);
+			}
+		}
+	}
+
+	for (auto& blockBox : blocks)
+	{
+		if (camBox.CheckCollisionSweptAABBDeflect(blockBox))
+		{
+			printf("Collided!\n");
+			cam->SetPos(camBox.GetPosition());
+			cam->velocity_ = camBox.vel;
+			break;
+		}
+	}
+}
+#pragma optimize("", on)
 
 
 void World::CheckInteraction()

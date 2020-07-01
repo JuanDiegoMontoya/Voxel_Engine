@@ -331,9 +331,6 @@
     <ClInclude Include="MainClient.h">
       <Filter>Networking</Filter>
     </ClInclude>
-    <ClInclude Include="NetEvent.h">
-      <Filter>Networking</Filter>
-    </ClInclude>
     <ClInclude Include="GameObject.h">
       <Filter>Game\ECS</Filter>
     </ClInclude>

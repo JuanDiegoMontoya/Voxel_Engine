@@ -1,7 +1,9 @@
 #pragma once
 #include "block.h"
 #include "camera.h"
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/component_wise.hpp>
+#undef GLM_ENABLE_EXPERIMENTAL
 //#include <numeric>
 
 // abstract class
@@ -12,6 +14,7 @@
 //};
 
 // AABB
+#pragma optimize("", off)
 struct Box
 {
 	Box() {};
@@ -70,16 +73,18 @@ struct Box
 // TODO: SIMD (use glm::vec functions instead of repetitive if/else)
 struct SweptAABB
 {
+	SweptAABB() {}
+
 	// collision test and response, returns true if there was a collision
 	bool CheckCollisionSweptAABBDeflect(const Box& b2)
 	{
 		auto [collisionTime, normal] = TestSweptAABB(b2);
-		if (collisionTime = 1)
+		if (collisionTime == 1)
 			return false;
-		this->min += this->vel * collisionTime;
-		this->max += this->vel * collisionTime;
+		this->min -= this->vel * collisionTime;
+		this->max -= this->vel * collisionTime;
 		float remainingTime = 1.0f - collisionTime;
-
+		
 		// reduce velocity by amt of elapsed time, then reflect velocity over collision normal
 		this->vel *= remainingTime;
 		if (glm::abs(normal.x) > 0.0001f)
@@ -96,7 +101,7 @@ struct SweptAABB
 	bool CheckCollisionSweptAABBPush(const Box& b2)
 	{
 		auto [collisionTime, normal] = TestSweptAABB(b2);
-		if (collisionTime = 1)
+		if (collisionTime == 1)
 			return false;
 		this->min += this->vel * collisionTime;
 		this->max += this->vel * collisionTime;
@@ -117,7 +122,7 @@ struct SweptAABB
 	bool CheckCollisionSweptAABBSlide(const Box& b2)
 	{
 		auto [collisionTime, normal] = TestSweptAABB(b2);
-		if (collisionTime = 1)
+		if (collisionTime == 1)
 			return false;
 		this->min += this->vel * collisionTime;
 		this->max += this->vel * collisionTime;
@@ -266,7 +271,18 @@ struct SweptAABB
 		}
 	}
 
-	glm::vec3 vel;
-	glm::vec3 min;
-	glm::vec3 max;
+
+	glm::vec3 GetPosition() const
+	{
+		return (max + min) / 2.f;
+	}
+	glm::vec3 GetScale() const
+	{
+		return (max - min) / 2.f;
+	}
+
+	glm::vec3 vel{ 0 };
+	glm::vec3 min{ 0 };
+	glm::vec3 max{ 0 };
 };
+#pragma optimize("", on)

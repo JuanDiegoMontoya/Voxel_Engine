@@ -81,7 +81,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)lib\enet-1.3.15\include;$(SolutionDir)lib\tracy;$(SolutionDir)vendor;$(SolutionDir)lib\zlib-1.2.11;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)lib\enet-1.3.15\include;$(SolutionDir)lib\tracy;$(SolutionDir)vendor;$(SolutionDir)lib\zlib-1.2.11;$(SolutionDir)Shared;$(SolutionDir)lib\glm-0.9.9.0;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)lib\enet-1.3.15;$(SolutionDir)lib\zlib-1.2.11\zlib123dllx64\static_x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -143,7 +143,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Server.cpp" />
+    <ClCompile Include="ProcessClientEvent.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Server.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ProcessClientEvent.h" />
+    <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
