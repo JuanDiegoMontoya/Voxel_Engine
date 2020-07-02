@@ -143,7 +143,6 @@ int main()
 				// Reset client's information
 				event.peer->data = NULL;
 				break;
-
 			}
 		}
 	}
