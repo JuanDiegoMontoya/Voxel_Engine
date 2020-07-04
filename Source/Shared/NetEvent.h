@@ -4,62 +4,107 @@
 #include <shared_mutex>
 
 #define REGISTER_EVENT(x) x* x ## _data
-#define PROCESS_EVENT(x) case Packet::e ## x: data.x ## _data->Process(); break
+//#define PROCESS_EVENT(x) case Packet::e ## x: data.x ## _data->Process(); break
 #define UNDEFINED_EVENT(x) ;
 
 namespace Net
 {
 	struct Packet
 	{
-		enum EventType { eNullEvent, ePrintCameraPosEvent, eInputEvent };
+		enum ClientEvent
+		{
+			/* Join Event:
+				Sent to the server upon initial connection.
+				The server will return a result stating whether the
+				connection was accepted or declined. This is different
+				from simply connecting to the server's socket, as 
+				this event will give the server discretionary control 
+				over what clients may or may not join.
+			*/
+			eClientJoinEvent,
 
+			/* Leave Event
+				Sent to server before client disconnects. No acknowledgement
+				required. This is purely for the server's convenience.
+			*/
+			eClientLeaveEvent,
+
+			/* Client Print vec3 Event
+				Test event. When sent, the server will print the value
+				of the vec3 contained within.
+			*/
+			eClientPrintVec3Event,
+
+			/* Client Input Event
+				Sent after polling inputs each client tick
+				Aggregate of all input actions a client can take in a frame.
+				Booleans packed into bytes indicating whether an action is taken.
+			*/
+			eClientInputEvent,
+		};
+
+		enum ServerEvent
+		{
+			eJoinResultEvent,
+			eGameState,
+		};
+
+		// A client OR server event type
 		int type;
-		union
-		{
-			REGISTER_EVENT(PrintCameraPosEvent);
-			REGISTER_EVENT(InputEvent);
-			//PrintCameraPosEvent* a;
-			//InputEvent* b;
-		}data;
+		void* data;
 	};
 
-	struct PrintCameraPosEvent
+	struct ClientJoinEvent
 	{
-		void Process()
-		{
-			printf("(%f, %f, %f)\n", pos.x, pos.y, pos.z);
-		}
-		glm::vec3 pos;
+		//void Process()
+		//{
+		//	printf("A client connected!\n");
+		//}
 	};
 
-	struct InputEvent
+	struct ClientPrintVec3Event
 	{
-		void Process()
-		{
-			printf("%d\n", input);
-		}
+		//void Process()
+		//{
+		//	printf("(%f, %f, %f)\n", v.x, v.y, v.z);
+		//}
+		int clientID;
+		glm::vec3 v;
+	};
+
+
+	struct ClientInputEvent
+	{
+		//void Process()
+		//{
+		//	printf("%d\n", input);
+		//}
+		int clientID;
 		int input;
 	};
 
+
+	// concurrent structure for processing outgoing network events
 	struct EventController
 	{
 	public:
-		static void PushEvent(Packet&& p)
+		void PushEvent(Packet&& p)
 		{
 			mtx.lock();
-			backBuffer->push(std::move(p));
+			backBuffer.push(std::move(p));
 			mtx.unlock();
 		}
 
-		static Packet PopEvent()
+		Packet PopEvent()
 		{
 			mtx.lock();
 			Packet&& t = std::move(packetBuf.front());
 			packetBuf.pop();
 			mtx.unlock();
+			return t;
 		}
 
-		static void SwapBuffers()
+		void SwapBuffers()
 		{
 			mtx.lock();
 			packetBuf.swap(backBuffer);
@@ -67,8 +112,8 @@ namespace Net
 		}
 
 	private:
-		static std::queue<Packet> packetBuf;
-		static std::queue<Packet> backBuffer;
-		static std::shared_mutex mtx;
+		std::queue<Packet> packetBuf;
+		std::queue<Packet> backBuffer;
+		std::shared_mutex mtx;
 	};
 }

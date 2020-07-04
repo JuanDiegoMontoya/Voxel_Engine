@@ -5,6 +5,9 @@
 #include <zlib.h>
 #include <cassert>
 
+#include <NetEvent.h>
+#include "ProcessClientEvent.h"
+
 void testCompress()
 {
 	std::string compressThis = { R"100(
@@ -132,9 +135,21 @@ int main()
 				break;
 
 			case ENET_EVENT_TYPE_RECEIVE:
-				printf("(Server) Message from client : %s\n", event.packet->data);
-				// Lets broadcast this message to all
-				enet_host_broadcast(server, 0, event.packet);
+				//printf("(Server) Message from client : %s\n", event.packet->data);
+				//// Lets broadcast this message to all
+				//enet_host_broadcast(server, 0, event.packet);
+
+				// we are guaranteed to receive at least the type identifier
+				assert(event.packet->dataLength >= sizeof(int));
+
+				Net::Packet packet;
+
+				// assume first 4 bytes are size
+				std::memcpy(&packet.type, event.packet->data, sizeof(int));
+				
+				// 'data' points to region directly after type identifier
+				packet.data = event.packet->data + sizeof(int);
+				Net::ProcessClientEvent(packet);
 				break;
 
 			case ENET_EVENT_TYPE_DISCONNECT:

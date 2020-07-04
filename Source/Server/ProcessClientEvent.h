@@ -4,5 +4,5 @@ struct Packet;
 
 namespace Net
 {
-	void ProcessClientEvent(Packet* packet);
+	void ProcessClientEvent(Packet& packet);
 }

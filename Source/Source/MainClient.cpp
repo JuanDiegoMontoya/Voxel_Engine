@@ -15,8 +15,7 @@
 
 namespace Client
 {
-	Concurrency::concurrent_queue<Net::Packet> events;
-
+	Net::EventController eventQueue;
 	std::unique_ptr<std::thread> thread;
 
 	bool shutdownThreads = false;
