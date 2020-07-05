@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include <iostream>
-#include <enet/enet.h>
 
 #include <zlib.h>
 #include <cassert>
 
 #include <NetEvent.h>
 #include "ProcessClientEvent.h"
+#include "Server.h"
 
 void testCompress()
 {
@@ -88,77 +88,94 @@ To sit on my throne as the Prince of Bel Air)100" };
 	delete[] dataUncompressed;
 }
 
-int main()
+namespace Net
 {
-	ENetAddress address;
-	ENetHost* server;
-	ENetEvent event;
-	int eventStatus;
-
-	// a. Initialize enet
-	if (enet_initialize() != 0)
+	bool Server::Init()
 	{
-		printf("An error occured while initializing ENet.\n");
-		return EXIT_FAILURE;
-	}
-	
-	atexit(enet_deinitialize);
-
-	// b. Create a host using enet_host_create
-	address.host = ENET_HOST_ANY;
-	address.port = 1234;
-
-	server = enet_host_create(&address, 32, 2, 0, 0);
-
-	if (server == NULL)
-	{
-		printf("An error occured while trying to create an ENet server host\n");
-		exit(EXIT_FAILURE);
-	}
-
-	// c. Connect and user service
-	eventStatus = 1;
-
-	printf("Server started successfully!");
-	while (1)
-	{
-		eventStatus = enet_host_service(server, &event, 1000);
-
-		// If we had some event that interested us
-		if (eventStatus > 0)
+		// a. Initialize enet
+		if (enet_initialize() != 0)
 		{
-			switch (event.type)
+			printf("An error occured while initializing ENet.\n");
+			return false;
+		}
+
+		// b. Create a host using enet_host_create
+		address.host = ENET_HOST_ANY;
+		address.port = 1234;
+
+		server = enet_host_create(&address, 32, 2, 0, 0);
+
+		if (server == NULL)
+		{
+			printf("An error occured while trying to create an ENet server host\n");
+			return false;
+		}
+
+		// c. Connect and user service
+		eventStatus = 1;
+
+		printf("Server started successfully!");
+
+		thread = std::make_unique<std::thread>([this]() { this->run(); });
+		return true;
+	}
+
+
+	void Server::run()
+	{
+		while (!shutdownThreads)
+		{
+			eventStatus = enet_host_service(server, &event, 1000);
+
+			// If we had some event that interested us
+			if (eventStatus > 0)
 			{
-			case ENET_EVENT_TYPE_CONNECT:
-				printf("(Server) We got a new connection from %x\n",
-					event.peer->address.host);
-				break;
+				switch (event.type)
+				{
+				case ENET_EVENT_TYPE_CONNECT:
+					printf("(Server) We got a new connection from %x\n",
+						event.peer->address.host);
+					break;
 
-			case ENET_EVENT_TYPE_RECEIVE:
-				//printf("(Server) Message from client : %s\n", event.packet->data);
-				//// Lets broadcast this message to all
-				//enet_host_broadcast(server, 0, event.packet);
+				case ENET_EVENT_TYPE_RECEIVE:
+					//printf("(Server) Message from client : %s\n", event.packet->data);
+					//// Lets broadcast this message to all
+					//enet_host_broadcast(server, 0, event.packet);
 
-				// we are guaranteed to receive at least the type identifier
-				assert(event.packet->dataLength >= sizeof(int));
+					// we are guaranteed to receive at least the type identifier
+					assert(event.packet->dataLength >= sizeof(int));
 
-				Net::Packet packet;
+					Net::Packet packet;
 
-				// assume first 4 bytes are size
-				std::memcpy(&packet.type, event.packet->data, sizeof(int));
-				
-				// 'data' points to region directly after type identifier
-				packet.data = event.packet->data + sizeof(int);
-				Net::ProcessClientEvent(packet);
-				break;
+					// assume first 4 bytes are size
+					std::memcpy(&packet.type, event.packet->data, sizeof(int));
 
-			case ENET_EVENT_TYPE_DISCONNECT:
-				printf("%s disconnected.\n", event.peer->data);
+					// 'data' points to region directly after type identifier
+					packet.data = event.packet->data + sizeof(int);
+					Net::ProcessClientEvent(packet);
+					break;
 
-				// Reset client's information
-				event.peer->data = NULL;
-				break;
+				case ENET_EVENT_TYPE_DISCONNECT:
+					printf("%s disconnected.\n", event.peer->data);
+
+					// Reset client's information
+					event.peer->data = NULL;
+					break;
+				}
 			}
 		}
+	}
+
+
+	void Server::Shutdown()
+	{
+		shutdownThreads = true;
+
+	}
+
+
+	void Server::cleanup()
+	{
+		enet_deinitialize();
 	}
 }
