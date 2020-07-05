@@ -105,16 +105,21 @@ namespace Client
 				accum -= tick;
 
 				auto p = Renderer::GetPipeline()->GetCamera(0)->GetPos();
-				char message[1000];
-				static int ttt = 0;
-				sprintf(message, "%d: (%f, %f, %f)\n", ttt++, p.x, p.y, p.z);
+				std::tuple<int, Net::ClientPrintVec3Event> data;
+				std::get<0>(data) = Net::Packet::eClientPrintVec3Event;
+				std::get<1>(data).v = p;
+				ENetPacket* packet = enet_packet_create(&data, sizeof(data), ENET_PACKET_FLAG_RELIABLE);
+				enet_peer_send(peer, 0, packet);
 
-				if (strlen(message) > 0)
-				{
-					ENetPacket* packet = enet_packet_create(message, strlen(message) + 1, ENET_PACKET_FLAG_RELIABLE);
-					enet_peer_send(peer, 0, packet);
-					//enet_packet_destroy(packet);
-				}
+				//char message[1000];
+				//static int ttt = 0;
+				//sprintf(message, "%d: (%f, %f, %f)\n", ttt++, p.x, p.y, p.z);
+				//if (strlen(message) > 0)
+				//{
+				//	ENetPacket* packet = enet_packet_create(message, strlen(message) + 1, ENET_PACKET_FLAG_RELIABLE);
+				//	enet_peer_send(peer, 0, packet);
+				//	//enet_packet_destroy(packet);
+				//}
 			}
 		}
 

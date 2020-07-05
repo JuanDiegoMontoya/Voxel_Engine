@@ -13,7 +13,7 @@ namespace Net
 	{
 		enum ClientEvent
 		{
-			/* Join Event:
+			/* Client Join Event
 				Sent to the server upon initial connection.
 				The server will return a result stating whether the
 				connection was accepted or declined. This is different
@@ -23,9 +23,11 @@ namespace Net
 			*/
 			eClientJoinEvent,
 
-			/* Leave Event
+			/* Client Leave Event
 				Sent to server before client disconnects. No acknowledgement
 				required. This is purely for the server's convenience.
+				The server will disconnect the client forcibly if their timeout
+				limit is reached.
 			*/
 			eClientLeaveEvent,
 
@@ -36,7 +38,7 @@ namespace Net
 			eClientPrintVec3Event,
 
 			/* Client Input Event
-				Sent after polling inputs each client tick
+				Sent after polling inputs each client tick.
 				Aggregate of all input actions a client can take in a frame.
 				Booleans packed into bytes indicating whether an action is taken.
 			*/
@@ -45,8 +47,19 @@ namespace Net
 
 		enum ServerEvent
 		{
-			eJoinResultEvent,
-			eGameState,
+			/* Server Join Result Event
+				Sent to a particular client after they sent a ClientJoinEvent.
+				The server will inform the client if their connection request
+				was successful and, if it was, what their assigned client ID is.
+			*/
+			eServerJoinResultEvent,
+
+			/* Server Game State
+				Broadcast to all clients each server tick.
+				Contains dynamical visible information, such as player and mob
+				positions, or player-held items.
+			*/
+			eServerGameState,
 		};
 
 		// A client OR server event type
