@@ -21,7 +21,7 @@ namespace Net
 				this event will give the server discretionary control 
 				over what clients may or may not join.
 			*/
-			eClientJoinEvent = 1,
+			eClientJoinEvent,
 
 			/* Client Leave Event
 				Sent to server before client disconnects. No acknowledgement
@@ -52,7 +52,7 @@ namespace Net
 				The server will inform the client if their connection request
 				was successful and, if it was, what their assigned client ID is.
 			*/
-			eServerJoinResultEvent = 1,
+			eServerJoinResultEvent,
 
 			/* Server Game State
 				Broadcast to all clients each server tick.
@@ -63,7 +63,7 @@ namespace Net
 		};
 
 		// A client OR server event type
-		int type = 0;
+		int type = -1;
 		void* data = nullptr;
 	};
 

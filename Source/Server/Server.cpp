@@ -113,7 +113,7 @@ namespace Net
 		// c. Connect and user service
 		eventStatus = 1;
 
-		printf("Server started successfully!");
+		printf("Server started successfully!\n");
 
 		thread = std::make_unique<std::thread>([this]() { this->run(); });
 		return true;
@@ -148,7 +148,7 @@ namespace Net
 
 					Net::Packet packet;
 
-					// assume first 4 bytes are size
+					// assume first 4 bytes are type identifier
 					std::memcpy(&packet.type, event.packet->data, sizeof(int));
 
 					// 'data' points to region directly after type identifier

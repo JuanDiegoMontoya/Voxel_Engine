@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "Server.h"
-#include <FixedPhysics.h>
+#include "FixedPhysics.h"
 #include <iostream>
 
 int main()
@@ -20,7 +20,7 @@ int main()
 		std::cout << ": ";
 		std::string in;
 		std::cin >> in;
-		std::cout << "You wrote: " << in;
+		std::cout << "\nYou wrote: " << in;
 		std::cout << std::endl;
 
 		if (in == "q" || in == "quit" || in == "exit")

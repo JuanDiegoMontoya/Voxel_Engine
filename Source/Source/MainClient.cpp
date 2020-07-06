@@ -105,9 +105,10 @@ namespace Client
 				accum -= tick;
 
 				auto p = Renderer::GetPipeline()->GetCamera(0)->GetPos();
-				std::tuple<int, Net::ClientPrintVec3Event> data;
-				std::get<0>(data) = Net::Packet::eClientPrintVec3Event;
-				std::get<1>(data).v = p;
+				std::pair<int, Net::ClientPrintVec3Event> data;
+				data.first = Net::Packet::eClientPrintVec3Event;
+				data.second.clientID = 69;
+				data.second.v = p;
 				ENetPacket* packet = enet_packet_create(&data, sizeof(data), ENET_PACKET_FLAG_RELIABLE);
 				enet_peer_send(peer, 0, packet);
 
