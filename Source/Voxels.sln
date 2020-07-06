@@ -9,7 +9,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "Server\Server.vcx
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{24CDBB11-EC31-4394-A603-3EEAE4A808C8}"
 	ProjectSection(SolutionItems) = preProject
+		Shared\FixedPhysics.h = Shared\FixedPhysics.h
 		Shared\NetEvent.h = Shared\NetEvent.h
+		Shared\Timer.h = Shared\Timer.h
 	EndProjectSection
 EndProject
 Global

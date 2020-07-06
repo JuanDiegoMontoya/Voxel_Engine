@@ -21,7 +21,7 @@ namespace Net
 				this event will give the server discretionary control 
 				over what clients may or may not join.
 			*/
-			eClientJoinEvent,
+			eClientJoinEvent = 1,
 
 			/* Client Leave Event
 				Sent to server before client disconnects. No acknowledgement
@@ -37,12 +37,12 @@ namespace Net
 			*/
 			eClientPrintVec3Event,
 
-			/* Client Input Event
+			/* Client Input
 				Sent after polling inputs each client tick.
 				Aggregate of all input actions a client can take in a frame.
 				Booleans packed into bytes indicating whether an action is taken.
 			*/
-			eClientInputEvent,
+			eClientInput,
 		};
 
 		enum ServerEvent
@@ -52,7 +52,7 @@ namespace Net
 				The server will inform the client if their connection request
 				was successful and, if it was, what their assigned client ID is.
 			*/
-			eServerJoinResultEvent,
+			eServerJoinResultEvent = 1,
 
 			/* Server Game State
 				Broadcast to all clients each server tick.
@@ -63,37 +63,30 @@ namespace Net
 		};
 
 		// A client OR server event type
-		int type;
-		void* data;
+		int type = 0;
+		void* data = nullptr;
 	};
 
 	struct ClientJoinEvent
 	{
-		//void Process()
-		//{
-		//	printf("A client connected!\n");
-		//}
 	};
 
 	struct ClientPrintVec3Event
 	{
-		//void Process()
-		//{
-		//	printf("(%f, %f, %f)\n", v.x, v.y, v.z);
-		//}
 		int clientID;
 		glm::vec3 v;
 	};
 
 
-	struct ClientInputEvent
+	struct ClientInput
 	{
-		//void Process()
-		//{
-		//	printf("%d\n", input);
-		//}
+		// TODO: pack the inputs
 		int clientID;
-		int input;
+		bool moveFoward;
+		bool moveBack;
+		bool moveLeft;
+		bool moveRight;
+		bool jump;
 	};
 
 

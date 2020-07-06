@@ -32,11 +32,12 @@ namespace Net
 				printf("(%f, %f, %f)\n", v.x, v.y, v.z);
 				break;
 			}
-			case Packet::eClientInputEvent:
+			case Packet::eClientInput:
 			{
-				int input = reinterpret_cast<ClientInputEvent*>(data)->input;
-				printf("%d\n", input);
+				//int input = reinterpret_cast<ClientInput*>(data);
+				//printf("%d\n", input);
 				// TODO: update client's physics state based on input
+				printf("Client input not implemented\n");
 				break;
 			}
 			default:

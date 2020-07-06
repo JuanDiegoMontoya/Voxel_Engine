@@ -2,6 +2,7 @@
 #include <enet/enet.h>
 #include <thread>
 #include <memory>
+#include "ClientInfo.h"
 
 namespace Net
 {

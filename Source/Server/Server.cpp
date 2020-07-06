@@ -102,7 +102,6 @@ namespace Net
 		// b. Create a host using enet_host_create
 		address.host = ENET_HOST_ANY;
 		address.port = 1234;
-
 		server = enet_host_create(&address, 32, 2, 0, 0);
 
 		if (server == NULL)
@@ -133,11 +132,13 @@ namespace Net
 				switch (event.type)
 				{
 				case ENET_EVENT_TYPE_CONNECT:
+				{
 					printf("(Server) We got a new connection from %x\n",
 						event.peer->address.host);
 					break;
-
+				}
 				case ENET_EVENT_TYPE_RECEIVE:
+				{
 					//printf("(Server) Message from client : %s\n", event.packet->data);
 					//// Lets broadcast this message to all
 					//enet_host_broadcast(server, 0, event.packet);
@@ -154,13 +155,15 @@ namespace Net
 					packet.data = event.packet->data + sizeof(int);
 					Net::ProcessClientEvent(packet);
 					break;
-
+				}
 				case ENET_EVENT_TYPE_DISCONNECT:
+				{
 					printf("%s disconnected.\n", event.peer->data);
 
 					// Reset client's information
 					event.peer->data = NULL;
 					break;
+				}
 				}
 			}
 		}
@@ -170,7 +173,7 @@ namespace Net
 	void Server::Shutdown()
 	{
 		shutdownThreads = true;
-
+		thread->join();
 	}
 
 
