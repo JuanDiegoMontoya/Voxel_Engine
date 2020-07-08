@@ -9,6 +9,5 @@ struct ClientInfo
 	{
 		glm::vec3 pos;
 		glm::vec3 front;
-		double dt; // player's latest dt value, used for physics calculations
 	}playerData;
 };

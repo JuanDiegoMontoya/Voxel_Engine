@@ -73,6 +73,9 @@
     <Filter Include="Networking">
       <UniqueIdentifier>{ff43b7c1-7371-4f3d-a637-baf4f624c64f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{a395f12f-3dec-48cc-a21e-834b3ec5c2ff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="settings.h">
@@ -334,6 +337,9 @@
     <ClInclude Include="GameObject.h">
       <Filter>Game\ECS</Filter>
     </ClInclude>
+    <ClInclude Include="NetPlayerState.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -545,6 +551,9 @@
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>Game\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="NetPlayerState.cpp">
+      <Filter>Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

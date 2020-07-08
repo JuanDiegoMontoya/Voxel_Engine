@@ -368,6 +368,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="MainClient.cpp" />
     <ClCompile Include="march_cubes.cpp" />
     <ClCompile Include="mesh_comp.cpp" />
+    <ClCompile Include="NetPlayerState.cpp" />
     <ClCompile Include="NuRenderer.cpp" />
     <ClCompile Include="parallel_chunks.cpp" />
     <ClCompile Include="physics_comp.cpp" />
@@ -457,6 +458,7 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClInclude Include="light.h" />
     <ClInclude Include="MainClient.h" />
     <ClInclude Include="mesh_comp.h" />
+    <ClInclude Include="NetPlayerState.h" />
     <ClInclude Include="NuRenderer.h" />
     <ClInclude Include="Palette.h" />
     <ClInclude Include="parallel_chunks.h" />
