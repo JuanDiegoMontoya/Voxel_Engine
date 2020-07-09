@@ -1,6 +1,6 @@
 #pragma once
 #include <queue>
-#include <mutex>
+#include <shared_mutex>
 #include <optional>
 
 namespace Net
@@ -16,6 +16,7 @@ namespace Net
 		// automagically interpolates state for the user and returns that
 		// also handles any possible error case, automagically :)
 		VisiblePlayerState GetVisibleState();
+		void Update(float dt);
 
 		// buffer containing recent state information about the players
 		// back = newest state
@@ -47,7 +48,7 @@ namespace Net
 		void PopState(int id);
 
 		// updates the state of each item 
-		void UpdateStates();
+		void UpdateStates(float dt);
 
 	private:
 		std::unordered_map<int, PlayerObject> objects;

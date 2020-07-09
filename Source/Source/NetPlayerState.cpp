@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "NetPlayerState.h"
+#include <NetDefines.h>
+#include <experimental/unordered_map>
 
 namespace Net
 {
@@ -15,6 +17,18 @@ namespace Net
 		state.pos = glm::mix(states[0].pos, states[1].pos, keyframe);
 		state.front = glm::mix(states[0].front, states[1].front, keyframe);
 		return state;
+	}
+
+
+	void PlayerObject::Update(float dt)
+	{
+		keyframe += dt / SERVER_NET_TICK;
+		if (keyframe >= 1.0f)
+		{
+			keyframe -= 1.0f;
+			if (states.size() > 0)
+				states.pop_front();
+		}
 	}
 
 
@@ -48,15 +62,13 @@ namespace Net
 	}
 
 
-	void PlayerWorld::UpdateStates()
+	void PlayerWorld::UpdateStates(float dt)
 	{
 		std::lock_guard lk(mtx); // we locking it ALL down
 		for (auto& [key, obj] : objects)
-		{
-			// advance keyframe of each object by server tick
-			// pop old player states if necessary
-		}
+			obj.Update(dt);
 
 		// remove any object with empty state; the end of their life was implicitly reached
+		std::experimental::erase_if(objects, [](const auto& a) { return a.second.states.size() == 0; });
 	}
 }

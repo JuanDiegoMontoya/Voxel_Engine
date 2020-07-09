@@ -12,6 +12,8 @@ int main()
 	if (result == false)
 		return EXIT_FAILURE;
 
+	PhysicsWorld::Init();
+
 	// begin an interactive session
 	printf("Welcome to the interactive server console!\n");
 	printf("Input a command.\n");
