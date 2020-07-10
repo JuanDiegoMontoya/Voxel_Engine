@@ -135,6 +135,9 @@ namespace Net
 				{
 					printf("(Server) We got a new connection from %x\n",
 						event.peer->address.host);
+					char *buf = new char[1000];
+					sprintf(buf, "%X, %X\7", event.peer->address.host, event.peer->address.port);
+					event.peer->data = buf;
 					break;
 				}
 				case ENET_EVENT_TYPE_RECEIVE:
@@ -145,7 +148,8 @@ namespace Net
 
 					// we are guaranteed to receive at least the type identifier
 					assert(event.packet->dataLength >= sizeof(int));
-
+					printf("Packet from: %s\n", event.peer->data);
+					
 					Net::Packet packet;
 
 					// assume first 4 bytes are type identifier
@@ -153,7 +157,7 @@ namespace Net
 
 					// 'data' points to region directly after type identifier
 					packet.data = event.packet->data + sizeof(int);
-					Net::ProcessClientEvent(packet);
+					ProcessClientEvent(packet);
 					break;
 				}
 				case ENET_EVENT_TYPE_DISCONNECT:
@@ -161,6 +165,7 @@ namespace Net
 					printf("%s disconnected.\n", event.peer->data);
 
 					// Reset client's information
+					delete[] event.peer->data;
 					event.peer->data = NULL;
 					break;
 				}
@@ -180,5 +185,50 @@ namespace Net
 	void Server::cleanup()
 	{
 		enet_deinitialize();
+	}
+
+
+	void Server::ProcessClientEvent(Packet& packet)
+	{
+		auto& data = packet.data;
+		if (data == nullptr)
+		{
+			printf("Recieved null data!\n");
+			return;
+		}
+		switch (packet.type)
+		{
+		case Packet::eClientJoinEvent:
+		{
+			printf("A client connected!\n");
+			// TODO: map client's address to a unique ID, 
+			// then send it back as a JoinResultEvent
+			break;
+		}
+		case Packet::eClientLeaveEvent:
+		{
+			printf("A client disconnected!\n");
+			break;
+		}
+		case Packet::eClientPrintVec3Event:
+		{
+			glm::vec3 v = reinterpret_cast<ClientPrintVec3Event*>(data)->v;
+			printf("(%f, %f, %f)\n", v.x, v.y, v.z);
+			break;
+		}
+		case Packet::eClientInput:
+		{
+			//int input = reinterpret_cast<ClientInput*>(data);
+			//printf("%d\n", input);
+			// TODO: update client's physics state based on input
+			printf("Client input not implemented\n");
+			break;
+		}
+		default:
+		{
+			//assert(false && "The type hasn't been defined yet!");
+			printf("Unsupported data type sent from a client!\n");
+		}
+		} // end switch
 	}
 }

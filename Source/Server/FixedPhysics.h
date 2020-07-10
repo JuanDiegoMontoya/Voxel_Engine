@@ -21,14 +21,14 @@ struct PhysicsObject
 struct PlayerPhysics final : public PhysicsObject
 {
 	PlayerPhysics() { PhysicsObject::type = PhysicsObject::tPlayerPhysics; }
-	void Update() override;
+	void Update() override {};
 	std::unique_ptr<PhysicsObject> Clone() override
 	{
 		return std::make_unique<PlayerPhysics>(*this);
 	}
 
-	glm::vec3 pos;
-	glm::vec3 rot;
+	glm::vec3 pos{ 0, 0, 0 };
+	glm::vec3 rot{ 0, 0, 0 };
 };
 
 

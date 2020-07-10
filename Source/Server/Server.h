@@ -4,6 +4,8 @@
 #include <memory>
 #include "ClientInfo.h"
 
+struct Packet;
+
 namespace Net
 {
 	class Server
@@ -16,6 +18,7 @@ namespace Net
 	private:
 		void run();
 		void cleanup();
+		void ProcessClientEvent(Packet& packet);
 
 
 		bool shutdownThreads = false;
