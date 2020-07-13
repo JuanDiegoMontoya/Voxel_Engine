@@ -136,7 +136,7 @@ namespace Net
 					printf("(Server) We got a new connection from %x\n",
 						event.peer->address.host);
 					char *buf = new char[1000];
-					sprintf(buf, "%X, %X\7", event.peer->address.host, event.peer->address.port);
+					sprintf(buf, "%X, %X", event.peer->address.host, event.peer->address.port);
 					event.peer->data = buf;
 					break;
 				}
@@ -154,7 +154,7 @@ namespace Net
 
 					// assume first 4 bytes are type identifier
 					std::memcpy(&packet.type, event.packet->data, sizeof(int));
-
+					
 					// 'data' points to region directly after type identifier
 					packet.data = event.packet->data + sizeof(int);
 					ProcessClientEvent(packet);
