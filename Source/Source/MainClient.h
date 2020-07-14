@@ -6,5 +6,5 @@ namespace Client
 	void Init();
 	void MainLoop();
 	void Shutdown();
-	Net::ClientInput GetActions();
+	Net::ClientInput GetActions(); //
 }
