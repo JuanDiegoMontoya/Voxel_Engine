@@ -1,10 +1,13 @@
 #include "stdafx.h"
 #include "MainClient.h"
+#include <NetDefines.h>
 
 #include "Renderer.h"
 #include <Pipeline.h>
 #include <camera.h>
 #include "NetEvent.h"
+#include <input.h>
+#include <Timer.h>
 
 #include <enet/enet.h>
 #include <zlib.h>
@@ -63,18 +66,14 @@ namespace Client
 
 		eventStatus = 1;
 
-		double old = 0;
-		double dt = 0;
+		Timer timer;
 		double accum = 0;
-		double tick = 1.0 / 2.0; // s
 		while (!shutdownThreads)
 		{
-			double curr = glfwGetTime();
-			dt = curr - old;
-			old = curr;
-			accum += dt;
+			accum += timer.elapsed();
+			timer.reset();
 
-			eventStatus = enet_host_service(client, &event, tick * 1000);
+			eventStatus = enet_host_service(client, &event, CLIENT_NET_TICK * 1000);
 
 			// If we had some event that interested us
 			if (eventStatus > 0) {
@@ -100,9 +99,9 @@ namespace Client
 				}
 			}
 
-			while (accum > tick)
+			while (accum > CLIENT_NET_TICK)
 			{
-				accum -= tick;
+				accum -= CLIENT_NET_TICK;
 
 				auto p = Renderer::GetPipeline()->GetCamera(0)->GetPos();
 				std::pair<int, Net::ClientPrintVec3Event> data;
@@ -150,4 +149,15 @@ namespace Client
 		shutdownThreads = true;
 		thread->join();
 	}
+
+	Net::ClientInput GetActions()
+	{
+		Net::ClientInput ret;
+		ret.jump = Input::Keyboard().pressed[GLFW_KEY_SPACE];
+		ret.moveBack = Input::Keyboard().down[GLFW_KEY_S];
+		ret.moveFoward = Input::Keyboard().down[GLFW_KEY_W];
+		ret.moveLeft = Input::Keyboard().down[GLFW_KEY_A];
+		ret.moveRight = Input::Keyboard().down[GLFW_KEY_D];
+	}
+
 }
