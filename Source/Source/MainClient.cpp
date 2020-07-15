@@ -103,14 +103,24 @@ namespace Client
 			{
 				accum -= CLIENT_NET_TICK;
 
-				auto p = Renderer::GetPipeline()->GetCamera(0)->GetPos();
-				std::pair<int, Net::ClientPrintVec3Event> data;
-				data.first = Net::Packet::eClientPrintVec3Event;
-				data.second.clientID = 69;
-				data.second.v = p;
-				ENetPacket* packet = enet_packet_create(&data, sizeof(data), ENET_PACKET_FLAG_RELIABLE);
-				enet_peer_send(peer, 0, packet);
+				// send client player state
+				{
+					auto p = Renderer::GetPipeline()->GetCamera(0)->GetPos();
+					std::pair<int, Net::ClientPrintVec3Event> data;
+					data.first = Net::Packet::eClientPrintVec3Event;
+					data.second.v = p;
+					ENetPacket* packet = enet_packet_create(&data, sizeof(data), ENET_PACKET_FLAG_RELIABLE);
+					enet_peer_send(peer, 0, packet);
+				}
 
+				// send client input
+				{
+					std::pair<int, Net::ClientInput> data;
+					data.first = Net::Packet::eClientInput;
+					data.second = GetActions();
+					ENetPacket* packet = enet_packet_create(&data, sizeof(data), ENET_PACKET_FLAG_RELIABLE);
+					enet_peer_send(peer, 0, packet);
+				}
 				//char message[1000];
 				//static int ttt = 0;
 				//sprintf(message, "%d: (%f, %f, %f)\n", ttt++, p.x, p.y, p.z);
@@ -158,6 +168,7 @@ namespace Client
 		ret.moveFoward = Input::Keyboard().down[GLFW_KEY_W];
 		ret.moveLeft = Input::Keyboard().down[GLFW_KEY_A];
 		ret.moveRight = Input::Keyboard().down[GLFW_KEY_D];
+		return ret;
 	}
 
 }

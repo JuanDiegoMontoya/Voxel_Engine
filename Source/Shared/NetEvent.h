@@ -73,15 +73,13 @@ namespace Net
 
 	struct ClientPrintVec3Event
 	{
-		int clientID;
 		glm::vec3 v;
 	};
 
 
 	struct ClientInput
 	{
-		// TODO: pack the inputs
-		int clientID;
+		// TODO: pack the inputs, perhaps into a bitfield?
 		bool moveFoward;
 		bool moveBack;
 		bool moveLeft;
@@ -123,3 +121,53 @@ namespace Net
 		std::shared_mutex mtx;
 	};
 }
+
+
+
+
+
+#if 0
+// below is some weird experimental garbage that I made for fun :)
+// DON'T ACTUALLY USE THIS CLASS!
+// TODO: add bits to this
+template<class ... Names>
+struct BoolField
+{
+	template<unsigned I>
+	struct Proxy
+	{
+		static_assert(I < 8, "BoolField too large!");
+
+		Proxy(uint8_t& data) : data_(data) {}
+		Proxy(const Proxy& other) : data_(other.data_) {}
+		
+		operator bool() { return data_ & (1 << I); };
+		Proxy<I>& operator=(bool rhs) { data_ |= rhs << I; }
+
+	private:
+		uint8_t& data_;
+	};
+
+	template<class Name>
+	auto Get() // TODO: remove
+	{
+		return Proxy<getIndex(Name)>(data_);
+	}
+
+private:
+	consteval int getIndex(auto name)
+	{
+		int i = 0;
+		for (const auto N : { Names... })
+		{
+			if constexpr (name == N)
+				return i;
+			++i;
+		}
+
+		static_assert(0, "Failed to find member name in template args!");
+	}
+
+	uint8_t data_;
+};
+#endif

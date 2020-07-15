@@ -218,10 +218,11 @@ namespace Net
 		}
 		case Packet::eClientInput:
 		{
-			//int input = reinterpret_cast<ClientInput*>(data);
+			auto in = reinterpret_cast<ClientInput*>(data);
 			//printf("%d\n", input);
 			// TODO: update client's physics state based on input
-			printf("Client input not implemented\n");
+			printf("Client input: ");
+			std::cout << in->jump << in->moveBack << in->moveFoward << in->moveLeft << in->moveRight << std::endl;
 			break;
 		}
 		default:
