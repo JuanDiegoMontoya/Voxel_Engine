@@ -64,7 +64,9 @@ namespace Client
 			exit(EXIT_FAILURE);
 		}
 
-		eventStatus = 1;
+		int join = Net::Packet::eClientJoinEvent;
+		ENetPacket* joinRequest = enet_packet_create(&join, sizeof(join), ENET_PACKET_FLAG_RELIABLE);
+		enet_peer_send(peer, 0, joinRequest);
 
 		Timer timer;
 		double accum = 0;
@@ -76,8 +78,10 @@ namespace Client
 			eventStatus = enet_host_service(client, &event, CLIENT_NET_TICK * 1000);
 
 			// If we had some event that interested us
-			if (eventStatus > 0) {
-				switch (event.type) {
+			if (eventStatus > 0)
+			{
+				switch (event.type)
+				{
 				case ENET_EVENT_TYPE_CONNECT:
 					printf("(Client) We got a new connection from %x\n",
 						event.peer->address.host);

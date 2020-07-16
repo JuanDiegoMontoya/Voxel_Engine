@@ -157,7 +157,7 @@ namespace Net
 					
 					// 'data' points to region directly after type identifier
 					packet.data = event.packet->data + sizeof(int);
-					ProcessClientEvent(packet);
+					ProcessClientEvent(packet, event.peer);
 					break;
 				}
 				case ENET_EVENT_TYPE_DISCONNECT:
@@ -188,7 +188,7 @@ namespace Net
 	}
 
 
-	void Server::ProcessClientEvent(Packet& packet)
+	void Server::ProcessClientEvent(Packet& packet, ENetPeer* peer)
 	{
 		auto& data = packet.data;
 		if (data == nullptr)
@@ -200,9 +200,7 @@ namespace Net
 		{
 		case Packet::eClientJoinEvent:
 		{
-			printf("A client connected!\n");
-			// TODO: map client's address to a unique ID, 
-			// then send it back as a JoinResultEvent
+			processJoinEvent(peer);
 			break;
 		}
 		case Packet::eClientLeaveEvent:
@@ -231,5 +229,48 @@ namespace Net
 			printf("Unsupported data type sent from a client!\n");
 		}
 		} // end switch
+	}
+
+
+	void Server::processJoinEvent(ENetPeer* peer)
+	{
+		// TODO: map client's address to a unique ID,
+		// then send it back as a JoinResultEvent
+		ServerJoinResultEvent event{ true };
+
+		// connection failed (player count reached)
+		if (connectedPlayers >= maxPlayers)
+			event.success = false;
+
+		if (!event.success)
+		{
+			// tell the client that their connection attempt failed
+			printf("Client failed to connect (server capacity reached)\n");
+		}
+		else
+		{
+			// tell the client that their connection succeeded, then broadcast their existence to the server
+			printf("A client connected!\n");
+			auto& client = clients[peer->address];
+			client.clientID = nextClientID++;
+
+			// put all client IDs into temporary contiguous memory for memcpy later
+			std::vector<int> IDs;
+			for (const auto& p : clients)
+				IDs.push_back(p.second.clientID);
+
+			size_t bufsize = (1 + clients.size()) * sizeof(int);
+			std::byte* buf = new std::byte[bufsize];
+			int numClients = clients.size(); // bruh
+			reinterpret_cast<int*>(buf)[0] = clients.size();
+			std::memcpy(buf + sizeof(int), IDs.data(), clients.size() * sizeof(int));
+
+			ENetPacket* packet = enet_packet_create(buf, bufsize, ENET_PACKET_FLAG_RELIABLE);
+			enet_host_broadcast(server, 0, packet);
+			delete[] buf;
+		}
+
+		ENetPacket* resultPacket = enet_packet_create(&event, sizeof(event), ENET_PACKET_FLAG_RELIABLE);
+		enet_peer_send(peer, 0, resultPacket);
 	}
 }

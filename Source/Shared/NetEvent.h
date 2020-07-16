@@ -54,6 +54,12 @@ namespace Net
 			*/
 			eServerJoinResultEvent,
 
+			/* Server List Players
+				Broadcast to every client when a player joins or disconnects from
+				the server.
+			*/
+			eServerListPlayersEvent,
+
 			/* Server Game State
 				Broadcast to all clients each server tick.
 				Contains dynamical visible information, such as player and mob
@@ -67,15 +73,26 @@ namespace Net
 		void* data = nullptr;
 	};
 
-	struct ClientJoinEvent
-	{
-	};
+	//struct ClientJoinEvent
+	//{
+	//};
 
 	struct ClientPrintVec3Event
 	{
 		glm::vec3 v;
 	};
 
+	struct ServerJoinResultEvent
+	{
+		bool success;
+		int id; // uninitialized if success is false
+	};
+
+	struct ServerListPlayersEvent
+	{
+		int connected;
+		int* IDs;
+	};
 
 	struct ClientInput
 	{
