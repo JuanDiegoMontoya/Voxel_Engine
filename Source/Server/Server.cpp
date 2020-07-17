@@ -250,7 +250,7 @@ namespace Net
 		else
 		{
 			// tell the client that their connection succeeded, then broadcast their existence to the server
-			printf("A client connected!\n");
+			for (int i = 0; i < 10; i++) printf("A client connected!\n");
 			auto& client = clients[peer->address];
 			client.clientID = nextClientID++;
 
@@ -272,5 +272,9 @@ namespace Net
 
 		ENetPacket* resultPacket = enet_packet_create(&event, sizeof(event), ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send(peer, 0, resultPacket);
+		connectedPlayers++;
+		ClientInfo newClient;
+		newClient.clientID = nextClientID++;
+		clients[peer->address] = newClient;
 	}
 }
