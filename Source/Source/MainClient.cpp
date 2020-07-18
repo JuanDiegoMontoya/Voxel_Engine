@@ -82,10 +82,11 @@ namespace Net
 					break;
 
 				case ENET_EVENT_TYPE_RECEIVE:
-					printf("(Client) Message from server : %s\n", event.packet->data);
+					//printf("(Client) Message from server : %s\n", event.packet->data);
 					// Lets broadcast this message to all
 					// enet_host_broadcast(client, 0, event.packet);
-					enet_packet_destroy(event.packet);
+					//enet_packet_destroy(event.packet);
+					printf("Received a message from the server (%x)\n", event.peer->address.host);
 					break;
 
 				case ENET_EVENT_TYPE_DISCONNECT:
