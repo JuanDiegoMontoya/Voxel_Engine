@@ -16,29 +16,19 @@
 #include <thread>
 #include <sstream>
 
-namespace Client
+namespace Net
 {
-	Net::EventController eventQueue;
-	std::unique_ptr<std::thread> thread;
-
-	bool shutdownThreads = false;
-	void Init()
+	void Client::Init()
 	{
-		thread = std::make_unique<std::thread>(MainLoop);
+		thread = std::make_unique<std::thread>([this]() { MainLoop(); });
 	}
 
 #pragma optimize("", off)
-	void MainLoop()
+	void Client::MainLoop()
 	{
-		ENetAddress address;
-		ENetHost* client;
-		ENetPeer* peer;
-		char message[1024];
-		ENetEvent event;
-		int eventStatus;
-
 		// a. Initialize enet
-		if (enet_initialize() != 0) {
+		if (enet_initialize() != 0)
+		{
 			printf("An error occured while initializing ENet.\n");
 			exit(EXIT_FAILURE);
 		}
@@ -48,7 +38,8 @@ namespace Client
 		// b. Create a host using enet_host_create
 		client = enet_host_create(NULL, 1, 2, 57600 / 8, 14400 / 8);
 
-		if (client == NULL) {
+		if (client == NULL)
+		{
 			printf("An error occured while trying to create an ENet server host\n");
 			exit(EXIT_FAILURE);
 		}
@@ -59,11 +50,14 @@ namespace Client
 		// c. Connect and user service
 		peer = enet_host_connect(client, &address, 2, 0);
 
-		if (peer == NULL) {
+		if (peer == NULL)
+		{
 			printf("No available peers for initializing an ENet connection");
 			exit(EXIT_FAILURE);
 		}
 
+		// not sure why, but enet_host_service needs to be called before sending this packet
+		enet_host_service(client, &event, CLIENT_NET_TICK * 1000);
 		int join = Net::Packet::eClientJoinEvent;
 		ENetPacket* joinRequest = enet_packet_create(&join, sizeof(join), ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send(peer, 0, joinRequest);
@@ -137,6 +131,17 @@ namespace Client
 			}
 		}
 
+		DisconnectFromCurrent();
+	}
+
+	void Client::Shutdown()
+	{
+		shutdownThreads = true;
+		thread->join();
+	}
+
+	void Client::DisconnectFromCurrent()
+	{
 		enet_peer_disconnect(peer, 0);
 		/* Allow up to 3 seconds for the disconnect to succeed
 		 * and drop any packets received packets.
@@ -158,13 +163,7 @@ namespace Client
 		enet_peer_reset(peer);
 	}
 
-	void Shutdown()
-	{
-		shutdownThreads = true;
-		thread->join();
-	}
-
-	Net::ClientInput GetActions()
+	Net::ClientInput Client::GetActions()
 	{
 		Net::ClientInput ret;
 		ret.jump = Input::Keyboard().pressed[GLFW_KEY_SPACE];
@@ -175,4 +174,41 @@ namespace Client
 		return ret;
 	}
 
+	void Client::ProcessServerEvent(Net::Packet& packet)
+	{
+		auto& data = packet.data;
+		if (data == nullptr)
+		{
+			printf("Recieved null data!\n");
+			return;
+		}
+
+		switch (packet.type)
+		{
+		case Packet::eServerJoinResultEvent:
+		{
+			processJoinResultEvent(packet);
+			break;
+		}
+		case Packet::eServerListPlayersEvent:
+		{
+			// TODO: handle this
+		}
+		default:
+		{
+			//assert(false && "The type hasn't been defined yet!");
+			printf("Unsupported data type sent from the server!\n");
+		}
+		}
+	}
+
+	void Client::processJoinResultEvent(Packet& packet)
+	{
+		auto event = *reinterpret_cast<ServerJoinResultEvent*>(packet.data);
+		
+		if (event.success == false)
+			DisconnectFromCurrent();
+		else
+			thisID = event.id;
+	}
 }

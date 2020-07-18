@@ -5,7 +5,6 @@
 #include "ClientInfo.h"
 #include <unordered_map>
 
-//#include <glm/gtx/hash.hpp>
 struct Packet;
 
 namespace std
@@ -41,6 +40,7 @@ namespace Net
 		void ProcessClientEvent(Packet& packet, ENetPeer* peer);
 
 		void processJoinEvent(ENetPeer* peer);
+		void broadcastPlayerList();
 
 		int maxPlayers = 10;
 		int connectedPlayers = 0;

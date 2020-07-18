@@ -1,12 +1,40 @@
 #pragma once
 
 #include <NetEvent.h>
+#include <enet/enet.h>
+#include "NetPlayerState.h"
 
-namespace Client
+struct Packet;
+
+namespace Net
 {
-	// runs in thread, updating in the background
-	void Init();
-	void MainLoop();
-	void Shutdown();
-	Net::ClientInput GetActions();
+	class Client
+	{
+	public:
+		// runs in thread, updating in the background
+		void Init();
+		void Shutdown();
+		void DisconnectFromCurrent();
+	private:
+		void MainLoop();
+
+		Net::ClientInput GetActions();
+		void ProcessServerEvent(Packet& packet);
+
+		void processJoinResultEvent(Packet& packet);
+
+		Net::EventController eventQueue;
+		std::unique_ptr<std::thread> thread;
+
+		bool shutdownThreads = false;
+
+		ENetAddress address;
+		ENetHost* client;
+		ENetPeer* peer;
+		ENetEvent event;
+		int eventStatus;
+
+		PlayerWorld playerWorld;
+		int thisID;
+	};
 }

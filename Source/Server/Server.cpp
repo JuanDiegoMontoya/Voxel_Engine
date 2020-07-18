@@ -5,7 +5,6 @@
 #include <cassert>
 
 #include <NetEvent.h>
-#include "ProcessClientEvent.h"
 #include "Server.h"
 
 void testCompress()
@@ -167,6 +166,7 @@ namespace Net
 					// Reset client's information
 					delete[] event.peer->data;
 					event.peer->data = NULL;
+					clients.erase(event.peer->address);
 					break;
 				}
 				}
@@ -276,5 +276,8 @@ namespace Net
 		ClientInfo newClient;
 		newClient.clientID = nextClientID++;
 		clients[peer->address] = newClient;
+	}
+	void Server::broadcastPlayerList()
+	{
 	}
 }
