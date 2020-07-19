@@ -22,6 +22,7 @@ namespace Net
 		void ProcessServerEvent(Packet& packet);
 
 		void processJoinResultEvent(Packet& packet);
+		void processServerListPlayersEvent(Packet& packet);
 
 		Net::EventController eventQueue;
 		std::unique_ptr<std::thread> thread;

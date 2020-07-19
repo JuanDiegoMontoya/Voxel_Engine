@@ -1,7 +1,7 @@
 #pragma once
-#include <varargs.h>
 #include <queue>
 #include <shared_mutex>
+#include <enet/enet.h>
 
 #define REGISTER_EVENT(x) x* x ## _data
 //#define PROCESS_EVENT(x) case Packet::e ## x: data.x ## _data->Process(); break
@@ -9,8 +9,39 @@
 
 namespace Net
 {
+	// a packet that is ready to be sent and interpreted over a network
 	struct Packet
 	{
+		// constructing a packet
+		Packet(int type, void* data, size_t data_size)
+		{
+			buf = new std::byte[sizeof(int) + data_size];
+			reinterpret_cast<int*>(buf)[0] = type;
+			std::memcpy(buf + sizeof(int), data, data_size);
+		}
+
+		// interpreting an enet packet
+		// TODO: make this constructor it's own class that doesn't require copying data
+		Packet(const ENetPacket* ev)
+		{
+			buf = new std::byte[ev->dataLength];
+			std::memcpy(buf, ev->data, ev->dataLength);
+		}
+
+		~Packet()
+		{
+			delete[] buf;
+		}
+
+		int GetType() { return reinterpret_cast<int*>(buf)[0]; }
+		void* GetData() { return buf + sizeof(int); }
+
+	private:
+		// A client OR server event type
+		//int type = -1;
+		//void* data = nullptr;
+		std::byte* buf;
+	public:
 		enum ClientEvent
 		{
 			/* Client Join Event
@@ -67,10 +98,6 @@ namespace Net
 			*/
 			eServerGameState,
 		};
-
-		// A client OR server event type
-		int type = -1;
-		void* data = nullptr;
 	};
 
 	//struct ClientJoinEvent

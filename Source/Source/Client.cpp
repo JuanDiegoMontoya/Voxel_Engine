@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "MainClient.h"
+#include "Client.h"
 #include <NetDefines.h>
 
 #include "Renderer.h"
@@ -77,24 +77,31 @@ namespace Net
 				switch (event.type)
 				{
 				case ENET_EVENT_TYPE_CONNECT:
+				{
 					printf("(Client) We got a new connection from %x\n",
 						event.peer->address.host);
 					break;
-
+				}
 				case ENET_EVENT_TYPE_RECEIVE:
+				{
 					//printf("(Client) Message from server : %s\n", event.packet->data);
 					// Lets broadcast this message to all
 					// enet_host_broadcast(client, 0, event.packet);
 					//enet_packet_destroy(event.packet);
 					printf("Received a message from the server (%x)\n", event.peer->address.host);
-					break;
 
+					Net::Packet packet(event.packet);
+					ProcessServerEvent(packet);
+					break;
+				}
 				case ENET_EVENT_TYPE_DISCONNECT:
+				{
 					printf("(Client) %s disconnected.\n", event.peer->data);
 
 					// Reset client's information
 					event.peer->data = NULL;
 					break;
+				}
 				}
 			}
 
@@ -104,20 +111,27 @@ namespace Net
 
 				// send client player state
 				{
-					auto p = Renderer::GetPipeline()->GetCamera(0)->GetPos();
-					std::pair<int, Net::ClientPrintVec3Event> data;
-					data.first = Net::Packet::eClientPrintVec3Event;
-					data.second.v = p;
-					ENetPacket* packet = enet_packet_create(&data, sizeof(data), ENET_PACKET_FLAG_RELIABLE);
+					auto temp = Renderer::GetPipeline()->GetCamera(0)->GetPos();
+					Packet p(Packet::eClientPrintVec3Event, &temp, sizeof(ClientPrintVec3Event));
+					ENetPacket* packet = enet_packet_create(&p, sizeof(int) + sizeof(ClientPrintVec3Event), ENET_PACKET_FLAG_RELIABLE);
+
+					//auto p = Renderer::GetPipeline()->GetCamera(0)->GetPos();
+					//std::pair<int, Net::ClientPrintVec3Event> data;
+					//data.first = Net::Packet::eClientPrintVec3Event;
+					//data.second.v = p;
+					//ENetPacket* packet = enet_packet_create(&data, sizeof(data), ENET_PACKET_FLAG_RELIABLE);
 					enet_peer_send(peer, 0, packet);
 				}
 
 				// send client input
 				{
-					std::pair<int, Net::ClientInput> data;
-					data.first = Net::Packet::eClientInput;
-					data.second = GetActions();
-					ENetPacket* packet = enet_packet_create(&data, sizeof(data), ENET_PACKET_FLAG_RELIABLE);
+					auto temp = GetActions();
+					Packet p(Packet::eClientInput, &temp, sizeof(ClientInput));
+					ENetPacket* packet = enet_packet_create(&p, sizeof(int) + sizeof(ClientInput), ENET_PACKET_FLAG_RELIABLE);
+					//std::pair<int, Net::ClientInput> data;
+					//data.first = Net::Packet::eClientInput;
+					//data.second = GetActions();
+					//ENetPacket* packet = enet_packet_create(&data, sizeof(data), ENET_PACKET_FLAG_RELIABLE);
 					enet_peer_send(peer, 0, packet);
 				}
 				//char message[1000];
@@ -177,14 +191,7 @@ namespace Net
 
 	void Client::ProcessServerEvent(Net::Packet& packet)
 	{
-		auto& data = packet.data;
-		if (data == nullptr)
-		{
-			printf("Recieved null data!\n");
-			return;
-		}
-
-		switch (packet.type)
+		switch (packet.GetType())
 		{
 		case Packet::eServerJoinResultEvent:
 		{
@@ -193,23 +200,35 @@ namespace Net
 		}
 		case Packet::eServerListPlayersEvent:
 		{
-			// TODO: handle this
+			processServerListPlayersEvent(packet);
+			break;
 		}
 		default:
 		{
 			//assert(false && "The type hasn't been defined yet!");
-			printf("Unsupported data type sent from the server!\n");
+			printf("Unsupported data type sent from the server! (%d)\n", packet.GetType());
 		}
 		}
 	}
 
 	void Client::processJoinResultEvent(Packet& packet)
 	{
-		auto event = *reinterpret_cast<ServerJoinResultEvent*>(packet.data);
+		auto event = *reinterpret_cast<ServerJoinResultEvent*>(packet.GetData());
 		
 		if (event.success == false)
 			DisconnectFromCurrent();
 		else
 			thisID = event.id;
+	}
+
+	void Client::processServerListPlayersEvent(Packet& packet)
+	{
+		auto event = *reinterpret_cast<ServerListPlayersEvent*>(packet.GetData());
+		event.IDs = &event.connected + 1;
+		
+		printf("we got a player list event! num players: %d\n", event.connected);
+
+		for (int i = 0; i < event.connected; i++)
+			printf("%d\n", event.IDs[i]);
 	}
 }

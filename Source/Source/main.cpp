@@ -5,7 +5,7 @@
 #include "Renderer.h"
 #include "NuRenderer.h"
 
-#include "MainClient.h"
+#include "Client.h"
 
 //#include "BitArray.h"
 //void TestBitArray()

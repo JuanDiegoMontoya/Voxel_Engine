@@ -147,15 +147,9 @@ namespace Net
 
 					// we are guaranteed to receive at least the type identifier
 					assert(event.packet->dataLength >= sizeof(int));
-					printf("Packet from: %s\n", event.peer->data);
+					//printf("Packet from: %s\n", event.peer->data);
 					
-					Net::Packet packet;
-
-					// assume first 4 bytes are type identifier
-					std::memcpy(&packet.type, event.packet->data, sizeof(int));
-					
-					// 'data' points to region directly after type identifier
-					packet.data = event.packet->data + sizeof(int);
+					Net::Packet packet(event.packet);
 					ProcessClientEvent(packet, event.peer);
 					break;
 				}
@@ -166,7 +160,8 @@ namespace Net
 					// Reset client's information
 					delete[] event.peer->data;
 					event.peer->data = NULL;
-					clients.erase(event.peer->address);
+					if (clients.erase(event.peer->address))
+						connectedPlayers--;
 					break;
 				}
 				}
@@ -190,13 +185,7 @@ namespace Net
 
 	void Server::ProcessClientEvent(Packet& packet, ENetPeer* peer)
 	{
-		auto& data = packet.data;
-		if (data == nullptr)
-		{
-			printf("Recieved null data!\n");
-			return;
-		}
-		switch (packet.type)
+		switch (packet.GetType())
 		{
 		case Packet::eClientJoinEvent:
 		{
@@ -210,13 +199,13 @@ namespace Net
 		}
 		case Packet::eClientPrintVec3Event:
 		{
-			glm::vec3 v = reinterpret_cast<ClientPrintVec3Event*>(data)->v;
+			glm::vec3 v = reinterpret_cast<ClientPrintVec3Event*>(packet.GetData())->v;
 			printf("(%f, %f, %f)\n", v.x, v.y, v.z);
 			break;
 		}
 		case Packet::eClientInput:
 		{
-			auto in = reinterpret_cast<ClientInput*>(data);
+			auto in = reinterpret_cast<ClientInput*>(packet.GetData());
 			//printf("%d\n", input);
 			// TODO: update client's physics state based on input
 			printf("Client input: ");
@@ -226,7 +215,7 @@ namespace Net
 		default:
 		{
 			//assert(false && "The type hasn't been defined yet!");
-			printf("Unsupported data type sent from a client!\n");
+			printf("Unsupported data type sent from a client! (%d)\n", packet.GetType());
 		}
 		} // end switch
 	}
@@ -241,43 +230,48 @@ namespace Net
 		// connection failed (player count reached)
 		if (connectedPlayers >= maxPlayers)
 			event.success = false;
+		else
+		{
+			connectedPlayers++;
+			auto& client = clients[peer->address];
+			client.clientID = nextClientID++;
+			event.id = client.clientID;
+		}
+
+		// tell the client whether their connection attempt succeeded
+		Packet packet(Packet::eServerJoinResultEvent, &event, sizeof(event));
+		ENetPacket* resultPacket = enet_packet_create(&packet, sizeof(int) + sizeof(event), ENET_PACKET_FLAG_RELIABLE);
+		enet_peer_send(peer, 0, resultPacket);
 
 		if (!event.success)
 		{
-			// tell the client that their connection attempt failed
-			printf("Client failed to connect (server capacity reached)\n");
+			printf("Client failed to connect\n");
 		}
 		else
 		{
 			// tell the client that their connection succeeded, then broadcast their existence to the server
-			for (int i = 0; i < 10; i++) printf("A client connected!\n");
-			auto& client = clients[peer->address];
-			client.clientID = nextClientID++;
-
-			// put all client IDs into temporary contiguous memory for memcpy later
-			std::vector<int> IDs;
-			for (const auto& p : clients)
-				IDs.push_back(p.second.clientID);
-
-			size_t bufsize = (1 + clients.size()) * sizeof(int);
-			std::byte* buf = new std::byte[bufsize];
-			int numClients = clients.size(); // bruh
-			reinterpret_cast<int*>(buf)[0] = clients.size();
-			std::memcpy(buf + sizeof(int), IDs.data(), clients.size() * sizeof(int));
-
-			ENetPacket* packet = enet_packet_create(buf, bufsize, ENET_PACKET_FLAG_RELIABLE);
-			enet_host_broadcast(server, 0, packet);
-			delete[] buf;
+			printf("A client connected!\n");
+			broadcastPlayerList();
 		}
-
-		ENetPacket* resultPacket = enet_packet_create(&event, sizeof(event), ENET_PACKET_FLAG_RELIABLE);
-		enet_peer_send(peer, 0, resultPacket);
-		connectedPlayers++;
-		ClientInfo newClient;
-		newClient.clientID = nextClientID++;
-		clients[peer->address] = newClient;
 	}
+
+
 	void Server::broadcastPlayerList()
-	{
+	{			
+		// put all client IDs into temporary contiguous memory for memcpy later
+		std::vector<int> IDs;
+		for (const auto& p : clients)
+			IDs.push_back(p.second.clientID);
+
+		size_t bufsize = 2 + clients.size(); // packet type, num clients, data
+		int* buf = new int[bufsize];
+		int numClients = clients.size(); // bruh
+		buf[0] = Packet::eServerListPlayersEvent;
+		buf[1] = clients.size(); // the compiler is dumb for thinking this is a valid warning
+		std::memcpy(buf + sizeof(int) * 2, IDs.data(), clients.size() * sizeof(int));
+
+		ENetPacket* packet = enet_packet_create(buf, bufsize, ENET_PACKET_FLAG_RELIABLE);
+		enet_host_broadcast(server, 0, packet);
+		delete[] buf;
 	}
 }

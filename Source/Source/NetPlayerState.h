@@ -50,6 +50,11 @@ namespace Net
 		// updates the state of each item 
 		void UpdateStates(float dt);
 
+		auto& GetObjects_Unsafe()
+		{
+			return objects;
+		}
+
 	private:
 		std::unordered_map<int, PlayerObject> objects;
 		std::shared_mutex mtx;
