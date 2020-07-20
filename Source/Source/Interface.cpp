@@ -338,6 +338,22 @@ namespace Interface
 					ImGui::Text("VRAM usage graph disabled due to incompatible GPU");
 				ImGui::End();
 			}
+
+			// Networking interface
+			{
+				ImGui::Begin("Networking");
+				const int bufsize = 100;
+				static char address[bufsize];
+				static int port = 1234;
+
+				ImGui::InputText("Address", address, bufsize);
+				ImGui::InputInt("Port", &port);
+				if (ImGui::Button("Connect"))
+					World::client.Connect(address, port);
+				if (ImGui::Button("Disconnect"))
+					World::client.DisconnectFromCurrent();
+				ImGui::End();
+			}
 		}
 
 		PERF_BENCHMARK_END;

@@ -15,6 +15,8 @@ namespace Net
 		void Init();
 		void Shutdown();
 		void DisconnectFromCurrent();
+		void Connect(std::string addr, int port);
+
 	private:
 		void MainLoop();
 

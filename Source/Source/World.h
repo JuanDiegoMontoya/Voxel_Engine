@@ -4,6 +4,8 @@
 //#include "sun.h"
 #include "hud.h"
 
+#include "Client.h"
+
 class Sun;
 class HUD;
 
@@ -43,5 +45,5 @@ public:
 	// debug
 	static inline int debugCascadeQuad = 0;
 
-
+	static inline Net::Client client;
 };

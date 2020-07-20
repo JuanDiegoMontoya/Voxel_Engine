@@ -73,6 +73,8 @@ void World::Init()
 
 	Engine::PushUpdateCallback(Update, 0);
 	Engine::PushRenderCallback([] { hud_.Update(); }, 5);
+
+	client.Init();
 }
 
 void World::Shutdown()
@@ -80,6 +82,7 @@ void World::Shutdown()
 	for (auto& obj : objects_)
 		delete obj;
 
+	client.Shutdown();
 	//for (auto& cam : cameras_)
 	//	delete cam;
 }

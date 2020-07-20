@@ -45,13 +45,14 @@ int main()
 	Interface::Init();
 	World::Init();
 
-	Net::Client client;
-	client.Init();
+	//Net::Client client;
+	//client.Init();
 
 	Engine::Run();
 
-	client.Shutdown();
+	//client.Shutdown();
 
+	World::Shutdown();
 	Engine::Cleanup();
 
 	return 0;

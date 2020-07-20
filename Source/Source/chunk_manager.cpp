@@ -11,6 +11,8 @@
 #include "ChunkHelpers.h"
 #include "ChunkStorage.h"
 
+#undef near
+
 
 ChunkManager::ChunkManager()
 {

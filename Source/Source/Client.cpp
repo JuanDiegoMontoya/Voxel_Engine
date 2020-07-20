@@ -16,16 +16,10 @@
 #include <thread>
 #include <sstream>
 
+#pragma optimize("", off)
 namespace Net
 {
 	void Client::Init()
-	{
-		thread = std::make_unique<std::thread>([this]() { MainLoop(); });
-	}
-
-
-#pragma optimize("", off)
-	void Client::MainLoop()
 	{
 		// a. Initialize enet
 		if (enet_initialize() != 0)
@@ -33,8 +27,6 @@ namespace Net
 			printf("An error occured while initializing ENet.\n");
 			exit(EXIT_FAILURE);
 		}
-
-		atexit(enet_deinitialize);
 
 		// b. Create a host using enet_host_create
 		client = enet_host_create(NULL, 1, 2, 57600 / 8, 14400 / 8);
@@ -44,9 +36,16 @@ namespace Net
 			printf("An error occured while trying to create an ENet server host\n");
 			exit(EXIT_FAILURE);
 		}
+	}
 
-		enet_address_set_host(&address, "localhost");
-		address.port = 1234;
+
+	void Client::Connect(std::string addr, int port)
+	{
+		if (thread)
+			DisconnectFromCurrent();
+
+		enet_address_set_host(&address, addr.c_str());
+		address.port = port;
 
 		// c. Connect and user service
 		peer = enet_host_connect(client, &address, 2, 0);
@@ -57,12 +56,21 @@ namespace Net
 			exit(EXIT_FAILURE);
 		}
 
+		eventStatus = 1;
+
 		// not sure why, but enet_host_service needs to be called before sending this packet
 		enet_host_service(client, &event, CLIENT_NET_TICK * 1000);
 		int join = Net::Packet::eClientJoinEvent;
 		ENetPacket* joinRequest = enet_packet_create(&join, sizeof(join), ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send(peer, 0, joinRequest);
 
+		thread = std::make_unique<std::thread>([this]() { MainLoop(); });
+	}
+
+
+#pragma optimize("", off)
+	void Client::MainLoop()
+	{
 		Timer timer;
 		double accum = 0;
 		while (!shutdownThreads)
@@ -77,7 +85,7 @@ namespace Net
 			{
 				switch (event.type)
 				{
-				case ENET_EVENT_TYPE_CONNECT:
+				case ENET_EVENT_TYPE_CONNECT: // someone else connected to us (shouldn't happen)
 				{
 					printf("(Client) We got a new connection from %x\n",
 						event.peer->address.host);
@@ -96,7 +104,7 @@ namespace Net
 					ProcessServerEvent(packet);
 					break;
 				}
-				case ENET_EVENT_TYPE_DISCONNECT:
+				case ENET_EVENT_TYPE_DISCONNECT: // someone else disconnected from us (shouldn't happen)
 				{
 					printf("(Client) %s disconnected.\n", event.peer->data);
 
@@ -129,19 +137,31 @@ namespace Net
 			}
 		}
 
-		DisconnectFromCurrent();
+		//DisconnectFromCurrent();
 	}
 
 
 	void Client::Shutdown()
 	{
-		shutdownThreads = true;
-		thread->join();
+		if (thread)
+		{
+			shutdownThreads = true;
+			thread->join();
+			thread = nullptr;
+		}
+		enet_deinitialize();
 	}
 
 
 	void Client::DisconnectFromCurrent()
 	{
+		if (!thread)
+			return;
+
+		shutdownThreads = true;
+		thread->join();
+		thread = nullptr;
+
 		enet_peer_disconnect(peer, 0);
 		/* Allow up to 3 seconds for the disconnect to succeed
 		 * and drop any packets received packets.
