@@ -7,8 +7,8 @@ namespace Net
 {
 	struct VisiblePlayerState
 	{
-		glm::vec3 pos;
-		glm::vec3 front;
+		glm::vec3 pos{ 0, 0, 0 };
+		glm::vec3 front{ 0, 0, 0 };
 	};
 
 	struct PlayerObject

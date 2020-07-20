@@ -7,7 +7,9 @@ namespace Net
 {
 	VisiblePlayerState PlayerObject::GetVisibleState()
 	{
-		ASSERT(states.size() > 0);
+		//ASSERT(states.size() > 0);
+		if (states.size() == 0)
+			return VisiblePlayerState();
 
 		if (states.size() == 1)
 			return states[0];

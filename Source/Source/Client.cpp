@@ -23,6 +23,7 @@ namespace Net
 		thread = std::make_unique<std::thread>([this]() { MainLoop(); });
 	}
 
+
 #pragma optimize("", off)
 	void Client::MainLoop()
 	{
@@ -131,11 +132,13 @@ namespace Net
 		DisconnectFromCurrent();
 	}
 
+
 	void Client::Shutdown()
 	{
 		shutdownThreads = true;
 		thread->join();
 	}
+
 
 	void Client::DisconnectFromCurrent()
 	{
@@ -160,6 +163,7 @@ namespace Net
 		enet_peer_reset(peer);
 	}
 
+
 	Net::ClientInput Client::GetActions()
 	{
 		Net::ClientInput ret;
@@ -170,6 +174,7 @@ namespace Net
 		ret.moveRight = Input::Keyboard().down[GLFW_KEY_D];
 		return ret;
 	}
+
 
 	void Client::ProcessServerEvent(Net::Packet& packet)
 	{
@@ -193,6 +198,7 @@ namespace Net
 		}
 	}
 
+
 	void Client::processJoinResultEvent(Packet& packet)
 	{
 		auto event = *reinterpret_cast<ServerJoinResultEvent*>(packet.GetData());
@@ -205,17 +211,46 @@ namespace Net
 			thisID = event.id;
 		}
 		else
+		{
 			DisconnectFromCurrent();
+		}
 	}
+
 
 	void Client::processServerListPlayersEvent(Packet& packet)
 	{
 		auto event = *reinterpret_cast<ServerListPlayersEvent*>(packet.GetData());
 		event.IDs = reinterpret_cast<int*>(packet.GetData() + sizeof(int));
-		
-		printf("we got a player list event! num players: %d\n", event.connected);
 
+		// remove all players that no longer exist in the world, and add any that were just added
+		constexpr int existsClient = 1 << 0;
+		constexpr int existsServer = 1 << 1;
+		std::unordered_map<int, uint8_t> exists;
+		for (const auto& p : playerWorld.GetObjects_Unsafe())
+			exists[p.first] |= existsClient;
 		for (int i = 0; i < event.connected; i++)
-			printf("%d\n", event.IDs[i]);
+			exists[event.IDs[i]] |= existsServer;
+
+		for (const auto& p : exists)
+		{
+			// erase if exists for client, but not server
+			if (p.second & existsClient && !(p.second & existsServer))
+			{
+				printf("Added player ID %d\n", p.first);
+				playerWorld.GetObjects_Unsafe().erase(p.first);
+			}
+
+			// add if doesn't exist for client, but does for server
+			if (!(p.second & existsClient) && p.second & existsServer)
+			{
+				printf("Removed player ID %d\n", p.first);
+				playerWorld.GetObjects_Unsafe().emplace(p.first, PlayerObject());
+			}
+		}
+
+		//printf("we got a player list event! num players: %d\n", event.connected);
+
+		//for (int i = 0; i < event.connected; i++)
+		//	printf("%d\n", event.IDs[i]);
 	}
 }
