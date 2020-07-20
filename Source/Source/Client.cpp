@@ -88,9 +88,10 @@ namespace Net
 					// Lets broadcast this message to all
 					// enet_host_broadcast(client, 0, event.packet);
 					//enet_packet_destroy(event.packet);
-					printf("Received a message from the server (%x)\n", event.peer->address.host);
+					//printf("Received a message from the server (%x)\n", event.peer->address.host);
 
 					Net::Packet packet(event.packet);
+					printf("Received event from server of type: %d\n", packet.GetType());
 					ProcessServerEvent(packet);
 					break;
 				}
@@ -113,13 +114,7 @@ namespace Net
 				{
 					auto temp = Renderer::GetPipeline()->GetCamera(0)->GetPos();
 					Packet p(Packet::eClientPrintVec3Event, &temp, sizeof(ClientPrintVec3Event));
-					ENetPacket* packet = enet_packet_create(&p, sizeof(int) + sizeof(ClientPrintVec3Event), ENET_PACKET_FLAG_RELIABLE);
-
-					//auto p = Renderer::GetPipeline()->GetCamera(0)->GetPos();
-					//std::pair<int, Net::ClientPrintVec3Event> data;
-					//data.first = Net::Packet::eClientPrintVec3Event;
-					//data.second.v = p;
-					//ENetPacket* packet = enet_packet_create(&data, sizeof(data), ENET_PACKET_FLAG_RELIABLE);
+					ENetPacket* packet = enet_packet_create(p.GetBuffer(), sizeof(int) + sizeof(ClientPrintVec3Event), ENET_PACKET_FLAG_RELIABLE);
 					enet_peer_send(peer, 0, packet);
 				}
 
@@ -127,22 +122,9 @@ namespace Net
 				{
 					auto temp = GetActions();
 					Packet p(Packet::eClientInput, &temp, sizeof(ClientInput));
-					ENetPacket* packet = enet_packet_create(&p, sizeof(int) + sizeof(ClientInput), ENET_PACKET_FLAG_RELIABLE);
-					//std::pair<int, Net::ClientInput> data;
-					//data.first = Net::Packet::eClientInput;
-					//data.second = GetActions();
-					//ENetPacket* packet = enet_packet_create(&data, sizeof(data), ENET_PACKET_FLAG_RELIABLE);
+					ENetPacket* packet = enet_packet_create(p.GetBuffer(), sizeof(int) + sizeof(ClientInput), ENET_PACKET_FLAG_RELIABLE);
 					enet_peer_send(peer, 0, packet);
 				}
-				//char message[1000];
-				//static int ttt = 0;
-				//sprintf(message, "%d: (%f, %f, %f)\n", ttt++, p.x, p.y, p.z);
-				//if (strlen(message) > 0)
-				//{
-				//	ENetPacket* packet = enet_packet_create(message, strlen(message) + 1, ENET_PACKET_FLAG_RELIABLE);
-				//	enet_peer_send(peer, 0, packet);
-				//	//enet_packet_destroy(packet);
-				//}
 			}
 		}
 
@@ -215,16 +197,21 @@ namespace Net
 	{
 		auto event = *reinterpret_cast<ServerJoinResultEvent*>(packet.GetData());
 		
-		if (event.success == false)
-			DisconnectFromCurrent();
-		else
+		printf("Join result: %d\n", event.success);
+
+		if (event.success)
+		{
+			printf("Our ID: %d\n", event.id);
 			thisID = event.id;
+		}
+		else
+			DisconnectFromCurrent();
 	}
 
 	void Client::processServerListPlayersEvent(Packet& packet)
 	{
 		auto event = *reinterpret_cast<ServerListPlayersEvent*>(packet.GetData());
-		event.IDs = &event.connected + 1;
+		event.IDs = reinterpret_cast<int*>(packet.GetData() + sizeof(int));
 		
 		printf("we got a player list event! num players: %d\n", event.connected);
 

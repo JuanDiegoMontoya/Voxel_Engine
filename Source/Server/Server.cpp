@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#define NOMINMAX
 #include <iostream>
 
 #include <zlib.h>
@@ -158,10 +159,13 @@ namespace Net
 					printf("%s disconnected.\n", event.peer->data);
 
 					// Reset client's information
+					if (clients.erase(event.peer->address))
+					{
+						connectedPlayers--;
+						broadcastPlayerList();
+					}
 					delete[] event.peer->data;
 					event.peer->data = NULL;
-					if (clients.erase(event.peer->address))
-						connectedPlayers--;
 					break;
 				}
 				}
@@ -200,16 +204,15 @@ namespace Net
 		case Packet::eClientPrintVec3Event:
 		{
 			glm::vec3 v = reinterpret_cast<ClientPrintVec3Event*>(packet.GetData())->v;
-			printf("(%f, %f, %f)\n", v.x, v.y, v.z);
+			//printf("(%f, %f, %f)\n", v.x, v.y, v.z);
 			break;
 		}
 		case Packet::eClientInput:
 		{
 			auto in = reinterpret_cast<ClientInput*>(packet.GetData());
-			//printf("%d\n", input);
 			// TODO: update client's physics state based on input
-			printf("Client input: ");
-			std::cout << in->jump << in->moveBack << in->moveFoward << in->moveLeft << in->moveRight << std::endl;
+			//printf("Client input: ");
+			//std::cout << in->jump << in->moveBack << in->moveFoward << in->moveLeft << in->moveRight << std::endl;
 			break;
 		}
 		default:
@@ -223,8 +226,6 @@ namespace Net
 
 	void Server::processJoinEvent(ENetPeer* peer)
 	{
-		// TODO: map client's address to a unique ID,
-		// then send it back as a JoinResultEvent
 		ServerJoinResultEvent event{ true };
 
 		// connection failed (player count reached)
@@ -240,7 +241,7 @@ namespace Net
 
 		// tell the client whether their connection attempt succeeded
 		Packet packet(Packet::eServerJoinResultEvent, &event, sizeof(event));
-		ENetPacket* resultPacket = enet_packet_create(&packet, sizeof(int) + sizeof(event), ENET_PACKET_FLAG_RELIABLE);
+		ENetPacket* resultPacket = enet_packet_create(packet.GetBuffer(), sizeof(int) + sizeof(event), ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send(peer, 0, resultPacket);
 
 		if (!event.success)
@@ -263,14 +264,14 @@ namespace Net
 		for (const auto& p : clients)
 			IDs.push_back(p.second.clientID);
 
+		// a jank way of constructing a packet
 		size_t bufsize = 2 + clients.size(); // packet type, num clients, data
 		int* buf = new int[bufsize];
-		int numClients = clients.size(); // bruh
 		buf[0] = Packet::eServerListPlayersEvent;
-		buf[1] = clients.size(); // the compiler is dumb for thinking this is a valid warning
-		std::memcpy(buf + sizeof(int) * 2, IDs.data(), clients.size() * sizeof(int));
+		buf[1] = IDs.size();
+		std::memcpy(buf + 2, IDs.data(), IDs.size() * sizeof(int));
 
-		ENetPacket* packet = enet_packet_create(buf, bufsize, ENET_PACKET_FLAG_RELIABLE);
+		ENetPacket* packet = enet_packet_create(buf, bufsize * sizeof(int), ENET_PACKET_FLAG_RELIABLE);
 		enet_host_broadcast(server, 0, packet);
 		delete[] buf;
 	}

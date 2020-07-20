@@ -34,7 +34,8 @@ namespace Net
 		}
 
 		int GetType() { return reinterpret_cast<int*>(buf)[0]; }
-		void* GetData() { return buf + sizeof(int); }
+		std::byte* GetData() { return buf + sizeof(int); }
+		std::byte* GetBuffer() { return buf; }
 
 	private:
 		// A client OR server event type
