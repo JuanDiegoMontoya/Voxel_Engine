@@ -122,6 +122,31 @@ namespace Net
 		int* IDs;
 	};
 
+	struct ServerGameState
+	{
+		struct PlayerState
+		{
+			glm::vec3 pos, front;
+		};
+
+		ServerGameState(const ENetPacket* packet)
+		{
+			buf = new std::byte[packet->dataLength];
+			std::memcpy(buf, packet->data, packet->dataLength);
+		}
+
+		~ServerGameState() { delete[] buf; }
+
+		int GetNumPlayers() { return reinterpret_cast<int*>(buf)[0]; }
+		PlayerState* GetPlayerStates()
+		{
+			return reinterpret_cast<PlayerState*>(buf + sizeof(int));
+		}
+
+	private:
+		std::byte* buf;
+	};
+
 	struct ClientInput
 	{
 		// TODO: pack the inputs, perhaps into a bitfield?

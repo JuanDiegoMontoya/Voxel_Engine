@@ -253,24 +253,19 @@ namespace Net
 
 		for (const auto& p : exists)
 		{
-			// erase if exists for client, but not server
-			if (p.second & existsClient && !(p.second & existsServer))
-			{
-				printf("Added player ID %d\n", p.first);
-				playerWorld.GetObjects_Unsafe().erase(p.first);
-			}
-
 			// add if doesn't exist for client, but does for server
-			if (!(p.second & existsClient) && p.second & existsServer)
+			if (p.second & existsClient && !(p.second & existsServer))
 			{
 				printf("Removed player ID %d\n", p.first);
 				playerWorld.GetObjects_Unsafe().emplace(p.first, PlayerObject());
 			}
+
+			// erase if exists for client, but not server
+			if (!(p.second & existsClient) && p.second & existsServer)
+			{
+				printf("Added player ID %d\n", p.first);
+				playerWorld.GetObjects_Unsafe().erase(p.first);
+			}
 		}
-
-		//printf("we got a player list event! num players: %d\n", event.connected);
-
-		//for (int i = 0; i < event.connected; i++)
-		//	printf("%d\n", event.IDs[i]);
 	}
 }

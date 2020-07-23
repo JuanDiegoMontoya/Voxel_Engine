@@ -7,6 +7,8 @@
 
 #include <NetEvent.h>
 #include "Server.h"
+#include <Timer.h>
+#include <NetDefines.h>
 
 void testCompress()
 {
@@ -122,6 +124,8 @@ namespace Net
 
 	void Server::run()
 	{
+		Timer timer;
+		double accum = 0;
 		while (!shutdownThreads)
 		{
 			eventStatus = enet_host_service(server, &event, 1000);
@@ -170,6 +174,14 @@ namespace Net
 				}
 				}
 			}
+
+			while (accum > SERVER_NET_TICK)
+			{
+				accum -= SERVER_NET_TICK;
+
+				// perform a server tick action here
+			}
+
 		}
 	}
 
