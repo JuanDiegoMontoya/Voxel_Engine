@@ -1,6 +1,6 @@
 #pragma once
 
-#include <NetEvent.h>
+#include <Packet.h>
 #include <enet/enet.h>
 #include "NetPlayerState.h"
 
@@ -25,6 +25,7 @@ namespace Net
 
 		void processJoinResultEvent(Packet& packet);
 		void processServerListPlayersEvent(Packet& packet);
+		void processServerGameState(Packet& packet);
 
 		Net::EventController eventQueue;
 		std::unique_ptr<std::thread> thread;

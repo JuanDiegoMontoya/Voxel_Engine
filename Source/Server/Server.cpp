@@ -5,7 +5,7 @@
 #include <zlib.h>
 #include <cassert>
 
-#include <NetEvent.h>
+#include <Packet.h>
 #include "Server.h"
 #include <Timer.h>
 #include <NetDefines.h>
@@ -180,6 +180,24 @@ namespace Net
 				accum -= SERVER_NET_TICK;
 
 				// perform a server tick action here
+				
+				// generate server gamestate
+				{
+					std::vector<ServerGameState::PlayerState> playerStates;
+					for (const auto& [addr, client] : clients)
+					{
+						ServerGameState::PlayerState state;
+						state.id = client.clientID;
+						state.pos = client.playerData.pos;
+						state.front = client.playerData.front;
+						playerStates.push_back(state);
+					}
+
+					ServerGameState ev(playerStates);
+					Packet pk(Net::eServerGameState, ev.GetBuffer(), ev.GetSize());
+					ENetPacket* packet = enet_packet_create(pk.GetBuffer(), pk.GetSize(), ENET_PACKET_FLAG_RELIABLE);
+					enet_host_broadcast(server, 0, packet);
+				}
 			}
 
 		}
@@ -203,23 +221,23 @@ namespace Net
 	{
 		switch (packet.GetType())
 		{
-		case Packet::eClientJoinEvent:
+		case Net::eClientJoinEvent:
 		{
 			processJoinEvent(peer);
 			break;
 		}
-		case Packet::eClientLeaveEvent:
+		case Net::eClientLeaveEvent:
 		{
 			printf("A client disconnected!\n");
 			break;
 		}
-		case Packet::eClientPrintVec3Event:
+		case Net::eClientPrintVec3Event:
 		{
 			glm::vec3 v = reinterpret_cast<ClientPrintVec3Event*>(packet.GetData())->v;
 			//printf("(%f, %f, %f)\n", v.x, v.y, v.z);
 			break;
 		}
-		case Packet::eClientInput:
+		case Net::eClientInput:
 		{
 			auto in = reinterpret_cast<ClientInput*>(packet.GetData());
 			// TODO: update client's physics state based on input
@@ -252,7 +270,7 @@ namespace Net
 		}
 
 		// tell the client whether their connection attempt succeeded
-		Packet packet(Packet::eServerJoinResultEvent, &event, sizeof(event));
+		Packet packet(Net::eServerJoinResultEvent, &event, sizeof(event));
 		ENetPacket* resultPacket = enet_packet_create(packet.GetBuffer(), sizeof(int) + sizeof(event), ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send(peer, 0, resultPacket);
 
@@ -276,10 +294,10 @@ namespace Net
 		for (const auto& p : clients)
 			IDs.push_back(p.second.clientID);
 
-		// a jank way of constructing a packet
+		// TODO: change this jank way of constructing a packet
 		size_t bufsize = 2 + clients.size(); // packet type, num clients, data
 		int* buf = new int[bufsize];
-		buf[0] = Packet::eServerListPlayersEvent;
+		buf[0] = Net::eServerListPlayersEvent;
 		buf[1] = IDs.size();
 		std::memcpy(buf + 2, IDs.data(), IDs.size() * sizeof(int));
 

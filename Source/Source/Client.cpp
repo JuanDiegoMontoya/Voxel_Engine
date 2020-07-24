@@ -5,7 +5,7 @@
 #include "Renderer.h"
 #include <Pipeline.h>
 #include <camera.h>
-#include "NetEvent.h"
+#include <Packet.h>
 #include <input.h>
 #include <Timer.h>
 
@@ -60,7 +60,7 @@ namespace Net
 
 		// not sure why, but enet_host_service needs to be called before sending this packet
 		enet_host_service(client, &event, CLIENT_NET_TICK * 1000);
-		int join = Net::Packet::eClientJoinEvent;
+		int join = Net::eClientJoinEvent;
 		ENetPacket* joinRequest = enet_packet_create(&join, sizeof(join), ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send(peer, 0, joinRequest);
 
@@ -122,7 +122,7 @@ namespace Net
 				// send client player state
 				{
 					auto temp = Renderer::GetPipeline()->GetCamera(0)->GetPos();
-					Packet p(Packet::eClientPrintVec3Event, &temp, sizeof(ClientPrintVec3Event));
+					Packet p(Net::eClientPrintVec3Event, &temp, sizeof(ClientPrintVec3Event));
 					ENetPacket* packet = enet_packet_create(p.GetBuffer(), sizeof(int) + sizeof(ClientPrintVec3Event), ENET_PACKET_FLAG_RELIABLE);
 					enet_peer_send(peer, 0, packet);
 				}
@@ -130,7 +130,7 @@ namespace Net
 				// send client input
 				{
 					auto temp = GetActions();
-					Packet p(Packet::eClientInput, &temp, sizeof(ClientInput));
+					Packet p(Net::eClientInput, &temp, sizeof(ClientInput));
 					ENetPacket* packet = enet_packet_create(p.GetBuffer(), sizeof(int) + sizeof(ClientInput), ENET_PACKET_FLAG_RELIABLE);
 					enet_peer_send(peer, 0, packet);
 				}
@@ -200,14 +200,19 @@ namespace Net
 	{
 		switch (packet.GetType())
 		{
-		case Packet::eServerJoinResultEvent:
+		case Net::eServerJoinResultEvent:
 		{
 			processJoinResultEvent(packet);
 			break;
 		}
-		case Packet::eServerListPlayersEvent:
+		case Net::eServerListPlayersEvent:
 		{
 			processServerListPlayersEvent(packet);
+			break;
+		}
+		case Net::eServerGameState:
+		{
+
 			break;
 		}
 		default:
@@ -253,19 +258,29 @@ namespace Net
 
 		for (const auto& p : exists)
 		{
-			// add if doesn't exist for client, but does for server
+			// erase if exists for client, but not server
 			if (p.second & existsClient && !(p.second & existsServer))
 			{
 				printf("Removed player ID %d\n", p.first);
 				playerWorld.GetObjects_Unsafe().emplace(p.first, PlayerObject());
 			}
 
-			// erase if exists for client, but not server
+			// add if doesn't exist for client, but does for server
 			if (!(p.second & existsClient) && p.second & existsServer)
 			{
 				printf("Added player ID %d\n", p.first);
 				playerWorld.GetObjects_Unsafe().erase(p.first);
 			}
+		}
+	}
+
+	void Client::processServerGameState(Packet& packet)
+	{
+		auto* data = reinterpret_cast<Net::ServerGameState*>(packet.GetData());
+		auto* states = data->GetPlayerStates();
+		for (int i = 0; i < data->GetNumPlayers(); i++)
+		{
+			playerWorld.PushState(states[i].id, { states[i].pos, states[i].front });
 		}
 	}
 }

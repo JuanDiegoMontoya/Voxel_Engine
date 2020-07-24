@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{24CDBB
 	ProjectSection(SolutionItems) = preProject
 		Shared\NetDefines.h = Shared\NetDefines.h
 		Shared\NetEvent.h = Shared\NetEvent.h
+		Shared\Packet.h = Shared\Packet.h
 		Shared\Timer.h = Shared\Timer.h
 	EndProjectSection
 EndProject
