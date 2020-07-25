@@ -128,6 +128,9 @@ namespace Net
 		double accum = 0;
 		while (!shutdownThreads)
 		{
+			accum += timer.elapsed();
+			timer.reset();
+
 			eventStatus = enet_host_service(server, &event, 1000);
 
 			// If we had some event that interested us

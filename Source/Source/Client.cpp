@@ -212,7 +212,8 @@ namespace Net
 		}
 		case Net::eServerGameState:
 		{
-
+			processServerGameState(packet);
+			printf("WE GOT A GAMESTATE EVENT BOIII\n");
 			break;
 		}
 		default:
@@ -280,6 +281,9 @@ namespace Net
 		auto* states = data->GetPlayerStates();
 		for (int i = 0; i < data->GetNumPlayers(); i++)
 		{
+			// no point updating visible state of something we cannot see
+			if (states[i].id == thisID)
+				continue;
 			playerWorld.PushState(states[i].id, { states[i].pos, states[i].front });
 		}
 	}
