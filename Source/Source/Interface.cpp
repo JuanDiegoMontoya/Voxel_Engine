@@ -343,7 +343,7 @@ namespace Interface
 			{
 				ImGui::Begin("Networking");
 				const int bufsize = 100;
-				static char address[bufsize];
+				static char address[bufsize] = "localhost";
 				static int port = 1234;
 
 				ImGui::InputText("Address", address, bufsize);
@@ -352,6 +352,14 @@ namespace Interface
 					World::client.Connect(address, port);
 				if (ImGui::Button("Disconnect"))
 					World::client.DisconnectFromCurrent();
+
+				auto& playerWorld = World::client.GetPlayerWorld();
+				ImGui::Text("Connected players: %d", playerWorld.GetObjects_Unsafe().size());
+				ImGui::Separator();
+				for (const auto& [id, obj] : playerWorld.GetObjects_Unsafe())
+				{
+					ImGui::Text("ID: %d", id);
+				}
 				ImGui::End();
 			}
 		}

@@ -183,7 +183,7 @@ namespace Net
 				accum -= SERVER_NET_TICK;
 
 				// perform a server tick action here
-				
+
 				// generate server gamestate
 				{
 					std::vector<ServerGameState::PlayerState> playerStates;
@@ -199,6 +199,17 @@ namespace Net
 					ServerGameState ev(playerStates);
 					Packet pk(Net::eServerGameState, ev.GetBuffer(), ev.GetSize());
 					ENetPacket* packet = enet_packet_create(pk.GetBuffer(), pk.GetSize(), ENET_PACKET_FLAG_RELIABLE);
+
+					////auto data = ServerGameState(packet);
+					////auto* data = reinterpret_cast<ServerGameState*>(pk.GetData());
+					//auto data = ServerGameState(pk.GetData());
+					////auto* data = &ev;
+					//auto* states = data.GetPlayerStates();
+					//for (int i = 0; i < data.GetNumPlayers(); i++)
+					//{
+					//	printf("%d", states[i].id);
+					//}
+
 					enet_host_broadcast(server, 0, packet);
 				}
 			}
@@ -237,6 +248,7 @@ namespace Net
 		case Net::eClientPrintVec3Event:
 		{
 			glm::vec3 v = reinterpret_cast<ClientPrintVec3Event*>(packet.GetData())->v;
+			clients[peer->address].playerData.pos = v;
 			//printf("(%f, %f, %f)\n", v.x, v.y, v.z);
 			break;
 		}

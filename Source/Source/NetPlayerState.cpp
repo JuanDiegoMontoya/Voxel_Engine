@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "NetPlayerState.h"
 #include <NetDefines.h>
-#include <experimental/unordered_map>
 
 namespace Net
 {
@@ -28,7 +27,7 @@ namespace Net
 		if (keyframe >= 1.0f)
 		{
 			keyframe -= 1.0f;
-			if (states.size() > 0)
+			if (states.size() > 1) // don't pop if only state
 				states.pop_front();
 		}
 	}
@@ -69,8 +68,5 @@ namespace Net
 		std::lock_guard lk(mtx); // we locking it ALL down
 		for (auto& [key, obj] : objects)
 			obj.Update(dt);
-
-		// remove any object with empty state; the end of their life was implicitly reached
-		std::experimental::erase_if(objects, [](const auto& a) { return a.second.states.size() == 0; });
 	}
 }

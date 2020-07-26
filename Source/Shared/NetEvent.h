@@ -2,6 +2,7 @@
 #include <queue>
 #include <shared_mutex>
 #include <enet/enet.h>
+#include <NetDefines.h>
 
 #define REGISTER_EVENT(x) x* x ## _data
 //#define PROCESS_EVENT(x) case Packet::e ## x: data.x ## _data->Process(); break
@@ -92,7 +93,8 @@ namespace Net
 		struct PlayerState
 		{
 			int id;
-			glm::vec3 pos, front;
+			glm::vec3 pos{ 0, 0, 0 };
+			glm::vec3 front{ 1, 0, 0 };
 		};
 
 		ServerGameState(std::vector<PlayerState>& data)
@@ -102,10 +104,22 @@ namespace Net
 			std::memcpy(buf + sizeof(int), data.data(), data.size() * sizeof(PlayerState));
 		}
 
+		//ServerGameState(const Packet& packet)
+		//{
+		//	buf = new std::byte[packet.]
+		//}
+
+		ServerGameState(const std::byte* mem)
+		{
+			int size = *reinterpret_cast<const int*>(mem);
+			buf = new std::byte[sizeof(int) + size * sizeof(PlayerState)];
+			std::memcpy(buf, mem, sizeof(int) + size * sizeof(PlayerState));
+		}
+
 		ServerGameState(const ENetPacket* packet)
 		{
-			buf = new std::byte[packet->dataLength];
-			std::memcpy(buf, packet->data, packet->dataLength);
+			buf = new std::byte[packet->dataLength - PACKET_HEADER_LEN];
+			std::memcpy(buf, packet->data, packet->dataLength - PACKET_HEADER_LEN);
 		}
 
 		~ServerGameState() { delete[] buf; }

@@ -7,7 +7,7 @@ struct ClientInfo
 
 	struct
 	{
-		glm::vec3 pos;
-		glm::vec3 front;
+		glm::vec3 pos{ 0, 0, 0 };
+		glm::vec3 front{ 1, 0, 0 };
 	}playerData;
 };

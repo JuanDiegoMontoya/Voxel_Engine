@@ -1,5 +1,6 @@
 #pragma once
 #include "NetEvent.h"
+#include <NetDefines.h>
 
 namespace Net
 {
@@ -9,16 +10,17 @@ namespace Net
 		// constructing a packet
 		Packet(int type, void* data, size_t data_size)
 		{
-			bufSize_ = data_size;
-			buf = new std::byte[sizeof(int) + bufSize_];
+			bufSize_ = data_size + PACKET_HEADER_LEN;
+			buf = new std::byte[bufSize_];
 			reinterpret_cast<int*>(buf)[0] = type;
-			std::memcpy(buf + sizeof(int), data, bufSize_);
+			std::memcpy(buf + PACKET_HEADER_LEN, data, bufSize_ - PACKET_HEADER_LEN);
 		}
 
 		// interpreting an enet packet
 		// TODO: make this constructor it's own class that doesn't require copying data
 		Packet(const ENetPacket* ev)
 		{
+			bufSize_ = ev->dataLength;
 			buf = new std::byte[ev->dataLength];
 			std::memcpy(buf, ev->data, ev->dataLength);
 		}
@@ -28,11 +30,12 @@ namespace Net
 			delete[] buf;
 		}
 
-		int GetType() { return reinterpret_cast<int*>(buf)[0]; }
-		std::byte* GetData() { return buf + sizeof(int); }
+		int GetType() const { return reinterpret_cast<int*>(buf)[0]; }
+		std::byte* GetData() { return buf + PACKET_HEADER_LEN; }
 		std::byte* GetBuffer() { return buf; }
 		const std::byte* GetBuffer() const { return buf; }
 		const size_t GetSize() const { return bufSize_; }
+
 	private:
 		size_t bufSize_;
 		std::byte* buf;
@@ -45,7 +48,7 @@ namespace Net
 		PacketView(const ENetPacket* packet) : bufptr(reinterpret_cast<std::byte*>(packet->data)) {}
 
 		int GetType() const { return reinterpret_cast<const int*>(bufptr)[0]; }
-		const std::byte* GetData() const { return bufptr + sizeof(int); }
+		const std::byte* GetData() const { return bufptr + PACKET_HEADER_LEN; }
 		const std::byte* GetBuffer() const { return bufptr; }
 
 	private:

@@ -2,13 +2,14 @@
 #include <queue>
 #include <shared_mutex>
 #include <optional>
+#include <NetDefines.h>
 
 namespace Net
 {
 	struct VisiblePlayerState
 	{
 		glm::vec3 pos{ 0, 0, 0 };
-		glm::vec3 front{ 0, 0, 0 };
+		glm::vec3 front{ 1, 0, 0 };
 	};
 
 	struct PlayerObject
@@ -58,5 +59,8 @@ namespace Net
 	private:
 		std::unordered_map<int, PlayerObject> objects;
 		std::shared_mutex mtx;
+
+		// store up to 3 seconds worth of interpolation data per object
+		static const int MAX_STATES_PER_OBJ = SERVER_NET_TICKS_PER_SECOND * 3;
 	};
 }

@@ -17,6 +17,9 @@ namespace Net
 		void DisconnectFromCurrent();
 		void Connect(std::string addr, int port);
 
+		void RenderPlayers();
+
+		PlayerWorld& GetPlayerWorld() { return playerWorld; }
 	private:
 		void MainLoop();
 

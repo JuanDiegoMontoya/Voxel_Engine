@@ -16,6 +16,13 @@
 #include <thread>
 #include <sstream>
 
+#include "Renderer.h"
+#include "NuRenderer.h"
+#include <shader.h>
+#include <camera.h>
+#include <Pipeline.h>
+#include <Engine.h>
+
 #pragma optimize("", off)
 namespace Net
 {
@@ -68,6 +75,36 @@ namespace Net
 	}
 
 
+	void Client::RenderPlayers()
+	{
+		ShaderPtr sr = Shader::shaders["flat_color"];
+		sr->Use();
+		sr->setVec4("u_color", { 1, 0, 1, 1 });
+
+		for (auto [id, obj] : playerWorld.GetObjects_Unsafe()) // intentional copy
+		{
+			if (id == thisID)
+				continue;
+			auto vis = obj.GetVisibleState();
+			//glm::mat4 model = glm::lookAt(-vis.pos, -vis.pos + vis.front, { 0, 1, 0 });
+			glm::mat4 model = glm::translate(glm::mat4(1), vis.pos);
+			sr->setMat4("u_model", model);
+			sr->setMat4("u_proj", Renderer::GetPipeline()->GetCamera(0)->GetProj());
+			sr->setMat4("u_view", Renderer::GetPipeline()->GetCamera(0)->GetView());
+			Renderer::DrawCube();
+		}
+
+		sr->setVec4("u_color", { 1, 1, 0, 1 });
+		//glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(0));
+		glm::mat4 model = glm::lookAt(glm::vec3(0), glm::vec3(0) + glm::vec3(1), { 0, 1, 0 });
+		sr->setMat4("u_model", model);
+		sr->setMat4("u_proj", Renderer::GetPipeline()->GetCamera(0)->GetProj());
+		sr->setMat4("u_view", Renderer::GetPipeline()->GetCamera(0)->GetView());
+		Renderer::DrawCube();
+		playerWorld.UpdateStates(Engine::GetDT());
+	}
+
+
 #pragma optimize("", off)
 	void Client::MainLoop()
 	{
@@ -100,7 +137,7 @@ namespace Net
 					//printf("Received a message from the server (%x)\n", event.peer->address.host);
 
 					Net::Packet packet(event.packet);
-					printf("Received event from server of type: %d\n", packet.GetType());
+					//printf("Received event from server of type: %d\n", packet.GetType());
 					ProcessServerEvent(packet);
 					break;
 				}
@@ -212,8 +249,8 @@ namespace Net
 		}
 		case Net::eServerGameState:
 		{
+			//printf("WE GOT A GAMESTATE EVENT BOIII\n");
 			processServerGameState(packet);
-			printf("WE GOT A GAMESTATE EVENT BOIII\n");
 			break;
 		}
 		default:
@@ -235,6 +272,7 @@ namespace Net
 		{
 			printf("Our ID: %d\n", event.id);
 			thisID = event.id;
+			playerWorld.PushState(thisID, VisiblePlayerState());
 		}
 		else
 		{
@@ -252,34 +290,34 @@ namespace Net
 		constexpr int existsClient = 1 << 0;
 		constexpr int existsServer = 1 << 1;
 		std::unordered_map<int, uint8_t> exists;
-		for (const auto& p : playerWorld.GetObjects_Unsafe())
-			exists[p.first] |= existsClient;
+		for (const auto& [id, unused] : playerWorld.GetObjects_Unsafe())
+			exists[id] |= existsClient;
 		for (int i = 0; i < event.connected; i++)
 			exists[event.IDs[i]] |= existsServer;
 
-		for (const auto& p : exists)
+		for (const auto& [id, ex] : exists)
 		{
 			// erase if exists for client, but not server
-			if (p.second & existsClient && !(p.second & existsServer))
+			if (ex & existsClient && !(ex & existsServer))
 			{
-				printf("Removed player ID %d\n", p.first);
-				playerWorld.GetObjects_Unsafe().emplace(p.first, PlayerObject());
+				printf("Removed player ID %d\n", id);
+				playerWorld.GetObjects_Unsafe().erase(id);
 			}
 
 			// add if doesn't exist for client, but does for server
-			if (!(p.second & existsClient) && p.second & existsServer)
+			if (!(ex & existsClient) && ex & existsServer)
 			{
-				printf("Added player ID %d\n", p.first);
-				playerWorld.GetObjects_Unsafe().erase(p.first);
+				printf("Added player ID %d\n", id);
+				playerWorld.GetObjects_Unsafe().emplace(id, PlayerObject());
 			}
 		}
 	}
 
 	void Client::processServerGameState(Packet& packet)
 	{
-		auto* data = reinterpret_cast<Net::ServerGameState*>(packet.GetData());
-		auto* states = data->GetPlayerStates();
-		for (int i = 0; i < data->GetNumPlayers(); i++)
+		auto data = Net::ServerGameState(packet.GetData());
+		auto* states = data.GetPlayerStates();
+		for (int i = 0; i < data.GetNumPlayers(); i++)
 		{
 			// no point updating visible state of something we cannot see
 			if (states[i].id == thisID)

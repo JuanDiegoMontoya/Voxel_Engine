@@ -73,6 +73,7 @@ void World::Init()
 
 	Engine::PushUpdateCallback(Update, 0);
 	Engine::PushRenderCallback([] { hud_.Update(); }, 5);
+	Engine::PushRenderCallback([] { client.RenderPlayers(); }, 6);
 
 	client.Init();
 }
