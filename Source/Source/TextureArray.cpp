@@ -3,9 +3,6 @@
 #include <stb_image.h>
 #include <filesystem>
 
-// maybe get rid of this include
-//#include "block.h"
-
 #pragma optimize("", off)
 TextureArray::TextureArray(const std::vector<std::string>& textures)
 {
@@ -43,46 +40,7 @@ TextureArray::TextureArray(const std::vector<std::string>& textures)
 			GL_UNSIGNED_BYTE,
 			pixels);
 
-		//for (int i = 0; i < mipCount_; i++)
-		{
-			//glTexImage3D(GL_TEXTURE_2D_ARRAY, 
-			//	i, 
-			//	GL_RGB8, 
-			//	dim / (i * 2), dim / (i * 2), layerCount, 
-			//	0, 
-			//	GL_RGBA,
-			//	GL_UNSIGNED_BYTE,)
-		}
-
 		stbi_image_free(pixels);
-
-		//else // the given texture wasn't found- use a replacement
-		//{
-		//	// checkered 2x2 purple texture
-		//	GLubyte texels[] =
-		//	{
-		//		255, 0, 255,
-		//		0, 0, 0,
-		//		255, 255, // these do nothing?
-		//		0, 0, 0,
-		//		255, 0, 255,
-		//	};
-
-		//	GLubyte texels2[4 * 4];
-		//	for (int i = 0; i < 4 * 4; i++)
-		//	{
-
-		//	}
-
-		//	glTexSubImage3D(
-		//		GL_TEXTURE_2D_ARRAY, 
-		//		0, 
-		//		0, 0, i, 
-		//		dim, dim, 1, 
-		//		GL_RGB, 
-		//		GL_UNSIGNED_BYTE, 
-		//		texels);
-		//}
 
 		i++;
 	}
@@ -95,7 +53,6 @@ TextureArray::TextureArray(const std::vector<std::string>& textures)
 
 	// TODO: play with this parameter for optimal looks, maybe make it user-selectable
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
