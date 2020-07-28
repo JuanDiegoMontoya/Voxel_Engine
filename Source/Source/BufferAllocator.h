@@ -41,7 +41,8 @@ public:
 
 		uint64_t handle;// "pointer"
 		double time;    // time of allocation
-		glm::uvec2 _pad;// GPU padding
+		uint32_t flags; // GPU flags
+		uint32_t _pad;  // GPU padding
 		GLuint offset;  // offset from beginning of this memory
 		GLuint size;    // allocation size
 		UT userdata;    // user-defined data
@@ -55,12 +56,15 @@ public:
 
 		uint64_t handle;// "pointer"
 		double time;    // time of allocation
-		glm::uvec2 _pad;// GPU padding
+		uint32_t flags; // GPU flags
+		uint32_t _pad;  // GPU padding
 		GLuint offset;  // offset from beginning of this memory
 		GLuint size;    // allocation size
 	};
 
 	GLsizei AllocSize() const { return sizeof(allocationData<UserT>); }
+
+	bool GetDirty() { return dirty_; }
 
 private:
 	std::vector<allocationData<UserT>> allocs_;

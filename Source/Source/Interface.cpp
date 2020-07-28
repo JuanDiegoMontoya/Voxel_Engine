@@ -346,15 +346,20 @@ namespace Interface
 				static char address[bufsize] = "localhost";
 				static int port = 1234;
 
-				ImGui::InputText("Address", address, bufsize);
-				ImGui::InputInt("Port", &port);
-				if (ImGui::Button("Connect"))
-					World::client.Connect(address, port);
-				if (ImGui::Button("Disconnect"))
-					World::client.DisconnectFromCurrent();
+				ImGui::Text("Client/Server tick: %.0f/%.0f", CLIENT_NET_TICKS_PER_SECOND, SERVER_NET_TICKS_PER_SECOND);
 
+				ImGui::InputText("Address", address, bufsize);
+				ImGui::InputInt("Port", &port, 0);
+				if (!World::client.GetConnected())
+					if (ImGui::Button("Connect"))
+						World::client.Connect(address, port);
+				if (World::client.GetConnected())
+					if (ImGui::Button("Disconnect"))
+						World::client.DisconnectFromCurrent();
+				
 				auto& playerWorld = World::client.GetPlayerWorld();
 				ImGui::Text("Connected players: %d", playerWorld.GetObjects_Unsafe().size());
+				ImGui::Text("My ID: %d", World::client.GetThisID());
 				ImGui::Separator();
 				for (const auto& [id, obj] : playerWorld.GetObjects_Unsafe())
 				{

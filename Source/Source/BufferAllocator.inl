@@ -63,6 +63,7 @@ uint64_t BufferAllocator<UserT>::Allocate(void* data, GLuint size, UserT userdat
 	newAlloc.offset = small->offset;
 	newAlloc.size = size;
 	newAlloc.time = glfwGetTime();
+	newAlloc.flags = 0;
 	//newAlloc.userdata = userdata;
 
 	small->offset += newAlloc.size;

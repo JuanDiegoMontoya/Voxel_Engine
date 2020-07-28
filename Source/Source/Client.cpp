@@ -72,6 +72,8 @@ namespace Net
 		enet_peer_send(peer, 0, joinRequest);
 
 		thread = std::make_unique<std::thread>([this]() { MainLoop(); });
+
+		connected = true;
 	}
 
 
@@ -192,6 +194,8 @@ namespace Net
 
 	void Client::DisconnectFromCurrent()
 	{
+		connected = false;
+
 		if (!thread)
 			return;
 

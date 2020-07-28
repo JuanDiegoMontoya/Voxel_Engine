@@ -149,11 +149,16 @@ namespace ChunkRenderer
 		const auto& allocs = allocator->GetAllocs();
 		//glBufferData(GL_SHADER_STORAGE_BUFFER, allocator->AllocSize() * allocs.size(), allocs.data(), GL_STATIC_COPY);
 
+		// only re-construct if allocator has been modified
+		if (allocator->GetDirty())
+		{
+			dib = std::make_unique<DIB>(
+				nullptr,
+				allocator->ActiveAllocs() * sizeof(DrawArraysIndirectCommand),
+				GL_STATIC_COPY);
+		}
+
 		// make DIB output SSBO (binding 1) for the shader
-		dib = std::make_unique<DIB>(
-			nullptr, 
-			allocator->ActiveAllocs() * sizeof(DrawArraysIndirectCommand),
-			GL_STATIC_COPY);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, dib->GetID());
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, dib->GetID());
 

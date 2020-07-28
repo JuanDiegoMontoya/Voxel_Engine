@@ -20,6 +20,9 @@ namespace Net
 		void RenderPlayers();
 
 		PlayerWorld& GetPlayerWorld() { return playerWorld; }
+		int GetThisID() { return thisID; }
+		bool GetConnected() { return connected; }
+
 	private:
 		void MainLoop();
 
@@ -34,6 +37,7 @@ namespace Net
 		std::unique_ptr<std::thread> thread;
 
 		bool shutdownThreads = false;
+		bool connected = false;
 
 		ENetAddress address;
 		ENetHost* client;
@@ -42,6 +46,6 @@ namespace Net
 		int eventStatus;
 
 		PlayerWorld playerWorld;
-		int thisID;
+		int thisID = -1;
 	};
 }
