@@ -16,6 +16,7 @@
 #include "ChunkMesh.h"
 #include "ChunkRenderer.h"
 #include "sun.h"
+#include "RenderOrder.h"
 
 #include <zlib.h>
 
@@ -26,8 +27,8 @@ namespace Interface
 	{
 		Interface::activeCursor = false;
 		glfwSetInputMode(Engine::GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		Engine::PushRenderCallback(DrawImGui, 1);
-		Engine::PushRenderCallback(Update, 2);
+		Engine::PushRenderCallback(DrawImGui, RenderOrder::RenderInterfaceImGui);
+		Engine::PushRenderCallback(Update, RenderOrder::RenderInterfaceUpdate);
 	}
 #pragma optimize("", on)
 

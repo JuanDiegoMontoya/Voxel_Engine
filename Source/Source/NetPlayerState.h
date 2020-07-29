@@ -3,6 +3,7 @@
 #include <shared_mutex>
 #include <optional>
 #include <NetDefines.h>
+#include <Timer.h>
 
 namespace Net
 {
@@ -14,6 +15,8 @@ namespace Net
 
 	struct PlayerObject
 	{
+		PlayerObject() { bufferTimer.reset(); }
+
 		// automagically interpolates state for the user and returns that
 		// also handles any possible error case, automagically :)
 		VisiblePlayerState GetVisibleState();
@@ -35,6 +38,11 @@ namespace Net
 		// THE AMOUNT THIS VALUE WILL BE INCREMENTED EACH FRAME
 		// IS (CLIENT DT / SERVER TICK)
 		float keyframe = 0.0f;
+
+		Timer bufferTimer;
+
+		// wait this long before updating keyframes, allows buffer to accumulate a little bit
+		static inline const float bufferTime = 0.2f;
 	};
 
 	// all player objects in the world and recent history associated
@@ -61,6 +69,6 @@ namespace Net
 		std::shared_mutex mtx;
 
 		// store up to 3 seconds worth of interpolation data per object
-		static const int MAX_STATES_PER_OBJ = SERVER_NET_TICKS_PER_SECOND * 3;
+		static inline const int MAX_STATES_PER_OBJ = SERVER_NET_TICKS_PER_SECOND * 3;
 	};
 }

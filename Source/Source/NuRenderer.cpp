@@ -13,6 +13,7 @@
 #include "TextureArray.h"
 #include <texture.h>
 #include "sun.h"
+#include "RenderOrder.h"
 
 namespace NuRenderer
 {
@@ -43,8 +44,10 @@ namespace NuRenderer
 		blueNoise64 = std::make_unique<Texture>("BlueNoise/256_256/LDR_LLL1_0.png");
 
 		CompileShaders();
-		Engine::PushRenderCallback(DrawAll, 0);
-		Engine::PushRenderCallback(ChunkRenderer::Update, 3);
+		Engine::PushRenderCallback(DrawAll, RenderOrder::RenderDrawAll);
+		Engine::PushRenderCallback(ChunkRenderer::Update, RenderOrder::RenderChunkRenderUpdate);
+		Engine::PushRenderCallback(Clear, RenderOrder::RenderClear);
+		Engine::PushRenderCallback(Renderer::drawSky, RenderOrder::RenderSky);
 	}
 
 
@@ -72,7 +75,6 @@ namespace NuRenderer
 	{
 		PERF_BENCHMARK_START;
 
-		Clear();
 		if (settings.gammaCorrection)
 			glEnable(GL_FRAMEBUFFER_SRGB); // gamma correction
 
@@ -86,7 +88,6 @@ namespace NuRenderer
 				glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 		}
 
-		Renderer::drawSky();
 		drawChunks();
 		//splatChunks();
 		drawChunksWater();

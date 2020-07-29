@@ -340,6 +340,9 @@
     <ClInclude Include="Client.h">
       <Filter>Networking</Filter>
     </ClInclude>
+    <ClInclude Include="RenderOrder.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">

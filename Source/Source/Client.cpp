@@ -79,9 +79,13 @@ namespace Net
 
 	void Client::RenderPlayers()
 	{
+		glEnable(GL_DEPTH_TEST);
+		//glDepthMask(GL_TRUE);
 		ShaderPtr sr = Shader::shaders["flat_color"];
 		sr->Use();
 		sr->setVec4("u_color", { 1, 0, 1, 1 });
+		sr->setMat4("u_proj", Renderer::GetPipeline()->GetCamera(0)->GetProj());
+		sr->setMat4("u_view", Renderer::GetPipeline()->GetCamera(0)->GetView());
 
 		for (auto [id, obj] : playerWorld.GetObjects_Unsafe()) // intentional copy
 		{
@@ -91,18 +95,14 @@ namespace Net
 			//glm::mat4 model = glm::lookAt(-vis.pos, -vis.pos + vis.front, { 0, 1, 0 });
 			glm::mat4 model = glm::translate(glm::mat4(1), vis.pos);
 			sr->setMat4("u_model", model);
-			sr->setMat4("u_proj", Renderer::GetPipeline()->GetCamera(0)->GetProj());
-			sr->setMat4("u_view", Renderer::GetPipeline()->GetCamera(0)->GetView());
 			Renderer::DrawCube();
 		}
 
-		//sr->setVec4("u_color", { 1, 1, 0, 1 });
-		////glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(0));
-		//glm::mat4 model = glm::lookAt(glm::vec3(0), glm::vec3(0) + glm::vec3(1), { 0, 1, 0 });
-		//sr->setMat4("u_model", model);
-		//sr->setMat4("u_proj", Renderer::GetPipeline()->GetCamera(0)->GetProj());
-		//sr->setMat4("u_view", Renderer::GetPipeline()->GetCamera(0)->GetView());
-		//Renderer::DrawCube();
+		sr->setVec4("u_color", { 1, 1, 0, 1 });
+		//glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(0));
+		glm::mat4 model = glm::lookAt(glm::vec3(0), glm::vec3(0) + glm::vec3(1), { 0, 1, 0 });
+		sr->setMat4("u_model", model);
+		Renderer::DrawCube();
 		playerWorld.UpdateStates(Engine::GetDT());
 	}
 

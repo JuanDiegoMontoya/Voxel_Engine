@@ -33,6 +33,7 @@
 #include "WorldGen2.h"
 #include "ChunkRenderer.h"
 #include "prefab.h"
+#include "RenderOrder.h"
 
 using namespace std::chrono;
 
@@ -71,9 +72,9 @@ void World::Init()
 	Renderer::SetDirLight(&sun_->GetDirLight());
 	Renderer::SetSun(sun_);
 
-	Engine::PushUpdateCallback(Update, 0);
-	Engine::PushRenderCallback([] { hud_.Update(); }, 5);
-	Engine::PushRenderCallback([] { client.RenderPlayers(); }, 6);
+	Engine::PushUpdateCallback(Update, RenderOrder::WorldUpdate);
+	Engine::PushRenderCallback([] { hud_.Update(); }, RenderOrder::RenderHUD);
+	Engine::PushRenderCallback([] { client.RenderPlayers(); }, RenderOrder::RenderClientPlayers);
 
 	client.Init();
 }

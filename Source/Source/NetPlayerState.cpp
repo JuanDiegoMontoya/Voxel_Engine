@@ -11,7 +11,10 @@ namespace Net
 			return VisiblePlayerState();
 
 		if (states.size() == 1)
+		{
+			bufferTimer.reset();
 			return states[0];
+		}
 
 		// interpolate if > 1 state
 		VisiblePlayerState state;
@@ -23,12 +26,15 @@ namespace Net
 
 	void PlayerObject::Update(float dt)
 	{
-		keyframe += dt / SERVER_NET_TICK;
-		if (keyframe >= 1.0f)
+		if (bufferTimer.elapsed() > bufferTime)
 		{
-			keyframe -= 1.0f;
-			if (states.size() > 1) // don't pop if only state
-				states.pop_front();
+			keyframe += dt * SERVER_NET_TICKS_PER_SECOND;
+			while (keyframe >= 1.0f)
+			{
+				keyframe -= 1.0f;
+				if (states.size() > 1) // don't pop if only state
+					states.pop_front();
+			}
 		}
 	}
 
@@ -52,7 +58,9 @@ namespace Net
 	void PlayerWorld::PushState(int id, VisiblePlayerState state)
 	{
 		std::lock_guard lk(mtx);
-		objects[id].states.push_back(state);
+		auto& obj = objects[id];
+		if (obj.states.size() < MAX_STATES_PER_OBJ)
+			obj.states.push_back(state);
 	}
 
 
