@@ -43,7 +43,22 @@ public:
 	void SetLight(int index, Light);
 	Light GetLight(int index);
 
+	PaletteBlockStorage& operator=(const PaletteBlockStorage& other)
+	{
+		pblock_ = other.pblock_;
+		plight_ = other.plight_;
+		return *this;
+	}
+
 private:
+	friend class cereal::access;
+
+	template <class Archive>
+	void serialize(Archive& ar)
+	{
+		ar(pblock_);
+	}
+
 	ConcurrentPalette<BlockType, _Size> pblock_;
 	ConcurrentPalette<Light, _Size> plight_;
 };

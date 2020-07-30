@@ -1,6 +1,7 @@
 #pragma once
 #include "BitArray.h"
 #include <vector>
+#include <cereal/types/vector.hpp>
 
 // fixed-size array optimized for space
 template<typename T, unsigned _Size>
@@ -16,10 +17,18 @@ public:
 	T GetVal(int index) const;
 
 private:
+	friend class cereal::access;
+
 	struct PaletteEntry
 	{
 		T type;
 		int refcount = 0;
+
+		template <class Archive>
+		void serialize(Archive& ar)
+		{
+			ar(type, refcount);
+		}
 	};
 
 	unsigned newPaletteEntry();
@@ -29,6 +38,12 @@ private:
 	BitArray data_;
 	std::vector<PaletteEntry> palette_;
 	unsigned paletteEntryLength_ = 1;
+
+	template <class Archive>
+	void serialize(Archive& ar)
+	{
+		ar(data_, palette_, paletteEntryLength_);
+	}
 };
 
 
@@ -37,6 +52,13 @@ template<typename T, unsigned _Size>
 class ConcurrentPalette : public Palette<T, _Size>
 {
 public:
+
+	ConcurrentPalette<T, _Size>& operator=(const ConcurrentPalette<T, _Size>& other)
+	{
+		std::lock_guard w(mtx);
+		Palette<T, _Size>::operator=(other);
+		return *this;
+	}
 
 	void SetVal(int index, T val)
 	{
@@ -51,7 +73,7 @@ public:
 	}
 
 private:
-	// writes are exclusive, but not reads
+	// writes are exclusive, reads are shared
 	mutable std::shared_mutex mtx;
 };
 

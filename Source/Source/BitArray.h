@@ -1,4 +1,5 @@
 #pragma once
+#include <cereal/types/vector.hpp>
 
 // specialized wrapper around std::vector<bool>
 // or any other dynamic bitset container
@@ -10,11 +11,18 @@ public:
 	void Resize(size_t newSize);
 	void SetSequence(int index, int len, unsigned val);
 	unsigned GetSequence(int index, int len) const;
+	
+	template <class Archive>
+	void serialize(Archive& ar)
+	{
+		ar(data_);
+	}
 
 private:
 	// TODO: make this less vector<bool>
 	std::vector<bool> data_;
 };
+
 
 inline BitArray::BitArray(size_t size)
 {

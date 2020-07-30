@@ -13,6 +13,12 @@
 #include "ChunkRenderer.h"
 
 
+ChunkMesh::~ChunkMesh()
+{
+	ChunkRenderer::allocator->Free(bufferHandle);
+	ChunkRenderer::allocatorSplat->Free(bufferHandleSplat);
+}
+
 void ChunkMesh::Render()
 {
 	if (vao_)

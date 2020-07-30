@@ -39,9 +39,10 @@ Chunk::Chunk(const Chunk& other)
 // copy assignment operator for serialization
 Chunk& Chunk::operator=(const Chunk& rhs)
 {
+	mesh.SetParent(this);
 	this->SetPos(rhs.pos_);
 	// TODO: storage should be set equal here, but idc about this function rn
-	//this->storage = rhs.storage;
+	this->storage = rhs.storage;
 	return *this;
 }
 

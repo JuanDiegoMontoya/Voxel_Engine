@@ -203,24 +203,23 @@ void ChunkManager::SaveWorld(std::string fname)
 	cereal::BinaryOutputArchive archive(of);
 	std::vector<Chunk*> tempChunks;
 	//tempChunks.insert(tempChunks.begin(), Chunk::chunks.begin(), Chunk::chunks.end());
-	std::for_each(ChunkStorage::GetMapRaw().begin(), ChunkStorage::GetMapRaw().end(), [&](auto& p)
-		{
-			if (p.second)
-				tempChunks.push_back(p.second);
-		});
+	for (const auto& [pos, chunk] : ChunkStorage::GetMapRaw())
+	{
+		if (chunk)
+			tempChunks.push_back(chunk);
+	}
 	archive(tempChunks);
 
 	std::cout << "Saved to " << fname << "!\n";
 }
 
-
+#pragma optimize("", off)
 void ChunkManager::LoadWorld(std::string fname)
 {
-	for_each(ChunkStorage::GetMapRaw().begin(), ChunkStorage::GetMapRaw().end(), [](auto pair)
+	for (const auto& [pos, chunk] : ChunkStorage::GetMapRaw())
 	{
-		if (pair.second)
-			delete pair.second;
-	});
+		delete chunk;
+	}
 	ChunkStorage::GetMapRaw().clear();
 
 	// TODO: fix this (doesn't call serialize functions for some reason)
@@ -228,10 +227,10 @@ void ChunkManager::LoadWorld(std::string fname)
 	cereal::BinaryInputArchive archive(is);
 	std::vector<Chunk> tempChunks;
 	archive(tempChunks);
-	std::for_each(tempChunks.begin(), tempChunks.end(), [&](Chunk& c)
-		{
-		ChunkStorage::GetMapRaw()[c.GetPos()] = new Chunk(c);
-		});
+	for (auto& chunk : tempChunks)
+	{
+		ChunkStorage::GetMapRaw()[chunk.GetPos()] = new Chunk(chunk);
+	}
 
 	ReloadAllChunks();
 	std::cout << "Loaded " << fname << "!\n";

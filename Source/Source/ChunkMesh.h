@@ -13,6 +13,8 @@ class ChunkMesh
 {
 public:
 
+	~ChunkMesh();
+
 	void Render();
 	void RenderSplat();
 	void BuildBuffers();
