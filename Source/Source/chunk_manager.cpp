@@ -202,7 +202,6 @@ void ChunkManager::SaveWorld(std::string fname)
 	std::ofstream of("./resources/Maps/" + fname + ".bin", std::ios::binary);
 	cereal::BinaryOutputArchive archive(of);
 	std::vector<Chunk*> tempChunks;
-	//tempChunks.insert(tempChunks.begin(), Chunk::chunks.begin(), Chunk::chunks.end());
 	for (const auto& [pos, chunk] : ChunkStorage::GetMapRaw())
 	{
 		if (chunk)
@@ -222,7 +221,6 @@ void ChunkManager::LoadWorld(std::string fname)
 	}
 	ChunkStorage::GetMapRaw().clear();
 
-	// TODO: fix this (doesn't call serialize functions for some reason)
 	std::ifstream is("./resources/Maps/" + fname + ".bin", std::ios::binary);
 	cereal::BinaryInputArchive archive(is);
 	std::vector<Chunk> tempChunks;

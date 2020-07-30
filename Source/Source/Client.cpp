@@ -79,8 +79,6 @@ namespace Net
 
 	void Client::RenderPlayers()
 	{
-		glEnable(GL_DEPTH_TEST);
-		//glDepthMask(GL_TRUE);
 		ShaderPtr sr = Shader::shaders["flat_color"];
 		sr->Use();
 		sr->setVec4("u_color", { 1, 0, 1, 1 });
