@@ -7,6 +7,7 @@
 #include <noise/noise.h>
 #include "noiseutils.h"
 #include "FastNoiseSIMD/FastNoiseSIMD.h"
+#include <Timer.h>
 
 namespace WorldGen2
 {
@@ -24,12 +25,13 @@ namespace WorldGen2
 	// init chunks that we finna modify
 	void Init()
 	{
+		Timer timer;
 		for (int x = lowChunkDim.x; x < highChunkDim.x; x++)
 		{
-			printf("\nX: %d", x);
+			//printf("\nX: %d", x);
 			for (int y = lowChunkDim.y; y < highChunkDim.y; y++)
 			{
-				printf(" Y: %d", y);
+				//printf(" Y: %d", y);
 				for (int z = lowChunkDim.z; z < highChunkDim.z; z++)
 				{
 					Chunk* newChunk = new Chunk();
@@ -38,6 +40,7 @@ namespace WorldGen2
 				}
 			}
 		}
+		printf("Allocating chunks took %f seconds\n", timer.elapsed());
 	}
 
 	// Parameters: (density > .05) == solid
@@ -50,6 +53,7 @@ namespace WorldGen2
 	// does the thing
 	void GenerateWorld()
 	{
+		Timer timer;
 		module::Perlin noise;
 		module::Checkerboard checky;
 		noise.SetLacunarity(2.);
@@ -74,7 +78,7 @@ namespace WorldGen2
 					Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE, 1);
 				int idx = 0;
 
-				printf(".");
+				//printf(".");
 				glm::ivec3 pos, wpos;
 				for (pos.z = 0; pos.z < Chunk::CHUNK_SIZE; pos.z++)
 				{
@@ -123,27 +127,32 @@ namespace WorldGen2
 		});
 
 		delete noisey;
+		printf("Generating chunks took %f seconds\n", timer.elapsed());
 	}
 
 
 	void InitMeshes()
 	{
+		Timer timer;
 		auto& chunks = ChunkStorage::GetMapRaw();
 		std::for_each(std::execution::par,
 			chunks.begin(), chunks.end(), [](auto& p)
 		{
 			p.second->BuildMesh();
 		});
+		printf("Generating meshes took %f seconds\n", timer.elapsed());
 	}
 
 
 	void InitBuffers()
 	{
+		Timer timer;
 		auto& chunks = ChunkStorage::GetMapRaw();
 		std::for_each(std::execution::seq,
 			chunks.begin(), chunks.end(), [](auto& p)
 		{
 			p.second->BuildBuffers();
 		});
+		printf("Buffering meshes took %f seconds\n", timer.elapsed());
 	}
 }
