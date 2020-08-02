@@ -88,7 +88,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)lib\glew-2.1.0\include;$(SolutionDir)lib\glfw-3.3.bin.WIN64\include;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\stb;$(SolutionDir)lib\libnoise\include;$(SolutionDir)lib\cereal-1.2.2\include;$(SolutionDir)Source\Engine\Source;$(SolutionDir)lib\tracy;$(SolutionDir)lib\enet-1.3.15\include;$(SolutionDir)vendor;$(SolutionDir)lib\lua-5.3.5\include;$(SolutionDir)lib\zlib-1.2.11;$(SolutionDir)Shared;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)lib\glew-2.1.0\include;$(SolutionDir)lib\glfw-3.3.bin.WIN64\include;$(SolutionDir)lib\glm-0.9.9.0;$(SolutionDir)lib\imgui-master;$(SolutionDir)lib\stb;$(SolutionDir)lib\libnoise\include;$(SolutionDir)lib\cereal-1.2.2\include;$(SolutionDir)Source\Engine\Source;$(SolutionDir)lib\tracy;$(SolutionDir)lib\enet-1.3.15\include;$(SolutionDir)vendor;$(SolutionDir)lib\lua-5.3.5\include;$(SolutionDir)lib\zlib-1.2.11;$(SolutionDir)Shared;$(SolutionDir)lib\entt\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)lib\lua-5.3.5\lib;$(SolutionDir)lib\glew-2.1.0\lib\Release\x64;$(SolutionDir)lib\glfw-3.3.bin.WIN64\lib-vc2015;$(SolutionDir)lib\libnoise\bin;$(SolutionDir)lib\zlib-1.2.11\zlib123dllx64\static_x64;$(SolutionDir)lib\enet-1.3.15;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -221,6 +221,12 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\lib\tracy\TracyClient.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Shared\Entity.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\Shared\Scene.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD.cpp">
@@ -392,6 +398,9 @@ copy "$(SolutionDir)lib\libnoise\bin\libnoise.dll" "$(TargetDir)libnoise.dll" /Y
     <ClCompile Include="WorldGen2.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Shared\Components.h" />
+    <ClInclude Include="..\Shared\Entity.h" />
+    <ClInclude Include="..\Shared\Scene.h" />
     <ClInclude Include="..\vendor\ctpl_stl.h" />
     <ClInclude Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD.h" />
     <ClInclude Include="..\vendor\FastNoiseSIMD\FastNoiseSIMD_internal.h" />

@@ -343,6 +343,15 @@
     <ClInclude Include="RenderOrder.h">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="..\Shared\Entity.h">
+      <Filter>Game\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Shared\Scene.h">
+      <Filter>Game\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Shared\Components.h">
+      <Filter>Game\ECS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="settings.cpp">
@@ -557,6 +566,12 @@
     </ClCompile>
     <ClCompile Include="Client.cpp">
       <Filter>Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Shared\Entity.cpp">
+      <Filter>Game\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Shared\Scene.cpp">
+      <Filter>Game\ECS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
