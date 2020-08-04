@@ -20,23 +20,24 @@ Entity Scene::CreateEntity(std::string_view name)
 
 void Scene::Update(double dt)
 {
-	//// Render 2D
-	//Camera* mainCamera = nullptr;
-	//glm::mat4* cameraTransform = nullptr;
-	//{
-	//	auto group = m_Registry.view<TransformComponent, CameraComponent>();
-	//	for (auto entity : group)
-	//	{
-	//		auto& [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);
-
-	//		if (camera.Primary)
-	//		{
-	//			mainCamera = &camera.Camera;
-	//			cameraTransform = &transform.Transform;
-	//			break;
-	//		}
-	//	}
-	//}
+	// Render 2D
+	glm::mat4* cameraTransform = nullptr;
+	auto group = registry_.view<TransformComponent, CameraComponent>();
+	for (auto entity : group)
+	{
+		auto [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);
+		if (mainCamera == &camera.camera)
+		{
+			cameraTransform = &transform.transform;
+			break;
+		}
+		//if (camera.Primary)
+		//{
+		//	mainCamera = &camera.Camera;
+		//	cameraTransform = &transform.Transform;
+		//	break;
+		//}
+	}
 
 	//if (mainCamera)
 	//{
@@ -52,4 +53,14 @@ void Scene::Update(double dt)
 
 	//	Renderer2D::EndScene();
 	//}
+	if (mainCamera)
+	{
+		// transform + mesh + render + ??? components to renderer to be rendered
+		// full-owning group
+		auto group = registry_.group<TransformComponent, MeshComponent, RenderableComponent>();
+		for (auto entity : group)
+		{
+			auto [transform, mesh, render] = group.get<TransformComponent, MeshComponent, RenderableComponent>(entity);
+		}
+	}
 }

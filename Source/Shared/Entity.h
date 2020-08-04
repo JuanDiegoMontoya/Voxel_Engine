@@ -12,7 +12,7 @@ public:
 	Entity(const Entity& other) = default;
 
 	template<typename T, typename... Args>
-	T& AddComponents(Args&&... args)
+	T& AddComponent(Args&&... args)
 	{
 		assert(!HasComponent<T>() && "Entity already has component!");
 		return scene_->registry_.emplace<T>(entityHandle_, std::forward<Args>(args)...);

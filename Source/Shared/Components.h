@@ -47,3 +47,14 @@ struct CameraComponent
 	//CameraComponent(const glm::mat4& projection)
 	//	: Camera(projection) {}
 };
+
+struct MeshComponent
+{
+	// add mesh data here
+	int dummy = 00;
+};
+
+struct RenderableComponent
+{
+	bool renderable = true;
+};

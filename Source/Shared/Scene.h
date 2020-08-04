@@ -1,9 +1,9 @@
 #pragma once
 
 #include <entt.hpp>
-#include <camera.h>
 
 class Entity;
+class Camera;
 
 class Scene
 {
@@ -14,6 +14,7 @@ public:
 
 	Entity CreateEntity(std::string_view name);
 	void Update(double dt);
+	void SetMainCamera(Camera* camera) { mainCamera = camera; }
 
 	entt::registry& GetRegistry() { return registry_; }
 

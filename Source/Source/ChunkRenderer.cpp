@@ -30,7 +30,7 @@ namespace ChunkRenderer
 		std::unique_ptr<Param_BO> drawCountGPU;
 		std::unique_ptr<Param_BO> drawCountGPUSplat;
 
-		// size of block (not voxel) for the compute shader
+		// size of compute block (not voxel) for the compute shader
 		const int blockSize = 64; // defined in compact_batch.cs
 
 		// resets each frame BEFORE the culling phase
