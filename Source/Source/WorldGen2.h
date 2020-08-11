@@ -7,6 +7,7 @@ namespace WorldGen2
 {
 	void Init();
 	void GenerateWorld();
+	void InitSunlight();
 	void InitMeshes();
 	void InitBuffers();
 };

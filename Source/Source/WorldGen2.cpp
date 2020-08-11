@@ -15,7 +15,7 @@ namespace WorldGen2
 	{
 #if 1
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
-		glm::ivec3 highChunkDim{ 10, 10, 10 };
+		glm::ivec3 highChunkDim{ 10, 1, 10 };
 #else
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
 		glm::ivec3 highChunkDim{ 2, 1, 1 };
@@ -128,6 +128,12 @@ namespace WorldGen2
 
 		delete noisey;
 		printf("Generating chunks took %f seconds\n", timer.elapsed());
+	}
+
+
+	void InitSunlight()
+	{
+		
 	}
 
 

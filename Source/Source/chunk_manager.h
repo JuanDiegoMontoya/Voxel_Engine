@@ -114,11 +114,12 @@ public: // TODO: TEMPORARY
 	std::unordered_set<ChunkPtr> delayed_update_queue_;
 
 	// new light intensity to add
-	void lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself = true);
+	void lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself = true, bool sunlight = false);
 	void lightPropagateRemove(glm::ivec3 wpos);
 
 	// returns true if block at max sunlight level
 	bool checkDirectSunlight(glm::ivec3 wpos);
+	void initializeSunlight();
 	void sunlightPropagateAdd(glm::ivec3 wpos, uint8_t intensity);
 	void sunlightPropagateRemove(glm::ivec3 wpos);
 

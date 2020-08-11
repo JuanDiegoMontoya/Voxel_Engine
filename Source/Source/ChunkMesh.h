@@ -73,7 +73,7 @@ private:
 	std::unique_ptr<VBO> svbo_;
 	std::vector<GLint> sPosArr; // point positions
 	GLsizei pointCount_ = 0;
-	bool voxelReady_ = true; // hack to prevent same voxel from being added multiple times
+	bool voxelReady_ = true; // hack to prevent same voxel from being added multiple times for splatting (I think)
 
 	// indirect drawing stuff
 	std::unique_ptr<DIB> dib_;

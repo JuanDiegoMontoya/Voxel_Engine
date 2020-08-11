@@ -310,7 +310,7 @@ inline void ChunkMesh::buildBlockFace(
 	addQuad(blockPos, block, face, nearChunk, light);
 }
 
-
+//#pragma optimize("", off)
 inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face, Chunk* nearChunk, Light light)
 {
 	if (voxelReady_)
@@ -323,7 +323,7 @@ inline void ChunkMesh::addQuad(const glm::ivec3& lpos, BlockType block, int face
 	int normalIdx = face;
 	int texIdx = (int)block; // temp value
 	uint16_t lighting = light.Raw();
-	light.SetS(15);
+	//light.SetS(15); // max sunlight for testing
 
 	// add 4 vertices representing a quad
 	float aoValues[4] = { 0, 0, 0, 0 }; // AO for each quad

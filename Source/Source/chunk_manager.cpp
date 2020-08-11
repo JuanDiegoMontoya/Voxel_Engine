@@ -329,14 +329,14 @@ void ChunkManager::createNearbyChunks()
 	});
 }
 
-
+#pragma optimize("", off)
 // TODO: make lighting updates also check chunks around the cell 
 // (because lighting affects all neighboring blocks)
 // ref https://www.seedofandromeda.com/blogs/29-fast-flood-fill-lighting-in-a-blocky-voxel-game-pt-1
 // wpos: world position
 // nLight: new lighting value
 // skipself: chunk updating thing
-void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself)
+void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself, bool sunlight)
 {
 	// get existing light at the position
 	auto optL = ChunkStorage::AtWorldE(wpos);
@@ -395,6 +395,10 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 			bool enqueue = false;
 			for (int ci = 0; ci < 3; ci++)
 			{
+				// dumb, maybe change later
+				if (sunlight)
+					ci = 3;
+
 				// skip blocks that are too bright to be affected by this light
 				if (light.Get()[ci] + 2 > lightLevel.Get()[ci])
 					continue;
@@ -406,6 +410,11 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 				// this line can be optimized to reduce amount of global block getting
 				glm::u8vec4 val = ChunkStorage::AtWorldC(lightPos).GetLight().Get();
 				val[ci] = (lightLevel.Get()[ci] - 1);// *Block::PropertiesTable[block.GetTypei()].color[ci];
+
+				// if sunlight, max light, and going down, then don't decrease power
+				if (ci == 3 && lightLevel.Get()[3] == 0xF && dir == glm::ivec3(0, -1, 0))
+					val[3] = 0xF;
+
 				//light->Set(val);
 				ChunkStorage::SetLight(lightPos, val);
 				enqueue = true;
@@ -530,9 +539,34 @@ bool ChunkManager::checkDirectSunlight(glm::ivec3 wpos)
 }
 
 
+void ChunkManager::initializeSunlight()
+{
+	// find the max chunk height (assumed world has flat top, so no column-local max height needed)
+	int maxY = std::numeric_limits<int>::min();
+
+	for (const auto& [pos, chunk] : ChunkStorage::GetMapRaw())
+		maxY = glm::max(maxY, pos.y);
+
+	for (auto& [pos, chunk] : ChunkStorage::GetMapRaw())
+	{
+		// for each block on top of the chunk
+		for (int x = 0; x < Chunk::CHUNK_SIZE; x++)
+		{
+			for (int z = 0; z < Chunk::CHUNK_SIZE; z++)
+			{
+				auto wpos = ChunkHelpers::chunkPosToWorldPos({ x, Chunk::CHUNK_SIZE - 1, z }, pos);
+				// propagate light directly down until it hits something
+				sunlightPropagateAdd(wpos, 15);
+			}
+		}
+	}
+}
+
+
+// begin a column of sunlight starting from the given location
 void ChunkManager::sunlightPropagateAdd(glm::ivec3 wpos, uint8_t intensity)
 {
-
+	lightPropagateAdd(wpos, Light({ 0, 0, 0, intensity }), true, true);
 }
 
 
