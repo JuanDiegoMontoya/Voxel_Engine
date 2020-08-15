@@ -13,7 +13,7 @@ namespace WorldGen2
 {
 	namespace
 	{
-#if 1
+#if 0
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
 		glm::ivec3 highChunkDim{ 10, 1, 10 };
 #else
@@ -34,8 +34,7 @@ namespace WorldGen2
 				//printf(" Y: %d", y);
 				for (int z = lowChunkDim.z; z < highChunkDim.z; z++)
 				{
-					Chunk* newChunk = new Chunk();
-					newChunk->SetPos({ x, y, z });
+					Chunk* newChunk = new Chunk({ x, y, z });
 					ChunkStorage::GetMapRaw()[{ x, y, z }] = newChunk;
 				}
 			}
@@ -144,7 +143,8 @@ namespace WorldGen2
 		std::for_each(std::execution::par,
 			chunks.begin(), chunks.end(), [](auto& p)
 		{
-			p.second->BuildMesh();
+			if (p.second)
+				p.second->BuildMesh();
 		});
 		printf("Generating meshes took %f seconds\n", timer.elapsed());
 	}

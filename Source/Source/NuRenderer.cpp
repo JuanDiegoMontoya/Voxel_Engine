@@ -158,7 +158,7 @@ namespace NuRenderer
 		{
 			ChunkPtr chunk = it->second;
 			if (chunk 
-				&& chunk->IsVisible(*cam) 
+				//&& chunk->IsVisible(*cam) 
 				//&& glm::distance(cam->GetPos(), glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE)) < 200
 				)
 			{
@@ -213,7 +213,7 @@ namespace NuRenderer
 			[&](const std::pair<glm::ivec3, Chunk*>& pair)
 		{
 			ChunkPtr chunk = pair.second;
-			if (chunk && chunk->IsVisible(*cam) &&
+			if (//chunk && chunk->IsVisible(*cam) &&
 				glm::distance(cam->GetPos(), glm::vec3(chunk->GetPos() * Chunk::CHUNK_SIZE)) >= 200)
 			{
 				// set some uniforms, etc

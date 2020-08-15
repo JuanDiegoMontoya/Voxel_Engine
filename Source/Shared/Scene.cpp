@@ -16,6 +16,8 @@ Entity Scene::CreateEntity(std::string_view name)
 	entity.AddComponent<TransformComponent>();
 	auto& nome = entity.AddComponent<NameComponent>();
 	nome.name = name;
+
+	return entity;
 }
 
 void Scene::Update(double dt)

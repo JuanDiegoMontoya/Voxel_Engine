@@ -188,50 +188,50 @@ void ChunkMesh::BuildMesh()
 			parent->GetPos() + ChunkHelpers::faces[i]);
 	}
 
-
-	mtx.lock();
-
-	glm::ivec3 ap = parent->GetPos() * Chunk::CHUNK_SIZE;
-	interleavedArr.push_back(ap.x);
-	interleavedArr.push_back(ap.y);
-	interleavedArr.push_back(ap.z);
-	interleavedArr.push_back(42069); // necessary padding
-	sPosArr.push_back(ap.x);
-	sPosArr.push_back(ap.y);
-	sPosArr.push_back(ap.z);
-	// no padding necessary
-
-	glm::ivec3 pos;
-	for (pos.z = 0; pos.z < Chunk::CHUNK_SIZE; pos.z++)
 	{
-		// precompute first flat index part
-		int zcsq = pos.z * Chunk::CHUNK_SIZE_SQRED;
-		for (pos.y = 0; pos.y < Chunk::CHUNK_SIZE; pos.y++)
+		std::lock_guard lk(mtx);
+
+		glm::ivec3 ap = parent->GetPos() * Chunk::CHUNK_SIZE;
+		interleavedArr.push_back(ap.x);
+		interleavedArr.push_back(ap.y);
+		interleavedArr.push_back(ap.z);
+		interleavedArr.push_back(12345); // necessary padding
+		sPosArr.push_back(ap.x);
+		sPosArr.push_back(ap.y);
+		sPosArr.push_back(ap.z);
+		// no padding necessary
+
+		glm::ivec3 pos;
+		for (pos.z = 0; pos.z < Chunk::CHUNK_SIZE; pos.z++)
 		{
-			// precompute second flat index part
-			int yczcsq = pos.y * Chunk::CHUNK_SIZE + zcsq;
-			for (pos.x = 0; pos.x < Chunk::CHUNK_SIZE; pos.x++)
+			// precompute first flat index part
+			int zcsq = pos.z * Chunk::CHUNK_SIZE_SQRED;
+			for (pos.y = 0; pos.y < Chunk::CHUNK_SIZE; pos.y++)
 			{
-				// this is what we would be doing every innermost iteration
-				//int index = x + y * CHUNK_SIZE + z * CHUNK_SIZE_SQRED;
-				// we only need to do addition
-				int index = pos.x + yczcsq;
+				// precompute second flat index part
+				int yczcsq = pos.y * Chunk::CHUNK_SIZE + zcsq;
+				for (pos.x = 0; pos.x < Chunk::CHUNK_SIZE; pos.x++)
+				{
+					// this is what we would be doing every innermost iteration
+					//int index = x + y * CHUNK_SIZE + z * CHUNK_SIZE_SQRED;
+					// we only need to do addition
+					int index = pos.x + yczcsq;
 
-				// skip fully transparent blocks
-				BlockType block = parent->BlockTypeAt(index);
-				if (Block::PropertiesTable[uint16_t(block)].visibility == Visibility::Invisible)
-					continue;
+					// skip fully transparent blocks
+					BlockType block = parent->BlockTypeAt(index);
+					if (Block::PropertiesTable[uint16_t(block)].visibility == Visibility::Invisible)
+						continue;
 
-				voxelReady_ = true;
-				for (int f = Far; f < fCount; f++)
-					buildBlockFace(f, pos, block);
-				//buildBlockVertices_normal({ x, y, z }, block);
+					voxelReady_ = true;
+					for (int f = Far; f < fCount; f++)
+						buildBlockFace(f, pos, block);
+					//buildBlockVertices_normal({ x, y, z }, block);
+				}
 			}
 		}
-	}
 
-	//printf("%f: Meshed\n", glfwGetTime());
-	mtx.unlock();
+		//printf("%f: Meshed\n", glfwGetTime());
+	}
 
 	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
 	double milliseconds = benchmark_duration_.count() * 1000;
@@ -246,12 +246,6 @@ void ChunkMesh::BuildMesh()
 	//	<< std::setw(-2) << std::showpoint << std::setprecision(4) << accumtime / accumcount << " ms "
 	//	<< "(" << milliseconds << ")"
 	//	<< std::endl;
-}
-
-
-void ChunkMesh::SetParent(Chunk* p)
-{
-	parent = p;
 }
 
 

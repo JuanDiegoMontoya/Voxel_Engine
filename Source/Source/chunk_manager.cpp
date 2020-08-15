@@ -1,7 +1,4 @@
 #include "stdafx.h"
-#include <algorithm>
-#include <execution>
-#include <mutex>
 #include "chunk.h"
 #include "block.h"
 #include "World.h"
@@ -10,6 +7,10 @@
 #include "utilities.h"
 #include "ChunkHelpers.h"
 #include "ChunkStorage.h"
+
+#include <algorithm>
+#include <execution>
+#include <mutex>
 
 #undef near
 
@@ -62,7 +63,7 @@ void ChunkManager::Init()
 
 void ChunkManager::Update()
 {
-  PERF_BENCHMARK_START;
+	PERF_BENCHMARK_START;
 
 	// TODO: update a random selection of the chunks per frame
 	//std::for_each(
@@ -90,7 +91,7 @@ void ChunkManager::Update()
 		UpdateChunk(chunk);
 	delayed_update_queue_.clear();
 
-  PERF_BENCHMARK_END;
+	PERF_BENCHMARK_END;
 }
 
 
@@ -110,7 +111,7 @@ void ChunkManager::UpdateChunk(const glm::ivec3 wpos)
 	if (cptr)
 	{
 		//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
-		mesher_queue_.insert(cptr);
+		UpdateChunk(cptr);
 	}
 }
 
@@ -126,8 +127,7 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 	if (!chunk)
 	{
 		// make chunk, then modify changed block
-		ChunkStorage::GetMapRaw()[p.chunk_pos] = chunk = new Chunk();
-		chunk->SetPos(p.chunk_pos);
+		ChunkStorage::GetMapRaw()[p.chunk_pos] = chunk = new Chunk(p.chunk_pos);
 		remBlock = chunk->BlockAt(p.block_pos); // remBlock would've been 0 block cuz null, so it's fix here
 	}
 
@@ -144,7 +144,7 @@ void ChunkManager::UpdateBlock(const glm::ivec3& wpos, Block bl)
 	// add to update list if it ain't
 	{ // scoped, otherwise deadlock will occur in 'checkUpdateChunkNearBlock'
 		//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
-		mesher_queue_.insert(chunk);
+		UpdateChunk(chunk);
 	}
 
 	// check if adjacent to opaque blocks in nearby chunks, then update those chunks if it is
@@ -184,7 +184,7 @@ void ChunkManager::ReloadAllChunks()
 		if (p.second)
 		{
 			//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
-			mesher_queue_.insert(p.second);
+			UpdateChunk(p.second);
 		}
 			//if (!isChunkInUpdateList(p.second))
 			//	updatedChunks_.push_back(p.second);
@@ -251,7 +251,7 @@ void ChunkManager::checkUpdateChunkNearBlock(const glm::ivec3& pos, const glm::i
 	if (cptr)
 	{
 		//std::lock_guard<std::mutex> lock(chunk_mesher_mutex_);
-		mesher_queue_.insert(cptr);
+		UpdateChunk(cptr);
 		delayed_update_queue_.erase(cptr);
 	}
 		//if (!isChunkInUpdateList(Chunk::chunks[p2.chunk_pos]))
@@ -320,8 +320,7 @@ void ChunkManager::createNearbyChunks()
 		// generate null chunks within distance
 		if (!p.second && dist <= loadDistance_)
 		{
-			p.second = new Chunk();
-			p.second->SetPos(p.first);
+			p.second = new Chunk(p.first);
 //			p.second->generate_ = true;
 			//std::lock_guard<std::mutex> lock1(chunk_generation_mutex_);
 			generation_queue_.insert(p.second);
@@ -336,7 +335,7 @@ void ChunkManager::createNearbyChunks()
 // wpos: world position
 // nLight: new lighting value
 // skipself: chunk updating thing
-void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself, bool sunlight)
+void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself, bool sunlight, bool noqueue)
 {
 	// get existing light at the position
 	auto optL = ChunkStorage::AtWorldE(wpos);
@@ -381,7 +380,7 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 			Light light = block->GetLight();
 
 			// add chunk to update queue if it exists
-			if (ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(lightPos).chunk_pos) != nullptr)
+			if (!noqueue && ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(lightPos).chunk_pos) != nullptr)
 				delayed_update_queue_.insert(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(lightPos).chunk_pos));
 			
 			// invalid light check
@@ -425,12 +424,12 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 	}
 
 	// do not update this chunk again if it contained the placed light
-	if (skipself)
+	if (!noqueue && skipself)
 		delayed_update_queue_.erase(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(wpos).chunk_pos));
 }
 
 
-void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
+void ChunkManager::lightPropagateRemove(glm::ivec3 wpos, bool noqueue)
 {
 	std::queue<std::pair<glm::ivec3, Light>> lightRemovalQueue;
 	Light light = ChunkStorage::AtWorldC(wpos).GetLight();
@@ -481,7 +480,7 @@ void ChunkManager::lightPropagateRemove(glm::ivec3 wpos)
 					if (nlightv[ci] != 0 && nlightv[ci] == lightv[ci] - 1)
 					{
 						lightRemovalQueue.push({ blockPos, nearLight });
-						if (ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(blockPos).chunk_pos))
+						if (!noqueue && ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(blockPos).chunk_pos))
 							delayed_update_queue_.insert(ChunkStorage::GetChunk(ChunkHelpers::worldPosToLocalPos(blockPos).chunk_pos));
 						auto tmp = nearLight.Get();
 						tmp[ci] = 0;
@@ -566,7 +565,7 @@ void ChunkManager::initializeSunlight()
 // begin a column of sunlight starting from the given location
 void ChunkManager::sunlightPropagateAdd(glm::ivec3 wpos, uint8_t intensity)
 {
-	lightPropagateAdd(wpos, Light({ 0, 0, 0, intensity }), true, true);
+	lightPropagateAdd(wpos, Light({ 0, 0, 0, intensity }), true, true, true);
 }
 
 

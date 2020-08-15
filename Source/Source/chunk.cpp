@@ -19,18 +19,7 @@
 #include "ChunkMesh.h"
 
 
-Chunk::Chunk()
-{
-	mesh.SetParent(this);
-}
-
-
-Chunk::~Chunk()
-{
-}
-
-
-Chunk::Chunk(const Chunk& other)
+Chunk::Chunk(const Chunk& other) : mesh(this)
 {
 	*this = other;
 }
@@ -39,17 +28,7 @@ Chunk::Chunk(const Chunk& other)
 // copy assignment operator for serialization
 Chunk& Chunk::operator=(const Chunk& rhs)
 {
-	mesh.SetParent(this);
-	this->SetPos(rhs.pos_);
-	// TODO: storage should be set equal here, but idc about this function rn
+	this->pos_ = rhs.pos_;
 	this->storage = rhs.storage;
 	return *this;
 }
-
-
-void Chunk::Update()
-{
-	// in the future, make this function perform other tick update actions,
-	// such as updating N random blocks (like in Minecraft)
-}
-

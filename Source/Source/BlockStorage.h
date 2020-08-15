@@ -4,6 +4,17 @@
 #include "Palette.h"
 #include <array>
 
+// abstract class for array-like block storage
+class DenseBlockStorage
+{
+public:
+	virtual Block GetBlock(int index) = 0;
+	virtual BlockType GetBlockType(int index) = 0;
+	virtual void SetBlockType(int index, BlockType) = 0;
+	virtual void SetLight(int index, Light) = 0;
+	virtual Light GetLight(int index) = 0;
+};
+
 // uncompressed block storage for chunks
 template<unsigned _Size>
 class ArrayBlockStorage

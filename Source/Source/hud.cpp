@@ -63,7 +63,7 @@ void HUD::Update()
 
 	// display name of held block
 	{
-		ImGui::Begin("", 0, Interface::activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
+		ImGui::Begin("##held", 0, Interface::activeCursor ? 0 : ImGuiWindowFlags_NoMouseInputs);
 		ImGui::Text("Held: %s", Block::PropertiesTable[int(selected_)].name);
 		ImGui::End();
 	}

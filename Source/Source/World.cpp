@@ -28,7 +28,6 @@
 #include <Pipeline.h>
 #include "Renderer.h"
 #include "Interface.h"
-#include "FixedSizeWorld.h"
 #include "ChunkStorage.h"
 #include "WorldGen2.h"
 #include "ChunkRenderer.h"
@@ -59,11 +58,11 @@ void World::Init()
 
 	//FixedSizeWorld::GenWorld({ -3, -2, -3 }, { 3, 2, 3 });
 	WorldGen2::Init();
+	chunkManager_.Init();
 	WorldGen2::GenerateWorld();
 	ChunkRenderer::InitAllocator();
 	WorldGen2::InitMeshes();
 	WorldGen2::InitBuffers();
-	chunkManager_.Init();
 	chunkManager_.initializeSunlight();
 
 	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);

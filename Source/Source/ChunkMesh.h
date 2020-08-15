@@ -3,16 +3,18 @@
 //#include "chunk.h"
 #include "NuRenderer.h"
 #include <dib.h>
+#include <vbo.h>
+#include <vao.h>
 
-class VAO;
-class VBO;
-class DIB;
+//class VAO;
+//class VBO;
+//class DIB;
 struct Chunk;
 
 class ChunkMesh
 {
 public:
-
+	ChunkMesh(Chunk* p) : parent(p) {}
 	~ChunkMesh();
 
 	void Render();
@@ -20,7 +22,6 @@ public:
 	void BuildBuffers();
 	void BuildBuffers2();
 	void BuildMesh();
-	void SetParent(Chunk*);
 
 	GLsizei GetVertexCount() { return vertexCount_; }
 	GLsizei GetPointCount() { return pointCount_; }
@@ -29,6 +30,7 @@ public:
 	static inline bool debug_ignore_light_level = false;
 	static inline std::atomic<double> accumtime = 0;
 	static inline std::atomic<unsigned> accumcount = 0;
+
 private:
 
 	void buildBlockFace(
