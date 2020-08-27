@@ -2,6 +2,7 @@
 #include "chunk_manager.h"
 #include <algorithm>
 #include <execution>
+#include "ChunkStorage.h"
 
 // TODO: add a way to notify these threads to terminate when the program
 // does to prevent crash on exit
@@ -51,7 +52,7 @@ void ChunkManager::chunk_mesher_thread_task()
 
 		// TODO: this is temp solution to load near chunks to camera first
 		std::sort(std::execution::par_unseq, sorted.begin(), sorted.end(), Utils::ChunkPtrKeyEq());
-		std::for_each(std::execution::par, sorted.begin(), sorted.end(), [this](ChunkPtr chunk)
+		std::for_each(std::execution::seq, sorted.begin(), sorted.end(), [this](ChunkPtr chunk)
 		{
 			//SetThreadAffinityMask(GetCurrentThread(), ~1);
 			// send each mesh to GPU immediately after building it
@@ -63,6 +64,20 @@ void ChunkManager::chunk_mesher_thread_task()
 	}
 	//std::shared_ptr<void> fdsa;
 	//fdsa.use_count();
+}
+
+
+void ChunkManager::chunk_deferred_update_task()
+{
+	while (!shutdownThreads)
+	{
+		//std::for_each(std::execution::seq, ChunkStorage::GetMapRaw().begin(), ChunkStorage::GetMapRaw().end()
+		//[]()
+		for (auto [pos, chunk] : ChunkStorage::GetMapRaw())
+		{
+			
+		}
+	}
 }
 
 

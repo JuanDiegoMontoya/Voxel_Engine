@@ -57,9 +57,12 @@ public:
 	void Update();
 	void UpdateChunk(ChunkPtr chunk);
 	void UpdateChunk(const glm::ivec3 wpos); // update chunk at block position
-	void UpdateBlock(const glm::ivec3& wpos, Block bl);
+	void UpdateBlock(const glm::ivec3& wpos, Block bl, bool indirect = false);
+	//void UpdateBlockIndirect(const glm::ivec3& wpos, Block block);
 	void UpdateBlockCheap(const glm::ivec3& wpos, Block block);
 	void ReloadAllChunks(); // for when big things change
+
+	Chunk* GetChunk(const glm::ivec3& wpos);
 
 	// getters
 	float GetLoadDistance() const { return loadDistance_; }
@@ -82,12 +85,14 @@ public: // TODO: TEMPORARY
 	void removeFarChunks();
 	void createNearbyChunks();
 
+	void chunk_deferred_update_task();
+
 	// generates actual blocks
 	void chunk_generator_thread_task();
 	//std::set<ChunkPtr, Utils::ChunkPtrKeyEq> generation_queue_;
 	Concurrency::concurrent_unordered_set<ChunkPtr> generation_queue_;
 	//std::mutex chunk_generation_mutex_;
-	std::vector<std::thread*> chunk_generator_threads_;
+	std::vector<std::unique_ptr<std::thread>> chunk_generator_threads_;
 
 	// generates meshes for ANY UPDATED chunk
 	void chunk_mesher_thread_task();
@@ -95,8 +100,10 @@ public: // TODO: TEMPORARY
 	//std::set<ChunkPtr> mesher_queue_;
 	Concurrency::concurrent_unordered_set<ChunkPtr> mesher_queue_;
 	//std::mutex chunk_mesher_mutex_;
-	std::vector<std::thread*> chunk_mesher_threads_;
+	std::vector<std::unique_ptr<std::thread>> chunk_mesher_threads_;
 	std::atomic_int debug_cur_pool_left = 0;
+
+	std::vector<std::unique_ptr<std::thread>> indirect_update_queue_;
 
 	// NOT multithreaded task
 	void chunk_buffer_task();

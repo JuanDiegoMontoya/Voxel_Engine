@@ -54,7 +54,7 @@ private:
 	};
 
 	Chunk* parent = nullptr;
-	Chunk* nearChunks[6];
+	Chunk* nearChunks[6]{ nullptr };
 
 	std::unique_ptr<VAO> vao_;
 	std::unique_ptr<VBO> encodedStuffVbo_;

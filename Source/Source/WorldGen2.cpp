@@ -15,10 +15,10 @@ namespace WorldGen2
 	{
 #if 0
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
-		glm::ivec3 highChunkDim{ 10, 1, 10 };
+		glm::ivec3 highChunkDim{ 70, 10, 70 };
 #else
 		glm::ivec3 lowChunkDim{ 0, 0, 0 };
-		glm::ivec3 highChunkDim{ 2, 1, 1 };
+		glm::ivec3 highChunkDim{ 3, 3, 3 };
 #endif
 	}
 

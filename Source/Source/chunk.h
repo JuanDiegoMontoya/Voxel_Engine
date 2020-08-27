@@ -4,6 +4,7 @@
 #include <mutex>
 #include <Shapes.h>
 #include "misc_utils.h"
+#include <concurrent_vector.h>
 
 #include "ChunkHelpers.h"
 #include "BlockStorage.h"
@@ -55,54 +56,61 @@ public:
 
 	inline Block BlockAt(const glm::ivec3& p)
 	{
-		std::shared_lock lk(mtx_);
 		return storage.GetBlock(ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE));
 	}
 
 	inline Block BlockAt(int index)
 	{
-		std::shared_lock lk(mtx_);
 		return storage.GetBlock(index);
 	}
 
 	inline BlockType BlockTypeAt(const glm::ivec3& p)
 	{
-		std::shared_lock lk(mtx_);
 		return storage.GetBlockType(ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE));
 	}
 
 	inline BlockType BlockTypeAt(int index)
 	{
-		std::shared_lock lk(mtx_);
 		return storage.GetBlockType(index);
 	}
 
 	inline void SetBlockTypeAt(const glm::ivec3& lpos, BlockType type)
 	{
-		std::lock_guard lk(mtx_);
 		int index = ID3D(lpos.x, lpos.y, lpos.z, CHUNK_SIZE, CHUNK_SIZE);
-		//updateQueue_.emplace_back(index, Block(type, LightAt(index)));
 		storage.SetBlock(index, type);
 	}
 
 	inline void SetLightAt(const glm::ivec3& lpos, Light light)
 	{
-		std::lock_guard lk(mtx_);
 		int index = ID3D(lpos.x, lpos.y, lpos.z, CHUNK_SIZE, CHUNK_SIZE);
-		//updateQueue_.emplace_back(index, Block(BlockTypeAt(index), light));
 		storage.SetLight(index, light);
 	}
 
 	inline Light LightAt(const glm::ivec3& p)
 	{
-		std::shared_lock lk(mtx_);
 		return storage.GetLight(ID3D(p.x, p.y, p.z, CHUNK_SIZE, CHUNK_SIZE));
 	}
 
 	inline Light LightAt(int index)
 	{
-		std::shared_lock lk(mtx_);
 		return storage.GetLight(index);
+	}
+
+
+	inline void SetBlockTypeAtIndirect(const glm::ivec3& lpos, BlockType type)
+	{
+		std::lock_guard lk(indirectMtx_);
+		int index = ID3D(lpos.x, lpos.y, lpos.z, CHUNK_SIZE, CHUNK_SIZE);
+		auto light = LightAt(index);
+		updateQueue_.push_back({ index, Block(type, light) });
+	}
+
+	inline void SetLightAtIndirect(const glm::ivec3& lpos, Light light)
+	{
+		std::lock_guard lk(indirectMtx_);
+		int index = ID3D(lpos.x, lpos.y, lpos.z, CHUNK_SIZE, CHUNK_SIZE);
+		auto block = BlockTypeAt(index);
+		updateQueue_.push_back({ index, Block(block, light) });
 	}
 
 
@@ -154,6 +162,7 @@ private:
 	ChunkMesh mesh;
 
 	// for deferred block updates
-	std::vector<std::pair<int, Block>> updateQueue_;;
-	std::shared_mutex mtx_;
+	std::vector<std::pair<int, Block>> updateQueue_;
+	//concurrency::concurrent_vector<std::pair<int, Block>> updateQueue_;
+	std::shared_mutex indirectMtx_;
 }Chunk, *ChunkPtr;

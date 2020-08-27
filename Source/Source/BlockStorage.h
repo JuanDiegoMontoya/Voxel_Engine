@@ -70,8 +70,8 @@ private:
 		ar(pblock_);
 	}
 
-	ConcurrentPalette<BlockType, _Size> pblock_;
-	ConcurrentPalette<Light, _Size> plight_;
+	Palette<BlockType, _Size> pblock_;
+	Palette<Light, _Size> plight_;
 };
 
 #include "BlockStorage.inl"

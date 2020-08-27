@@ -290,7 +290,7 @@ void World::checkBlockPlacement()
 			if (block.GetType() == BlockType::bAir)
 				return false;
 
-			chunkManager_.UpdateBlock(pos + side, hud_.GetSelected());
+			chunkManager_.UpdateBlock(pos + side, hud_.GetSelected(), 0);
 
 			return true;
 		}
@@ -316,7 +316,7 @@ void World::checkBlockDestruction()
 			if (block.GetType() == BlockType::bAir)
 				return false;
 
-			chunkManager_.UpdateBlock(pos, BlockType::bAir);
+			chunkManager_.UpdateBlock(pos, BlockType::bAir, 0);
 
 			return true;
 		}

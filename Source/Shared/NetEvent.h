@@ -97,7 +97,7 @@ namespace Net
 			glm::vec3 front{ 1, 0, 0 };
 		};
 
-		ServerGameState(std::vector<PlayerState>& data)
+		ServerGameState(const std::vector<PlayerState>& data)
 		{
 			buf = new std::byte[sizeof(int) + data.size() * sizeof(PlayerState)];
 			reinterpret_cast<int*>(buf)[0] = data.size();

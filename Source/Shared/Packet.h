@@ -7,13 +7,12 @@ namespace Net
 	// a packet that is ready to be sent and interpreted over a network
 	struct Packet
 	{
-		// constructing a packet
+		// raw data constructor
 		Packet(int type, void* data, size_t data_size)
 		{
-			bufSize_ = data_size + PACKET_HEADER_LEN;
-			buf = new std::byte[bufSize_];
+			buf = new std::byte[bufSize_ + PACKET_HEADER_LEN];
 			reinterpret_cast<int*>(buf)[0] = type;
-			std::memcpy(buf + PACKET_HEADER_LEN, data, bufSize_ - PACKET_HEADER_LEN);
+			std::memcpy(buf + PACKET_HEADER_LEN, data, data_size);
 		}
 
 		// interpreting an enet packet
