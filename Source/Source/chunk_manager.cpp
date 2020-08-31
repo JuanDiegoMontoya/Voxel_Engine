@@ -546,12 +546,16 @@ void ChunkManager::initializeSunlight()
 		maxY = glm::max(maxY, pos.y);
 	}
 
+	std::queue<glm::ivec3> lightLocationsToPropagate;
+
 	// generates initial columns of sunlight in the world
-	for (auto& [p, chunk] : ChunkStorage::GetMapRaw())
+	for (auto [p, chunk] : ChunkStorage::GetMapRaw())
 	{
-		auto cpos = p; // to make it modifiable
-		if (cpos.y != maxY)
-			break;
+		glm::ivec3 cpos = p; // to make it modifiable
+
+		// propagate light only from the highest chunks
+		if (cpos.y != maxY || chunk == nullptr)
+			continue;
 
 		// for each block on top of the chunk
 		for (int x = 0; x < Chunk::CHUNK_SIZE; x++)
@@ -560,7 +564,7 @@ void ChunkManager::initializeSunlight()
 			{
 				// each column
 				bool broke = false;
-				for (int y = 0; y < Chunk::CHUNK_SIZE; y++)
+				for (int y = Chunk::CHUNK_SIZE - 1; y >= 0; y--)
 				{
 					glm::ivec3 lpos{ x, y, z };
 					auto wpos = ChunkHelpers::chunkPosToWorldPos(lpos, cpos);
@@ -572,9 +576,11 @@ void ChunkManager::initializeSunlight()
 						broke = true;
 						break;
 					}
+
 					Light light = chunk->LightAt(lpos);
 					light.SetS(0xF); // set sunlight to max
 					chunk->SetLightAt(lpos, light);
+					//lightLocationsToPropagate.push(wpos);
 				}
 
 				// if entire column was illuminated, continue to chunk below
@@ -582,29 +588,18 @@ void ChunkManager::initializeSunlight()
 				{
 					cpos.y -= 1;
 					chunk = ChunkStorage::GetChunk(cpos);
-					x = 0;
-					z = 0;
+					z--; // reverse z by one since it will be incremented; we want to stay in the same column for the next chunk
 				}
 			}
 		}
 	}
 
-	// propagates existing lights in the world
-	for (auto& [cpos, chunk] : ChunkStorage::GetMapRaw())
+	while (!lightLocationsToPropagate.empty())
 	{
-		if (cpos.y != maxY)
-			break;
+		auto wpos = lightLocationsToPropagate.front();
+		lightLocationsToPropagate.pop();
 
-		// for each block on top of the chunk
-		for (int x = 0; x < Chunk::CHUNK_SIZE; x++)
-		{
-			for (int z = 0; z < Chunk::CHUNK_SIZE; z++)
-			{
-				auto wpos = ChunkHelpers::chunkPosToWorldPos({ x, Chunk::CHUNK_SIZE - 1, z }, cpos);
-				// propagate light directly down until it hits something
-				sunlightPropagateAdd(wpos, 15);
-			}
-		}
+		//sunlightPropagateAdd(wpos, 0xF);
 	}
 }
 

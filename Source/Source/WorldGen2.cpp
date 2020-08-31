@@ -157,7 +157,8 @@ namespace WorldGen2
 		std::for_each(std::execution::seq,
 			chunks.begin(), chunks.end(), [](auto& p)
 		{
-			p.second->BuildBuffers();
+			if (p.second)
+				p.second->BuildBuffers();
 		});
 		printf("Buffering meshes took %f seconds\n", timer.elapsed());
 	}
