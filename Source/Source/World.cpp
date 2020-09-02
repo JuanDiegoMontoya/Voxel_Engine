@@ -61,10 +61,10 @@ void World::Init()
 	chunkManager_.Init();
 	WorldGen2::GenerateWorld();
 	ChunkRenderer::InitAllocator();
+	chunkManager_.initializeSunlight();
 	WorldGen2::InitMeshes();
 	WorldGen2::InitBuffers();
-	chunkManager_.initializeSunlight();
-	chunkManager_.ReloadAllChunks();
+	//chunkManager_.ReloadAllChunks();
 
 	duration<double> benchmark_duration_ = duration_cast<duration<double>>(high_resolution_clock::now() - benchmark_clock_);
 	//std::cout << benchmark_duration_.count() << std::endl;

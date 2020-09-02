@@ -391,10 +391,6 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 			bool enqueue = false;
 			for (int ci = 0; ci < 4; ci++)
 			{
-				//// dumb, maybe change later
-				//if (sunlight)
-				//	ci = 3;
-
 				// neighbor must have light level 2 less than current to be updated
 				if (nlight.Get()[ci] + 2 > lightLevel.Get()[ci])
 					continue;
@@ -411,7 +407,6 @@ void ChunkManager::lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipsel
 				if (ci == 3 && lightLevel.Get()[3] == 0xF && dir == glm::ivec3(0, -1, 0))
 					val[3] = 0xF;
 
-				//light->Set(val);
 				ChunkStorage::SetLight(nlightPos, val);
 				enqueue = true;
 			}
@@ -533,9 +528,10 @@ bool ChunkManager::checkDirectSunlight(glm::ivec3 wpos)
 	return false;
 }
 
-
 void ChunkManager::initializeSunlight()
 {
+	Timer timer;
+
 	// find the max chunk height (assumed world has flat top, so no column-local max height needed)
 	int maxY = std::numeric_limits<int>::min();
 	int minY = std::numeric_limits<int>::max();
@@ -546,13 +542,11 @@ void ChunkManager::initializeSunlight()
 		maxY = glm::max(maxY, pos.y);
 	}
 
-	std::queue<glm::ivec3> lightLocationsToPropagate;
+	std::queue<glm::ivec3> lightsToPropagate;
 
 	// generates initial columns of sunlight in the world
-	for (auto [p, chunk] : ChunkStorage::GetMapRaw())
+	for (auto [cpos, chunk] : ChunkStorage::GetMapRaw())
 	{
-		glm::ivec3 cpos = p; // to make it modifiable
-
 		// propagate light only from the highest chunks
 		if (cpos.y != maxY || chunk == nullptr)
 			continue;
@@ -562,56 +556,105 @@ void ChunkManager::initializeSunlight()
 		{
 			for (int z = 0; z < Chunk::CHUNK_SIZE; z++)
 			{
-				// each column
-				bool broke = false;
-				for (int y = Chunk::CHUNK_SIZE - 1; y >= 0; y--)
-				{
-					glm::ivec3 lpos{ x, y, z };
-					auto wpos = ChunkHelpers::chunkPosToWorldPos(lpos, cpos);
+				glm::ivec3 lpos(x, Chunk::CHUNK_SIZE - 1, z);
+				Block curBlock = chunk->BlockAt(lpos);
+				if (Block::PropertiesTable[curBlock.GetTypei()].visibility == Visibility::Opaque)
+					continue;
 
-					// break the moment any block in the column is solid; not exposed to sunlight
-					Block curBlock = ChunkStorage::AtWorldC(wpos);
-					if (Block::PropertiesTable[curBlock.GetTypei()].visibility == Visibility::Opaque)
-					{
-						broke = true;
-						break;
-					}
-
-					Light light = chunk->LightAt(lpos);
-					light.SetS(0xF); // set sunlight to max
-					chunk->SetLightAt(lpos, light);
-					//lightLocationsToPropagate.push(wpos);
-				}
-
-				// if entire column was illuminated, continue to chunk below
-				if (broke == false && cpos.y > minY)
-				{
-					cpos.y -= 1;
-					chunk = ChunkStorage::GetChunk(cpos);
-					z--; // reverse z by one since it will be incremented; we want to stay in the same column for the next chunk
-				}
+				Light light = chunk->LightAt(lpos);
+				light.SetS(0xF);
+				chunk->SetLightAt(lpos, light);
+				glm::ivec3 wpos = ChunkHelpers::chunkPosToWorldPos(lpos, cpos);
+				lightsToPropagate.push(std::move(wpos));
 			}
 		}
 	}
 
-	while (!lightLocationsToPropagate.empty())
+	while (!lightsToPropagate.empty())
 	{
-		auto wpos = lightLocationsToPropagate.front();
-		lightLocationsToPropagate.pop();
-
-		//sunlightPropagateAdd(wpos, 0xF);
+		glm::ivec3 wpos = lightsToPropagate.front();
+		lightsToPropagate.pop();
+		sunlightPropagateOnce(wpos);
 	}
+
+	printf("Sunlight propagation took %f seconds\n", timer.elapsed());
 }
 
-
-// begin a column of sunlight starting from the given location
-void ChunkManager::sunlightPropagateAdd(glm::ivec3 wpos, uint8_t intensity)
+// updates the sunlight of a block at a given location
+void ChunkManager::sunlightPropagateOnce(const glm::ivec3& wpos)
 {
-	lightPropagateAdd(wpos, Light({ 0, 0, 0, intensity }), true, true, true);
+	// do something
 }
 
-
-void ChunkManager::sunlightPropagateRemove(glm::ivec3 wpos)
-{
-
-}
+//void ChunkManager::initializeSunlight()
+//{
+//	Timer timer;
+//	// find the max chunk height (assumed world has flat top, so no column-local max height needed)
+//	int maxY = std::numeric_limits<int>::min();
+//	int minY = std::numeric_limits<int>::max();
+//
+//	for (const auto& [pos, chunk] : ChunkStorage::GetMapRaw())
+//	{
+//		minY = glm::min(minY, pos.y);
+//		maxY = glm::max(maxY, pos.y);
+//	}
+//
+//	std::queue<glm::ivec3> lightLocationsToPropagate;
+//
+//	std::function <void(int, int, Chunk*)> processColumn = [&](const int x, const int z, Chunk* c)
+//	{
+//		// each column
+//		bool broke = false;
+//		for (int y = Chunk::CHUNK_SIZE - 1; y >= 0; y--)
+//		{
+//			glm::ivec3 lpos{ x, y, z };
+//			auto wpos = ChunkHelpers::chunkPosToWorldPos(lpos, c->GetPos());
+//
+//			// break the moment any block in the column is solid; not exposed to sunlight
+//			Block curBlock = ChunkStorage::AtWorldC(wpos);
+//			if (Block::PropertiesTable[curBlock.GetTypei()].visibility == Visibility::Opaque)
+//			{
+//				broke = true;
+//				break;
+//			}
+//
+//			Light light = c->LightAt(lpos);
+//			light.SetS(0xF); // set sunlight to max
+//			c->SetLightAt(lpos, light);
+//			lightLocationsToPropagate.push(wpos);
+//		}
+//
+//		// if entire column was illuminated, continue to chunk below
+//		if (broke == false && c->GetPos().y > minY)
+//		{
+//			processColumn(x, z, ChunkStorage::GetChunk(c->GetPos() - glm::ivec3(0, 1, 0)));
+//		}
+//	};
+//
+//	// generates initial columns of sunlight in the world
+//	for (auto [cpos, chunk] : ChunkStorage::GetMapRaw())
+//	{
+//		// propagate light only from the highest chunks
+//		if (cpos.y != maxY || chunk == nullptr)
+//			continue;
+//
+//		// for each block on top of the chunk
+//		for (int x = 0; x < Chunk::CHUNK_SIZE; x++)
+//		{
+//			for (int z = 0; z < Chunk::CHUNK_SIZE; z++)
+//			{
+//				processColumn(x, z, chunk);
+//			}
+//		}
+//	}
+//
+//	while (!lightLocationsToPropagate.empty())
+//	{
+//		auto wpos = lightLocationsToPropagate.front();
+//		lightLocationsToPropagate.pop();
+//
+//		//sunlightPropagateAdd(wpos, 0xF);
+//	}
+//
+//	printf("Sunlight propagation took %f seconds\n", timer.elapsed());
+//}

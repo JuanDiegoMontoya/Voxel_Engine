@@ -124,11 +124,13 @@ public: // TODO: TEMPORARY
 	void lightPropagateAdd(glm::ivec3 wpos, Light nLight, bool skipself = true, bool sunlight = false, bool noqueue = false);
 	void lightPropagateRemove(glm::ivec3 wpos, bool noqueue = false);
 
+
+	// SUNLIGHT STUFF
+	
 	// returns true if block at max sunlight level
 	bool checkDirectSunlight(glm::ivec3 wpos);
 	void initializeSunlight();
-	void sunlightPropagateAdd(glm::ivec3 wpos, uint8_t intensity);
-	void sunlightPropagateRemove(glm::ivec3 wpos);
+	void sunlightPropagateOnce(const glm::ivec3& wpos);
 
 	// vars
 	float loadDistance_;
