@@ -542,8 +542,6 @@ void ChunkManager::initializeSunlight()
 		maxY = glm::max(maxY, pos.y);
 	}
 
-	std::queue<glm::ivec3> lightsToPropagate;
-
 	// generates initial columns of sunlight in the world
 	for (auto [cpos, chunk] : ChunkStorage::GetMapRaw())
 	{
@@ -584,6 +582,38 @@ void ChunkManager::initializeSunlight()
 void ChunkManager::sunlightPropagateOnce(const glm::ivec3& wpos)
 {
 	// do something
+	enum { left, right, up, down, front, back }; // +Z = front
+	constexpr glm::ivec3 dirs[] =
+	{
+		{ 1, 0, 0 },
+		{-1, 0, 0 },
+		{ 0, 1, 0 },
+		{ 0,-1, 0 },
+		{ 0, 0, 1 },
+		{ 0, 0,-1 },
+	};
+
+	Light curLight = ChunkStorage::AtWorldC(wpos).GetLight();
+
+	for (int dir = 0; dir < 6; dir++)
+	{
+		std::optional<Block> neighbor = ChunkStorage::AtWorldE(wpos + dirs[dir]);
+		if (!neighbor)
+			continue;
+
+		if (Block::PropertiesTable[neighbor->GetTypei()].visibility == Visibility::Opaque)
+			continue;
+
+		Light neighborLight = neighbor->GetLight();
+
+		if (neighborLight.GetS() + 2 > curLight.GetS())
+			continue;
+
+		if (curLight.GetS() == 0xF && dir == down)
+			neighborLight.SetS(0xF);
+		else
+			neighborLight.SetS(curLight.GetS() - 1);
+	}
 }
 
 //void ChunkManager::initializeSunlight()

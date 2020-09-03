@@ -12,6 +12,7 @@
 #include <concurrent_unordered_set.h>
 #include <atomic>
 #include <stack>
+#include <queue>
 
 typedef struct Chunk* ChunkPtr;
 //class ChunkLoadManager;
@@ -131,6 +132,7 @@ public: // TODO: TEMPORARY
 	bool checkDirectSunlight(glm::ivec3 wpos);
 	void initializeSunlight();
 	void sunlightPropagateOnce(const glm::ivec3& wpos);
+	std::queue<glm::ivec3> lightsToPropagate;
 
 	// vars
 	float loadDistance_;
