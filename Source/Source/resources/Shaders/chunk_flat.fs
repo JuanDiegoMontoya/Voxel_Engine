@@ -1,6 +1,10 @@
 #version 450 core
 
-//uniform vec4 u_color;
+
+// #ifdef GLSLANG
+// #extension GL_GOOGLE_include_directive : require
+// #endif
+
 in vec4 vColor;
 
 out vec4 fragColor;

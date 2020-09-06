@@ -328,9 +328,6 @@
     <ClInclude Include="..\vendor\imgui\stb_truetype.h">
       <Filter>Vendor\stb</Filter>
     </ClInclude>
-    <ClInclude Include="GameObject.h">
-      <Filter>Game\ECS</Filter>
-    </ClInclude>
     <ClInclude Include="NetPlayerState.h">
       <Filter>Physics</Filter>
     </ClInclude>
@@ -340,13 +337,10 @@
     <ClInclude Include="RenderOrder.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\Shared\Entity.h">
-      <Filter>Game\ECS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Shared\Scene.h">
-      <Filter>Game\ECS</Filter>
-    </ClInclude>
     <ClInclude Include="..\Shared\Components.h">
+      <Filter>Game\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
       <Filter>Game\ECS</Filter>
     </ClInclude>
   </ItemGroup>
@@ -552,19 +546,13 @@
     <ClCompile Include="..\lib\tracy\TracyClient.cpp">
       <Filter>Vendor\Tracy</Filter>
     </ClCompile>
-    <ClCompile Include="GameObject.cpp">
-      <Filter>Game\ECS</Filter>
-    </ClCompile>
     <ClCompile Include="NetPlayerState.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
     <ClCompile Include="Client.cpp">
       <Filter>Networking</Filter>
     </ClCompile>
-    <ClCompile Include="..\Shared\Entity.cpp">
-      <Filter>Game\ECS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Shared\Scene.cpp">
+    <ClCompile Include="GameObject.cpp">
       <Filter>Game\ECS</Filter>
     </ClCompile>
   </ItemGroup>
