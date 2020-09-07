@@ -6,7 +6,7 @@ in vec3 vPos;
 in vec3 vNormal;
 in vec3 vTexCoord;
 in vec4 vLighting; // RGBSun
-in flat vec3 vBlockPos;
+in vec3 vBlockPos;
 
 uniform vec3 viewPos;   // world space
 uniform float sunAngle; // cos sun angle to normal of horizon, 0-1

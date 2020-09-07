@@ -1,6 +1,6 @@
 #version 450 core
 
-layout (location = 0) in vec3 aPos;
+layout(location = 0) in vec3 aPos;
 
 uniform mat4 VP; // Model-View-Projection matrix, but without the Model (the position is in BillboardPos; the orientation depends on the camera)
 uniform vec3 CameraRight;
