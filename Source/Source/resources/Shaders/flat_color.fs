@@ -1,10 +1,16 @@
 #version 450 core
 
-layout(location = 0) uniform vec4 u_color;
+#ifdef GLSLANG
+#extension GL_GOOGLE_include_directive : require
+#endif
 
-layout(location = 0) out vec4 color;
+uniform vec4 u_color;
+out vec4 color;
+
+//#include "TESTINCLUDE.h"
 
 void main()
 {
   color = u_color;
+  //color = plus(color);
 }
