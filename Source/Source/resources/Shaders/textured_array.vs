@@ -3,9 +3,9 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 2) in vec2 aTexCoord;
 
-uniform mat4 u_model;
-uniform mat4 u_view;
-uniform mat4 u_proj;
+layout(location = 0) uniform mat4 u_model;
+layout(location = 1) uniform mat4 u_view;
+layout(location = 2) uniform mat4 u_proj;
 
 out vec2 vTexCoord;
 

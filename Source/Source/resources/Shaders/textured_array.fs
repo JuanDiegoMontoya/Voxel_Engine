@@ -1,7 +1,7 @@
 #version 450 core
 
-uniform sampler2DArray u_textures;
-uniform int u_texIdx;
+layout(location = 3) uniform sampler2DArray u_textures;
+layout(location = 4) uniform int u_texIdx;
 
 in vec2 vTexCoord;
 

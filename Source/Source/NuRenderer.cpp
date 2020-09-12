@@ -59,8 +59,9 @@ namespace NuRenderer
 				{ "chunk_optimized.fs", GL_FRAGMENT_SHADER }
 			});
 		//Shader::shaders["chunk_splat"] = new Shader("chunk_splat.vs", "chunk_splat.fs");
-		Shader::shaders["compact_batch"] = new Shader(
-			{ { "compact_batch.cs", GL_COMPUTE_SHADER } });
+		//Shader::shaders["compact_batch"] = new Shader(
+		//	{ { "compact_batch.cs", GL_COMPUTE_SHADER } });
+		Shader::shaders["compact_batch"] = new Shader(0, "compact_batch.cs");
 		Shader::shaders["textured_array"] = new Shader(
 			{
 				{ "textured_array.vs", GL_VERTEX_SHADER },
@@ -76,6 +77,7 @@ namespace NuRenderer
 				{ "chunk_render_cull.vs", GL_VERTEX_SHADER },
 				{ "chunk_render_cull.fs", GL_FRAGMENT_SHADER }
 			});
+		//Shader::shaders["chunk_render_cull"] = new Shader("chunk_render_cull.vs", "chunk_render_cull.fs");
 	}
 
 

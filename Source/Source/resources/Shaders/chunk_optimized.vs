@@ -17,7 +17,7 @@ layout (location = 1) in uint aLighting;// (per vertex)
 layout (location = 2) in ivec3 u_pos; // (per instance)
 
 // global info
-uniform mat4 u_viewProj;
+layout(location = 0) uniform mat4 u_viewProj;
 
 
 out vec3 vPos;

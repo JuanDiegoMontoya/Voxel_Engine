@@ -8,16 +8,16 @@ in vec3 vTexCoord;
 in vec4 vLighting; // RGBSun
 in vec3 vBlockPos;
 
-uniform vec3 viewPos;   // world space
-uniform float sunAngle; // cos sun angle to normal of horizon, 0-1
-uniform sampler2D textureAtlas;
+layout(location = 1) uniform vec3 viewPos;   // world space
+layout(location = 2) uniform float sunAngle; // cos sun angle to normal of horizon, 0-1
+layout(location = 3) uniform sampler2D textureAtlas;
 
-uniform float fogStart; // world space
-uniform float fogEnd;   // world space
-uniform vec3 fogColor;
+layout(location = 4) uniform float fogStart; // world space
+layout(location = 5) uniform float fogEnd;   // world space
+layout(location = 6) uniform vec3 fogColor;
 
-uniform sampler2DArray textures;
-uniform sampler2D blueNoise;
+layout(location = 7) uniform sampler2DArray textures;
+layout(location = 8) uniform sampler2D blueNoise;
 
 out vec4 fragColor;
 

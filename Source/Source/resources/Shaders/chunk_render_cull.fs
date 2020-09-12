@@ -1,8 +1,7 @@
 #version 460 core
 #define DEBUG_VIEW 1
 
-layout (early_fragment_tests) in;
-
+//#include "DrawArraysCommand.h"
 struct DrawArraysCommand
 {
   uint count;
@@ -11,23 +10,26 @@ struct DrawArraysCommand
   uint baseInstance;
 };
 
+layout (early_fragment_tests) in;
+
 layout(std430, binding = 1) writeonly buffer cmds
 {
   DrawArraysCommand drawCommands[];
 };
 
-in flat int vID;
+layout(location = 0) in flat int vID;
 
 #if DEBUG_VIEW
 out vec4 fragColor;
-uniform bool u_debugDraw = false;
+layout(location = 3) uniform bool u_debugDraw = false;
 #endif
 
 void main()
 {
 #if DEBUG_VIEW
   if (u_debugDraw)
-    fragColor = vec4(1, 0, 1, 1);
+    fragColor = vec4(1, float(vID) / 2000000000.f, 1, 1);
 #endif
+
   drawCommands[vID].instanceCount = 1;
 }
