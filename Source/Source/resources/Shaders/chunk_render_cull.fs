@@ -1,14 +1,7 @@
 #version 460 core
 #define DEBUG_VIEW 1
 
-//#include "DrawArraysCommand.h"
-struct DrawArraysCommand
-{
-  uint count;
-  uint instanceCount;
-  uint first;
-  uint baseInstance;
-};
+#include "DrawArraysCommand.h"
 
 layout (early_fragment_tests) in;
 

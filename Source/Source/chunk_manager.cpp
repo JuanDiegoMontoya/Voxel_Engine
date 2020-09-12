@@ -597,7 +597,8 @@ void ChunkManager::sunlightPropagateOnce(const glm::ivec3& wpos)
 
 	for (int dir = 0; dir < 6; dir++)
 	{
-		std::optional<Block> neighbor = ChunkStorage::AtWorldE(wpos + dirs[dir]);
+		glm::ivec3 neighborPos = wpos + dirs[dir];
+		std::optional<Block> neighbor = ChunkStorage::AtWorldE(neighborPos);
 		if (!neighbor)
 			continue;
 
@@ -613,6 +614,8 @@ void ChunkManager::sunlightPropagateOnce(const glm::ivec3& wpos)
 			neighborLight.SetS(0xF);
 		else
 			neighborLight.SetS(curLight.GetS() - 1);
+		ChunkStorage::SetLight(neighborPos, neighborLight);
+		lightsToPropagate.push(neighborPos);
 	}
 }
 

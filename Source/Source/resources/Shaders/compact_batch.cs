@@ -4,6 +4,8 @@
 #define VISIBILITY_PARTIAL 1
 #define VISIBILITY_FULL    2
 
+#include "DrawArraysCommand.h"
+
 // only first 5 of 6 planes used- don't set 6th plane uniform
 struct Frustum
 {
@@ -26,15 +28,6 @@ struct InDrawInfo
   uint offset;
   uint size;
   AABB16 box;
-};
-
-// this struct's layout cannot change
-struct DrawArraysCommand
-{
-  uint count;
-  uint instanceCount;
-  uint first;
-  uint baseInstance;
 };
 
 layout(std430, binding = 0) readonly buffer inData

@@ -1,13 +1,6 @@
 #version 460 core
 
-//#include "DrawArraysCommand.h"
-struct DrawArraysCommand
-{
-  uint count;
-  uint instanceCount;
-  uint first;
-  uint baseInstance;
-};
+#include "DrawArraysCommand.h"
 
 // normal vertex buffer containing vertices for a cube
 layout(location = 0) in vec3 aPos;

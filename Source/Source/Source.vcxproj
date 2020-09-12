@@ -101,7 +101,7 @@
     <ClCompile>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;NTRACY_ENABLE;WIN32_LEAN_AND_MEAN;NOMINMAX;ZLIB_WINAPI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
