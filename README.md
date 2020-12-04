@@ -1,6 +1,6 @@
 # Note: This project is no longer being actively worked on. Progress is being continued in [the repository for Gengine](https://github.com/JuanDiegoMontoya/Gengine).
 
-# 3D_Voxel_Engine
+# Voxel_Engine (Formerly 3D_Voxel_Engine)
 Yet another voxel engine. Gallery at the bottom.
 
 Tech demo demonstrating the implementation of various methods to optimize voxel rendering in a large and dynamic environment.
