@@ -5,9 +5,6 @@ Yet another voxel engine. Gallery at the bottom.
 
 Tech demo demonstrating the implementation of various methods to optimize voxel rendering in a large and dynamic environment.
 
-## Follow
-The trello page for this project [can be found here.](https://trello.com/b/4Ns9jfZc/voxel-engine)
-
 ## Tech
 The project is written in C++ and GLSL. Also used is OpenGL, GLM, GLFW for window handling, cereal for serialization, and libnoise/FastNoiseSIMD for procedural noise.  
 
